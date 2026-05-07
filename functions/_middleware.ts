@@ -38,10 +38,28 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
 
   // The middleware fires on every Functions invocation, including /api/*.
   // We always resolve the tenant — handlers that don't care can ignore it.
-  const tenant = await resolveTenant(ctx.env.DB, host)
+  // Resolve the tenant from D1. If the tenants table doesn't exist yet
+  // (migration 0002 not applied to this environment), we let the request
+  // through *without* a tenant attached. Legacy handlers gracefully fall
+  // back to their pre-fleet behavior; handlers that strictly require a
+  // tenant (admin/*) call requireTenant and 500 cleanly. This keeps the
+  // public site working during the migration deploy window.
+  let tenant: Tenant | null = null
+  try {
+    tenant = await resolveTenant(ctx.env.DB, host)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (/no such table|tenants/.test(msg)) {
+      // Pre-migration fall-through. Logged once for visibility.
+      console.warn('tenancy not yet migrated; legacy handlers in use', { host })
+      return ctx.next()
+    }
+    throw err
+  }
 
   if (!tenant) {
-    // Unknown host: terse 404, no tenant info leaked.
+    // Migration is applied but this Host isn't registered. Unknown host:
+    // terse 404, no tenant info leaked.
     return new Response('Not found.', {
       status: 404,
       headers: { 'content-type': 'text/plain; charset=utf-8' },
