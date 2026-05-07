@@ -849,6 +849,239 @@ p {
   color: var(--accent);
 }
 
+/* Admin shell (feat-2026-016) — sidebar + main content
+   Used by both buyer admin (theme/team/billing) and operator admin (fleet/audit).
+   Same layout, different links visible based on tenant + role. */
+.admin {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  background: var(--bg);
+}
+@media (max-width: 800px) {
+  .admin {
+    grid-template-columns: 1fr;
+  }
+}
+.admin__nav {
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+@media (max-width: 800px) {
+  .admin__nav {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+.admin__brand {
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 16px;
+}
+.admin__brand-name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.admin__brand-role {
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-weight: 600;
+}
+.admin__links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.admin__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-mid);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.admin__link:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+  text-decoration: none;
+}
+.admin__link.active {
+  background: var(--accent-soft);
+  color: var(--accent-warm);
+  font-weight: 600;
+}
+.admin__link-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+.admin__link.active .admin__link-dot {
+  background: var(--accent);
+}
+.admin__link-dot--operator {
+  background: var(--warm);
+}
+.admin__link-divider {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 14px 0;
+}
+.admin__footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.admin__back {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--text-mid);
+  font-weight: 500;
+}
+.admin__back:hover {
+  color: var(--accent);
+}
+.admin__user {
+  word-break: break-all;
+}
+.admin__main {
+  padding: 56px 48px 80px;
+  max-width: 880px;
+}
+@media (max-width: 800px) {
+  .admin__main {
+    padding: 32px 24px 56px;
+  }
+}
+
+.admin-page__head {
+  margin-bottom: 36px;
+}
+.admin-page__head h1 {
+  font-size: clamp(28px, 3.6vw, 36px);
+  margin-bottom: 12px;
+}
+.admin-page__head p {
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 60ch;
+}
+.admin-block {
+  margin-bottom: 36px;
+  padding: 24px 26px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.admin-block h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+.admin-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.theme-error {
+  margin: 0;
+}
+
+/* Theme presets — color cards */
+.theme-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+.theme-preset {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-section);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: left;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    transform 0.08s;
+}
+.theme-preset:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.theme-preset--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-warm);
+  font-weight: 600;
+}
+.theme-preset__swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.theme-preset__label {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Theme custom fields */
+.theme-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.theme-field__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.theme-field__color {
+  width: 44px;
+  height: 44px;
+  padding: 2px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-section);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.theme-field__hex {
+  flex: 1;
+  font-size: 14px;
+  padding: 11px 14px;
+}
+
 /* Form fields */
 .form {
   display: flex;

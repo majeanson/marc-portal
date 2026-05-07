@@ -154,6 +154,29 @@ export async function tenantById(db: D1Database, id: string): Promise<Tenant | n
 }
 
 /**
+ * Pull the current request's tenant from the Pages Functions context. The
+ * middleware (functions/_middleware.ts) guarantees this is set when a handler
+ * runs — a missing tenant is a programmer error (handler ran without the
+ * middleware), and we fail loudly with a 500 rather than a tenant-scope leak.
+ */
+export function requireTenant(ctx: { data: PagesContextData }): Tenant {
+  const t = ctx.data.tenant
+  if (!t) {
+    throw new TenantUnresolvedError(
+      'No tenant on context — _middleware.ts must run before this handler.',
+    )
+  }
+  return t
+}
+
+export class TenantUnresolvedError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'TenantUnresolvedError'
+  }
+}
+
+/**
  * Render a Tenant's theme as a CSS-custom-properties block, with each declared
  * key emitted as `--<kebab-key>: <escaped-value>;`. Caller wraps in a <style>
  * tag and inserts in the document head. Values are escaped to prevent style

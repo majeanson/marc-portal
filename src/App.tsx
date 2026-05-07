@@ -10,6 +10,8 @@ import { MagicLinkSent } from './pages/MagicLinkSent'
 import { MePortal } from './pages/MePortal'
 import { SessionPage } from './pages/SessionPage'
 import { AdminInbox } from './pages/AdminInbox'
+import { Admin } from './pages/Admin'
+import { AdminAppearance } from './pages/AdminAppearance'
 
 export function App() {
   return (
@@ -40,6 +42,16 @@ export function App() {
       <Route path="/en/admin/inbox" element={<AdminInbox lang="en" />} />
       <Route path="/admin/inbox/:id" element={<SessionPage lang="fr" />} />
       <Route path="/en/admin/inbox/:id" element={<SessionPage lang="en" />} />
+
+      {/* Admin shell — fleet feat-2026-016. Per-tenant settings + (operator only) fleet view. */}
+      <Route path="/admin" element={<Admin lang="fr" />}>
+        <Route index element={<Navigate to="/admin/apparence" replace />} />
+        <Route path="apparence" element={<AdminAppearance lang="fr" />} />
+      </Route>
+      <Route path="/en/admin" element={<Admin lang="en" />}>
+        <Route index element={<Navigate to="/en/admin/apparence" replace />} />
+        <Route path="apparence" element={<AdminAppearance lang="en" />} />
+      </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
