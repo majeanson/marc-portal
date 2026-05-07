@@ -13,19 +13,44 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write # write so the auto-stamp step can push back
       deployments: write
     steps:
       - uses: actions/checkout@v4
+        # Need history so git diff-tree in stamp-revisions.mjs can resolve the
+        # commit's parent.
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Deploy to Cloudflare Pages
+      - id: deploy
+        name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=marc-portal
+
+      # Auto-stamp the latest revision in each feature.json touched by this
+      # commit with the deployment URL we just got. The bot pushes the stamping
+      # changes back to main with [skip ci] so we don't loop into another deploy.
+      - name: Stamp revisions with build URL
+        if: steps.deploy.outputs.deployment-url != ''
+        run: node scripts/stamp-revisions.mjs "${{ github.sha }}" "${{ steps.deploy.outputs.deployment-url }}"
+
+      - name: Commit + push stamps
+        if: steps.deploy.outputs.deployment-url != ''
+        run: |
+          if git diff --quiet; then
+            echo "No revisions to stamp."
+            exit 0
+          fi
+          git config user.name 'lac-stamp-bot'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add feature.json feat-*/feature.json
+          git commit -m "chore(lac): stamp revisions for ${GITHUB_SHA::7} [skip ci]"
+          git push
