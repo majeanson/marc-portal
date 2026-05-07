@@ -62,7 +62,9 @@
         "implementation",
         "successCriteria"
       ],
-      "reason": "Initial fill — productize SND as the first sellable template. Locks the static-demo-vs-buyer-app split, the text-first/audio-later phasing, and the SND-tenant-lands-on-root routing decision."
+      "reason": "Initial fill — productize SND as the first sellable template. Locks the static-demo-vs-buyer-app split, the text-first/audio-later phasing, and the SND-tenant-lands-on-root routing decision.",
+      "commit": "857df23",
+      "buildUrl": "https://4f57df9a.marc-portal.pages.dev"
     }
   ],
   "annotations": [],
