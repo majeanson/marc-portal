@@ -79,6 +79,7 @@ function RevisionEntry({
   t: {
     viewBuild: string
     hideBuild: string
+    openInNewTab: string
     buildHint: string
     commitLabel: string
   }
@@ -116,6 +117,16 @@ function RevisionEntry({
             >
               {isOpen ? t.hideBuild : t.viewBuild}
             </button>
+          )}
+          {iframeSrc && (
+            <a
+              className="rev-log__open-tab mono"
+              href={iframeSrc}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t.openInNewTab}
+            </a>
           )}
           {commitHref && (
             <a className="rev-log__commit mono" href={commitHref} target="_blank" rel="noreferrer">

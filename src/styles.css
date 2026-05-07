@@ -1652,6 +1652,23 @@ button:focus-visible,
 .rev-log__commit:hover {
   color: var(--accent-warm);
 }
+.rev-log__open-tab {
+  font-size: 12px;
+  font-family: var(--display);
+  font-weight: 600;
+  color: var(--accent-warm);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  text-decoration: none;
+}
+.rev-log__open-tab:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-warm);
+  text-decoration: none;
+}
 .rev-log__build-frame {
   margin-top: 12px;
   border: 1px solid var(--border);

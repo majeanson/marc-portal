@@ -206,9 +206,11 @@ const FR = {
     revisionLog: {
       title: 'Historique des révisions',
       summary: 'Voir les {n} révisions de cette fonctionnalité',
-      viewBuild: 'Voir ce build →',
-      hideBuild: 'Cacher le build',
-      buildHint: 'Aperçu réel du déploiement à cette révision. Servi depuis Cloudflare Pages.',
+      viewBuild: 'Aperçu inline →',
+      hideBuild: 'Cacher l’aperçu',
+      openInNewTab: 'Ouvrir dans un onglet ↗',
+      buildHint:
+        'Aperçu réel du déploiement à cette révision (Cloudflare Pages). Si l’aperçu reste vide, ce build est antérieur au correctif d’en-tête — ouvre-le dans un onglet.',
       commitLabel: 'commit',
     },
   },
@@ -581,10 +583,11 @@ const EN: Copy = {
     revisionLog: {
       title: 'Revision history',
       summary: 'See {n} revisions of this feature',
-      viewBuild: 'View this build →',
-      hideBuild: 'Hide build',
+      viewBuild: 'Preview inline →',
+      hideBuild: 'Hide preview',
+      openInNewTab: 'Open in new tab ↗',
       buildHint:
-        'Live preview of the deployment as it shipped at this revision. Served from Cloudflare Pages.',
+        'Live preview of the deployment as it shipped at this revision (Cloudflare Pages). If the preview stays blank, this build predates the header fix — open it in a new tab instead.',
       commitLabel: 'commit',
     },
   },
