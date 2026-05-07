@@ -20,12 +20,20 @@ export function AccountStep({
   const [email, setEmail] = useState(initial.email ?? '')
   const [name, setName] = useState(initial.name ?? '')
   const valid = /\S+@\S+\.\S+/.test(email)
+  const loginHref = lang === 'en' ? '/en/login' : '/login'
 
   return (
     <div className="intake__step">
       <div className="section__eyebrow">{t.eyebrow}</div>
       <h2>{t.title}</h2>
       <p>{t.body}</p>
+
+      <p className="intake__signin">
+        <span>{t.alreadyHaveAccount}</span>{' '}
+        <a href={loginHref} className="intake__signin-link">
+          {t.signIn}
+        </a>
+      </p>
 
       <label className="field">
         <span className="field__label">{t.emailLabel}</span>

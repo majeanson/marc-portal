@@ -336,6 +336,8 @@ const FR = {
       namePlaceholder: 'Marie',
       hint: 'Marc lit chaque formulaire lui-même. Aucun spam, aucune liste, aucune revente.',
       cta: 'Continuer →',
+      alreadyHaveAccount: 'Tu as déjà un compte ?',
+      signIn: 'Connecte-toi →',
     },
     typePicker: {
       eyebrow: 'quel genre de problème',
@@ -710,6 +712,8 @@ const EN: Copy = {
       namePlaceholder: 'Marie',
       hint: 'Marc reads every form himself. No spam, no lists, no resale.',
       cta: 'Continue →',
+      alreadyHaveAccount: 'Already have an account?',
+      signIn: 'Sign in →',
     },
     typePicker: {
       eyebrow: 'what kind of problem',

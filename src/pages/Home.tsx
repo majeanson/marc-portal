@@ -45,14 +45,22 @@ export function Home({ lang }: { lang: Lang }) {
     <div className="app">
       <Header lang={lang} />
       <main id="main-content">
+        {/* 1 — Hero: the offer + primary CTA, above the fold */}
         <Hero lang={lang} />
+        {/* 2 — How: 4-step expectation-setter, very fast read */}
         <HowItWorks lang={lang} />
-        <DemoEmbed lang={lang} />
-        <ShowcasesWall lang={lang} />
-        <VibeFilter lang={lang} />
+        {/* 3 — Pricing: concrete numbers so visitors self-qualify before the demo */}
         <Pricing lang={lang} />
-        <CTA lang={lang} />
+        {/* 4 — Vibe filter: do/don't lists — second self-qualification gate */}
+        <VibeFilter lang={lang} />
+        {/* 5 — Demo: deepest proof of work for those who passed the gates */}
+        <DemoEmbed lang={lang} />
+        {/* 6 — Showcases: full gallery with filters */}
+        <ShowcasesWall lang={lang} />
+        {/* 7 — About: short bio near the end (visitors who care, scroll) */}
         <About lang={lang} />
+        {/* 8 — Final CTA: one last push before the footer */}
+        <CTA lang={lang} />
       </main>
       <Footer lang={lang} />
     </div>
