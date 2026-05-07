@@ -1,23 +1,28 @@
 // GET /api/capacity — public, unauthenticated. Returns active + triage counts
-// straight from D1. Powers the homepage CapacityCounter; replaces the static
-// public/data/capacity.json fixture. The 1-active + 1-triage cap is the most
-// important rule in the system; this endpoint is its source of truth.
+// for the resolved tenant. Powers the homepage CapacityCounter; replaces the
+// static public/data/capacity.json fixture. The 1-active + 1-triage cap is
+// the most important rule in *Marc's* tenant; other tenants set their own
+// caps via tenants.flags.cap (default still 1 if unset).
 
 import type { Env } from '../_lib/env'
 import { ok, serverError } from '../_lib/json'
+import { requireTenant } from '../_lib/tenant'
 
 interface CountRow {
   status: 'active' | 'triage'
   n: number
 }
 
-export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
+export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   try {
-    const res = await env.DB.prepare(
+    const tenant = requireTenant(ctx)
+    const res = await ctx.env.DB.prepare(
       `SELECT status, COUNT(*) AS n FROM sessions
-       WHERE status IN ('active', 'triage')
-       GROUP BY status`,
-    ).all<CountRow>()
+         WHERE status IN ('active', 'triage') AND tenant_id = ?
+         GROUP BY status`,
+    )
+      .bind(tenant.id)
+      .all<CountRow>()
 
     let active = 0
     let triage = 0
@@ -25,7 +30,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       if (row.status === 'active') active = row.n
       else if (row.status === 'triage') triage = row.n
     }
-    return ok({ active, triage, cap: 1 })
+    const cap = typeof tenant.flags.cap === 'number' ? tenant.flags.cap : 1
+    return ok({ active, triage, cap })
   } catch (err) {
     console.error('capacity query failed', err)
     return serverError('capacity query failed')

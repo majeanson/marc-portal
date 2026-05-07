@@ -1,7 +1,9 @@
 // GET  /api/sessions/:id/messages — chronological thread for the session.
 // POST /api/sessions/:id/messages — append a message. author derived from
-//                                    viewer (admin → 'marc', else 'visitor').
-// On visitor-posted messages, Marc gets a Resend notification.
+//                                    viewer (operator → 'marc', else 'visitor').
+// On visitor-posted messages, the operator gets a Resend notification.
+//
+// Tenant-scoped: session lookup filters by tenant_id; messages are tagged.
 
 import { currentEmail } from '../../../_lib/auth'
 import { randomTokenB64url } from '../../../_lib/bytes'
@@ -11,33 +13,36 @@ import { isAdmin } from '../../../_lib/env'
 import { badRequest, forbidden, notFound, ok, unauthorized } from '../../../_lib/json'
 import { canAccessSession, primaryAdminEmail } from '../../../_lib/sessions'
 import type { MessageRow, SessionRow } from '../../../_lib/sessions'
+import { requireTenant } from '../../../_lib/tenant'
 
 const MAX_BODY_LEN = 8000
 
-async function loadSession(env: Env, id: string): Promise<SessionRow | null> {
+async function loadSession(env: Env, tenantId: string, id: string): Promise<SessionRow | null> {
   return env.DB.prepare(
     `SELECT id, email, intake_json, status, created_at, updated_at
-     FROM sessions WHERE id = ?`,
+       FROM sessions WHERE id = ? AND tenant_id = ?`,
   )
-    .bind(id)
+    .bind(id, tenantId)
     .first<SessionRow>()
 }
 
-export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
-  const email = await currentEmail(request, env.SESSION_SECRET)
+export const onRequestGet: PagesFunction<Env> = async (ctx) => {
+  const tenant = requireTenant(ctx)
+  const email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
+  const id = String(ctx.params.id ?? '')
   if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env, id)
+  const session = await loadSession(ctx.env, tenant.id, id)
   if (!session) return notFound()
-  if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
+  const isOperatorView = isAdmin(ctx.env, email) && tenant.flags.isOperator === true
+  if (!canAccessSession(email, isOperatorView, session)) return forbidden()
 
-  const res = await env.DB.prepare(
+  const res = await ctx.env.DB.prepare(
     `SELECT id, session_id, author, body, created_at
-     FROM messages WHERE session_id = ? ORDER BY created_at ASC`,
+       FROM messages WHERE session_id = ? AND tenant_id = ? ORDER BY created_at ASC`,
   )
-    .bind(id)
+    .bind(id, tenant.id)
     .all<MessageRow>()
 
   return ok({ messages: res.results ?? [] })
@@ -47,20 +52,21 @@ interface PostBody {
   body?: unknown
 }
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }) => {
-  const email = await currentEmail(request, env.SESSION_SECRET)
+export const onRequestPost: PagesFunction<Env> = async (ctx) => {
+  const tenant = requireTenant(ctx)
+  const email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
+  const id = String(ctx.params.id ?? '')
   if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env, id)
+  const session = await loadSession(ctx.env, tenant.id, id)
   if (!session) return notFound()
-  const admin = isAdmin(env, email)
-  if (!canAccessSession(email, admin, session)) return forbidden()
+  const isOperatorView = isAdmin(ctx.env, email) && tenant.flags.isOperator === true
+  if (!canAccessSession(email, isOperatorView, session)) return forbidden()
 
   let payload: PostBody
   try {
-    payload = (await request.json()) as PostBody
+    payload = (await ctx.request.json()) as PostBody
   } catch {
     return badRequest('invalid json')
   }
@@ -71,26 +77,27 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
 
   const messageId = randomTokenB64url(12)
   const now = Math.floor(Date.now() / 1000)
-  const author: 'marc' | 'visitor' = admin ? 'marc' : 'visitor'
+  const author: 'marc' | 'visitor' = isOperatorView ? 'marc' : 'visitor'
 
-  await env.DB.batch([
-    env.DB.prepare(
-      `INSERT INTO messages (id, session_id, author, body, created_at)
-       VALUES (?, ?, ?, ?, ?)`,
-    ).bind(messageId, id, author, body, now),
-    env.DB.prepare(`UPDATE sessions SET updated_at = ? WHERE id = ?`).bind(now, id),
+  await ctx.env.DB.batch([
+    ctx.env.DB.prepare(
+      `INSERT INTO messages (id, session_id, author, body, created_at, tenant_id)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    ).bind(messageId, id, author, body, now, tenant.id),
+    ctx.env.DB.prepare(
+      `UPDATE sessions SET updated_at = ? WHERE id = ? AND tenant_id = ?`,
+    ).bind(now, id, tenant.id),
   ])
 
-  // Resend notification to Marc when visitor posts. Failure is logged but
-  // does not fail the request — the message is in D1; the notification is a
-  // best-effort nudge. Marc-posted messages don't email the visitor (per the
-  // 'no notifications other than the magic link' decision).
+  // Resend notification to the operator when visitor posts. Failure is logged
+  // but does not fail the request — the message is in D1; the notification is
+  // a best-effort nudge. Operator-posted messages don't email the visitor.
   if (author === 'visitor') {
-    const marc = primaryAdminEmail(env.ADMIN_EMAILS)
+    const marc = primaryAdminEmail(ctx.env.ADMIN_EMAILS)
     if (marc) {
-      const origin = new URL(request.url).origin
+      const origin = new URL(ctx.request.url).origin
       await sendVisitorMessageNotification(
-        env.RESEND_API_KEY,
+        ctx.env.RESEND_API_KEY,
         marc,
         session.email,
         id,
