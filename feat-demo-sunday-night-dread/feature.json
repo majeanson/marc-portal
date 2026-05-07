@@ -164,8 +164,12 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": ["implementation"],
-      "reason": "Auto-stamp pipeline test 3/3: removed the disclaimer emoji entirely (back to plain text). With this revision stamped, the build log shows three sequential iframes — 🎯, 🔥, none — that visitors can click through to compare actual rendered builds. Confirms the time-travel pipeline works end-to-end."
+      "fields_changed": [
+        "implementation"
+      ],
+      "reason": "Auto-stamp pipeline test 3/3: removed the disclaimer emoji entirely (back to plain text). With this revision stamped, the build log shows three sequential iframes — 🎯, 🔥, none — that visitors can click through to compare actual rendered builds. Confirms the time-travel pipeline works end-to-end.",
+      "commit": "55dad4b",
+      "buildUrl": "https://0ef52045.marc-portal.pages.dev"
     }
   ],
   "annotations": [
