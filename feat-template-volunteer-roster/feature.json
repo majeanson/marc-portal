@@ -1,0 +1,75 @@
+{
+  "featureKey": "feat-2026-022",
+  "title": "Volunteer Roster — second sellable template (Phase 2 abstraction stress-test)",
+  "status": "active",
+  "problem": "App #2 of the package shop. Built deliberately on a different domain shape than SND (no voice, no invoicing, no append-only event log) so the platform spine (tenants, theming, auth, admin shell, custom domains) gets pressure-tested against a second use case before we extract it. Volunteer Roster targets community organizations — parishes, food banks, neighborhood associations — that need to schedule volunteers for shifts: the owner adds shifts (time, role, slots needed); volunteers see upcoming shifts and sign up; the owner sees who's signed up and can nudge unfilled shifts. Two roles in one tenant (owner + volunteer), both signed in via magic link. Forward-looking time data (shifts have a future starts_at) instead of SND's backward-looking log. After this ships, comparing what code SND and Volunteer Roster duplicated identifies the real platform spine vs per-template specialization (Phase 3 generalization pass).",
+  "schemaVersion": 1,
+  "domain": "marc-portal/templates",
+  "tags": [
+    "template",
+    "volunteer-roster",
+    "scheduling",
+    "second-template",
+    "abstraction-test"
+  ],
+  "analysis": "The second template installed on the package-shop platform. Picked specifically because its domain shape differs from SND: shifts are forward-dated time buckets with a fixed number of slots, signups are mutable (cancellable) and uniqueness-constrained per (shift, volunteer email), and the tenant has two role types (owner who creates shifts, volunteers who claim them). SND has none of these properties — voice clips are append-only, single-role, and reference past time. Building both reveals which abstractions in the platform spine (auth, tenant scoping, theming, admin shell, custom domains) actually generalize, vs which were SND-specific in disguise. Schema: vr_shifts (id, tenant_id, starts_at, ends_at, role, slots_needed, location, notes, created_by_email) and vr_signups (id, tenant_id, shift_id, volunteer_email, volunteer_name, status). UI is a list of upcoming shifts grouped by date, with owner-only 'add shift' and per-shift signup/cancel actions for any signed-in user. RootByTemplate dispatches to VolunteerApp when tenant.templateId === 'volunteer-roster'.",
+  "decisions": [
+    {
+      "decision": "Same auth surface as SND — signed-in users only, even for browsing shifts",
+      "rationale": "Public read access (volunteers browsing without an account) would force a separate anon path through the middleware and a captcha story. For Phase 2 the goal is testing abstractions, not ergonomic experiments. A real Volunteer Roster product would later add a public-read mode behind a flag.",
+      "alternativesConsidered": [
+        "Public read with captcha-gated signup",
+        "Magic-link-on-signup (no prior auth)"
+      ],
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Two tables (vr_shifts, vr_signups) with a UNIQUE (shift_id, volunteer_email) on signups",
+      "rationale": "Lets the slot-fill UX trivially count signups per shift via JOIN. The UNIQUE constraint prevents accidental double-signup at the DB level so the API doesn't need to check-then-insert (race-prone).",
+      "alternativesConsidered": [
+        "Single denormalized table with array of signups (loses uniqueness, harder counts)"
+      ],
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Owner-only shift creation, anyone-signed-in can sign up",
+      "rationale": "Mirrors the real org dynamic — the office manager curates the schedule; volunteers participate. Operator (Marc) acting on the tenant gets owner permissions for support cases.",
+      "alternativesConsidered": [
+        "Multi-role membership table (premature complexity for Phase 2)"
+      ],
+      "date": "2026-05-07"
+    }
+  ],
+  "implementation": "Migration 0004_volunteer.sql adds vr_shifts and vr_signups, both tenant-scoped. functions/api/volunteer/shifts.ts handles GET (list upcoming with signup counts) and POST (owner-only create). functions/api/volunteer/signups.ts handles POST (signed-in user signs up for a shift) and DELETE (cancel own signup). src/pages/VolunteerApp.tsx renders the list and the add-shift modal; src/pages/RootByTemplate.tsx adds a 'volunteer-roster' branch alongside 'snd' and 'marc-portal'. The shifts query joins vr_signups for live-fill counts; D1 handles the small data volumes trivially.",
+  "successCriteria": "An owner of a volunteer-roster tenant can sign in, add an upcoming shift with role + slots needed, and see it appear immediately. A signed-in non-owner visiting the same domain sees the same shift list and can claim a slot via signup; the owner sees their name in the signups list. Both roles see live slot counts (e.g. '2/4 filled'). Marc's tenant remains unaffected (templateId='marc-portal').",
+  "userGuide": "If you've bought the Volunteer Roster app, your team signs in at your own domain. The first page shows upcoming shifts. As the owner, click + to add a shift — set the date, the role (e.g. 'Cuisine du dimanche'), and how many volunteers you need. Volunteers visiting later see the same list and click Sign up; their name appears under the shift, and the slot count updates. Cancel your own signup with a click. Email reminders before the shift will land in a future update.",
+  "knownLimitations": [
+    "No email reminders before shifts — the cron + Resend wiring lands in a follow-up.",
+    "No public/anonymous browsing — volunteers must be signed in to even see the list.",
+    "No recurring shifts — every shift is a one-off insert; weekly recurring is a follow-up.",
+    "No multi-role membership — owner status is hard-coded to tenant.ownerEmail; supporting deputy organizers is a Phase 3 task.",
+    "No notifications when a shift fills or empties — the owner refreshes manually."
+  ],
+  "lastVerifiedDate": "2026-05-07",
+  "revisions": [
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": [
+        "analysis",
+        "decisions",
+        "implementation",
+        "successCriteria"
+      ],
+      "reason": "Initial fill ahead of build — second template; locks the differs-from-SND-on-purpose decision and Phase 2 scope (no reminders, no public read)."
+    }
+  ],
+  "annotations": [],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07"
+    }
+  ]
+}

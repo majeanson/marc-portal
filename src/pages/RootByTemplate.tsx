@@ -15,11 +15,15 @@ import type { Lang } from '../i18n'
 import { useTenant } from '../lib/tenantContext'
 import { Home } from './Home'
 import { SndApp } from './SndApp'
+import { VolunteerApp } from './VolunteerApp'
 
 export function RootByTemplate({ lang }: { lang: Lang }) {
   const { tenant } = useTenant()
   if (tenant?.templateId === 'snd') {
     return <SndApp lang={lang} />
+  }
+  if (tenant?.templateId === 'volunteer-roster') {
+    return <VolunteerApp lang={lang} />
   }
   return <Home lang={lang} />
 }

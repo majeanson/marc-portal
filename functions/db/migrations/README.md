@@ -35,6 +35,7 @@ npm run db:migrate:prod
 | `0001_initial.sql`  | feat-2026-015 — sessions, messages, magic_link_tokens             |
 | `0002_tenants.sql`  | feat-2026-016 — tenants, tenant_domains, audit_log; tenant_id FKs |
 | `0003_snd.sql`      | feat-2026-021 — snd_voice_clips for the productized SND template  |
+| `0004_volunteer.sql`| feat-2026-022 — vr_shifts + vr_signups for Volunteer Roster       |
 
 ## After applying 0002
 
