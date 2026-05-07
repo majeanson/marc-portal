@@ -1,4 +1,5 @@
 // feat-template-volunteer-roster
+// GET    /api/volunteer/signups        — list the current user's confirmed signups
 // POST   /api/volunteer/signups        — sign up for a shift (any signed-in user)
 // DELETE /api/volunteer/signups/:id    — cancel own signup (or owner cancels another's)
 //
@@ -45,6 +46,31 @@ function rowToSignup(r: SignupRow): Signup {
     status: r.status,
     createdAt: r.created_at,
   }
+}
+
+export const onRequestGet: PagesFunction<Env> = async (ctx) => {
+  const tenant = requireTenant(ctx)
+  if (tenant.templateId !== 'volunteer-roster') return notFound()
+  const email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
+  if (!email) return unauthorized()
+
+  // Only confirmed signups for shifts that haven't ended yet — the UI uses
+  // these to know which "Sign me up" buttons to flip to "Cancel my signup".
+  const now = Math.floor(Date.now() / 1000)
+  const res = await ctx.env.DB.prepare(
+    `SELECT su.id, su.shift_id, su.volunteer_email, su.volunteer_name,
+            su.status, su.created_at
+       FROM vr_signups su
+       JOIN vr_shifts s ON s.id = su.shift_id
+      WHERE su.tenant_id = ?
+        AND su.volunteer_email = ?
+        AND su.status = 'confirmed'
+        AND s.ends_at >= ?`,
+  )
+    .bind(tenant.id, email.toLowerCase(), now)
+    .all<SignupRow>()
+
+  return ok({ signups: (res.results ?? []).map(rowToSignup) })
 }
 
 interface CreateBody {

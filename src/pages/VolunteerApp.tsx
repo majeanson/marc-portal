@@ -126,7 +126,10 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
   const loc = useLocation()
 
   const [shifts, setShifts] = useState<Shift[] | null>(null)
-  const [mySignups, setMySignups] = useState<Set<string>>(new Set()) // shiftIds I'm signed up to
+  // Map of shiftId → signupId for the current user's confirmed signups.
+  // Used to flip the "Sign me up" button to "Cancel my signup" and to know
+  // which signup to DELETE when cancelling.
+  const [mySignups, setMySignups] = useState<Map<string, string>>(new Map())
   const [adding, setAdding] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -142,10 +145,16 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
   useEffect(() => {
     if (!email || tenant?.templateId !== 'volunteer-roster') return
     let cancelled = false
-    api<{ shifts: Shift[] }>('/api/volunteer/shifts')
-      .then((r) => {
+    Promise.all([
+      api<{ shifts: Shift[] }>('/api/volunteer/shifts'),
+      api<{ signups: Array<{ id: string; shiftId: string }> }>('/api/volunteer/signups'),
+    ])
+      .then(([shiftsResp, signupsResp]) => {
         if (cancelled) return
-        setShifts(r.shifts)
+        setShifts(shiftsResp.shifts)
+        const map = new Map<string, string>()
+        for (const s of signupsResp.signups) map.set(s.shiftId, s.id)
+        setMySignups(map)
         setError(null)
       })
       .catch((err) => {
@@ -160,39 +169,43 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
 
   const onSignup = async (shiftId: string) => {
     try {
-      const r = await api<{ filled: number }>('/api/volunteer/signups', {
-        method: 'POST',
-        body: { shiftId },
-      })
+      const r = await api<{ filled: number; signup: { id: string } | null }>(
+        '/api/volunteer/signups',
+        { method: 'POST', body: { shiftId } },
+      )
       setShifts((prev) =>
         (prev ?? []).map((s) => (s.id === shiftId ? { ...s, filled: r.filled } : s)),
       )
-      setMySignups((prev) => {
-        const next = new Set(prev)
-        next.add(shiftId)
-        return next
-      })
+      if (r.signup) {
+        setMySignups((prev) => {
+          const next = new Map(prev)
+          next.set(shiftId, r.signup!.id)
+          return next
+        })
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'unknown')
     }
   }
 
   const onCancelSignup = async (shiftId: string) => {
-    // Best-effort: we don't track signup IDs locally yet, so DELETE-by-shift
-    // would need a separate endpoint. v1 wires this through a fetch-then-delete
-    // cycle when needed; for now toggle locally and rely on POST being
-    // idempotent (re-signup would re-confirm).
-    // The proper DELETE flow lands when /api/volunteer/signups/mine is added.
-    setMySignups((prev) => {
-      const next = new Set(prev)
-      next.delete(shiftId)
-      return next
-    })
-    setShifts((prev) =>
-      (prev ?? []).map((s) =>
-        s.id === shiftId ? { ...s, filled: Math.max(0, s.filled - 1) } : s,
-      ),
-    )
+    const signupId = mySignups.get(shiftId)
+    if (!signupId) return
+    try {
+      const r = await api<{ filled: number }>(`/api/volunteer/signups/${signupId}`, {
+        method: 'DELETE',
+      })
+      setShifts((prev) =>
+        (prev ?? []).map((s) => (s.id === shiftId ? { ...s, filled: r.filled } : s)),
+      )
+      setMySignups((prev) => {
+        const next = new Map(prev)
+        next.delete(shiftId)
+        return next
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'unknown')
+    }
   }
 
   const onShiftCreated = (newShift: Shift) => {
