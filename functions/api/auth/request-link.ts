@@ -7,7 +7,6 @@ import type { Env } from '../../_lib/env'
 import { ok, badRequest } from '../../_lib/json'
 import { sendMagicLink } from '../../_lib/email'
 import { randomTokenB64url } from '../../_lib/bytes'
-import { requireTenant } from '../../_lib/tenant'
 
 const TOKEN_TTL_SECONDS = 30 * 60
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60
@@ -18,11 +17,10 @@ interface RequestBody {
   lang?: unknown
 }
 
-export const onRequestPost: PagesFunction<Env> = async (ctx) => {
-  const tenant = requireTenant(ctx)
+export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   let body: RequestBody
   try {
-    body = (await ctx.request.json()) as RequestBody
+    body = (await request.json()) as RequestBody
   } catch {
     return badRequest('invalid json')
   }
@@ -37,40 +35,42 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   }
 
   const now = Math.floor(Date.now() / 1000)
-  const ip = ctx.request.headers.get('CF-Connecting-IP') ?? 'unknown'
+  const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown'
   const since = now - RATE_LIMIT_WINDOW_SECONDS
 
-  // Rolling-window rate limit: 5 requests per email OR ip per hour, scoped
-  // to this tenant. Counted from magic_link_tokens (no separate rate-limit
-  // table needed).
-  const recent = await ctx.env.DB.prepare(
+  // Rolling-window rate limit: 5 requests per email OR ip per hour. Counted
+  // from the magic_link_tokens table (no separate rate-limit table needed).
+  const recent = await env.DB.prepare(
     `SELECT COUNT(*) AS n FROM magic_link_tokens
-     WHERE tenant_id = ? AND (email = ? OR ip = ?) AND created_at > ?`,
+     WHERE (email = ? OR ip = ?) AND created_at > ?`,
   )
-    .bind(tenant.id, email, ip, since)
+    .bind(email, ip, since)
     .first<{ n: number }>()
 
   if (recent && recent.n >= RATE_LIMIT_MAX) {
-    console.warn('rate limit hit', { tenant: tenant.slug, email, ip, n: recent.n })
+    // Silent drop — return the same 200 a happy path would. Logged so we can
+    // see abuse in tail. A determined attacker rotating IPs can still drive
+    // through; Resend's free-tier ceilings cap blast radius.
+    console.warn('rate limit hit', { email, ip, n: recent.n })
     return ok({ sent: true })
   }
 
   const token = randomTokenB64url()
   const expiresAt = now + TOKEN_TTL_SECONDS
 
-  await ctx.env.DB.prepare(
-    `INSERT INTO magic_link_tokens (token, email, expires_at, created_at, ip, tenant_id)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+  await env.DB.prepare(
+    `INSERT INTO magic_link_tokens (token, email, expires_at, created_at, ip)
+     VALUES (?, ?, ?, ?, ?)`,
   )
-    .bind(token, email, expiresAt, now, ip, tenant.id)
+    .bind(token, email, expiresAt, now, ip)
     .run()
 
-  const origin = new URL(ctx.request.url).origin
+  const origin = new URL(request.url).origin
   const verifyUrl = `${origin}/api/auth/verify?token=${encodeURIComponent(token)}&lang=${lang}`
 
   // Fire-and-forget: even if Resend is down we return 200. The token is in
   // D1; visitor can request another link. Error is logged inside sendMagicLink.
-  await sendMagicLink(ctx.env.RESEND_API_KEY, email, verifyUrl, lang)
+  await sendMagicLink(env.RESEND_API_KEY, email, verifyUrl, lang)
 
   return ok({ sent: true })
 }
