@@ -1420,6 +1420,53 @@ button:focus-visible,
   font-size: 14px;
   color: var(--text-mid);
 }
+.rev-log__build-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.rev-log__build-toggle {
+  background: var(--bg-active);
+  color: var(--text);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: var(--mono);
+  cursor: pointer;
+}
+.rev-log__build-toggle:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+.rev-log__commit {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.rev-log__commit:hover {
+  color: var(--accent-warm);
+}
+.rev-log__build-frame {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-card);
+  padding: 12px;
+}
+.rev-log__build-hint {
+  font-size: 11px;
+  color: var(--text-soft);
+  margin: 0 0 10px;
+}
+.rev-log__build-frame iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+  border-radius: 4px;
+  background: var(--bg);
+}
 
 /* Filter chips on showcase wall */
 .filters {

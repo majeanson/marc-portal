@@ -8,6 +8,7 @@ import { StatusHistoryStrip } from '../components/StatusHistoryStrip'
 import { RevisionLog } from '../components/RevisionLog'
 
 const SND_SLUG = 'sunday-night-dread'
+const REPO_URL = 'https://github.com/majeanson/marc-portal'
 
 /**
  * Sunday Night Dread — interactive static demo. Iframe-friendly (no Header/Footer)
@@ -251,7 +252,12 @@ export function SndDemo({ lang }: { lang: Lang }) {
         <section className="snd-demo__panel snd-demo__buildlog">
           <h2 className="snd-demo__h">{t.buildLogTitle}</h2>
           <p className="snd-demo__hint">{t.buildLogHint}</p>
-          <RevisionLog feature={sndEntry.feature} lang={lang} />
+          <RevisionLog
+            feature={sndEntry.feature}
+            lang={lang}
+            iframePath={lang === 'en' ? '/en/demo/sunday-night-dread' : '/demo/sunday-night-dread'}
+            repoUrl={REPO_URL}
+          />
         </section>
       )}
 

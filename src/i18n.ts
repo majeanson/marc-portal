@@ -206,6 +206,10 @@ const FR = {
     revisionLog: {
       title: 'Historique des révisions',
       summary: 'Voir les {n} révisions de cette fonctionnalité',
+      viewBuild: 'Voir ce build →',
+      hideBuild: 'Cacher le build',
+      buildHint: 'Aperçu réel du déploiement à cette révision. Servi depuis Cloudflare Pages.',
+      commitLabel: 'commit',
     },
   },
 
@@ -575,6 +579,11 @@ const EN: Copy = {
     revisionLog: {
       title: 'Revision history',
       summary: 'See {n} revisions of this feature',
+      viewBuild: 'View this build →',
+      hideBuild: 'Hide build',
+      buildHint:
+        'Live preview of the deployment as it shipped at this revision. Served from Cloudflare Pages.',
+      commitLabel: 'commit',
     },
   },
 

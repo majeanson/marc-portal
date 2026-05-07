@@ -26,6 +26,20 @@ export interface FeatureRevision {
   author: string
   fields_changed: string[]
   reason: string
+  /**
+   * Git short SHA of the commit that introduced this revision. Optional —
+   * older revisions predating this convention won't have one. When present,
+   * a GitHub commit link is rendered alongside the entry.
+   */
+  commit?: string
+  /**
+   * Cloudflare Pages preview URL for the deployment that shipped this
+   * revision (e.g. https://5285cfb8.marc-portal.pages.dev). When set,
+   * RevisionLog renders a "view this build" toggle that opens an iframe
+   * pointed at <buildUrl><iframePath> — letting visitors time-travel through
+   * the actual rendered demo at that point in history.
+   */
+  buildUrl?: string
 }
 
 export interface FeatureJson {

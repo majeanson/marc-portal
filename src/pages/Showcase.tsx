@@ -246,7 +246,12 @@ export function Showcase({ lang }: { lang: Lang }) {
 
             <section className="showcase-page__block">
               <h2>{t.showcase.revisionLog.title}</h2>
-              <RevisionLog feature={feature} lang={lang} />
+              <RevisionLog
+                feature={feature}
+                lang={lang}
+                iframePath={showcase.liveUrl ?? undefined}
+                repoUrl="https://github.com/majeanson/marc-portal"
+              />
             </section>
           </div>
         </article>
