@@ -9,6 +9,7 @@
 
 import { currentEmail } from '../../_lib/auth'
 import { randomTokenB64url } from '../../_lib/bytes'
+import { attachCustomDomain, type AttachDomainResult } from '../../_lib/cloudflare'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
 import { badRequest, forbidden, ok, unauthorized } from '../../_lib/json'
@@ -175,6 +176,25 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     throw err
   }
 
+  // Best-effort: attach the domain to this Pages project via the CF API.
+  // Failure here doesn't roll back the tenant — the operator can retry from
+  // the fleet view (or fall back to adding the domain in the CF dashboard).
+  // When CF env vars are unset, returns { skipped: true } and we surface the
+  // manual-instructions UX as before.
+  const cfResult: AttachDomainResult = await attachCustomDomain(ctx.env, domain)
+  await ctx.env.DB.prepare(
+    `INSERT INTO audit_log (id, ts, actor_email, tenant_id, action, payload)
+     VALUES (?, ?, ?, ?, 'tenant.cf-domain-attach', ?)`,
+  )
+    .bind(
+      crypto.randomUUID(),
+      Math.floor(Date.now() / 1000),
+      operator,
+      id,
+      JSON.stringify({ domain, ok: cfResult.ok, skipped: cfResult.skipped, error: cfResult.error }),
+    )
+    .run()
+
   return ok({
     tenant: {
       id,
@@ -185,6 +205,13 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
       domain,
       status: 'pending',
       createdAt: now,
+    },
+    cf: {
+      attached: cfResult.ok,
+      skipped: cfResult.skipped === true,
+      cname: cfResult.cname,
+      sslStatus: cfResult.status,
+      error: cfResult.error,
     },
   })
 }

@@ -13,6 +13,15 @@ database_id = "d8c8de13-7971-451e-836d-cf4165bd7104"
 migrations_dir = "functions/db/migrations"
 
 # Required env vars (set in Cloudflare Pages dashboard -> Settings -> Environment variables):
-#   RESEND_API_KEY   - from resend.com (free tier, 100/day)
-#   ADMIN_EMAILS     - comma-separated allowlist, e.g. "marc.jeanson92@gmail.com"
-#   SESSION_SECRET   - 32+ random bytes hex, e.g. `openssl rand -hex 32`
+#   RESEND_API_KEY        - from resend.com (free tier, 100/day)
+#   ADMIN_EMAILS          - comma-separated allowlist, e.g. "marc.jeanson92@gmail.com"
+#   SESSION_SECRET        - 32+ random bytes hex, e.g. `openssl rand -hex 32`
+#
+# Optional env vars (feat-2026-018 — automate buyer custom-domain attach).
+# When all three are set, /admin/fleet/new attaches the buyer's domain to this
+# Pages project automatically. When any is unset, the wizard falls back to
+# manual instructions (operator adds the domain in the CF dashboard).
+#   CF_API_TOKEN          - token with "Cloudflare Pages: Edit" permission,
+#                            scoped to the account that owns this project
+#   CF_ACCOUNT_ID         - the account UUID (visible in CF dashboard URL)
+#   CF_PAGES_PROJECT_NAME - this project's slug, e.g. "marc-portal"

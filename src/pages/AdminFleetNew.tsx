@@ -29,8 +29,15 @@ const COPY = {
     submit: 'Provisionner →',
     submitting: 'Provisionnement…',
     next: 'Prochaine étape',
-    nextBody:
-      'Le client a été créé en état "en attente". Il faut maintenant : (1) ajouter ce domaine dans le projet Cloudflare Pages (Settings → Custom domains), (2) demander au client de pointer son DNS, (3) attendre la propagation SSL. La page Flotte montre l’état SSL en direct.',
+    cfAttachedTitle: 'Domaine attaché à Cloudflare ✓',
+    cfAttachedBody:
+      'Le domaine est enregistré dans le projet Pages. SSL en cours d’émission par Cloudflare (typiquement 5–10 min). Demande au client de pointer son DNS au CNAME indiqué dans la console CF, puis attends la propagation. La page Flotte affichera l’état SSL.',
+    cfSkippedTitle: 'API Cloudflare non configurée',
+    cfSkippedBody:
+      'Les variables CF_API_TOKEN / CF_ACCOUNT_ID / CF_PAGES_PROJECT_NAME ne sont pas définies. Ajoute le domaine manuellement dans Cloudflare Pages → Settings → Custom domains, puis demande au client de pointer son DNS.',
+    cfErrorTitle: 'Échec de l’attache CF',
+    cfErrorBody:
+      'L’instance est créée, mais l’API Cloudflare a refusé l’attache du domaine. Tu peux réessayer depuis la page Flotte ou ajouter le domaine manuellement dans la console CF. Erreur :',
     cancel: '← Retour à la flotte',
     error: 'Quelque chose a mal tourné.',
   },
@@ -50,8 +57,15 @@ const COPY = {
     submit: 'Provision →',
     submitting: 'Provisioning…',
     next: 'Next step',
-    nextBody:
-      'The buyer has been created with status "pending". Now you need to: (1) add this domain to the Cloudflare Pages project (Settings → Custom domains), (2) ask the buyer to point their DNS here, (3) wait for SSL provisioning. The Fleet page shows live SSL status.',
+    cfAttachedTitle: 'Domain attached to Cloudflare ✓',
+    cfAttachedBody:
+      'Domain is registered with the Pages project. SSL is being issued by Cloudflare (typically 5–10 min). Ask the buyer to point their DNS at the CNAME shown in the CF console, then wait for propagation. The Fleet page will show SSL status.',
+    cfSkippedTitle: 'Cloudflare API not configured',
+    cfSkippedBody:
+      'The CF_API_TOKEN / CF_ACCOUNT_ID / CF_PAGES_PROJECT_NAME env vars are not set. Add the domain manually in Cloudflare Pages → Settings → Custom domains, then ask the buyer to point their DNS.',
+    cfErrorTitle: 'CF attach failed',
+    cfErrorBody:
+      'The instance is created, but the Cloudflare API refused the domain attach. You can retry from the Fleet page or add the domain manually in the CF console. Error:',
     cancel: '← Back to fleet',
     error: 'Something went wrong.',
   },
@@ -74,7 +88,14 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
   const [displayName, setDisplayName] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [done, setDone] = useState<{ slug: string; domain: string } | null>(null)
+  const [done, setDone] = useState<
+    | {
+        slug: string
+        domain: string
+        cf: { attached: boolean; skipped: boolean; cname?: string; error?: string }
+      }
+    | null
+  >(null)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,7 +104,10 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
     setError(null)
     const tpl = TEMPLATES.find((x) => x.id === templateId)
     try {
-      await api<{ tenant: { slug: string; domain: string } }>('/api/admin/fleet', {
+      const r = await api<{
+        tenant: { slug: string; domain: string }
+        cf: { attached: boolean; skipped: boolean; cname?: string; error?: string }
+      }>('/api/admin/fleet', {
         method: 'POST',
         body: {
           slug,
@@ -94,7 +118,7 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
           displayName: displayName || undefined,
         },
       })
-      setDone({ slug, domain })
+      setDone({ slug, domain, cf: r.cf })
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'unknown error')
     } finally {
@@ -103,6 +127,33 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
   }
 
   if (done) {
+    let cfTitle: string
+    let cfBody: React.ReactNode
+    if (done.cf.skipped) {
+      cfTitle = t.cfSkippedTitle
+      cfBody = t.cfSkippedBody
+    } else if (done.cf.attached) {
+      cfTitle = t.cfAttachedTitle
+      cfBody = (
+        <>
+          {t.cfAttachedBody}
+          {done.cf.cname && (
+            <div className="mono" style={{ marginTop: 10, color: 'var(--text-soft)' }}>
+              CNAME → <strong>{done.cf.cname}</strong>
+            </div>
+          )}
+        </>
+      )
+    } else {
+      cfTitle = t.cfErrorTitle
+      cfBody = (
+        <>
+          {t.cfErrorBody}{' '}
+          <code className="mono">{done.cf.error ?? 'unknown'}</code>
+        </>
+      )
+    }
+
     return (
       <div className="admin-page">
         <header className="admin-page__head">
@@ -110,9 +161,12 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
           <h1>✓ {done.slug}</h1>
           <p className="mono">{done.domain}</p>
         </header>
-        <section className="admin-block">
-          <h2>{t.next}</h2>
-          <p>{t.nextBody}</p>
+        <section
+          className={`admin-block${done.cf.attached ? ' admin-block--soon' : ''}`}
+          style={done.cf.attached === false && done.cf.skipped !== true ? { borderColor: 'var(--warm)' } : undefined}
+        >
+          <h2>{cfTitle}</h2>
+          <p>{cfBody}</p>
           <div style={{ marginTop: 18 }}>
             <button
               type="button"
