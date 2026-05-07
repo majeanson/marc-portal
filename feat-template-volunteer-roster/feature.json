@@ -61,7 +61,9 @@
         "implementation",
         "successCriteria"
       ],
-      "reason": "Initial fill ahead of build — second template; locks the differs-from-SND-on-purpose decision and Phase 2 scope (no reminders, no public read)."
+      "reason": "Initial fill ahead of build — second template; locks the differs-from-SND-on-purpose decision and Phase 2 scope (no reminders, no public read).",
+      "commit": "246603d",
+      "buildUrl": "https://9b4cb9b0.marc-portal.pages.dev"
     }
   ],
   "annotations": [],
