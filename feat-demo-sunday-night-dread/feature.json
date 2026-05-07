@@ -120,6 +120,12 @@
       "author": "marc+claude",
       "fields_changed": ["implementation"],
       "reason": "Wired real audio playback into the 3 fixture clips. Added optional audioSrc field to VoiceClip, pointing to /audio/snd-{id}.mp3. SndDemo.tsx now renders an <audio preload=\"none\"> per clip and triggers .play()/.pause() in togglePlay. Graceful degradation: missing-file rejection is swallowed, transcript still reveals. Marc to record himself reading the existing transcripts as scrappy phone voice memos with ambient truck/garage noise; composite-voice disclosure covers attribution. Strengthens the cornerstone artifact's authenticity — the play button now does what visitors expect."
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["implementation"],
+      "reason": "Auto-stamp pipeline test 1/3: prepended a 🎯 emoji to the SND disclaimer string (FR + EN). This revision should be the first one auto-stamped by the deploy.yml workflow with `commit` (the SHA of this push) and `buildUrl` (the wrangler-action deployment URL). Visitors clicking 'voir ce build →' on this entry should land on a build whose disclaimer reads '🎯 Démo statique...'."
     }
   ],
   "annotations": [
