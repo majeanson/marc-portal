@@ -12,6 +12,10 @@ import { SessionPage } from './pages/SessionPage'
 import { AdminInbox } from './pages/AdminInbox'
 import { Admin } from './pages/Admin'
 import { AdminAppearance } from './pages/AdminAppearance'
+import { AdminTeam } from './pages/AdminTeam'
+import { AdminBilling } from './pages/AdminBilling'
+import { AdminFleet } from './pages/AdminFleet'
+import { AdminFleetNew } from './pages/AdminFleetNew'
 
 export function App() {
   return (
@@ -47,10 +51,18 @@ export function App() {
       <Route path="/admin" element={<Admin lang="fr" />}>
         <Route index element={<Navigate to="/admin/apparence" replace />} />
         <Route path="apparence" element={<AdminAppearance lang="fr" />} />
+        <Route path="equipe" element={<AdminTeam lang="fr" />} />
+        <Route path="facturation" element={<AdminBilling lang="fr" />} />
+        <Route path="fleet" element={<AdminFleet lang="fr" />} />
+        <Route path="fleet/new" element={<AdminFleetNew lang="fr" />} />
       </Route>
       <Route path="/en/admin" element={<Admin lang="en" />}>
         <Route index element={<Navigate to="/en/admin/apparence" replace />} />
         <Route path="apparence" element={<AdminAppearance lang="en" />} />
+        <Route path="equipe" element={<AdminTeam lang="en" />} />
+        <Route path="facturation" element={<AdminBilling lang="en" />} />
+        <Route path="fleet" element={<AdminFleet lang="en" />} />
+        <Route path="fleet/new" element={<AdminFleetNew lang="en" />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

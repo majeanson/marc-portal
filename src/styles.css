@@ -1055,6 +1055,153 @@ p {
   min-width: 0;
 }
 
+/* Stub-page treatments (team / billing / soon blocks) */
+.admin-block--soon {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.admin-block--soon h2 {
+  color: var(--accent-warm);
+}
+.admin-meta {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-top: 12px;
+}
+
+/* Team list (stub UI for /admin/equipe) */
+.team-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.team-list__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--bg-section);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+}
+.team-list__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.team-list__name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+}
+.team-list__role {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Billing grid (stub) */
+.billing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.billing-cell {
+  padding: 16px 18px;
+  background: var(--bg-section);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+}
+.billing-cell__label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.billing-cell__value {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.billing-cell__sub {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-top: 4px;
+}
+
+/* Fleet table (operator) */
+.fleet-block {
+  padding: 0;
+  overflow: hidden;
+}
+.fleet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.fleet-table thead th {
+  text-align: left;
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  background: var(--bg-section);
+  border-bottom: 1px solid var(--border);
+}
+.fleet-table tbody td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+.fleet-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.fleet-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+.fleet-table__primary {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+}
+.fleet-table__secondary {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+.fleet-table__domain {
+  color: var(--accent-warm);
+  text-decoration: none;
+  font-weight: 500;
+}
+.fleet-table__domain:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* Theme custom fields */
 .theme-fields {
   display: grid;
