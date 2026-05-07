@@ -1,7 +1,7 @@
 {
   "featureKey": "feat-2026-001",
   "title": "Marc Portal — Async-First Solo Consulting Side Practice",
-  "status": "draft",
+  "status": "active",
   "problem": "Quebec small operators (tradespeople, civic tinkerers, small biz owners) have everyday problems solvable with small software, but their realistic options are bad: agencies are expensive and meeting-heavy, freelance marketplaces are race-to-bottom with no judgment, and DIY requires time and skill they don't have. On the other side, a senior dev with a 37.5h day job and a family cannot run a normal consulting practice — phone calls, scheduling dances, and relationship-maintenance labor consume the side-gig hours that are supposed to belong to family. The Portal is the architecture that makes both ends work async: structured intake replaces discovery calls, human judgment gates AI execution, live demos throughout replace milestone meetings, and public per-project showcase pages compound as long-tail SEO. Bedrock: family-first, for both parties. Time horizon: ~3 years before AI self-serve likely obsoletes the wedge. Single load-bearing rule: 1 active build + 1 in triage, public capacity counter, no exception path.",
   "schemaVersion": 1,
   "domain": "consulting/solo-practice",
@@ -86,7 +86,7 @@
       "feat-2026-010"
     ]
   },
-  "lastVerifiedDate": "2026-05-06",
+  "lastVerifiedDate": "2026-05-07",
   "revisions": [
     {
       "date": "2026-05-06",
@@ -119,132 +119,12 @@
       "to": "draft",
       "date": "2026-05-06",
       "reason": "Created during brainstorming session — root feature for the side-practice portal. Status will advance to active once the homepage and SND demo are live, frozen once first paid client ships."
+    },
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07"
     }
   ],
-  "annotations": [
-    {
-      "id": "showcase-self-documenting-portal",
-      "type": "showcase",
-      "date": "2026-05-06",
-      "author": "marc+claude",
-      "body": "Public showcase for the portal itself — the second engagement on the wall, optimized for dev-cred (Insight #32). The portal is its own deliverable: feature.json files document every architectural decision; the wall renders feature.json files; viewers see the actual artifacts that made the site.",
-      "data": {
-        "slug": "self-documenting-portal",
-        "tier": "Tier 2",
-        "price": "$1500",
-        "hours": "≈ 30h sur 4 semaines",
-        "shippedDate": null,
-        "targetShipDate": "2026-07-01",
-        "liveUrl": "/",
-        "sourceUrl": null,
-        "primaryLang": "fr",
-        "title": {
-          "fr": "Le portail qui se documente lui-même",
-          "en": "The self-documenting portal"
-        },
-        "summary": {
-          "fr": "L'infrastructure de la pratique-side de Marc — bilingue, statique, async — bâtie en public, chaque décision architecturale persistée comme un feature.json LAC. La page que tu lis et le mur de projets sur lequel tu es arrivé sont rendus à partir de ces mêmes fichiers.",
-          "en": "Marc's side-practice infrastructure — bilingual, static, async — built in public, every architectural decision persisted as a LAC feature.json. The page you're reading and the wall you came in on are rendered from those same files."
-        },
-        "engagement": [
-          {
-            "stage": "intake",
-            "date": "2026-05-06",
-            "completed": true,
-            "label": {
-              "fr": "Auto-intake — session de brainstorming structurée (40 insights)",
-              "en": "Self-intake — structured brainstorming session (40 insights)"
-            }
-          },
-          {
-            "stage": "triage",
-            "date": "2026-05-06",
-            "completed": true,
-            "label": {
-              "fr": "Auto-triage — bedrock identifié (family-first), 3-year time box accepté",
-              "en": "Self-triage — bedrock identified (family-first), 3-year time box accepted"
-            }
-          },
-          {
-            "stage": "plan",
-            "date": "2026-05-06",
-            "completed": true,
-            "label": {
-              "fr": "Plan figé — 7 primitives + 1 composition + 1 démo, bilingue, static-first",
-              "en": "Plan locked — 7 primitives + 1 composition + 1 demo, bilingual, static-first"
-            }
-          },
-          {
-            "stage": "build",
-            "date": null,
-            "completed": false,
-            "label": {
-              "fr": "En construction — homepage et architecture de showcase opérationnelles",
-              "en": "Building — homepage and showcase architecture operational"
-            }
-          },
-          {
-            "stage": "review",
-            "date": null,
-            "completed": false,
-            "label": {
-              "fr": "Auto-revue avant le premier post Facebook",
-              "en": "Self-review before the first Facebook post"
-            }
-          },
-          {
-            "stage": "shipped",
-            "date": null,
-            "completed": false,
-            "label": {
-              "fr": "Livré — site public, premier post cible 2026-07-01",
-              "en": "Shipped — public site, first post target 2026-07-01"
-            }
-          }
-        ],
-        "decisions": [
-          {
-            "decision": {
-              "fr": "L'humain au siège du jugement, la machine au milieu",
-              "en": "Human in the judgment seat, machine in the middle"
-            },
-            "rationale": {
-              "fr": "Marc lit chaque formulaire lui-même (Insight #12). L'IA n'est jamais entre Marc et les mots du client. Pas de marketing autour de l'IA — c'est de la plomberie, pas un slogan (Insight #11).",
-              "en": "Marc reads every form himself (Insight #12). AI is never between Marc and the client's words. No AI-as-feature marketing — it's plumbing, not a slogan (Insight #11)."
-            }
-          },
-          {
-            "decision": {
-              "fr": "Plafond dur de 1 projet actif + 1 en triage, sans exception",
-              "en": "Hard cap of 1 active build + 1 in triage, no exception"
-            },
-            "rationale": {
-              "fr": "Règle structurelle (Insight #39) — la seule règle qui ne plie pas. Si 3 clients en parallèle = bedrock family-first qui s'effondre. Le compteur public devient un signal de crédibilité, pas un bug à cacher.",
-              "en": "Structural rule (Insight #39) — the only rule that does not bend. 3 clients in parallel = family-first bedrock collapses. The public counter becomes a credibility signal, not a bug to hide."
-            }
-          },
-          {
-            "decision": {
-              "fr": "Chaque projet livré devient une page publique en SEO long-tail",
-              "en": "Every shipped project becomes a long-tail SEO page"
-            },
-            "rationale": {
-              "fr": "Insight #25 — le mur de showcases est de l'infrastructure d'acquisition, pas de la décoration de portfolio. Acquisition asymétrique (Insight #26) : lourde sur le SEO du mur (gravité), légère sur les posts Facebook (push). Compose pendant que Marc est à sa job de jour.",
-              "en": "Insight #25 — the showcase wall is acquisition infrastructure, not portfolio decoration. Asymmetric acquisition (Insight #26): heavy on showcase SEO (gravity), light on cold posts (push). Compounds while Marc is at his day job."
-            }
-          },
-          {
-            "decision": {
-              "fr": "feature.json comme artefact, pas un sous-produit",
-              "en": "feature.json as the artifact, not a byproduct"
-            },
-            "rationale": {
-              "fr": "Insight #5 + #29 + #34 — l'architecture converge naturellement vers LAC peu importe l'étiquette. Le formulaire d'intake = embryonic feature.json. La démo Sunday Night Dread = feature.json rendu publiquement. Le mur = feature.json glob'd par Vite. Chaque commit fait avancer le système.",
-              "en": "Insight #5 + #29 + #34 — the architecture converges to LAC whether labeled or not. The intake form = embryonic feature.json. The Sunday Night Dread demo = feature.json rendered publicly. The wall = feature.json glob'd by Vite. Every commit advances the system."
-            }
-          }
-        ]
-      }
-    }
-  ]
+  "annotations": []
 }

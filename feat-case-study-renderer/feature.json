@@ -1,13 +1,18 @@
 {
   "featureKey": "feat-2026-004",
   "title": "Case Study Renderer (primitive)",
-  "status": "active",
+  "status": "frozen",
   "statusHistory": [
     {
       "from": "draft",
       "to": "active",
       "date": "2026-05-07",
       "reason": "Renderer is live: src/pages/Showcase.tsx + StatusHistoryStrip + RevisionLog + showcases.ts loader render both Sunday Night Dread and Self-Documenting Portal showcases from feature.json sources. Per-page meta + JSON-LD CreativeWork inject correctly. Sitemap auto-includes new showcases."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
     }
   ],
   "problem": "Every shipped engagement is potential SEO + portfolio compounding, but only if it is published as a public page in the client's natural language. Most consultants treat case studies as marketing fluff bolted on after delivery. This primitive treats them as primary acquisition infrastructure: takes a structured engagement artifact and renders it as a public showcase page with problem statement in client's words, solution narrative, link to deployed deliverable, source code where appropriate, and tags showing tier + price + hours shipped. Designed for Google indexing on long-tail Quebec-local searches. Doubles as the living definition of what each pricing tier looks like in practice.",
@@ -68,5 +73,6 @@
       "reason": "Renderer instantiated as src/pages/Showcase.tsx + StatusHistoryStrip + RevisionLog + showcases.ts loader. Documented the loader/schema/renderer separation, the showcase-via-annotation.data pattern, and the per-page meta + JSON-LD injection-with-cleanup approach."
     }
   ],
-  "annotations": []
+  "annotations": [],
+  "lastVerifiedDate": "2026-05-07"
 }

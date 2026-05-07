@@ -1,13 +1,18 @@
 {
   "featureKey": "feat-2026-008",
   "title": "Self-Service Redirect (Tier 0 Off-Ramp, primitive)",
-  "status": "active",
+  "status": "frozen",
   "statusHistory": [
     {
       "from": "draft",
       "to": "active",
       "date": "2026-05-07",
       "reason": "/tier-0 page live with 4 curated patterns covering Lucie persona archetype + small-biz Tier 0 cases. Pricing tier 0 card links here directly. Pattern catalog in src/lib/patterns.ts is editable in one place; new patterns auto-render."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
     }
   ],
   "problem": "Tier 0 clients have real human problems but no commercial budget (civic coordination, household logistics, hobby projects). Most consultants either (a) take the small job and lose money, or (b) reject and burn goodwill. The self-service-redirect invents a third move: a free template/showcase library that says \"your problem is small enough that hiring me doesn't make sense — here are similar problems people solved, copy the pattern, come back if you grow.\" Free value, goodwill preserved, SEO traffic captured, some redirected friends turn out to be paid-tier clients later. Educates clients out of needing the consultant.",
@@ -60,5 +65,6 @@
       "reason": "Instantiated as src/pages/Tier0.tsx + src/lib/patterns.ts. 4 curated patterns covering Lucie's persona archetype + small-biz Tier 0 cases (snow rotation, RSVP, hours tracker, lending board). Pricing tier 0 card now links here directly."
     }
   ],
-  "annotations": []
+  "annotations": [],
+  "lastVerifiedDate": "2026-05-07"
 }

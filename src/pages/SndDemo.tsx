@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { VOICE_CLIPS, parseTranscript, buildInvoice } from '../lib/sndParser'
@@ -14,6 +14,7 @@ export function SndDemo({ lang }: { lang: Lang }) {
   const t = dict.sndDemo
   const [played, setPlayed] = useState<Set<string>>(new Set())
   const [showInvoice, setShowInvoice] = useState(false)
+  const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({})
 
   useEffect(() => {
     document.documentElement.lang = dict.langCode
@@ -46,10 +47,21 @@ export function SndDemo({ lang }: { lang: Lang }) {
   }, [played, parses])
 
   const togglePlay = (id: string) => {
+    const audio = audioRefs.current[id]
     setPlayed((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+        if (audio) {
+          audio.pause()
+          audio.currentTime = 0
+        }
+      } else {
+        next.add(id)
+        // .play() returns a promise that rejects on autoplay policy / missing file.
+        // We swallow rejections so a missing audio file degrades gracefully to text-only.
+        audio?.play().catch(() => {})
+      }
       return next
     })
     setShowInvoice(false)
@@ -89,6 +101,18 @@ export function SndDemo({ lang }: { lang: Lang }) {
                     </span>
                   </span>
                 </button>
+                {clip.audioSrc && (
+                  // The transcript is rendered immediately below the audio when played,
+                  // serving the same purpose as a captions track for this static demo.
+                  // eslint-disable-next-line jsx-a11y/media-has-caption
+                  <audio
+                    ref={(el) => {
+                      audioRefs.current[clip.id] = el
+                    }}
+                    src={clip.audioSrc}
+                    preload="none"
+                  />
+                )}
                 {isPlayed && (
                   <div className="snd-clip__transcript">
                     <div className="snd-clip__transcript-label mono">{t.transcriptLabel}</div>

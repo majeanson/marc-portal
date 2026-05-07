@@ -36,6 +36,7 @@ export interface VoiceClip {
   jobLabel: { fr: string; en: string }
   transcript: { fr: string; en: string }
   expected: ParseResult
+  audioSrc?: string
 }
 
 const NUM_WORDS_FR: Record<string, number> = {
@@ -226,6 +227,7 @@ export const VOICE_CLIPS: VoiceClip[] = [
     weekday: { fr: 'Mardi', en: 'Tuesday' },
     time: { fr: '14h15', en: '2:15pm' },
     jobLabel: { fr: 'Rénovation salle de bain', en: 'Bathroom renovation' },
+    audioSrc: '/audio/snd-tuesday-tremblay.mp3',
     transcript: {
       fr: "Mardi, deux heures et demie chez Tremblay, j'ai posé deux planches de 2x4, un seau de plâtre, j'ai retouché le coin de la salle de bain. Reste à finir la peinture la semaine prochaine.",
       en: "Tuesday, two hours and a half at Tremblay's place. Put in two 2x4 boards, a bucket of plaster, touched up the bathroom corner. Still need to finish the painting next week.",
@@ -247,6 +249,7 @@ export const VOICE_CLIPS: VoiceClip[] = [
     weekday: { fr: 'Jeudi', en: 'Thursday' },
     time: { fr: '9h30', en: '9:30am' },
     jobLabel: { fr: 'Travail électrique', en: 'Electrical work' },
+    audioSrc: '/audio/snd-thursday-cote.mp3',
     transcript: {
       fr: 'Jeudi matin, electrique chez Côté, trois heures, j’ai changé deux interrupteurs et passé du fil 14/2 sur 30 pieds.',
       en: "Thursday morning, electrical at Côté's, three hours. Changed two switches and ran 30 feet of 14/2 wire.",
@@ -268,6 +271,7 @@ export const VOICE_CLIPS: VoiceClip[] = [
     weekday: { fr: 'Vendredi', en: 'Friday' },
     time: { fr: '15h00', en: '3:00pm' },
     jobLabel: { fr: 'Plomberie de cuisine', en: 'Kitchen plumbing' },
+    audioSrc: '/audio/snd-friday-bouchard.mp3',
     transcript: {
       fr: 'Vendredi après-midi, deux heures et demie chez Bouchard, plomberie, j’ai installé un évier et changé le robinet, plus une trappe à grease.',
       en: "Friday afternoon, two hours and a half at Bouchard's, plumbing. Installed a sink, changed the faucet, plus a grease trap.",

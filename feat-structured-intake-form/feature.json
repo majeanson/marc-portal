@@ -1,13 +1,18 @@
 {
   "featureKey": "feat-2026-002",
   "title": "Structured Intake Form (primitive)",
-  "status": "active",
+  "status": "frozen",
   "statusHistory": [
     {
       "from": "draft",
       "to": "active",
       "date": "2026-05-07",
       "reason": "/intake live with 5 steps (vibe → account → type → form → confirmation), 4 problem-type schemas (paperasse / suivi / coordination / autre), localStorage autosave on every keystroke, capacity-gated submit (at-cap → waitlist mode). All per Insights #7, #8, #12, #20, #23. Marc reads every form himself — no AI between client and consultant on first contact."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
     }
   ],
   "problem": "Most consulting engagements start with a 60-minute discovery call where the consultant interviews the client live. That model demands real-time scheduling, consumes hours per lead, and excludes side-practice operators with day jobs and families. The structured intake form replaces the discovery call with a guided form clients fill at their own pace. Client picks a problem-type, fills problem-type-specific fields, saves drafts, returns to refine, and submits when ready. Account-backed so progress persists across sessions. Read by the consultant in one batched session, not in real-time. The form architecture is the single biggest determinant of intake quality — without an AI interviewer (deliberate choice: first interpretation of client pain stays human), the form alone must extract a usable spec from clients who cannot write specs.",
@@ -68,5 +73,6 @@
       "reason": "Instantiated as src/pages/Intake.tsx + 5 step components + intakeSchemas.ts (4 problem types with bilingual fields) + draft.ts (localStorage helper). Capacity gating reads from feat-2026-005's capacity.json — at-cap submissions route to waitlist confirmation instead of triage."
     }
   ],
-  "annotations": []
+  "annotations": [],
+  "lastVerifiedDate": "2026-05-07"
 }

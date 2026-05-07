@@ -9,6 +9,7 @@
   "packageManager": "npm@10.9.0",
   "scripts": {
     "dev": "vite",
+    "dev:cf": "wrangler pages dev -- vite",
     "prebuild": "node scripts/build-sitemap.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
@@ -18,7 +19,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lac-lint": "lac lint || echo 'skipping lac-lint (lac CLI not installed globally)'",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run lac-lint"
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run lac-lint",
+    "db:migrate:local": "wrangler d1 migrations apply marc-portal-db --local",
+    "db:migrate:prod": "wrangler d1 migrations apply marc-portal-db --remote"
   },
   "dependencies": {
     "react": "^19.2.4",
@@ -26,6 +29,7 @@
     "react-router-dom": "^7.1.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.0.0",
     "@eslint/js": "^9.39.4",
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
@@ -41,6 +45,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
     "vite": "^8.0.1",
-    "vite-plugin-checker": "^0.10.0"
+    "vite-plugin-checker": "^0.10.0",
+    "wrangler": "^4.0.0"
   }
 }

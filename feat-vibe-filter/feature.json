@@ -1,13 +1,18 @@
 {
   "featureKey": "feat-2026-007",
   "title": "Vibe Filter — \"We Do / We Don't\" Self-Qualify (primitive)",
-  "status": "active",
+  "status": "frozen",
   "statusHistory": [
     {
       "from": "draft",
       "to": "active",
       "date": "2026-05-07",
       "reason": "src/components/VibeFilter.tsx renders we-do/we-don't lists on the homepage. Plus the 'I read this and I agree' confirmation gate is wired into /intake step 1 (VibeGate component) — Insight #23 self-qualification before form-fill is structurally enforced."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
     }
   ],
   "problem": "Most \"ideal client\" filters are demographic (industry, size, budget). The vibe-filter is temperamental — it filters for cultural fit, not budget fit. Public \"we do / we don't\" list lets visitors self-qualify before filling intake. Saves both parties the goodwill cost of triage rejection. People who read the list and think \"yeah, agreed\" are the right clients regardless of price. People who think \"but my project is special, you'll see\" are wrong regardless of how much they'd pay. Cheap-but-pushy is worse than rich-and-aligned because the wrong client breaks family-first.",
@@ -30,7 +35,7 @@
     }
   ],
   "successCriteria": "- 'We do' and 'we don't' lists visible on the public product page\n- Both lists derive from documented engagement constraints, not from marketing instinct\n- Lists are visible BEFORE pricing and BEFORE the intake CTA in the page flow\n- Optional 'I read this and I agree' confirmation gate before form starts\n- Triage rejection rate measurably lower than baseline thanks to self-filtering\n- Reusable as a pattern in any service business filtering for cultural fit",
-  "lastVerifiedDate": "2026-05-06",
+  "lastVerifiedDate": "2026-05-07",
   "revisions": [
     {
       "date": "2026-05-06",

@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { getCapacity } from '../lib/capacity'
+import { getCapacityLive } from '../lib/sessionsApi'
 
 const CAPACITY_LABELS = {
   fr: {
@@ -17,21 +19,39 @@ const CAPACITY_LABELS = {
 } as const
 
 /**
- * Live capacity hint. Build-time import from public/data/capacity.json — push to
- * GitHub to update. The 1-active + 1-in-triage cap is the load-bearing rule
- * (Insight #39); see feat-2026-005 (triage-queue primitive).
+ * Live capacity hint. Reads /api/capacity (D1-backed) on mount with the static
+ * public/data/capacity.json fallback as initial paint and offline degrade.
+ * The 1-active + 1-in-triage cap is the load-bearing rule (Insight #39); see
+ * feat-2026-005 (triage-queue primitive) and feat-2026-015 (runtime).
  */
 export function CapacityCounter({ lang }: { lang: Lang }) {
-  const cap = getCapacity()
+  const fallback = getCapacity()
+  const [active, setActive] = useState<number>(fallback.activeBuilds)
+  const [triage, setTriage] = useState<number>(fallback.inTriage)
   const labels = CAPACITY_LABELS[lang]
+
+  useEffect(() => {
+    let cancelled = false
+    getCapacityLive()
+      .then((c) => {
+        if (cancelled) return
+        setActive(c.active)
+        setTriage(c.triage)
+      })
+      .catch(() => {
+        // keep static fallback values
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <div className="capacity" role="status" aria-live="polite">
-      <span className="capacity__pill capacity__pill--active">
-        {labels.activeBuilds(cap.activeBuilds)}
-      </span>
-      <span className="capacity__pill">{labels.inTriage(cap.inTriage)}</span>
-      <span className="capacity__pill">{labels.waitlist(cap.waitlist)}</span>
-      <span className="capacity__pill">{labels.nextOpening(cap.nextOpening[lang])}</span>
+      <span className="capacity__pill capacity__pill--active">{labels.activeBuilds(active)}</span>
+      <span className="capacity__pill">{labels.inTriage(triage)}</span>
+      <span className="capacity__pill">{labels.waitlist(fallback.waitlist)}</span>
+      <span className="capacity__pill">{labels.nextOpening(fallback.nextOpening[lang])}</span>
     </div>
   )
 }

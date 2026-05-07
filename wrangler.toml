@@ -1,3 +1,18 @@
 name = "marc-portal"
 compatibility_date = "2026-01-15"
 pages_build_output_dir = "dist"
+
+# D1 — Cloudflare's serverless SQLite. Backs sessions, messages, magic-link tokens.
+# Marc must run `npx wrangler d1 create marc-portal-db` once, then paste the
+# resulting database_id below. Until then, Pages Functions that touch D1 will
+# return 500 in production.
+[[d1_databases]]
+binding = "DB"
+database_name = "marc-portal-db"
+database_id = "d8c8de13-7971-451e-836d-cf4165bd7104"
+migrations_dir = "functions/db/migrations"
+
+# Required env vars (set in Cloudflare Pages dashboard -> Settings -> Environment variables):
+#   RESEND_API_KEY   - from resend.com (free tier, 100/day)
+#   ADMIN_EMAILS     - comma-separated allowlist, e.g. "marc.jeanson92@gmail.com"
+#   SESSION_SECRET   - 32+ random bytes hex, e.g. `openssl rand -hex 32`

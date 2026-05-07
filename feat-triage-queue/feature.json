@@ -1,13 +1,18 @@
 {
   "featureKey": "feat-2026-005",
   "title": "Triage Queue with Hard Capacity Cap (primitive)",
-  "status": "active",
+  "status": "frozen",
   "statusHistory": [
     {
       "from": "draft",
       "to": "active",
       "date": "2026-05-07",
       "reason": "Single source of truth public/data/capacity.json edited manually + read at build time. CapacityCounter shows live state on hero. Hero CTA flips from 'create account' to 'join waitlist' when atCap=true. Intake form's submit step routes to waitlist confirmation when at-cap. No exception path in code (Insight #39 enforced structurally — the rule that does not bend has no override toggle)."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
     }
   ],
   "problem": "Without a hard concurrency cap, a side-practice consultant accepts every triage that's \"doable\" and ends up with 3+ concurrent active clients eating evenings and weekends. Family-first collapses; the bedrock value falsifies. The triage-queue makes the 1-active-build + 1-in-triage rule structural rather than aspirational: form auto-disables when at capacity, public availability counter on the homepage shows current load and approximate next opening, triage replies offer date-based queueing (\"yes I can help, you're queued — engagement starts [date]\") instead of immediate starts. Counterintuitively, the public waitlist becomes a credibility signal — scarcity reads as seriousness. Single load-bearing rule of the entire portal: every other rule is negotiable, this one is not.",
@@ -65,5 +70,6 @@
       "reason": "Instantiated as public/data/capacity.json + src/lib/capacity.ts + src/components/CapacityCounter.tsx. The 'no admin override toggle' Insight #39 enforcement is achieved structurally by the absence of code paths that ignore atCap, not by policy."
     }
   ],
-  "annotations": []
+  "annotations": [],
+  "lastVerifiedDate": "2026-05-07"
 }

@@ -1,0 +1,79 @@
+{
+  "featureKey": "feat-2026-015",
+  "title": "Engagement Runtime — Magic-Link Sessions, Persistence & Marc/Visitor Interaction",
+  "status": "active",
+  "problem": "The portal is fully static. A visitor who fills the intake form and leaves loses everything; if they return, they restart from zero. Marc cannot reply on the same surface; he has no inbox of in-flight engagements; there is no asynchronous message thread between the two parties. The engagement-canvas page renders feature.json fixtures, not real visitor sessions. This is the load-bearing gap: without a persistent bidirectional surface, the bedrock promise of \\\"async-only, no calls, no meetings\\\" has no medium to live in. The intake form, the triage queue, and the engagement canvas are three primitives currently rendering against fake data; they need a runtime to render against real visitor sessions. This feature materializes the \\\"later dynamic surface\\\" deferred in feat-2026-001 implementation: visitor signs in via magic link, their intake form persists across visits and devices, Marc has an admin inbox of all in-flight sessions, both parties exchange threaded messages on the same engagement page. The cap rule (1-active + 1-triage) becomes structurally enforceable for the first time. Without this layer, the portal is a pretty brochure.",
+  "schemaVersion": 1,
+  "domain": "portal/runtime",
+  "tags": [
+    "dynamic-surface",
+    "auth",
+    "magic-link",
+    "persistence",
+    "engagement",
+    "admin-inbox",
+    "messaging",
+    "cloudflare-pages-functions",
+    "d1"
+  ],
+  "analysis": "Composes the existing static primitives into a live runtime. feat-structured-intake-form gains server-side draft sync; feat-async-status-canvas binds to a real session record instead of fixture data; feat-triage-queue's 1-active+1-triage cap becomes structurally enforced from server state, with the public CapacityCounter reading the same source. feat-tiered-public-pricing remains read-only static. The runtime is auth-gated only for write/read of personal session data — the public site stays anonymous-readable. Marc's admin view is the same React app rendered conditionally when his magic-link session matches the ADMIN_EMAILS allowlist, not a separate SPA. The polling-on-visibility-change refresh model fits the bedrock: async, never real-time, never push-notification-shaped, family-time-respecting on both ends. By design, this layer adds no synchronous expectation to either party.",
+  "implementation": "Stack additions on top of existing Vite/React/TS portal: Cloudflare Pages Functions (TypeScript) for the API surface, Cloudflare D1 (SQLite) for persistence, Resend free tier for magic-link email delivery (sender: onboarding@resend.dev for now), no other vendors. Schema (D1 migrations under functions/db/migrations/): three tables — sessions(id PK, email, intake_json, status enum [draft|triage|active|shipped|rejected], created_at, updated_at), messages(id PK, session_id FK, author enum [visitor|marc], body, created_at), magic_link_tokens(token PK, email, session_id?, expires_at, used_at). Endpoints under /functions/api/: POST /auth/request-link (issues token, sends Resend email), GET /auth/verify (consumes token, sets HttpOnly session cookie signed with SESSION_SECRET), POST /auth/logout, GET /me (current identity), GET /sessions (visitor: own sessions; marc: all), POST /sessions (creates from intake submission), GET /sessions/:id (auth-gated), PATCH /sessions/:id (status changes, marc-only), GET/POST /sessions/:id/messages. Frontend: new src/lib/auth.ts (client-side fetch wrapper + AuthContext), src/pages/SessionPage.tsx (visitor view), src/pages/AdminInbox.tsx (marc view, allowlist-gated), src/pages/MagicLinkSent.tsx (post-request confirmation), src/pages/MagicLinkVerify.tsx (consumes token from URL). Intake form gains a Save & Continue Later button that triggers magic-link request when no session exists. Polling: useEffect with document.visibilitychange listener triggers a refresh of session + messages when page becomes visible — no SSE, no WebSockets. Admin allowlist via ADMIN_EMAILS env var on Pages Functions. CSRF protected via SameSite=Lax cookies + double-submit token on writes. Rate limit on /auth/request-link via D1 row count by email + IP over rolling 1h window. Cost: $0/mo on free tiers (D1 5GB / 5M reads, Functions 100k req/day, Resend 100/day & 3000/mo) for the foreseeable future. Boring-tech mandate is bent (this adds backend + auth + DB) but each piece chosen for least-surface-area and maximum stability — no node_modules dependency for auth (hand-rolled signed cookies), no ORM (raw SQL), no client-side state lib (existing React + context).",
+  "successCriteria": "- Visitor can save an intake draft, leave, return on any device via magic link, and see their draft restored\n- Visitor sees their session at /session/:id with the intake summary at top and a chronological message thread below\n- Visitor can post a message in the thread; Marc receives an email notification (Resend) and sees it in /admin/inbox\n- Marc can post a reply that appears in the visitor's thread on next visibility-change refresh\n- Marc can change a session's status (triage → active → shipped/rejected) and the change is reflected in the visitor's view and the public CapacityCounter\n- The CapacityCounter on the homepage reflects D1-backed real counts of active+triage sessions, not a static JSON file\n- Admin route /admin/inbox returns 403 for any logged-in user whose email is not in ADMIN_EMAILS\n- Magic-link tokens are single-use and expire in 30 minutes; reusing a consumed token fails closed\n- Rate limit prevents more than 5 magic-link requests per email + IP per rolling hour\n- All endpoints respond < 300ms on Cloudflare's edge for typical session sizes\n- Total recurring cost remains $0/mo on free tiers through year 1 expected volume\n- The dynamic surface ships before SND demo's first cold post (so visitors who land on SND can convert into a saved session immediately)",
+  "decisions": [
+    {
+      "decision": "Magic-link auth via Resend free tier; no passwords, no OAuth, no third-party identity providers",
+      "rationale": "Lowest-friction identity for a one-engagement-at-a-time practice. Visitor types email → receives link → clicks. No password to remember, no OAuth scope dance, no Google/Facebook lock-in. Resend's free tier (100/day, 3000/mo) covers year-1 volume with order-of-magnitude headroom — 1 active + 1 triage means at most a few magic-link emails per week. Fits async-first bedrock: visitor consents to email-based interaction at the door, which is exactly the medium Marc will use to reach them later.",
+      "recommendation": "If Resend's free tier is exhausted (unlikely), upgrade their paid tier ($20/mo) before swapping providers — the API + sender domain config has switching cost. Custom sender domain (replacing onboarding@resend.dev) before first cold Facebook post.",
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Admin role via email allowlist in env var (ADMIN_EMAILS), not a separate auth flow",
+      "rationale": "Marc logs in with the same magic-link mechanism as visitors; the only difference is server-side check on /admin/* routes against ADMIN_EMAILS. No special password, no separate admin DB, no second flow to maintain. Single auth surface = single security surface. Adding a co-admin later is a one-line env var change.",
+      "recommendation": "Set ADMIN_EMAILS=marc.jeanson92@gmail.com in Cloudflare Pages production env. Never log this var. Server-side check is the source of truth — frontend-only checks are a UX hint and must not be relied on.",
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "One session per intake submission; sessions are the engagement-arc unit, not ad-hoc draft folders",
+      "rationale": "Every visitor session corresponds to exactly one engagement (current or potential). Aligns with the existing intake → triage → active → shipped narrative. Marc's admin inbox is the list of in-flight engagements, not a generic CRM. If a visitor wants to propose a second project, they create a second session via a second intake submission. Keeps the cap rule (1-active + 1-triage) cleanly countable: count sessions by status.",
+      "recommendation": "Reject ad-hoc 'just save this idea, not yet a project' use-cases at this layer. Those belong on the visitor's own notes app or the future Tier-0 self-service redirect. The portal is for engagements.",
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Polling on visibility-change, never push, never WebSockets, never SSE",
+      "rationale": "Real-time messaging is exactly the relationship-maintenance shape the portal is built to amputate. Polling on visibilitychange + on user action gives 'fresh on next visit' semantics, which matches the bedrock's async-only contract: neither party expects an instant reply. WebSockets would invite real-time-shaped expectations on both ends. Polling is also cheaper, simpler, and less code to maintain.",
+      "recommendation": "If a visitor or Marc requests 'why doesn't it update live,' point at the bedrock decision: live updates would obligate the other party to be available, which the practice exists to refuse. The 72h triage SLA is the only time-bound commitment.",
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Backend = Cloudflare Pages Functions + D1, no node_modules for auth, no ORM, raw SQL",
+      "rationale": "Hand-rolled signed-cookie auth (HMAC over user_id|expires) avoids importing jsonwebtoken / lucia / any auth library; the surface is small enough to read in 50 LOC. Raw SQL via D1's prepared statements avoids ORM complexity — the schema has three tables and will rarely change. This is boring-tech-bent (we are adding a backend, auth, and DB on top of a previously static site) but each individual piece is the smallest viable surface area.",
+      "recommendation": "Resist any feature request that wants to add an ORM, a state-management lib, or an auth lib until the runtime is live and stable for 60 days. Premature abstraction here violates the disposable-infra principle from feat-2026-001's 3-year horizon decision.",
+      "date": "2026-05-07"
+    }
+  ],
+  "knownLimitations": [
+    "No real-time updates by design — visitor sees Marc's reply only when they next open the page (visibilitychange triggers refresh)",
+    "No file uploads in messages or intake — text-only thread for v1; visual artifacts come from the live demo iframe, not from attachments",
+    "No multi-admin support beyond email allowlist — one practice, one Marc; co-admin requires editing env var",
+    "No notifications other than the magic-link email and the new-message-for-Marc Resend email — visitor doesn't get email when Marc replies (deliberate: avoids creating a notification-driven relationship texture)",
+    "Session messages are plain text — no markdown rendering for v1, no rich text editor",
+    "Sessions are NEVER deleted — only soft-statused (rejected/shipped); D1 free tier 5GB is enough for years of text-only history",
+    "No password recovery, no email change, no account-deletion UI — these are deliberately out of scope for an MVP single-operator practice",
+    "Rate limit on magic-link requests is per email+IP — a determined attacker could rotate IPs, but free-tier Resend ceilings cap blast radius",
+    "ADMIN_EMAILS env var is the single source of admin auth — if it leaks or is misconfigured the whole admin surface is exposed; document the deploy procedure",
+    "No GDPR-style data-export endpoint for visitors — add when a real visitor requests it, not before",
+    "All backend code lives in Cloudflare's environment — swapping providers (e.g. to Vercel) requires non-trivial port; acceptable trade-off for $0/mo and Quebec-friendly hosting"
+  ],
+  "lineage": {
+    "parent": "feat-2026-001"
+  },
+  "lastVerifiedDate": "2026-05-07",
+  "userGuide": "If you're a visitor: fill the intake form on /intake. When you click 'Save & Continue Later' (or submit), enter your email — we'll send you a one-time link. Open that link to land on your private session page. Anything you typed is saved. Your session has the intake summary at top and a message thread below. Add a message any time. Marc reads them within 72 hours and replies on the same page — there are no notifications by design, just open the page when you're curious. You can revisit from any device by requesting a new magic link with the same email. Sessions are private to you and Marc; they're never deleted, only marked as shipped/rejected when the engagement closes. If you're Marc: log in with the same magic-link flow on /admin/inbox. Your email must match ADMIN_EMAILS env var. The inbox lists every in-flight session, sorted by status (triage on top), with a count badge for unread visitor messages. Click a session to view the canvas; reply in the thread; change status when triage decision is made or work ships. The CapacityCounter on the public homepage automatically reflects your active+triage counts.",
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07"
+    }
+  ]
+}

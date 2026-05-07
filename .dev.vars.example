@@ -1,0 +1,3 @@
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ADMIN_EMAILS=marc.jeanson92@gmail.com
+SESSION_SECRET=replace_me_with_openssl_rand_hex_32

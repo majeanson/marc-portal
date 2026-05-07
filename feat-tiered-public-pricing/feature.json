@@ -1,13 +1,18 @@
 {
   "featureKey": "feat-2026-006",
   "title": "Tiered Public Pricing with Showcase Anchoring (primitive)",
-  "status": "active",
+  "status": "frozen",
   "statusHistory": [
     {
       "from": "draft",
       "to": "active",
       "date": "2026-05-07",
       "reason": "src/components/Pricing.tsx renders 4 tiers with concrete prices. Tier 0 card links to /tier-0 self-service redirect. Tier 2 visually anchored as the demo's tier. Showcase wall doubles as tier reference (filterable by tier chip)."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
     }
   ],
   "problem": "\"Cheap\" without numbers is rhetoric — every visitor self-imagines a different price. The tiered-public-pricing primitive shows actual prices per tier (Tier 0 self-service / Tier 1 ~$300 / Tier 2 ~$1500 / Tier 3 ~$3000+) with each tier linked to actual past showcase examples that demonstrate what that tier looks like in practice. The showcase wall doubles as the living tier reference. Anchors expectations in 5 seconds. Counter to most consulting where pricing is hidden behind \"let's have a conversation.\" The whole pitch depends on cheapness being real, not negotiated.",
@@ -36,7 +41,7 @@
     }
   ],
   "successCriteria": "- Pricing page shows concrete dollar amounts per tier\n- Each tier links to filtered showcase examples of that tier (where shipped projects exist)\n- Showcase wall items are auto-tagged with their tier on publish\n- Visitor can calibrate expectations in <5 seconds without scrolling past the pricing block\n- No 'contact us for pricing' anywhere in the funnel\n- Reusable as a pattern for any pricing-transparent service business",
-  "lastVerifiedDate": "2026-05-06",
+  "lastVerifiedDate": "2026-05-07",
   "revisions": [
     {
       "date": "2026-05-06",

@@ -1,7 +1,7 @@
 {
   "featureKey": "feat-2026-010",
   "title": "Demo: Sunday Night Dread — Voice-to-Invoice MVP",
-  "status": "draft",
+  "status": "active",
   "problem": "A local plumber, electrician, or carpenter is brilliant at their craft but spends every Sunday evening hunched over a laptop, reconstructing material costs, labor hours, and invoices from memory and coffee-stained scraps of paper collected throughout the week. This administrative tax steals their rest and leads to forgotten billables. The MVP slice: while driving between jobs, the tradesperson speaks voice notes to their dashboard. The system parses material and labor mentions and emits a draft invoice in their inbox by Sunday morning. Project versioning, inventory linking, and full as-built documentation are explicitly OUT of scope for the MVP — those become the \"next iterations\" roadmap on the showcase page. Scoped as Tier 2 (~$1500). This is simultaneously the cornerstone demo (replacing the discovery-call CTA with a scrollable replica of the actual experience), the first published showcase, the projectability anchor for the Marie/Lucie persona archetypes from the brainstorming session, and a genuine solve for a real Quebec tradesperson pain.",
   "schemaVersion": 1,
   "domain": "content/demo",
@@ -41,13 +41,29 @@
     }
   ],
   "successCriteria": "- Real working voice-to-draft-invoice app deployed and interactive from a live preview iframe\n- Engagement page replica showing all 6 stages of the engagement (intake / triage / plan / build / ship / showcase) scrollable in 3-5 minutes\n- Composite client voice with disclosure note (not labeled-fake, not real-named)\n- Showcase page tagged Tier 2 with concrete metadata (price, hours, ship date)\n- Demo live and tested before first Facebook cold post (deadline 2026-07-01)\n- Story stays Tier 2-scoped; full vision becomes 'next iterations' roadmap on the showcase",
-  "lastVerifiedDate": "2026-05-06",
+  "lastVerifiedDate": "2026-05-07",
   "statusHistory": [
     {
       "from": "draft",
       "to": "draft",
       "date": "2026-05-06",
       "reason": "Created during brainstorming session — feat-2026-010 spec'd as the cornerstone demo (Tier 2, voice→draft invoice MVP)."
+    },
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "frozen",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Adding real audio playback to the 3 fixture clips. Marc to record himself reading existing transcripts as scrappy voice memos and drop them at portal/public/audio/. Rationale: the play button currently reveals text only — real audio (with truck/garage background noise) is the one thing the static showcase cannot fake, and it strengthens the cornerstone artifact's authenticity. Composite-voice disclosure already covers attribution. On-device-Whisper + email-delivery decisions remain valid for the production tradesperson app, still out of scope for the showcase."
     }
   ],
   "revisions": [
@@ -92,6 +108,18 @@
       "author": "marc+claude",
       "fields_changed": ["lineage"],
       "reason": "Added lineage with parent (feat-2026-001) and 4 children scaffolded as next-iteration features (feat-2026-011 versioning, 012 inventory, 013 as-built, 014 accounting). Showcase page now renders these from the file tree — adding a future iteration = adding a folder."
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["implementation"],
+      "reason": "Sync feature.json to shipped reality: SndDemo.tsx + sndParser.ts already deployed as a static interactive showcase. Documenting the deliberate choice to keep the showcase static (fixture clips, rendered email, no backend) — the on-device-voice + real-email decisions remain valid for the future production tradesperson app, but are out of scope for the showcase demo. Adds the four fields needed to advance to frozen."
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["implementation"],
+      "reason": "Wired real audio playback into the 3 fixture clips. Added optional audioSrc field to VoiceClip, pointing to /audio/snd-{id}.mp3. SndDemo.tsx now renders an <audio preload=\"none\"> per clip and triggers .play()/.pause() in togglePlay. Graceful degradation: missing-file rejection is swallowed, transcript still reveals. Marc to record himself reading the existing transcripts as scrappy phone voice memos with ambient truck/garage noise; composite-voice disclosure covers attribution. Strengthens the cornerstone artifact's authenticity — the play button now does what visitors expect."
     }
   ],
   "annotations": [
@@ -222,10 +250,30 @@
           }
         ]
       }
+    },
+    {
+      "id": "reopen-1778177559353",
+      "author": "lac advance",
+      "date": "2026-05-07",
+      "type": "reopen",
+      "body": "Adding real audio playback to the 3 fixture clips. Marc to record himself reading existing transcripts as scrappy voice memos and drop them at portal/public/audio/. Rationale: the play button currently reveals text only — real audio (with truck/garage background noise) is the one thing the static showcase cannot fake, and it strengthens the cornerstone artifact's authenticity. Composite-voice disclosure already covers attribution. On-device-Whisper + email-delivery decisions remain valid for the production tradesperson app, still out of scope for the showcase."
     }
   ],
   "lineage": {
     "parent": "feat-2026-001",
     "children": ["feat-2026-011", "feat-2026-012", "feat-2026-013", "feat-2026-014"]
-  }
+  },
+  "implementation": "Static-only interactive showcase deployed at /demo/sunday-night-dread (FR) and /en/demo/sunday-night-dread (EN). Three pre-recorded fixture voice clips with hand-typed bilingual transcripts live as VOICE_CLIPS in src/lib/sndParser.ts. Each clip carries an optional audioSrc pointing to /audio/snd-{id}.mp3 — a real voice recording (Marc reading the transcript with ambient truck/garage noise) that adds the one texture the static showcase cannot fake. Audio elements use preload=\"none\" so files only download on first play; .play() rejection on missing-file or autoplay policy is swallowed so the demo degrades gracefully to text-only. Visitor clicks the play button on a clip; the audio plays and the transcript reveals simultaneously. The transcript flows through parseTranscript() — a regex + curated Quebec-trades lexicon parser that extracts material mentions (with quantity + unit) and labor hours. After at least one clip is played, a Generate button calls buildInvoice() to render an email-shaped invoice card per client: a labor line at the standard $75/h rate × hours, material lines priced from the lexicon, TPS 5%, TVQ 9.975%, total. Bilingual rendering via the existing i18n.ts dictionary keyed off the lang prop (route-driven). No backend, no API, no real-time recording in the browser, no actual email delivery — the entire experience runs in the browser from static fixtures + bundled audio assets. The demo deliberately avoids mic permission prompts and model downloads to keep visitor flow frictionless. The on-device Whisper + email-delivery decisions in the brainstorming spec apply to the future production tradesperson app, not the showcase. Component: src/pages/SndDemo.tsx + src/lib/sndParser.ts (parser + invoice math + fixtures) + public/audio/ (bundled MP3 voiceovers).",
+  "userGuide": "On the Sunday Night Dread page, three voice notes from a tradesperson's Friday afternoon are listed — each from a different job site. Click the play button on any clip to see the transcript. As clips play, a parsed panel appears showing what the system extracts: hours, job type, materials with quantity and unit. After at least one clip is played, click Génère/Generate to build the email-shaped invoice draft — one per client, with TPS/TVQ taxes and a labor line at the standard rate. Toggle clips on and off and the invoice rebuilds automatically. The whole thing runs in your browser — no recording, no upload, no account.",
+  "componentFile": "src/pages/SndDemo.tsx",
+  "knownLimitations": [
+    "Static fixtures only — no live in-browser voice recording. Visitors hear pre-recorded MP3s of Marc reading the transcripts; real on-device voice capture is intentionally deferred to the production tradesperson app, not the showcase demo.",
+    "Audio is composite-voice (Marc reading the scripted transcripts), not the actual tradespeople from the brainstorming. The composite-voice disclosure on the showcase covers attribution.",
+    "Email is rendered as HTML in the browser, not actually delivered. The visual artifact communicates the experience without requiring a backend or email service.",
+    "Parser only recognizes a small curated Quebec-trades lexicon (drywall, 2x4, plâtre, vis, etc.) — unfamiliar items pass through but are not priced. Lexicon grows by hand-curated additions, not auto-learned.",
+    "No persistence — toggle state and generated invoices reset on page refresh. The static showcase has no need for user accounts or storage.",
+    "Requires JavaScript. The showcase is rendered client-side from React; a static-HTML fallback is not implemented (acceptable for a portfolio demo).",
+    "Bilingual transcripts are hand-translated FR/EN pairs in the fixture file. Audio is recorded once per clip in the language Marc records in (typically FR with mid-note EN code-switching, per the bilingual-voice decision); the transcripts UI mirror is what switches with route language, not the audio.",
+    "Labor rate is fixed at $75/h in the parser; per-tradesperson rate configuration is out of scope for the showcase."
+  ]
 }

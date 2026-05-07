@@ -1,13 +1,18 @@
 {
   "featureKey": "feat-2026-003",
   "title": "Async Status Canvas (primitive)",
-  "status": "active",
+  "status": "frozen",
   "statusHistory": [
     {
       "from": "draft",
       "to": "active",
       "date": "2026-05-07",
       "reason": "Engagement canvas live at /engagement/:slug. Sample Tremblay landscaping engagement (composite, in-progress) demonstrates the 5-stage status bar, chronological message thread (with marc/client/system authors and update/decision/question/system types), and live preview iframe slot. Read-only public sample today; auth-gated client view planned for backend phase."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
     }
   ],
   "problem": "Clients of conventional consultants get sporadic email updates and scheduled milestone meetings, with the actual work-in-progress hidden between checkpoints. The async-status-canvas makes the work continuously visible inside the portal: status flags show stage (triage, planning, building, ready-for-review, shipped), a chronological message thread shows all communication, and a live preview iframe lets the client poke at the actual deliverable from day 2 onward. Replaces \"demo day\" with \"demo always.\" Closes the trust gap that async-only consulting otherwise opens. Without this primitive, async feels cold; with it, async feels more attentive than a hurried real-time meeting.",
@@ -67,5 +72,6 @@
       "reason": "Instantiated as src/pages/Engagement.tsx + 3 components (EngagementStatusBar, EngagementThread, EngagementPreview) + src/lib/engagements.ts fixture. Sample Tremblay landscaping engagement (composite, in-progress) demonstrates the pattern publicly."
     }
   ],
-  "annotations": []
+  "annotations": [],
+  "lastVerifiedDate": "2026-05-07"
 }

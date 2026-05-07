@@ -1,13 +1,18 @@
 {
   "featureKey": "feat-2026-009",
   "title": "Portal App Shell (composition)",
-  "status": "active",
+  "status": "frozen",
   "statusHistory": [
     {
       "from": "draft",
       "to": "active",
       "date": "2026-05-07",
       "reason": "9-section homepage live and renders both languages. Composition root src/pages/Home.tsx imports all section components. Routing in App.tsx exposes /, /en, /intake, /tier-0, /demo/sunday-night-dread, /showcase/:slug, /engagement/:slug — all serving 200. Active criteria met (analysis, implementation, decisions, successCriteria all populated)."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
     }
   ],
   "problem": "Layout, navigation, theming, language switching, and global state composing the 7 portal primitives into Marc's specific portal experience. Marc-specific — this is the only feature in the project that is NOT a reusable primitive pattern. Bilingual (French primary, English secondary per Quebec context). Static-first wherever possible. Hosted on Marc's own paid tier. Includes the public homepage with the 9-section architecture from the brainstorming session: hero, how-it-works (4 steps), demo session embed, showcases wall, self-qualify section (vibe-filter), pricing transparency, CTA, about Marc, footer. The composition layer is where Marc-specific branding and copy lives — primitives stay generic.",
@@ -55,7 +60,7 @@
     "No build-time language detection or hreflang tags — relies on the language switcher and document.documentElement.lang set in useEffect",
     "Hosting target not chosen — _redirects/vercel.json not yet configured for SPA deep-link routing"
   ],
-  "lastVerifiedDate": "2026-05-06",
+  "lastVerifiedDate": "2026-05-07",
   "revisions": [
     {
       "date": "2026-05-06",
