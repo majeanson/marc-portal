@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Home } from './pages/Home'
+import { RootByTemplate } from './pages/RootByTemplate'
 import { Showcase } from './pages/Showcase'
 import { Intake } from './pages/Intake'
 import { SndDemo } from './pages/SndDemo'
@@ -21,8 +21,8 @@ import { AdminAudit } from './pages/AdminAudit'
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home lang="fr" />} />
-      <Route path="/en" element={<Home lang="en" />} />
+      <Route path="/" element={<RootByTemplate lang="fr" />} />
+      <Route path="/en" element={<RootByTemplate lang="en" />} />
       <Route path="/intake" element={<Intake lang="fr" />} />
       <Route path="/en/intake" element={<Intake lang="en" />} />
       <Route path="/tier-0" element={<Tier0 lang="fr" />} />
