@@ -3,6 +3,11 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { VOICE_CLIPS, parseTranscript, buildInvoice } from '../lib/sndParser'
 import type { ParseResult } from '../lib/sndParser'
+import { getShowcaseBySlug } from '../lib/showcases'
+import { StatusHistoryStrip } from '../components/StatusHistoryStrip'
+import { RevisionLog } from '../components/RevisionLog'
+
+const SND_SLUG = 'sunday-night-dread'
 
 /**
  * Sunday Night Dread — interactive static demo. Iframe-friendly (no Header/Footer)
@@ -15,6 +20,10 @@ export function SndDemo({ lang }: { lang: Lang }) {
   const [played, setPlayed] = useState<Set<string>>(new Set())
   const [showInvoice, setShowInvoice] = useState(false)
   const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({})
+  // The feature.json behind this demo is the source of truth for its own
+  // lifecycle + revision log. Pulling it in lets the demo show its own
+  // build provenance alongside the interactive flow.
+  const sndEntry = getShowcaseBySlug(SND_SLUG)
 
   useEffect(() => {
     document.documentElement.lang = dict.langCode
@@ -73,6 +82,13 @@ export function SndDemo({ lang }: { lang: Lang }) {
         <div className="section__eyebrow">{t.eyebrow}</div>
         <h1 className="snd-demo__title">{t.title}</h1>
         <p className="snd-demo__intro">{t.intro}</p>
+        {sndEntry && (
+          <StatusHistoryStrip
+            feature={sndEntry.feature}
+            lang={lang}
+            targetShipDate={sndEntry.showcase.targetShipDate}
+          />
+        )}
       </header>
 
       <section className="snd-demo__panel">
@@ -228,6 +244,14 @@ export function SndDemo({ lang }: { lang: Lang }) {
               ))}
             </div>
           )}
+        </section>
+      )}
+
+      {sndEntry && (
+        <section className="snd-demo__panel snd-demo__buildlog">
+          <h2 className="snd-demo__h">{t.buildLogTitle}</h2>
+          <p className="snd-demo__hint">{t.buildLogHint}</p>
+          <RevisionLog feature={sndEntry.feature} lang={lang} />
         </section>
       )}
 

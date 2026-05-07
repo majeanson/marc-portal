@@ -295,6 +295,9 @@ const FR = {
     subtotal: 'Sous-total',
     total: 'Total',
     invoiceSign: '— Brouillon généré · à réviser et envoyer manuellement.',
+    buildLogTitle: 'Journal de construction',
+    buildLogHint:
+      'Cette démo est documentée comme une fonctionnalité réelle — chaque révision est inscrite ici, lisible, datée.',
     disclaimer:
       'Démo statique avec voix-clients composites. Le code et le parser sont vrais. Aucune donnée réelle, aucun email envoyé.',
   },
@@ -661,6 +664,9 @@ const EN: Copy = {
     subtotal: 'Subtotal',
     total: 'Total',
     invoiceSign: '— Draft generated · review and send manually.',
+    buildLogTitle: 'Build log',
+    buildLogHint:
+      'This demo is documented like a real feature — every revision is recorded here, readable, dated.',
     disclaimer:
       'Static demo with composite client voices. The code and parser are real. No real data, no email sent.',
   },
