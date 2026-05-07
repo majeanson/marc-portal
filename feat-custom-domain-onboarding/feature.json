@@ -1,0 +1,7 @@
+{
+  "featureKey": "feat-2026-018",
+  "title": "Custom Domain Onboarding — automate Cloudflare Pages domain attach + SSL polling",
+  "status": "draft",
+  "problem": "Each buyer wants their app at their own domain (e.g. roger-voice-truck.com). Cloudflare Pages supports unlimited custom domains per project via the HTTP API. To keep onboarding under 5 minutes of operator time, this feature wraps the CF API in: (a) a one-call domain-attach when a tenant is provisioned, (b) generated CNAME instructions emailed to the buyer, (c) a polling job that watches SSL provisioning state and updates tenants.status from 'pending' to 'active', (d) operator-console signals for the failure modes (domain conflict, DNS misconfig, SSL stuck). Without this automation, every onboarding requires Marc to log into the CF dashboard and click through the domain-add UI — which negates the 5-minute provisioning promise.",
+  "schemaVersion": 1
+}

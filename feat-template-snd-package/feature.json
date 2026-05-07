@@ -1,0 +1,7 @@
+{
+  "featureKey": "feat-2026-021",
+  "title": "SND as a Tenanted Package — productize the demo into the first sellable template",
+  "status": "draft",
+  "problem": "SND today is a static interactive demo at /demo/sunday-night-dread, with composite voice clips and a parser that runs entirely in the browser. To sell it as Roger Voice Truck's actual app, it needs to become a tenanted template: real D1-backed data (voice clips uploaded by end-users, parsed entries, invoice drafts, end-user accounts as installers/dispatchers/accountants), bound per-tenant via feat-fleet-foundation, with the existing demo UX as the buyer-facing surface. The static demo stays at /demo/sunday-night-dread on lifeascode.app as a public preview/storefront. The productized SND is what gets installed at roger-voice-truck.com when someone buys. Distinguishes \"what Marc shows prospects\" from \"what buyers run\".",
+  "schemaVersion": 1
+}

@@ -1,0 +1,182 @@
+{
+  "featureKey": "feat-2026-016",
+  "title": "Fleet Foundation — multi-tenant primitive for hosting packaged apps",
+  "status": "active",
+  "problem": "Marc sells finished products (SND, soon Volunteer Roster, …) to buyers who each want their own branded app at their own domain (e.g. roger-voice-truck.com) without ever seeing Marc's infra. Today the portal is single-tenant: one D1, one Pages deployment, one set of routes, all bound to Marc. To turn the portal into a \"package shop\" that operates a fleet of buyer instances under one deploy, we need a tenancy primitive: a tenants table, Host-header → tenant resolution middleware, scoped queries, and a clean operator-vs-buyer auth split. This is the load-bearing layer everything else (runtime theming, custom-domain onboarding, fleet admin, billing, second template) hangs on. Without it, every new buyer is a per-deployment fork that's expensive to operate, breaks the \"no calls / async / evenings only\" doctrine, and resurrects the X-Frame-Options/CSP headaches we just patched. With it, every new buyer is a 5-minute admin form + DNS update.",
+  "schemaVersion": 1,
+  "domain": "marc-portal/tenancy",
+  "tags": [
+    "multi-tenant",
+    "tenancy",
+    "fleet",
+    "host-header-routing",
+    "platform-spine",
+    "marc-portal"
+  ],
+  "analysis": "The fleet foundation introduces a tenancy primitive into a portal that today is hard-coded around Marc as the sole user. The architectural shape: one Cloudflare Pages deployment serves N custom domains; an edge middleware resolves the request's Host header to a tenants row in D1; every downstream query is scoped by the resolved tenant_id; the response head injects the tenant's theme as inline CSS custom properties. Auth is split into two scopes — operator (Marc, gated by a hard-coded admin email allowlist) for the /admin path on lifeascode.app, and buyer (the tenant's owner_email, plus invited team members) for everything served at the tenant's own domain. The primitive is intentionally generic: it makes no assumption about which template (SND, Volunteer Roster, future apps) lives behind it. A tenant's templates table FK identifies which app surface the runtime renders for that Host. This is the pivot from \"a portal Marc uses\" to \"a fleet Marc operates\", without renumbering any existing URL or breaking the live demo.",
+  "decisions": [
+    {
+      "decision": "Path-based operator console at /admin on the canonical domain; buyer apps live at their own custom domains",
+      "rationale": "Subdomain tenancy resurrects the cross-host CSP / X-Frame-Options class of bugs we just patched out (c7fc685, 093239d). Path-based admin is one fewer DNS record, one cookie scope, one CSP. Buyer custom domains are a hard requirement (Roger wants roger-voice-truck.com) — that complexity is unavoidable, but we contain it to the buyer surface and keep ops simple.",
+      "alternativesConsidered": [
+        "Subdomain per tenant under lifeascode.app",
+        "Path-based tenancy /u/<slug>/ everywhere including buyers"
+      ],
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Tenant resolution by Host header in edge middleware, not by URL prefix",
+      "rationale": "Buyers' apps are at their own domains; the Host header is the only signal the runtime has about which tenant is being requested. Doing this in middleware means every downstream handler can trust req.tenant exists and is correctly scoped — no per-route plumbing.",
+      "alternativesConsidered": [
+        "URL-prefix tenancy (incompatible with custom domains)",
+        "Subdomain parsing (resurrects the CSP/XFO problem)"
+      ],
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Single Cloudflare Pages deployment, multiple custom domains via the CF Pages API",
+      "rationale": "Marginal infra cost per buyer is ~$0 for the first ~20, since CF Pages bundles unlimited custom domains, free SSL, and the existing free-tier D1/R2 quotas absorb buyer data trivially. One codebase, one deploy, one CSP — onboarding cost is a CF API call, not a new project setup.",
+      "alternativesConsidered": [
+        "Per-buyer Pages project (high ops surface, separate D1, separate CSP per buyer)",
+        "Per-buyer Worker on separate accounts"
+      ],
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Theme stored as a JSON column on tenants, applied as inline CSS custom properties at request time",
+      "rationale": "The Bonjour retheme already routes every visual decision through CSS variables (--accent, --paper, --display, --radius, …). A buyer's runtime theme is just a dictionary of those tokens; applying it is a 5-line <style> tag injected in the head. New token keys are forward-compatible — old tenants without the key fall back to defaults.",
+      "alternativesConsidered": [
+        "Per-tenant compiled CSS bundles (deploy-time, slow)",
+        "Tailwind variants per tenant (locked into one paradigm, harder to give buyers a real editor)"
+      ],
+      "date": "2026-05-07"
+    }
+  ],
+  "implementation": "A new D1 migration adds a tenants table (id, slug, domain, owner_email, template_id, template_version, theme JSON, flags JSON, status, created_at, frozen_at) and a tenant_id FK on every existing data table (sessions, intake_drafts, anything Marc-scoped today). A Cloudflare Pages Function middleware (functions/_middleware.ts) resolves the request Host header to a tenants row at edge time, attaches it to context.data.tenant, and exposes a withTenant(req) helper to API handlers. A second tiny middleware injects the tenant's theme JSON as a <style>:root{...}</style> block into the SSR'd HTML head. Marc's existing data migrates as tenant slug=marc with domain=lifeascode.app. The /admin path is gated by an admin-email allowlist (hard-coded initially, moved to a tenants.flags.admin = true row later). Buyer apps live at their own Host; their /admin/* sub-paths show buyer-scoped settings (theme editor, team invites, billing). Operator-vs-buyer is a property of the resolved tenant + the requesting email, not a separate route tree.",
+  "successCriteria": "A new buyer can be onboarded by inserting one tenants row, calling the CF Pages API to add a custom domain, and sending a magic link — total operator time under 5 minutes. After onboarding, the buyer's domain serves the correct template, scoped to their data only, with their theme applied. Marc's existing /, /intake, /me, /admin/inbox routes continue to work unchanged, identifying him as tenant slug=marc.",
+  "userGuide": "For operators (Marc): you onboard a new buyer from /admin/fleet/new — you pick the app template, enter the buyer's domain and email, and click Provision. The system creates their instance, registers the domain with Cloudflare, and emails them setup instructions. From then on, you see them in /admin/fleet alongside everyone else — health, billing, last activity. For buyers: you sign in at your own domain, customize your app's appearance and team in /admin, and never see anyone else's data or branding. The whole infrastructure stays invisible to your end users.",
+  "pmSummary": "Turns the portal from a single-user tool into a fleet of buyer-branded apps Marc can operate as a side-practice — every new sale becomes a 5-minute provisioning step instead of a per-customer codebase fork.",
+  "testStrategy": "Three test layers. (1) Unit: the Host→tenant resolver function with fixtures for known domain, unknown domain, Marc's domain, malformed Host. (2) Integration: an end-to-end onboard-tenant + serve-request flow against a local D1 — assert the response uses the right theme tokens and only returns rows for the right tenant_id. (3) Manual smoke: Marc onboards himself as a second tenant on a *.pages.dev preview URL; verify isolation by signing in to one tenant and confirming you cannot read the other's data via direct API probing. The hardest thing to test is the negative: that no API handler accidentally bypasses the tenant scope. Address with a typed Db.forTenant(id) wrapper that makes unscoped queries impossible to write.",
+  "acceptanceCriteria": [
+    "A request to lifeascode.app resolves to tenant slug=marc with no behavioural change vs today",
+    "A request to a registered buyer domain (e.g. roger-voice-truck.com) resolves to the correct tenants row and serves their template",
+    "A request to an unknown Host returns a 404 with no tenant data leaked in the body or headers",
+    "Every D1 query in the codebase passes through Db.forTenant(id) — verified by a build-time grep or lint rule",
+    "A buyer's theme JSON renders as inline CSS custom properties in the document head, overriding the Bonjour defaults",
+    "An operator (Marc) signed into /admin sees the fleet view; a buyer signed into their /admin sees only their own settings, no fleet view",
+    "Onboarding a new tenant via the admin wizard takes under 5 minutes of operator time end-to-end (excluding the buyer's own DNS update)",
+    "The existing /, /intake, /me, /demo/sunday-night-dread, /showcase/:slug, /engagement/:slug routes continue to serve correctly under tenant slug=marc"
+  ],
+  "componentFile": "functions/_middleware.ts",
+  "npmPackages": [],
+  "publicInterface": [
+    {
+      "name": "Tenant",
+      "type": "type",
+      "description": "{ id: string; slug: string; domain: string; ownerEmail: string; templateId: string; templateVersion: string; theme: ThemeJSON; flags: Record<string, unknown>; status: 'active' | 'frozen' | 'pending'; createdAt: string; frozenAt: string | null }"
+    },
+    {
+      "name": "ThemeJSON",
+      "type": "type",
+      "description": "{ accent?: string; accentDeep?: string; paper?: string; paperWarm?: string; ink?: string; display?: string; sans?: string; radius?: number; logoUrl?: string; displayName?: string; footer?: string }"
+    },
+    {
+      "name": "withTenant",
+      "type": "middleware",
+      "description": "Cloudflare Pages middleware that resolves request.headers.get('Host') to a Tenant and attaches it to context.data.tenant. Returns 404 for unknown hosts."
+    },
+    {
+      "name": "Db.forTenant(id)",
+      "type": "factory",
+      "description": "Returns a D1 query helper whose every method auto-scopes by tenant_id. Unscoped queries are not exposed."
+    },
+    {
+      "name": "renderThemeStyleTag(theme)",
+      "type": "function",
+      "description": "Returns an HTML <style> string that sets :root CSS custom properties from a ThemeJSON. Injected by the SSR layer into the document head."
+    }
+  ],
+  "externalDependencies": [
+    "feat-2026-009",
+    "feat-2026-015"
+  ],
+  "lastVerifiedDate": "2026-05-07",
+  "codeSnippets": [
+    {
+      "label": "Tenants table schema (D1 migration)",
+      "snippet": "CREATE TABLE tenants (\n  id TEXT PRIMARY KEY,\n  slug TEXT UNIQUE NOT NULL,\n  domain TEXT UNIQUE NOT NULL,\n  owner_email TEXT NOT NULL,\n  template_id TEXT NOT NULL,\n  template_version TEXT NOT NULL,\n  theme TEXT NOT NULL DEFAULT '{}',  -- JSON\n  flags TEXT NOT NULL DEFAULT '{}',  -- JSON\n  status TEXT NOT NULL DEFAULT 'pending',\n  created_at TEXT NOT NULL,\n  frozen_at TEXT\n);"
+    },
+    {
+      "label": "Host → tenant middleware (functions/_middleware.ts)",
+      "snippet": "export const onRequest: PagesFunction<Env> = async (ctx) => {\n  const host = ctx.request.headers.get('host') ?? ''\n  const tenant = await ctx.env.DB.prepare('SELECT * FROM tenants WHERE domain = ?').bind(host).first<Tenant>()\n  if (!tenant || tenant.status === 'frozen') return new Response('Not found', { status: 404 })\n  ctx.data.tenant = tenant\n  return ctx.next()\n}"
+    },
+    {
+      "label": "Theme injection (SSR head)",
+      "snippet": "function renderThemeStyleTag(theme: ThemeJSON): string {\n  const vars = Object.entries(theme).filter(([k]) => k.startsWith('--'))\n  return `<style>:root{${vars.map(([k,v]) => `${k}:${v}`).join(';')}}</style>`\n}"
+    },
+    {
+      "label": "Tenant-scoped DB factory",
+      "snippet": "export const Db = {\n  forTenant: (db: D1Database, tenantId: string) => ({\n    sessions: {\n      list: () => db.prepare('SELECT * FROM sessions WHERE tenant_id = ?').bind(tenantId).all(),\n      // …\n    },\n  }),\n}"
+    }
+  ],
+  "implementationNotes": [
+    "Marc's existing data migrates as tenant slug=marc with domain=lifeascode.app — no URL changes, no user-visible disruption.",
+    "Tenant slugs are immutable once published; renaming would break SEO and any saved magic-link URLs. The slug column has a UNIQUE constraint and there is no rename endpoint.",
+    "The middleware short-circuits with 404 for unknown Host headers rather than falling back to a marketing landing — protects against subdomain takeover attempts and blank-domain probes.",
+    "Theme JSON keys map 1:1 to CSS custom property names without translation, so adding a new theme-able property in the design system never requires a schema migration. Old tenants who don't have the key fall back to the default declared in styles.css.",
+    "Operator vs buyer is determined per-request: signed-in email matches tenants.owner_email → buyer admin; signed-in email is in the operator allowlist AND tenant.slug=marc → operator admin. Same magic-link auth, two role checks."
+  ],
+  "knownLimitations": [
+    "Slug rename is not supported — tenants must pick their slug at onboarding and live with it forever",
+    "Operator allowlist is hard-coded initially (Marc's email); no UI to add a second operator until Phase 4",
+    "No DNS automation — buyers must manually point their domain at the CF Pages CNAME; the wizard generates instructions but doesn't validate completion",
+    "No tenant data export endpoint yet — exporting a buyer's data on cancellation is a manual SQL extract until Phase 3",
+    "Custom domain SSL provisioning is async (CF takes 5–10 min); the wizard surfaces a pending state but the buyer can't speed it up"
+  ],
+  "testCases": [
+    "Given a registered buyer domain and a buyer signed in, when they request /admin/apparence, then they see only their own theme settings and saving updates only their tenant row",
+    "Given an unknown domain, when any request arrives, then the response is 404 with no tenant data in the body",
+    "Given Marc signed into /admin/fleet on lifeascode.app, when he opens a buyer's row, then he sees their fleet metadata but not their session data",
+    "Given a buyer's tenant has status='frozen', when their domain is requested, then the response is 404 (not a degraded UI)",
+    "Given a new tenants row inserted via the wizard, when the CF Pages API call to add the domain succeeds, then the entire onboarding transaction commits; if it fails, the tenants row is rolled back",
+    "Given a tenant with theme.accent='#c1693d', when their root URL is requested, then the response head contains <style>:root{--accent:#c1693d;…}</style>"
+  ],
+  "edgeCases": [
+    "Two tenants accidentally registered with the same domain — UNIQUE constraint on tenants.domain prevents",
+    "Marc's lifeascode.app domain accidentally deleted from CF Pages — middleware would 404 his entire site; recovery is re-add domain in dashboard",
+    "Buyer's DNS misconfigured (wrong CNAME) — request never reaches the middleware; admin console shows 'SSL pending' indefinitely until corrected",
+    "Theme JSON contains a malicious value (e.g. closing the style tag with '</style><script>') — escape on inject; treat theme values as untrusted",
+    "A signed-in admin email also happens to be a buyer's owner_email on a different tenant — role resolution must scope to the requested tenant, not the user"
+  ],
+  "riskLevel": "high",
+  "rollbackPlan": "The migration is forward-only but additive: the tenants table and tenant_id columns can stay even if the middleware is reverted (existing rows continue to function). Rollback strategy: revert the middleware deploy, which causes all Host headers to ignore tenancy and route to the legacy Marc-scoped handlers. Buyer domains would 404 (no harm to Marc's traffic). Notify any onboarded buyers via email that their app is paused while the issue is investigated; freeze their tenant row to prevent further data writes.",
+  "supportNotes": "Tenant-related tickets manifest as 'my domain shows 404' (DNS/SSL not yet active — wait or re-issue), 'I can't see my data' (signed in to wrong tenant — verify they're at their own domain not lifeascode.app), 'my theme didn't save' (browser cached the old <style> — hard reload), or 'I see someone else's data' (CRITICAL — escalate immediately, indicates a tenant-scope bug). For the first three: walk the user through the verification step. For the fourth: take the affected tenant offline (status='frozen'), audit recent queries by tenant_id, and only restore once root cause is identified.",
+  "knownWorkarounds": [
+    "If a buyer wants to change their slug, the workaround is to onboard them as a new tenant and migrate their data (manual SQL); set the old tenant to frozen",
+    "If DNS is slow to propagate, suggest the buyer use the *.pages.dev preview URL temporarily (lifeascode.app/admin shows the underlying CF URL per tenant)",
+    "If an operator email needs to be added before Phase 4, it can be hard-coded in the middleware allowlist constant and shipped as a one-line PR"
+  ],
+  "releaseVersion": "",
+  "acceptanceCriteriaSchema": [],
+  "revisions": [
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": [
+        "analysis",
+        "decisions",
+        "implementation",
+        "successCriteria"
+      ],
+      "reason": "Initial fill from product/architecture conversation. Captures the path-based admin / Host-header tenancy / single-deploy / runtime-theme-via-CSS-vars decisions and the full operator/buyer/end-user surface."
+    }
+  ],
+  "annotations": [],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07"
+    }
+  ]
+}

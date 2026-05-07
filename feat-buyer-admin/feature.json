@@ -1,0 +1,7 @@
+{
+  "featureKey": "feat-2026-020",
+  "title": "Buyer Admin — per-tenant settings hub at /admin on the buyer's domain",
+  "status": "draft",
+  "problem": "Each tenant's owner needs a self-serve admin surface to manage their own app: invite team members (their installers, their accountant), view their billing state, export their data, and — via feat-runtime-theme-editor — control the app's appearance. Lives at /admin on the buyer's own domain (e.g. roger-voice-truck.com/admin), strictly buyer-scoped: they see only their tenant's data, can never reach fleet metadata or another tenant's anything. Self-serve here is the lever that keeps Marc's daily ops near zero — buyers add their own team members, change their own logo, and only escalate to Marc through a support session when something is genuinely broken.",
+  "schemaVersion": 1
+}
