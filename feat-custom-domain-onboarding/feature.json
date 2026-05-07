@@ -59,7 +59,9 @@
         "implementation",
         "successCriteria"
       ],
-      "reason": "Initial fill ahead of build — captures the best-effort vs transactional decision and the SSL-polling deferral."
+      "reason": "Initial fill ahead of build — captures the best-effort vs transactional decision and the SSL-polling deferral.",
+      "commit": "3be0de2",
+      "buildUrl": "https://021f9447.marc-portal.pages.dev"
     }
   ],
   "annotations": [],
