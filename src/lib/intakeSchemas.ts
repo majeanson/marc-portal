@@ -116,7 +116,7 @@ const PAPERASSE_FIELDS: FieldDef[] = [
       en: "The moment that makes you say 'this has to change'?",
     },
     placeholder: {
-      fr: 'Ex : le dimanche soir à 22h en train de retrouver mes notes, ou la facture qu\'on oublie d\'envoyer pendant 3 mois, ou recopier les mêmes données dans 3 endroits différents...',
+      fr: "Ex : le dimanche soir à 22h en train de retrouver mes notes, ou la facture qu'on oublie d'envoyer pendant 3 mois, ou recopier les mêmes données dans 3 endroits différents...",
       en: 'Ex: Sunday night at 10pm digging through my notes, or the invoice we forget to send for 3 months, or retyping the same data in 3 different places...',
     },
     required: true,
@@ -131,7 +131,7 @@ const PAPERASSE_FIELDS: FieldDef[] = [
     },
     placeholder: {
       fr: 'Ex : un bouton qui sort la facture en PDF, ou un fichier toujours à jour pour la comptable, ou plus jamais y penser le dimanche soir...',
-      en: 'Ex: a button that spits out the PDF invoice, or a file that\'s always up-to-date for the accountant, or never thinking about it on Sunday night again...',
+      en: "Ex: a button that spits out the PDF invoice, or a file that's always up-to-date for the accountant, or never thinking about it on Sunday night again...",
     },
     required: true,
     hint: {
@@ -305,7 +305,7 @@ const AUTRE_FIELDS: FieldDef[] = [
       en: 'Who feels the problem? Just you, or others too?',
     },
     placeholder: {
-      fr: 'Ex : moi seul, mon associé aussi, toute l\'équipe, mes clients quand ils appellent, les bénévoles qui abandonnent...',
+      fr: "Ex : moi seul, mon associé aussi, toute l'équipe, mes clients quand ils appellent, les bénévoles qui abandonnent...",
       en: 'Ex: just me, my partner too, the whole team, my clients when they call, volunteers who give up...',
     },
     required: true,
@@ -319,7 +319,7 @@ const AUTRE_FIELDS: FieldDef[] = [
       en: 'What have you already tried?',
     },
     placeholder: {
-      fr: 'Ex : un Excel qui a vieilli, une app abandonnée après 2 mois, demander à mon neveu, un consultant qui a livré quelque chose qu\'on n\'utilise pas, rien encore...',
+      fr: "Ex : un Excel qui a vieilli, une app abandonnée après 2 mois, demander à mon neveu, un consultant qui a livré quelque chose qu'on n'utilise pas, rien encore...",
       en: 'Ex: an Excel that aged out, an app abandoned after 2 months, asking my nephew, a consultant who delivered something we never use, nothing yet...',
     },
     required: false,
