@@ -1,0 +1,19 @@
+{
+  "featureKey": "feat-2026-011",
+  "title": "SND itération — Versionnage par chantier",
+  "status": "draft",
+  "schemaVersion": 1,
+  "domain": "sunday-night-dread/iteration",
+  "tags": ["iteration", "roadmap", "sunday-night-dread", "versioning", "post-mvp"],
+  "problem": "Le MVP Sunday Night Dread mélange toutes les notes vocales d'une semaine dans une seule boîte de réception. Mais le tradesperson travaille sur plusieurs chantiers en parallèle — quand il dicte « 2 heures chez Tremblay et 1 heure chez Côté », ces lignes appartiennent à des factures différentes. Cette itération introduit le chantier comme entité versionnée : chaque note s'attache à un chantier (détecté automatiquement ou choisi), chaque chantier a son historique navigable de matériaux, heures et décisions. Hors scope du MVP par décision explicite (Insight #33 — story stays vivid, deliverable scope shrinks).",
+  "lineage": { "parent": "feat-2026-010" },
+  "lastVerifiedDate": "2026-05-06",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["problem", "lineage", "tags"],
+      "reason": "Scaffolded as a roadmap iteration of feat-2026-010 (Sunday Night Dread MVP). Versioning per chantier explicitly held out of MVP scope (Insight #33). To be scoped and built post-MVP, after first paid client confirms the wedge."
+    }
+  ]
+}

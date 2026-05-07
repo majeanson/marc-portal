@@ -1,0 +1,250 @@
+{
+  "featureKey": "feat-2026-001",
+  "title": "Marc Portal — Async-First Solo Consulting Side Practice",
+  "status": "draft",
+  "problem": "Quebec small operators (tradespeople, civic tinkerers, small biz owners) have everyday problems solvable with small software, but their realistic options are bad: agencies are expensive and meeting-heavy, freelance marketplaces are race-to-bottom with no judgment, and DIY requires time and skill they don't have. On the other side, a senior dev with a 37.5h day job and a family cannot run a normal consulting practice — phone calls, scheduling dances, and relationship-maintenance labor consume the side-gig hours that are supposed to belong to family. The Portal is the architecture that makes both ends work async: structured intake replaces discovery calls, human judgment gates AI execution, live demos throughout replace milestone meetings, and public per-project showcase pages compound as long-tail SEO. Bedrock: family-first, for both parties. Time horizon: ~3 years before AI self-serve likely obsoletes the wedge. Single load-bearing rule: 1 active build + 1 in triage, public capacity counter, no exception path.",
+  "schemaVersion": 1,
+  "domain": "consulting/solo-practice",
+  "tags": [
+    "side-practice",
+    "quebec-local",
+    "async-first",
+    "family-first",
+    "showcase-driven",
+    "ai-assisted",
+    "translation-work"
+  ],
+  "analysis": "The Portal is a side-practice consulting system designed around an asymmetric architecture: human-as-judgment-layer at intake and crucial decisions, machine-in-the-middle for everything else (status, threaded messages, structured artifact storage, capacity gating), AI as invisible infrastructure during execution (never a touchpoint, never the headline). Bedrock value: family-first, for both Marc and the client. Every architectural choice subordinates to that constraint. Acquisition is asymmetric on purpose — heavy on showcase-driven SEO (long-tail Quebec-local case studies that compound while Marc is at his day job), light on cold Facebook posts (seeding only, diminishing returns after first 2-3 in any group). Each engagement = one structured artifact. Each shipped engagement = one published showcase page rendered from that artifact, indexed by Google in client-natural language. Pricing is per-tier public, with the showcase wall doubling as the living definition of each tier. The portal has lightweight free accounts so clients can save/resume intake drafts, retain context between sessions, and watch their live demo evolve continuously. Triage SLA = 72h. Demo session (Sunday Night Dread, voice→draft invoice MVP slice) is the cornerstone artifact — it replaces the discovery call CTA that all other consultants use, and it ships before any cold post. Single load-bearing rule: 1 active build + 1 in triage, public capacity counter, no exception path — every other rule is negotiable, this one is not.",
+  "implementation": "Stack: Vite 8 + React 19 + TypeScript (strict), react-router-dom 7 for FR/EN routing. Standalone repo at portal/ — not part of lifeascode or any other project. Boring-tech mandate enforced: pinned majors in package.json, no UI framework, no CSS-in-JS, no state management library. Design tokens (warm-dark-amber palette) copied as literal CSS custom properties from @majeanson/lac-react — values reused, no code import (per no-shared-code constraint). Bilingual via a single i18n.ts dictionary keyed by Lang ('fr' | 'en'); FR primary at /, EN mirror at /en. Static-first homepage and showcase pages; account-gated areas (intake, engagement canvas) deferred to a later dynamic surface. Hosting TBD (Cloudflare Pages or Vercel — must be Canada-friendly per Loi 25; <$50/mo total). The portal composes 7 generic primitives, each a sibling feature.json: structured-intake-form, async-status-canvas, case-study-renderer, triage-queue, tiered-public-pricing, vibe-filter, self-service-redirect. Composition is feat-app-shell (only Marc-specific feature). First content/demo is feat-demo-sunday-night-dread. No third-party APIs in the critical demo path. No real-time features. The 7 primitives are reusable PATTERNS, not shared code — each future project instantiates from scratch.",
+  "successCriteria": "- 7 generic primitives + composition + first demo all reach `frozen` status before first paid client\n- Demo session (Sunday Night Dread MVP slice) is live and testable before first cold Facebook post\n- First 1-2 clients are FREE and pre-selected (Marc reaches out to a trusted tradesperson; not first-inbound)\n- 1-active cap rule is held without exception in first 12 months\n- 6+ shipped showcases live by month 12, each tagged with tier + price + hours\n- Tier 0 self-service redirect generates measurable referral traffic by month 6\n- Marc's family does not register the side gig as a friction in normal weeks (informal but observed)\n- Day job remains 37.5h/week\n- Decision point at month 12: continue, pivot, or sunset within the 3-year window\n- Total operational expenses < $200/month (boring-tech mandate enforced)",
+  "decisions": [
+    {
+      "decision": "Family-first is the architecture, not a values story",
+      "rationale": "Every side-practice shape that requires phone calls, real-time scheduling, or relationship-maintenance labor consumes the family-time the side practice exists to protect. The portal's async-first form-driven structure is the only architecture that lets a senior dev help small operators without either party giving up family time. This is the bedrock — every other decision must subordinate to it. From brainstorming Insight #13.",
+      "recommendation": "Treat any feature suggestion that demands real-time response, scheduled meetings, or evening/weekend availability beyond async messaging as a reject-by-default, regardless of revenue impact.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "3-year time horizon — design for ~mid-2029 sunset/pivot",
+      "rationale": "By late 2027–2028, AI self-serve tools (Cursor, Claude, Lovable equivalents) likely make small-software translation a self-service problem for most small operators. Marc's wedge is durable for ~3 years, not 10. Declaring this up-front unlocks design moves founders building forever cannot make: cheap infra, no over-engineering for hypothetical scale, no long-tail features. From Insight #36.",
+      "recommendation": "Reject 'this will pay off in 5 years' framing. Measure ROI against 'good enough by mid-2029.' Use disposable infra; don't build for users you'll never have.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "1-active build + 1-in-triage cap, public counter, no exception path",
+      "rationale": "Single most important rule in the system. Every other rule is negotiable; this one is not. If broken, the bedrock (family-first) fails — 3 concurrent clients × side-gig hours consumes weekends. With a public waitlist, demand becomes credibility (counterintuitive but true). From Insight #39.",
+      "recommendation": "Implement as a hard system constraint in feat-triage-queue. The form auto-disables when at cap. Triage replies offer date-based queueing, never 'I'll squeeze you in.' Even great clients wait.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Human-as-judgment-layer, not relationship-layer",
+      "rationale": "Big consulting firms put a human at every touchpoint — that is their relationship-as-service business model. Marc puts a human only at first contact and crucial decisions. Everywhere else: portal as medium, AI as invisible infrastructure. Humans appear when judgment is needed, not when companionship is needed. Resolves the 'less h2h' paradox — Marc isn't avoiding humans, he's amputating relationship-maintenance labor. From Insight #9.",
+      "recommendation": "First contact = Marc's own eyes on the raw form (no AI summary between Marc and a new client's words). All status pings, scheduling, 'just checking in' touchpoints are absorbed by the portal UI — Marc never types them.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "AI as invisible infrastructure, not a feature or a brand",
+      "rationale": "Counter-positioning against the 2026 'AI-powered consulting' wave. Everyone else shouts 'we use GPT' — Marc shouts 'you have my judgment.' AI is the plumbing, not the pitch. Clients should feel a senior dev is on this even when AI typed 70% of the code. From Insight #11.",
+      "recommendation": "Marketing copy never mentions AI vendor names. Showcase pages credit Marc's judgment, not the tooling. Source code published with showcases makes AI use technically auditable but not advertised.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Async-only with public deadlines — no calls, no meetings",
+      "rationale": "Async absorbs the calendar tax of conventional consulting. Public deadlines (e.g., 'first draft in a few days') keep async from drifting into ghosting. Mutual respect of life-outside-work for both parties. From Insight #2 + Phase 1 bedrock.",
+      "recommendation": "All client communication threaded through the portal (no email, no phone, no Slack). Triage replies and status updates are the only async messages. Public 72h triage SLA visible on the page.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Project selection criterion: tolerates staleness",
+      "rationale": "Pick projects whose deliverable can sit unattended for weeks without breaking. Voice→invoice for trades is fine (no urgency); real-time chat, live booking, time-sensitive dashboards are excluded by category. The wedge isn't 'small biz software' — it's 'software where works-fine-in-2-months-unattended is a feature.' Selecting by temporal metabolism, not industry. From Insight #35.",
+      "recommendation": "Triage rejection criterion includes any project requiring real-time responsiveness, complex third-party API integrations in the critical path, or maintenance commitments beyond the 'one round of post-ship tweaks' service definition.",
+      "date": "2026-05-06"
+    }
+  ],
+  "knownLimitations": [
+    "Single operator — no team, no employees, no scaling beyond what 5-15h/week + AI execution multiplier produces",
+    "3-year time box — model expected to obsolete around mid-2029 as AI self-serve matures",
+    "Quebec-local positioning narrows TAM intentionally — not a bug",
+    "Async-only excludes clients who need real-time interaction",
+    "Published 'we don't do' list loses pushy or relationship-hungry prospects by design",
+    "Project selection by temporal metabolism excludes most real-time / time-sensitive software",
+    "Showcase compounding takes 12-24 months to bear meaningful inbound traffic — early months rely on cold posts and pre-selected referrals",
+    "No formal customer support — one round of post-ship tweaks per engagement, then nothing",
+    "Marc reads every form himself — total intake throughput capped by his available reading time, not by automation"
+  ],
+  "userGuide": "This portal is a working space for engagements between Marc and a small operator. Describe a problem you'd like solved (paperwork, tracking, coordination — anything everyday). Marc reads it himself within 72 hours and replies honestly: yes, no, or 'tell me more.' If yes, you watch the work evolve through this same portal — live demo always up, status flags visible, no scheduled meetings. When it ships, your project becomes a public showcase page (with redaction options to protect commercial data). Free account. No calls, no meetings. Marc has a day job and a family; engagements are async and respect both schedules.",
+  "lineage": {
+    "children": [
+      "feat-2026-002",
+      "feat-2026-003",
+      "feat-2026-004",
+      "feat-2026-005",
+      "feat-2026-006",
+      "feat-2026-007",
+      "feat-2026-008",
+      "feat-2026-009",
+      "feat-2026-010"
+    ]
+  },
+  "lastVerifiedDate": "2026-05-06",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "implementation", "successCriteria", "decisions"],
+      "reason": "Initial fill from brainstorming session 2026-05-06 — captures bedrock (family-first), 3-year horizon, 1-active cap, async-only, AI as invisible infra, project selection by temporal metabolism. Synthesized from 40 insights across Five Whys / Persona Journey / Reverse Brainstorming techniques."
+    },
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["implementation"],
+      "reason": "Stack locked: Vite 8 + React 19 + TS + react-router-dom 7, standalone in portal/. Design tokens copied (not imported) from @majeanson/lac-react per no-shared-code constraint. Bilingual via single i18n.ts dictionary."
+    },
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["annotations"],
+      "reason": "Published the portal itself as the second public showcase (Insight #32 — Two-Showcase Strategy: SND for projectability, Self-Documenting Portal for authenticity / dev-cred). Renders feat-2026-001 in the same shape as a shipped engagement: tier, hours, the same lifecycle UI."
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["lineage"],
+      "reason": "Progress checkpoint: 6 of 7 primitives + composition advanced from draft → active (intake-form, async-status-canvas now built, case-study-renderer, triage-queue, pricing, vibe-filter, app-shell). 1 primitive (self-service-redirect) is built but not yet advanced. SND demo content remains draft until the working voice→invoice MVP ships (target 2026-07-01). Full route map: /, /en, /intake, /tier-0, /demo/sunday-night-dread, /showcase/:slug, /engagement/:slug. Sitemap auto-generated with all showcases."
+    }
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "draft",
+      "date": "2026-05-06",
+      "reason": "Created during brainstorming session — root feature for the side-practice portal. Status will advance to active once the homepage and SND demo are live, frozen once first paid client ships."
+    }
+  ],
+  "annotations": [
+    {
+      "id": "showcase-self-documenting-portal",
+      "type": "showcase",
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "body": "Public showcase for the portal itself — the second engagement on the wall, optimized for dev-cred (Insight #32). The portal is its own deliverable: feature.json files document every architectural decision; the wall renders feature.json files; viewers see the actual artifacts that made the site.",
+      "data": {
+        "slug": "self-documenting-portal",
+        "tier": "Tier 2",
+        "price": "$1500",
+        "hours": "≈ 30h sur 4 semaines",
+        "shippedDate": null,
+        "targetShipDate": "2026-07-01",
+        "liveUrl": "/",
+        "sourceUrl": null,
+        "primaryLang": "fr",
+        "title": {
+          "fr": "Le portail qui se documente lui-même",
+          "en": "The self-documenting portal"
+        },
+        "summary": {
+          "fr": "L'infrastructure de la pratique-side de Marc — bilingue, statique, async — bâtie en public, chaque décision architecturale persistée comme un feature.json LAC. La page que tu lis et le mur de projets sur lequel tu es arrivé sont rendus à partir de ces mêmes fichiers.",
+          "en": "Marc's side-practice infrastructure — bilingual, static, async — built in public, every architectural decision persisted as a LAC feature.json. The page you're reading and the wall you came in on are rendered from those same files."
+        },
+        "engagement": [
+          {
+            "stage": "intake",
+            "date": "2026-05-06",
+            "completed": true,
+            "label": {
+              "fr": "Auto-intake — session de brainstorming structurée (40 insights)",
+              "en": "Self-intake — structured brainstorming session (40 insights)"
+            }
+          },
+          {
+            "stage": "triage",
+            "date": "2026-05-06",
+            "completed": true,
+            "label": {
+              "fr": "Auto-triage — bedrock identifié (family-first), 3-year time box accepté",
+              "en": "Self-triage — bedrock identified (family-first), 3-year time box accepted"
+            }
+          },
+          {
+            "stage": "plan",
+            "date": "2026-05-06",
+            "completed": true,
+            "label": {
+              "fr": "Plan figé — 7 primitives + 1 composition + 1 démo, bilingue, static-first",
+              "en": "Plan locked — 7 primitives + 1 composition + 1 demo, bilingual, static-first"
+            }
+          },
+          {
+            "stage": "build",
+            "date": null,
+            "completed": false,
+            "label": {
+              "fr": "En construction — homepage et architecture de showcase opérationnelles",
+              "en": "Building — homepage and showcase architecture operational"
+            }
+          },
+          {
+            "stage": "review",
+            "date": null,
+            "completed": false,
+            "label": {
+              "fr": "Auto-revue avant le premier post Facebook",
+              "en": "Self-review before the first Facebook post"
+            }
+          },
+          {
+            "stage": "shipped",
+            "date": null,
+            "completed": false,
+            "label": {
+              "fr": "Livré — site public, premier post cible 2026-07-01",
+              "en": "Shipped — public site, first post target 2026-07-01"
+            }
+          }
+        ],
+        "decisions": [
+          {
+            "decision": {
+              "fr": "L'humain au siège du jugement, la machine au milieu",
+              "en": "Human in the judgment seat, machine in the middle"
+            },
+            "rationale": {
+              "fr": "Marc lit chaque formulaire lui-même (Insight #12). L'IA n'est jamais entre Marc et les mots du client. Pas de marketing autour de l'IA — c'est de la plomberie, pas un slogan (Insight #11).",
+              "en": "Marc reads every form himself (Insight #12). AI is never between Marc and the client's words. No AI-as-feature marketing — it's plumbing, not a slogan (Insight #11)."
+            }
+          },
+          {
+            "decision": {
+              "fr": "Plafond dur de 1 projet actif + 1 en triage, sans exception",
+              "en": "Hard cap of 1 active build + 1 in triage, no exception"
+            },
+            "rationale": {
+              "fr": "Règle structurelle (Insight #39) — la seule règle qui ne plie pas. Si 3 clients en parallèle = bedrock family-first qui s'effondre. Le compteur public devient un signal de crédibilité, pas un bug à cacher.",
+              "en": "Structural rule (Insight #39) — the only rule that does not bend. 3 clients in parallel = family-first bedrock collapses. The public counter becomes a credibility signal, not a bug to hide."
+            }
+          },
+          {
+            "decision": {
+              "fr": "Chaque projet livré devient une page publique en SEO long-tail",
+              "en": "Every shipped project becomes a long-tail SEO page"
+            },
+            "rationale": {
+              "fr": "Insight #25 — le mur de showcases est de l'infrastructure d'acquisition, pas de la décoration de portfolio. Acquisition asymétrique (Insight #26) : lourde sur le SEO du mur (gravité), légère sur les posts Facebook (push). Compose pendant que Marc est à sa job de jour.",
+              "en": "Insight #25 — the showcase wall is acquisition infrastructure, not portfolio decoration. Asymmetric acquisition (Insight #26): heavy on showcase SEO (gravity), light on cold posts (push). Compounds while Marc is at his day job."
+            }
+          },
+          {
+            "decision": {
+              "fr": "feature.json comme artefact, pas un sous-produit",
+              "en": "feature.json as the artifact, not a byproduct"
+            },
+            "rationale": {
+              "fr": "Insight #5 + #29 + #34 — l'architecture converge naturellement vers LAC peu importe l'étiquette. Le formulaire d'intake = embryonic feature.json. La démo Sunday Night Dread = feature.json rendu publiquement. Le mur = feature.json glob'd par Vite. Chaque commit fait avancer le système.",
+              "en": "Insight #5 + #29 + #34 — the architecture converges to LAC whether labeled or not. The intake form = embryonic feature.json. The Sunday Night Dread demo = feature.json rendered publicly. The wall = feature.json glob'd by Vite. Every commit advances the system."
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

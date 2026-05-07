@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-005",
+  "title": "Triage Queue with Hard Capacity Cap (primitive)",
+  "status": "active",
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Single source of truth public/data/capacity.json edited manually + read at build time. CapacityCounter shows live state on hero. Hero CTA flips from 'create account' to 'join waitlist' when atCap=true. Intake form's submit step routes to waitlist confirmation when at-cap. No exception path in code (Insight #39 enforced structurally — the rule that does not bend has no override toggle)."
+    }
+  ],
+  "problem": "Without a hard concurrency cap, a side-practice consultant accepts every triage that's \"doable\" and ends up with 3+ concurrent active clients eating evenings and weekends. Family-first collapses; the bedrock value falsifies. The triage-queue makes the 1-active-build + 1-in-triage rule structural rather than aspirational: form auto-disables when at capacity, public availability counter on the homepage shows current load and approximate next opening, triage replies offer date-based queueing (\"yes I can help, you're queued — engagement starts [date]\") instead of immediate starts. Counterintuitively, the public waitlist becomes a credibility signal — scarcity reads as seriousness. Single load-bearing rule of the entire portal: every other rule is negotiable, this one is not.",
+  "schemaVersion": 1,
+  "domain": "primitive/capacity-control",
+  "tags": [
+    "1-active-cap",
+    "waitlist",
+    "load-bearing-rule",
+    "family-first-defense",
+    "reusable-pattern"
+  ],
+  "analysis": "The triage-queue makes the 1-active + 1-in-triage rule structural rather than aspirational. Public availability counter on the homepage shows current state (e.g., '1 active build · waitlist: 3 · next opening ~Aug 15'). Form auto-disables when at capacity — 'Currently full — get notified when a slot opens' replaces the submit button. Triage replies offer date-based queueing ('yes I can help, you're queued — engagement starts [date]') with no exception path, even for great clients. The waitlist itself is a marketing asset — scarcity reads as seriousness. Single load-bearing rule of the entire portal: every other rule is negotiable, this one is not.",
+  "decisions": [
+    {
+      "decision": "Hard cap on active engagements: 1 build + 1 in triage. No exception path, ever.",
+      "rationale": "Insight #39 — this is the bedrock defense. If broken, family-first collapses. 3 concurrent clients × side-gig hours = weekends gone. Optimism bias ('I can squeeze this in') is the failure pattern this rule structurally prevents.",
+      "recommendation": "Implement as a backend constraint, not a soft warning. Form submission is blocked when at cap, with no override toggle in any admin panel. Marc cannot bypass this even for himself.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Public capacity counter is a marketing asset, not a bug to hide",
+      "rationale": "Counterintuitive: scarcity adds credibility. 'You're #4 on a 6-week waitlist' positions Marc as serious, not unavailable. The waitlist itself is acquisition infrastructure.",
+      "recommendation": "Counter visible on homepage hero. Optionally show recent throughput ('shipped 3 projects in the last 90 days') for trust. Update in near-real-time when status changes.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Triage SLA = 72h, but triage-replies use date-based queueing not immediate-start",
+      "rationale": "72h is achievable as a side-gig because triage = read + 1 reply, not build. Date-based queueing means clients get an honest 'starts [date]' rather than vague 'soon' or rushed acceptance.",
+      "recommendation": "Triage reply template includes a slot-date field. Queue position visible to client in their account. If clients decline the queued date, they can rejoin the waitlist later without penalty.",
+      "date": "2026-05-06"
+    }
+  ],
+  "successCriteria": "- Form auto-disables when at capacity; visitors see waitlist signup instead of submit button\n- Public capacity counter visible on homepage at all times\n- Triage replies always include either 'no' or 'yes — engagement starts [date]'; never 'yes — starting now' when already at cap\n- Waitlist clients see their position and approximate next-available date in their account\n- 1-active + 1-in-triage rule is enforceable at the system level, not just policy\n- Reusable as a pattern for any solo-operator service that wants the same structural rule",
+  "implementation": "Single source of truth: public/data/capacity.json — Marc edits it manually and pushes to GitHub; Cloudflare Pages auto-rebuilds on push. The schema: { activeBuilds, inTriage, waitlist, nextOpening: { fr, en }, atCap, lastUpdated }. Loader at src/lib/capacity.ts imports the JSON at build time (no fetch, no FOUC) and exposes getCapacity(). Two consumers today: src/components/CapacityCounter.tsx (homepage hero pill) and the future /intake submit gate (atCap=true → form switches to waitlist mode). The 'no exception path' is enforced by data-discipline: there's no admin override toggle in code; raising the cap means editing capacity.json by hand, which is the exact moment Marc should reread Insight #39.",
+  "componentFile": "src/components/CapacityCounter.tsx",
+  "userGuide": "Update capacity: edit public/data/capacity.json. Set atCap=true when at the 1-active+1-in-triage limit. Update activeBuilds, inTriage, waitlist, nextOpening dates. Push to GitHub — Cloudflare auto-rebuilds. The hero pill and the intake CTA both read from this file. There is no admin UI by design (Insight #39 — the rule that doesn't bend should not have a soft override in code).",
+  "knownLimitations": [
+    "No real backend — capacity is JSON edited by hand, not a database tracking actual triage queue state",
+    "No automatic decrement when an engagement ships (Marc has to remember to update capacity.json post-ship)",
+    "Waitlist signup not yet wired into /intake (intake form route 404s as of this writing)",
+    "Counter updates require a rebuild + deploy (~30s on Cloudflare Pages); near-real-time would need a fetch + a backend"
+  ],
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from brainstorming — primitive captures the load-bearing 1-active cap rule (Insights #13, #39 plus F13 defenses from Reverse Brainstorming)."
+    },
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "reason": "Instantiated as public/data/capacity.json + src/lib/capacity.ts + src/components/CapacityCounter.tsx. The 'no admin override toggle' Insight #39 enforcement is achieved structurally by the absence of code paths that ignore atCap, not by policy."
+    }
+  ],
+  "annotations": []
+}

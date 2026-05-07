@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://marc.example/</loc>
+    <lastmod>2026-05-07</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/en</loc>
+    <lastmod>2026-05-07</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/showcase/self-documenting-portal</loc>
+    <lastmod>2026-05-06</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/en/showcase/self-documenting-portal</loc>
+    <lastmod>2026-05-06</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/showcase/sunday-night-dread</loc>
+    <lastmod>2026-05-06</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/en/showcase/sunday-night-dread</loc>
+    <lastmod>2026-05-06</lastmod>
+  </url>
+</urlset>

@@ -1,0 +1,72 @@
+{
+  "featureKey": "feat-2026-004",
+  "title": "Case Study Renderer (primitive)",
+  "status": "active",
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Renderer is live: src/pages/Showcase.tsx + StatusHistoryStrip + RevisionLog + showcases.ts loader render both Sunday Night Dread and Self-Documenting Portal showcases from feature.json sources. Per-page meta + JSON-LD CreativeWork inject correctly. Sitemap auto-includes new showcases."
+    }
+  ],
+  "problem": "Every shipped engagement is potential SEO + portfolio compounding, but only if it is published as a public page in the client's natural language. Most consultants treat case studies as marketing fluff bolted on after delivery. This primitive treats them as primary acquisition infrastructure: takes a structured engagement artifact and renders it as a public showcase page with problem statement in client's words, solution narrative, link to deployed deliverable, source code where appropriate, and tags showing tier + price + hours shipped. Designed for Google indexing on long-tail Quebec-local searches. Doubles as the living definition of what each pricing tier looks like in practice.",
+  "schemaVersion": 1,
+  "domain": "primitive/showcase",
+  "tags": [
+    "case-study",
+    "seo",
+    "long-tail",
+    "compounding",
+    "tier-reference",
+    "redaction-safe",
+    "reusable-pattern"
+  ],
+  "analysis": "Each engagement, when shipped, can be rendered as a public showcase page in 'one click' from the consultant's side. The renderer takes the structured engagement artifact (problem statement, decisions, deliverable link, source code where appropriate, message-thread highlights) and produces a public HTML page titled in the client's natural language for Quebec-local long-tail SEO. Includes tier + price + hours metadata visible in a sidebar — the showcase wall doubles as the living tier reference. Client-redaction support: specific commercial data can be redacted on request, but the case study cannot be removed entirely (per contract clause). Built static-first for indexability and longevity.",
+  "decisions": [
+    {
+      "decision": "Page title is in client's natural language, not consultant marketing-speak",
+      "rationale": "Insight #25 — showcases are SEO honeypots, not portfolio decoration. The visitor finds the page by Googling their own problem; the page title must match how they would phrase it.",
+      "recommendation": "Title and meta description generated from the original intake form's problem statement (with light cleanup), not rewritten as marketing copy. Optional French + English title pair where the engagement language allows.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Tier + price + hours metadata visible on every showcase",
+      "rationale": "Insight #38 — the showcase wall is the living definition of each pricing tier. Without metadata, visitors cannot calibrate.",
+      "recommendation": "Sidebar block: 'Tier 2 · $1500 · 24h shipped over 3 weeks · 2026-08-12.' Include source code link where appropriate. Optional 'next iterations' roadmap section for projects that ship as MVP slices.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Client gets redaction rights, not takedown rights (contract clause)",
+      "rationale": "Insight #40 — redaction-not-takedown preserves the showcase wall as a compounding asset while respecting client commercial sensitivity. Lawyers default to extremes; this middle path is rarely used but right.",
+      "recommendation": "Contract template includes the perpetual-license + commercial-data-redaction clause. Self-serve redaction flow on the showcase page when logged in as the original client account.",
+      "date": "2026-05-06"
+    }
+  ],
+  "successCriteria": "- One-click publish from completed engagement to public showcase page\n- Showcase page is statically rendered, indexable, with proper SEO meta tags and Quebec-locality hints\n- Tier + price + hours metadata visible on every showcase\n- Client can request specific data redactions via self-serve flow; cannot trigger full takedown\n- Page title and content reflect the client's natural language from intake, not a marketing rewrite\n- Reusable as a pattern for any project producing publishable engagement artifacts",
+  "implementation": "Three concerns separated. (1) Loader — src/lib/showcases.ts uses Vite's import.meta.glob to discover every feat-*/feature.json plus the root portal/feature.json at build time, filters to those with a 'showcase' annotation, and exposes getShowcaseBySlug, listShowcases, getChildFeatures, getRevisions, getStatusHistory, getCreatedDate, getLastRevisionDate. (2) Schema — the LAC AnnotationSchema requires id, author, date, type, body; the showcase-specific fields (slug, tier, price, hours, primaryLang, title, summary, engagement, decisions, etc.) live inside annotation.data which Zod silently strips during validation but the JSON file preserves. The renderer reads annotation.data directly, the linter validates the canonical fields. (3) Renderer — src/pages/Showcase.tsx assembles the page using the loader plus two presentational components: src/components/StatusHistoryStrip.tsx (lifecycle bar with past/current/target/future states, anchored in feature.statusHistory) and src/components/RevisionLog.tsx (collapsible reverse-chrono log of feature.revisions[]). Per-page meta tags + JSON-LD CreativeWork structured data are injected via useEffect with cleanup on unmount to avoid leaking between routes. Adding a new showcase = creating a feat-* folder with a showcase annotation; sitemap, wall, and route render automatically.",
+  "componentFile": "src/pages/Showcase.tsx",
+  "userGuide": "Add a showcase: create portal/feat-<name>/feature.json with the standard required fields (featureKey, title, status, problem, schemaVersion) plus an annotations[] entry with id, author, date, type='showcase', body, and a data: { slug, tier, price, hours, primaryLang, title: { fr, en }, summary: { fr, en }, engagement: [...] }. Optional fields: liveUrl, sourceUrl, shippedDate, targetShipDate, compositeDisclosure, decisions[]. Once saved, the wall (/) auto-includes it; the route (/showcase/<slug>) auto-renders it; the prebuild sitemap script picks it up. Status of the underlying feature drives the status pill (draft/active/frozen). Add status transitions to feature.statusHistory[] to populate the lifecycle strip. Add revisions[] entries to populate the revision log.",
+  "knownLimitations": [
+    "Per-page og:image is shared (homepage og-image.svg) — proper per-showcase preview generation needs SSG or external og service",
+    "Source code link only renders when sourceUrl is non-null — placeholder otherwise",
+    "Live preview iframe is sandboxed allow-scripts allow-same-origin allow-forms — too lax for untrusted content; fine for self-hosted demos",
+    "Redaction self-serve flow (per Insight #40) is not yet implemented — clients must email Marc to request",
+    "No 'related showcases' surfacing — each showcase page is an island"
+  ],
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from brainstorming — primitive captures the showcase-as-SEO-infrastructure principle (Insights #25, #29, #30, #38, #40)."
+    },
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "reason": "Renderer instantiated as src/pages/Showcase.tsx + StatusHistoryStrip + RevisionLog + showcases.ts loader. Documented the loader/schema/renderer separation, the showcase-via-annotation.data pattern, and the per-page meta + JSON-LD injection-with-cleanup approach."
+    }
+  ],
+  "annotations": []
+}

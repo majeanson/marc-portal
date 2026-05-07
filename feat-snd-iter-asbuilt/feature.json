@@ -1,0 +1,19 @@
+{
+  "featureKey": "feat-2026-013",
+  "title": "SND itération — Documentation as-built (PDF client final)",
+  "status": "draft",
+  "schemaVersion": 1,
+  "domain": "sunday-night-dread/iteration",
+  "tags": ["iteration", "roadmap", "sunday-night-dread", "as-built", "pdf", "post-mvp"],
+  "problem": "Les clients finaux (propriétaires, gestionnaires de bâtiment, syndicats de copropriété) demandent souvent un récapitulatif documenté des travaux : matériaux installés, heures travaillées, décisions techniques notées en cours de chantier. Faire ce document à la main = encore une tâche du dimanche soir. Cette itération génère un PDF as-built propre à partir des données déjà capturées par le MVP et l'itération inventaire — sans travail additionnel pour le tradesperson.",
+  "lineage": { "parent": "feat-2026-010" },
+  "lastVerifiedDate": "2026-05-06",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["problem", "lineage", "tags"],
+      "reason": "Scaffolded as a roadmap iteration of feat-2026-010. PDF as-built generation depends on feat-2026-011 + feat-2026-012. Held out of MVP scope per Insight #33."
+    }
+  ]
+}

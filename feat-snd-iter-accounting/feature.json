@@ -1,0 +1,27 @@
+{
+  "featureKey": "feat-2026-014",
+  "title": "SND itération — Synchronisation comptable (QuickBooks / Acomba)",
+  "status": "draft",
+  "schemaVersion": 1,
+  "domain": "sunday-night-dread/iteration",
+  "tags": [
+    "iteration",
+    "roadmap",
+    "sunday-night-dread",
+    "accounting",
+    "quickbooks",
+    "acomba",
+    "post-mvp"
+  ],
+  "problem": "Une fois le brouillon de facture généré par le MVP et révisé, le tradesperson doit le ressaisir dans son logiciel comptable (QuickBooks ou Acomba — les deux dominants au Québec) pour produire la vraie facture officielle, payer la TPS/TVQ, et tenir la comptabilité. Cette double saisie est exactement le type de friction administrative que le MVP visait à éliminer — sauf qu'elle reste à un niveau plus profond. L'itération offre un export direct (CSV ou API) vers QuickBooks et Acomba pour fermer la boucle.",
+  "lineage": { "parent": "feat-2026-010" },
+  "lastVerifiedDate": "2026-05-06",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["problem", "lineage", "tags"],
+      "reason": "Scaffolded as a roadmap iteration of feat-2026-010. QuickBooks/Acomba integration is the closing-the-loop iteration — only valuable once the MVP voice→invoice flow is proven. Held out of MVP scope per Insight #33."
+    }
+  ]
+}
