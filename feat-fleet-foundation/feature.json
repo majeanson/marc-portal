@@ -168,7 +168,9 @@
         "implementation",
         "successCriteria"
       ],
-      "reason": "Initial fill from product/architecture conversation. Captures the path-based admin / Host-header tenancy / single-deploy / runtime-theme-via-CSS-vars decisions and the full operator/buyer/end-user surface."
+      "reason": "Initial fill from product/architecture conversation. Captures the path-based admin / Host-header tenancy / single-deploy / runtime-theme-via-CSS-vars decisions and the full operator/buyer/end-user surface.",
+      "commit": "89d43a4",
+      "buildUrl": "https://d778e1c9.marc-portal.pages.dev"
     }
   ],
   "annotations": [],
