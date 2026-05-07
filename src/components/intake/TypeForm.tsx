@@ -12,6 +12,8 @@ export function TypeForm({
   onChange,
   onBack,
   onContinue,
+  submitting = false,
+  submitError = null,
 }: {
   lang: Lang
   type: ProblemType
@@ -19,8 +21,11 @@ export function TypeForm({
   onChange: (next: FormData) => void
   onBack: () => void
   onContinue: () => void
+  submitting?: boolean
+  submitError?: string | null
 }) {
   const t = DICT[lang].intake.form
+  const tConf = DICT[lang].intake.confirmation
   const schema = getSchemaForType(type)
 
   const setField = (id: string, value: string) => {
@@ -30,6 +35,7 @@ export function TypeForm({
   const allRequiredFilled = schema.fields.every(
     (f) => !f.required || (values[f.id] && values[f.id].trim().length > 0),
   )
+  const canSubmit = allRequiredFilled && !submitting
 
   return (
     <div className="intake__step">
@@ -49,21 +55,27 @@ export function TypeForm({
         ))}
       </div>
 
+      {submitError && (
+        <p className="form__error" role="alert">
+          {submitError}
+        </p>
+      )}
+
       <div className="form__actions">
-        <button type="button" className="link-btn mono" onClick={onBack}>
+        <button type="button" className="link-btn mono" onClick={onBack} disabled={submitting}>
           {t.back}
         </button>
         <button
           type="button"
           className="hero__cta"
-          disabled={!allRequiredFilled}
+          disabled={!canSubmit}
           onClick={onContinue}
           style={{
-            opacity: allRequiredFilled ? 1 : 0.4,
-            cursor: allRequiredFilled ? 'pointer' : 'not-allowed',
+            opacity: canSubmit ? 1 : 0.4,
+            cursor: canSubmit ? 'pointer' : 'not-allowed',
           }}
         >
-          {t.continue}
+          {submitting ? tConf.submitting : t.continue}
         </button>
       </div>
     </div>

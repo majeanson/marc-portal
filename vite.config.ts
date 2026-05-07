@@ -15,8 +15,7 @@ function readGit(args: string, fallback: string): string {
 
 // Cloudflare Pages exposes the deployed commit via CF_PAGES_COMMIT_SHA; fall
 // back to local git so `vite dev` still shows something useful.
-const commitSha =
-  process.env.CF_PAGES_COMMIT_SHA ?? readGit('rev-parse HEAD', 'unknown')
+const commitSha = process.env.CF_PAGES_COMMIT_SHA ?? readGit('rev-parse HEAD', 'unknown')
 const commitDate = readGit(
   `log -1 --format=%cI ${commitSha === 'unknown' ? '' : commitSha}`.trim(),
   new Date().toISOString(),

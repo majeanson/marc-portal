@@ -13,6 +13,9 @@ import { Confirmation } from '../components/intake/Confirmation'
 import type { ProblemType } from '../lib/intakeSchemas'
 import { getCapacity } from '../lib/capacity'
 import { flagSet, flagWrite, loadDraft, saveDraft, clearDraft } from '../lib/draft'
+import { useAuth } from '../lib/authContext'
+import { createSession } from '../lib/sessionsApi'
+import { ApiError } from '../lib/api'
 
 type Step = 'vibe' | 'account' | 'type' | 'form' | 'confirmation'
 
@@ -22,31 +25,56 @@ interface IntakeDraft {
   formData: FormData
   submittedAt?: string
   waitlist?: boolean
+  /** Set after a successful createSession() call. */
+  sessionId?: string
+  /** True after a magic-link request succeeded for a non-logged-in visitor. */
+  magicLinkSent?: boolean
 }
 
 const VIBE_FLAG = 'intake-vibe-accepted'
 const DRAFT_KEY = 'intake-draft'
+/** Stash key picked up by /me on first mount after magic-link login. */
+export const PENDING_INTAKE_KEY = 'pending-intake'
+
+export interface PendingIntake {
+  intake: unknown
+  email: string
+  savedAt: string
+}
 
 function emptyDraft(): IntakeDraft {
   return { formData: {} }
 }
 
-function pickStep(draft: IntakeDraft, vibeAccepted: boolean): Step {
+function pickStep(draft: IntakeDraft, vibeAccepted: boolean, authEmail: string | null): Step {
   if (draft.submittedAt) return 'confirmation'
   if (!vibeAccepted) return 'vibe'
-  if (!draft.account?.email) return 'account'
+  // A signed-in visitor doesn't need to retype their email; carry the auth
+  // identity into the next step automatically.
+  if (!draft.account?.email && !authEmail) return 'account'
   if (!draft.type) return 'type'
   return 'form'
 }
 
 export function Intake({ lang }: { lang: Lang }) {
   const t = DICT[lang]
+  const auth = useAuth()
   const [draft, setDraft] = useState<IntakeDraft>(
     () => loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft(),
   )
   const [step, setStep] = useState<Step>(() =>
-    pickStep(loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft(), flagSet(VIBE_FLAG)),
+    pickStep(loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft(), flagSet(VIBE_FLAG), null),
   )
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  // Effective account email — auth wins when the draft hasn't captured one yet.
+  // Derived in render so we don't mutate state from inside an effect.
+  const effectiveEmail = draft.account?.email ?? auth.email ?? ''
+  const accountInitial: Account = {
+    email: effectiveEmail,
+    name: draft.account?.name,
+  }
 
   // Autosave draft on every change
   useEffect(() => {
@@ -65,13 +93,13 @@ export function Intake({ lang }: { lang: Lang }) {
 
   const onAcceptVibe = () => {
     flagWrite(VIBE_FLAG, true)
-    setStep(pickStep(draft, true))
+    setStep(pickStep(draft, true, auth.email))
   }
 
   const onAccount = (acc: Account) => {
     const next = { ...draft, account: acc }
     setDraft(next)
-    setStep(pickStep(next, true))
+    setStep(pickStep(next, true, auth.email))
   }
 
   const onPickType = (type: ProblemType) => {
@@ -94,16 +122,93 @@ export function Intake({ lang }: { lang: Lang }) {
     setStep('type')
   }
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
+    if (submitting) return
+    if (!draft.type) return
+    // The signed-in path may not have a draft.account yet (we skip the step
+    // when auth supplies the email). Fall back to the auth identity.
+    const accountEmail = draft.account?.email ?? auth.email ?? ''
+    if (!accountEmail) return
+    const account: Account = draft.account ?? { email: accountEmail }
+
+    setSubmitting(true)
+    setSubmitError(null)
+
     const submittedAt = new Date().toISOString().slice(0, 10)
     const waitlist = capacity.atCap
-    const next = { ...draft, submittedAt, waitlist }
-    setDraft(next)
-    setStep('confirmation')
+    const intakePayload = {
+      type: draft.type,
+      account,
+      formData: draft.formData,
+      submittedAt,
+      waitlist,
+      lang,
+    }
+
+    // If the visitor is signed in (and is the same email), create the session
+    // straight away. Otherwise fire a magic link and stash the intake so /me
+    // can pick it up on first mount after sign-in.
+    const isSameLoggedInUser =
+      !!auth.email && auth.email.toLowerCase() === accountEmail.toLowerCase()
+
+    if (isSameLoggedInUser) {
+      try {
+        const { session } = await createSession(intakePayload)
+        const next: IntakeDraft = {
+          ...draft,
+          account,
+          submittedAt,
+          waitlist,
+          sessionId: session.id,
+          magicLinkSent: false,
+        }
+        setDraft(next)
+        setStep('confirmation')
+      } catch (err) {
+        setSubmitError(
+          err instanceof ApiError ? err.message : DICT[lang].intake.confirmation.submitError,
+        )
+      } finally {
+        setSubmitting(false)
+      }
+      return
+    }
+
+    // Anonymous (or different-email) path: stash + magic link.
+    try {
+      const pending: PendingIntake = {
+        intake: intakePayload,
+        email: accountEmail,
+        savedAt: new Date().toISOString(),
+      }
+      saveDraft(PENDING_INTAKE_KEY, pending)
+      await auth.requestLink(accountEmail, lang)
+      const next: IntakeDraft = {
+        ...draft,
+        account,
+        submittedAt,
+        waitlist,
+        sessionId: undefined,
+        magicLinkSent: true,
+      }
+      setDraft(next)
+      setStep('confirmation')
+    } catch {
+      setSubmitError(DICT[lang].intake.confirmation.submitError)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const onResendLink = async () => {
+    const target = draft.account?.email ?? auth.email
+    if (!target) return
+    await auth.requestLink(target, lang)
   }
 
   const onStartOver = () => {
     clearDraft(DRAFT_KEY)
+    clearDraft(PENDING_INTAKE_KEY)
     flagWrite(VIBE_FLAG, false)
     const fresh = emptyDraft()
     setDraft(fresh)
@@ -127,7 +232,7 @@ export function Intake({ lang }: { lang: Lang }) {
             {step === 'vibe' && <VibeGate lang={lang} onAccept={onAcceptVibe} />}
 
             {step === 'account' && (
-              <AccountStep lang={lang} initial={draft.account ?? {}} onContinue={onAccount} />
+              <AccountStep lang={lang} initial={accountInitial} onContinue={onAccount} />
             )}
 
             {step === 'type' && (
@@ -142,6 +247,8 @@ export function Intake({ lang }: { lang: Lang }) {
                 onChange={onFormChange}
                 onBack={onBack}
                 onContinue={onSubmit}
+                submitting={submitting}
+                submitError={submitError}
               />
             )}
 
@@ -153,6 +260,9 @@ export function Intake({ lang }: { lang: Lang }) {
                 values={draft.formData}
                 waitlist={draft.waitlist ?? false}
                 submittedAt={draft.submittedAt}
+                sessionId={draft.sessionId}
+                magicLinkSent={draft.magicLinkSent ?? false}
+                onResendLink={onResendLink}
                 onStartOver={onStartOver}
               />
             )}

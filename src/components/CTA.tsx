@@ -1,16 +1,19 @@
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
+import { useAuth } from '../lib/authContext'
 
 export function CTA({ lang }: { lang: Lang }) {
   const t = DICT[lang].cta
+  const { email } = useAuth()
+  const intakeHref = `${lang === 'en' ? '/en' : ''}/intake`
   return (
     <section className="section" id="cta">
       <div className="section__inner">
         <div className="section__eyebrow">{t.eyebrow}</div>
         <h2>{t.title}</h2>
         <p>{t.body}</p>
-        <a className="hero__cta" href="/intake">
-          {t.button}
+        <a className="hero__cta" href={intakeHref}>
+          {email ? t.buttonLoggedIn : t.button}
         </a>
         <div
           style={{

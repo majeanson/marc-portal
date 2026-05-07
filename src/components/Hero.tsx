@@ -2,12 +2,16 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { CapacityCounter } from './CapacityCounter'
 import { getCapacity } from '../lib/capacity'
+import { useAuth } from '../lib/authContext'
 
 export function Hero({ lang }: { lang: Lang }) {
   const t = DICT[lang].hero
   const capacity = getCapacity()
-  const intakeHref = lang === 'fr' ? '/intake' : '/en/intake'
-  const ctaLabel = capacity.atCap ? t.ctaWaitlist : t.cta
+  const { email, isAdmin } = useAuth()
+  const langPrefix = lang === 'en' ? '/en' : ''
+  const intakeHref = `${langPrefix}/intake`
+  const sessionsHref = `${langPrefix}${isAdmin ? '/admin/inbox' : '/me'}`
+  const ctaLabel = email ? t.ctaLoggedIn : capacity.atCap ? t.ctaWaitlist : t.cta
 
   return (
     <section className="section hero">
@@ -22,6 +26,11 @@ export function Hero({ lang }: { lang: Lang }) {
         <a className="hero__cta" href={intakeHref}>
           {ctaLabel}
         </a>
+        {email && (
+          <div style={{ marginTop: 12, fontSize: 13, fontFamily: 'var(--mono)' }}>
+            <a href={sessionsHref}>{t.mySessionsLink}</a>
+          </div>
+        )}
         <div
           style={{
             marginTop: 12,

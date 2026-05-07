@@ -25,6 +25,8 @@ const FR = {
       'Compte gratuit. Démos testables tout le long du projet. Premier brouillon en quelques jours.',
     cta: 'Crée ton compte gratuit →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
+    ctaLoggedIn: 'Démarrer une nouvelle proposition →',
+    mySessionsLink: 'Voir mes sessions',
     bilingual: '(Disponible aussi en anglais — réponse dans ta langue.)',
   },
 
@@ -144,6 +146,7 @@ const FR = {
     title: 'Décris ton problème',
     body: 'Compte gratuit. Aucun call. Je lis chaque formulaire moi-même et je te réponds en 72 h — oui, non, ou « raconte-moi plus ».',
     button: 'Ouvrir le formulaire →',
+    buttonLoggedIn: 'Démarrer une nouvelle proposition →',
     micro:
       'Si je suis plein, tu peux quand même créer un compte et te mettre sur la liste d’attente.',
   },
@@ -355,6 +358,15 @@ const FR = {
       summarySubmittedAt: 'Soumis le',
       summaryAnswers: 'Tes réponses',
       startOver: 'Recommencer un nouveau formulaire',
+      submitting: 'Envoi en cours…',
+      submitError:
+        'Hmm, problème de connexion en envoyant ton intake. Ton brouillon est sauvegardé — réessaie dans un instant.',
+      sessionLinkLabel: 'Voir ta session →',
+      sessionLinkHint: 'Ta proposition est enregistrée. Tu peux la suivre et y répondre ici.',
+      magicLinkSentTitle: 'Vérifie ton courriel pour finaliser',
+      magicLinkSentBody: (email: string) =>
+        `On a envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session — il expire dans 30 minutes.`,
+      magicLinkAgain: 'Pas reçu ? Renvoyer le lien',
     },
   },
 }
@@ -381,6 +393,8 @@ const EN: Copy = {
     body3: 'Free account. Live demos testable throughout the project. First draft in a few days.',
     cta: 'Create a free account →',
     ctaWaitlist: 'Join the waitlist →',
+    ctaLoggedIn: 'Start a new proposal →',
+    mySessionsLink: 'View my sessions',
     bilingual: '(Also available in French — reply in your language.)',
   },
 
@@ -499,6 +513,7 @@ const EN: Copy = {
     title: 'Describe your problem',
     body: "Free account. No call. I read every form myself and reply within 72h — yes, no, or 'tell me more.'",
     button: 'Open the form →',
+    buttonLoggedIn: 'Start a new proposal →',
     micro: "If I'm full, you can still create an account and join the waitlist.",
   },
 
@@ -709,6 +724,15 @@ const EN: Copy = {
       summarySubmittedAt: 'Submitted on',
       summaryAnswers: 'Your answers',
       startOver: 'Start a new form',
+      submitting: 'Sending…',
+      submitError:
+        'Connection hiccup while sending your intake. Your draft is saved — try again in a moment.',
+      sessionLinkLabel: 'See your session →',
+      sessionLinkHint: 'Your proposal is saved. You can follow it and reply here.',
+      magicLinkSentTitle: 'Check your email to finish',
+      magicLinkSentBody: (email: string) =>
+        `A sign-in link was sent to ${email}. Open it to access your session — it expires in 30 minutes.`,
+      magicLinkAgain: "Didn't get it? Resend the link",
     },
   },
 }
