@@ -154,8 +154,12 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": ["implementation"],
-      "reason": "Auto-stamp pipeline test 2/3: swapped the disclaimer emoji 🎯 → 🔥 to verify a second sequential auto-stamp produces a distinct buildUrl. Visitors comparing the test 1 and test 2 iframes side-by-side should see one 🎯 and one 🔥 in the disclaimer line at the bottom of each demo."
+      "fields_changed": [
+        "implementation"
+      ],
+      "reason": "Auto-stamp pipeline test 2/3: swapped the disclaimer emoji 🎯 → 🔥 to verify a second sequential auto-stamp produces a distinct buildUrl. Visitors comparing the test 1 and test 2 iframes side-by-side should see one 🎯 and one 🔥 in the disclaimer line at the bottom of each demo.",
+      "commit": "21b6bdd",
+      "buildUrl": "https://9dc01e42.marc-portal.pages.dev"
     }
   ],
   "annotations": [
