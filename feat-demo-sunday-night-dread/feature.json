@@ -150,6 +150,12 @@
       "reason": "Auto-stamp pipeline test 1/3: prepended a 🎯 emoji to the SND disclaimer string (FR + EN). This revision should be the first one auto-stamped by the deploy.yml workflow with `commit` (the SHA of this push) and `buildUrl` (the wrangler-action deployment URL). Visitors clicking 'voir ce build →' on this entry should land on a build whose disclaimer reads '🎯 Démo statique...'.",
       "commit": "1a5a2e0",
       "buildUrl": "https://ba0c0615.marc-portal.pages.dev"
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["implementation"],
+      "reason": "Auto-stamp pipeline test 2/3: swapped the disclaimer emoji 🎯 → 🔥 to verify a second sequential auto-stamp produces a distinct buildUrl. Visitors comparing the test 1 and test 2 iframes side-by-side should see one 🎯 and one 🔥 in the disclaimer line at the bottom of each demo."
     }
   ],
   "annotations": [

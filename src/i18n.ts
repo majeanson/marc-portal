@@ -303,7 +303,7 @@ const FR = {
     buildLogHint:
       'Cette démo est documentée comme une fonctionnalité réelle — chaque révision est inscrite ici, lisible, datée.',
     disclaimer:
-      '🎯 Démo statique avec voix-clients composites. Le code et le parser sont vrais. Aucune donnée réelle, aucun email envoyé.',
+      '🔥 Démo statique avec voix-clients composites. Le code et le parser sont vrais. Aucune donnée réelle, aucun email envoyé.',
   },
 
   intake: {
@@ -677,7 +677,7 @@ const EN: Copy = {
     buildLogHint:
       'This demo is documented like a real feature — every revision is recorded here, readable, dated.',
     disclaimer:
-      '🎯 Static demo with composite client voices. The code and parser are real. No real data, no email sent.',
+      '🔥 Static demo with composite client voices. The code and parser are real. No real data, no email sent.',
   },
 
   intake: {
