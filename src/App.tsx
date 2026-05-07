@@ -16,6 +16,7 @@ import { AdminTeam } from './pages/AdminTeam'
 import { AdminBilling } from './pages/AdminBilling'
 import { AdminFleet } from './pages/AdminFleet'
 import { AdminFleetNew } from './pages/AdminFleetNew'
+import { AdminAudit } from './pages/AdminAudit'
 
 export function App() {
   return (
@@ -55,6 +56,7 @@ export function App() {
         <Route path="facturation" element={<AdminBilling lang="fr" />} />
         <Route path="fleet" element={<AdminFleet lang="fr" />} />
         <Route path="fleet/new" element={<AdminFleetNew lang="fr" />} />
+        <Route path="audit" element={<AdminAudit lang="fr" />} />
       </Route>
       <Route path="/en/admin" element={<Admin lang="en" />}>
         <Route index element={<Navigate to="/en/admin/apparence" replace />} />
@@ -63,6 +65,7 @@ export function App() {
         <Route path="facturation" element={<AdminBilling lang="en" />} />
         <Route path="fleet" element={<AdminFleet lang="en" />} />
         <Route path="fleet/new" element={<AdminFleetNew lang="en" />} />
+        <Route path="audit" element={<AdminAudit lang="en" />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
