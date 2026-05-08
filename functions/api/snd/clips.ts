@@ -3,16 +3,13 @@
 // POST /api/snd/clips — create a new voice clip from a text transcript
 //
 // Tenant-scoped: every read filters by tenant_id; every write tags it.
-// Auth: signed-in tenant owner OR operator (Marc) acting on the tenant.
-// Template gate: only available on tenants whose templateId is 'snd' —
-// other templates 404 these endpoints to keep the API surface tight.
+// Gate via requireTemplate(ctx, 'snd') — wrong templateId 404s, unsigned 401s,
+// non-owner-non-operator 403s when ownerOnly is true.
 
-import { currentEmail } from '../../_lib/auth'
 import { randomTokenB64url } from '../../_lib/bytes'
 import type { Env } from '../../_lib/env'
-import { isAdmin } from '../../_lib/env'
-import { badRequest, forbidden, notFound, ok, unauthorized } from '../../_lib/json'
-import { requireTenant } from '../../_lib/tenant'
+import { badRequest, ok } from '../../_lib/json'
+import { requireTemplate } from '../../_lib/template'
 
 export interface VoiceClip {
   id: string
@@ -46,30 +43,10 @@ function rowToClip(r: ClipRow): VoiceClip {
   }
 }
 
-/**
- * Caller must be signed in AND either the tenant's owner OR an operator
- * on an operator tenant. Returns email when allowed; a Response otherwise.
- */
-async function gateBuyerOrOperator(
-  ctx: Parameters<PagesFunction<Env>>[0],
-): Promise<{ email: string } | Response> {
-  const tenant = requireTenant(ctx)
-  if (tenant.templateId !== 'snd') return notFound()
-
-  const email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
-  if (!email) return unauthorized()
-
-  const isOwner = tenant.ownerEmail.toLowerCase() === email.toLowerCase()
-  const isOperator = isAdmin(ctx.env, email) && tenant.flags.isOperator === true
-  if (!isOwner && !isOperator) return forbidden()
-
-  return { email }
-}
-
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
-  const gate = await gateBuyerOrOperator(ctx)
+  const gate = await requireTemplate(ctx, 'snd', { ownerOnly: true })
   if (gate instanceof Response) return gate
-  const tenant = requireTenant(ctx)
+  const { tenant } = gate
 
   const res = await ctx.env.DB.prepare(
     `SELECT id, recorded_at, client_name, transcript_fr, transcript_en,
@@ -96,9 +73,9 @@ const MAX_TRANSCRIPT_LEN = 4000
 const MAX_CLIENT_LEN = 80
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
-  const gate = await gateBuyerOrOperator(ctx)
+  const gate = await requireTemplate(ctx, 'snd', { ownerOnly: true })
   if (gate instanceof Response) return gate
-  const tenant = requireTenant(ctx)
+  const { tenant, email } = gate
 
   let body: CreateBody
   try {
@@ -149,7 +126,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
         created_by_email, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(id, tenant.id, recordedAt, clientName, transcriptFr, transcriptEn, gate.email, now)
+    .bind(id, tenant.id, recordedAt, clientName, transcriptFr, transcriptEn, email, now)
     .run()
 
   const clip: VoiceClip = {
@@ -158,7 +135,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     clientName,
     transcriptFr,
     transcriptEn,
-    createdByEmail: gate.email,
+    createdByEmail: email,
     createdAt: now,
   }
   return ok({ clip })

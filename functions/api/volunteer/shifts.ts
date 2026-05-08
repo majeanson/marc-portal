@@ -6,12 +6,10 @@
 // live slot-fill counts (one query, server-side aggregate — keeps the SPA
 // dumb).
 
-import { currentEmail } from '../../_lib/auth'
 import { randomTokenB64url } from '../../_lib/bytes'
 import type { Env } from '../../_lib/env'
-import { isAdmin } from '../../_lib/env'
-import { badRequest, forbidden, notFound, ok, unauthorized } from '../../_lib/json'
-import { requireTenant } from '../../_lib/tenant'
+import { badRequest, forbidden, ok } from '../../_lib/json'
+import { requireTemplate } from '../../_lib/template'
 
 export interface Shift {
   id: string
@@ -54,23 +52,10 @@ function rowToShift(r: ShiftRow): Shift {
   }
 }
 
-async function gateAuthed(
-  ctx: Parameters<PagesFunction<Env>>[0],
-): Promise<{ email: string; isOwner: boolean } | Response> {
-  const tenant = requireTenant(ctx)
-  if (tenant.templateId !== 'volunteer-roster') return notFound()
-  const email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
-  if (!email) return unauthorized()
-  const isOwner =
-    tenant.ownerEmail.toLowerCase() === email.toLowerCase() ||
-    (isAdmin(ctx.env, email) && tenant.flags.isOperator === true)
-  return { email, isOwner }
-}
-
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
-  const gate = await gateAuthed(ctx)
+  const gate = await requireTemplate(ctx, 'volunteer-roster')
   if (gate instanceof Response) return gate
-  const tenant = requireTenant(ctx)
+  const { tenant } = gate
 
   const now = Math.floor(Date.now() / 1000)
   // Show shifts that haven't ended yet (cutoff at ends_at, not starts_at, so
@@ -106,10 +91,10 @@ const MAX_LOCATION_LEN = 120
 const MAX_NOTES_LEN = 600
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
-  const gate = await gateAuthed(ctx)
+  const gate = await requireTemplate(ctx, 'volunteer-roster')
   if (gate instanceof Response) return gate
   if (!gate.isOwner) return forbidden('only the owner can create shifts')
-  const tenant = requireTenant(ctx)
+  const { tenant, email } = gate
 
   let body: CreateBody
   try {
@@ -152,7 +137,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
         created_by_email, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(id, tenant.id, startsAt, endsAt, role, slotsNeeded, location, notes, gate.email, now)
+    .bind(id, tenant.id, startsAt, endsAt, role, slotsNeeded, location, notes, email, now)
     .run()
 
   const shift: Shift = {
@@ -164,7 +149,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     filled: 0,
     location,
     notes,
-    createdByEmail: gate.email,
+    createdByEmail: email,
     createdAt: now,
   }
   return ok({ shift })

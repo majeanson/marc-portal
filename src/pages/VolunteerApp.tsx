@@ -12,9 +12,9 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import type { Lang } from '../i18n'
-import { Footer } from '../components/Footer'
+import { AppShell } from '../components/AppShell'
 import { api, ApiError } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { useTenant } from '../lib/tenantContext'
@@ -235,54 +235,39 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
     return <Navigate to={`${lang === 'en' ? '/en' : ''}/login?next=${next}`} replace />
   }
 
-  const langPrefix = lang === 'en' ? '/en' : ''
-
   return (
-    <div className="snd-app vr-app">
-      <header className="snd-app__head">
-        <div className="snd-app__brand">
-          <h1>{tenant?.displayName ?? 'Volunteer Roster'}</h1>
-        </div>
-        <nav className="snd-app__nav">
-          <Link to={`${langPrefix}/admin`} className="snd-app__nav-link">
-            ⚙ {t.settings}
-          </Link>
-          <span className="snd-app__user mono">{email}</span>
-        </nav>
-      </header>
+    <AppShell lang={lang}>
+      <section className="snd-app__intro">
+        <h2>{t.title}</h2>
+        <p>{t.sub}</p>
+      </section>
 
-      <main id="main-content" className="snd-app__main">
-        <section className="snd-app__intro">
-          <h2>{t.title}</h2>
-          <p>{t.sub}</p>
-        </section>
+      {!adding && (
+        <button
+          type="button"
+          className="hero__cta snd-app__add-btn"
+          onClick={() => setAdding(true)}
+        >
+          {t.add}
+        </button>
+      )}
+      {adding && (
+        <AddShiftForm
+          t={t}
+          onCancel={() => setAdding(false)}
+          onCreated={onShiftCreated}
+        />
+      )}
 
-        {!adding && (
-          <button
-            type="button"
-            className="hero__cta snd-app__add-btn"
-            onClick={() => setAdding(true)}
-          >
-            {t.add}
-          </button>
-        )}
-        {adding && (
-          <AddShiftForm
-            t={t}
-            onCancel={() => setAdding(false)}
-            onCreated={onShiftCreated}
-          />
-        )}
+      {error && <p className="form__error">{t.error}</p>}
 
-        {error && <p className="form__error">{t.error}</p>}
+      {shifts && shifts.length === 0 && <p className="snd-app__empty">{t.empty}</p>}
 
-        {shifts && shifts.length === 0 && <p className="snd-app__empty">{t.empty}</p>}
-
-        {grouped.map(([dayKey, dayShifts]) => (
-          <section key={dayKey} className="vr-day">
-            <h3 className="vr-day__head">{dayShifts[0] ? fmtDate(dayShifts[0].startsAt, lang, true) : dayKey}</h3>
-            <ul className="snd-clips">
-              {dayShifts.map((s) => {
+      {grouped.map(([dayKey, dayShifts]) => (
+        <section key={dayKey} className="vr-day">
+          <h3 className="vr-day__head">{dayShifts[0] ? fmtDate(dayShifts[0].startsAt, lang, true) : dayKey}</h3>
+          <ul className="snd-clips">
+            {dayShifts.map((s) => {
                 const full = s.filled >= s.slotsNeeded
                 const mineHere = mySignups.has(s.id)
                 return (
@@ -333,10 +318,7 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
             </ul>
           </section>
         ))}
-      </main>
-
-      <Footer lang={lang} />
-    </div>
+    </AppShell>
   )
 }
 

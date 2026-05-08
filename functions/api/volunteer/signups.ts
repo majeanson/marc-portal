@@ -6,18 +6,10 @@
 // Tenant-scoped, template-gated. POST returns the slot-fill count after
 // commit so the SPA can update its display in one round-trip.
 
-import { currentEmail } from '../../_lib/auth'
 import { randomTokenB64url } from '../../_lib/bytes'
 import type { Env } from '../../_lib/env'
-import { isAdmin } from '../../_lib/env'
-import {
-  badRequest,
-  forbidden,
-  notFound,
-  ok,
-  unauthorized,
-} from '../../_lib/json'
-import { requireTenant } from '../../_lib/tenant'
+import { badRequest, forbidden, notFound, ok } from '../../_lib/json'
+import { requireTemplate } from '../../_lib/template'
 
 export interface Signup {
   id: string
@@ -49,10 +41,9 @@ function rowToSignup(r: SignupRow): Signup {
 }
 
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
-  const tenant = requireTenant(ctx)
-  if (tenant.templateId !== 'volunteer-roster') return notFound()
-  const email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
-  if (!email) return unauthorized()
+  const gate = await requireTemplate(ctx, 'volunteer-roster')
+  if (gate instanceof Response) return gate
+  const { tenant, email } = gate
 
   // Only confirmed signups for shifts that haven't ended yet — the UI uses
   // these to know which "Sign me up" buttons to flip to "Cancel my signup".
@@ -79,11 +70,9 @@ interface CreateBody {
 }
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
-  const tenant = requireTenant(ctx)
-  if (tenant.templateId !== 'volunteer-roster') return notFound()
-
-  const email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
-  if (!email) return unauthorized()
+  const gate = await requireTemplate(ctx, 'volunteer-roster')
+  if (gate instanceof Response) return gate
+  const { tenant, email } = gate
 
   let body: CreateBody
   try {
@@ -157,11 +146,9 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 }
 
 export const onRequestDelete: PagesFunction<Env> = async (ctx) => {
-  const tenant = requireTenant(ctx)
-  if (tenant.templateId !== 'volunteer-roster') return notFound()
-
-  const email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
-  if (!email) return unauthorized()
+  const gate = await requireTemplate(ctx, 'volunteer-roster')
+  if (gate instanceof Response) return gate
+  const { tenant, email, isOwner } = gate
 
   const id = String(ctx.params.id ?? '')
   if (!id) return badRequest('missing id')
@@ -175,10 +162,7 @@ export const onRequestDelete: PagesFunction<Env> = async (ctx) => {
     .first<SignupRow>()
   if (!row) return notFound()
 
-  // Self-cancel OR owner-cancel-on-behalf.
-  const isOwner =
-    tenant.ownerEmail.toLowerCase() === email.toLowerCase() ||
-    (isAdmin(ctx.env, email) && tenant.flags.isOperator === true)
+  // Self-cancel OR owner/operator on-behalf.
   if (row.volunteer_email.toLowerCase() !== email.toLowerCase() && !isOwner) {
     return forbidden()
   }

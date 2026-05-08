@@ -9,11 +9,11 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { Lang } from '../i18n'
-import { Footer } from '../components/Footer'
+import { AppShell } from '../components/AppShell'
 import { api, ApiError } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { useTenant } from '../lib/tenantContext'
-import { Link, Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 
 interface VoiceClip {
   id: string
@@ -176,97 +176,79 @@ export function SndApp({ lang }: { lang: Lang }) {
     return <Navigate to={`${lang === 'en' ? '/en' : ''}/login?next=${next}`} replace />
   }
 
-  const langPrefix = lang === 'en' ? '/en' : ''
-
   return (
-    <div className="snd-app">
-      <header className="snd-app__head">
-        <div className="snd-app__brand">
-          <h1>{tenant?.displayName ?? 'SND'}</h1>
-        </div>
-        <nav className="snd-app__nav">
-          <Link to={`${langPrefix}/admin`} className="snd-app__nav-link">
-            ⚙ {t.settings}
-          </Link>
-          <span className="snd-app__user mono">{email}</span>
-        </nav>
-      </header>
+    <AppShell lang={lang}>
+      <section className="snd-app__intro">
+        <div className="section__eyebrow">{t.eyebrow}</div>
+        <h2>{t.title}</h2>
+        <p>{t.sub}</p>
+      </section>
 
-      <main id="main-content" className="snd-app__main">
-        <section className="snd-app__intro">
-          <div className="section__eyebrow">{t.eyebrow}</div>
-          <h2>{t.title}</h2>
-          <p>{t.sub}</p>
-        </section>
+      {!adding && (
+        <button
+          type="button"
+          className="hero__cta snd-app__add-btn"
+          onClick={() => setAdding(true)}
+        >
+          {t.add}
+        </button>
+      )}
 
-        {!adding && (
-          <button
-            type="button"
-            className="hero__cta snd-app__add-btn"
-            onClick={() => setAdding(true)}
-          >
-            {t.add}
-          </button>
-        )}
-
-        {adding && (
-          <form className="admin-block snd-app__form" onSubmit={submit}>
-            <div className="theme-fields">
-              <label className="field">
-                <span className="field__label">{t.client}</span>
-                <input
-                  required
-                  className="field__input"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder={t.clientPh}
-                />
-              </label>
-              <label className="field">
-                <span className="field__label">{t.when}</span>
-                <input
-                  type="datetime-local"
-                  className="field__input"
-                  value={recordedAtLocal}
-                  onChange={(e) => setRecordedAtLocal(e.target.value)}
-                />
-              </label>
-            </div>
-            <label className="field" style={{ marginTop: 14 }}>
-              <span className="field__label">{t.transcript}</span>
-              <textarea
+      {adding && (
+        <form className="admin-block snd-app__form" onSubmit={submit}>
+          <div className="theme-fields">
+            <label className="field">
+              <span className="field__label">{t.client}</span>
+              <input
                 required
                 className="field__input"
-                rows={5}
-                value={transcript}
-                onChange={(e) => setTranscript(e.target.value)}
-                placeholder={t.transcriptPh}
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                placeholder={t.clientPh}
               />
             </label>
-            <div style={{ marginTop: 18, display: 'flex', gap: 14, alignItems: 'center' }}>
-              <button type="submit" className="hero__cta" disabled={submitting}>
-                {submitting ? t.saving : t.save}
-              </button>
-              <button
-                type="button"
-                className="link-btn"
-                onClick={() => {
-                  setAdding(false)
-                  setError(null)
-                }}
-              >
-                {t.cancel}
-              </button>
-              {error && <span className="form__error">{t.error}</span>}
-            </div>
-          </form>
-        )}
+            <label className="field">
+              <span className="field__label">{t.when}</span>
+              <input
+                type="datetime-local"
+                className="field__input"
+                value={recordedAtLocal}
+                onChange={(e) => setRecordedAtLocal(e.target.value)}
+              />
+            </label>
+          </div>
+          <label className="field" style={{ marginTop: 14 }}>
+            <span className="field__label">{t.transcript}</span>
+            <textarea
+              required
+              className="field__input"
+              rows={5}
+              value={transcript}
+              onChange={(e) => setTranscript(e.target.value)}
+              placeholder={t.transcriptPh}
+            />
+          </label>
+          <div style={{ marginTop: 18, display: 'flex', gap: 14, alignItems: 'center' }}>
+            <button type="submit" className="hero__cta" disabled={submitting}>
+              {submitting ? t.saving : t.save}
+            </button>
+            <button
+              type="button"
+              className="link-btn"
+              onClick={() => {
+                setAdding(false)
+                setError(null)
+              }}
+            >
+              {t.cancel}
+            </button>
+            {error && <span className="form__error">{t.error}</span>}
+          </div>
+        </form>
+      )}
 
-        <ClipList clips={clips} t={t} lang={lang} />
-      </main>
-
-      <Footer lang={lang} />
-    </div>
+      <ClipList clips={clips} t={t} lang={lang} />
+    </AppShell>
   )
 }
 
