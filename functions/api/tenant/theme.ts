@@ -90,7 +90,13 @@ export const onRequestPatch: PagesFunction<Env> = async (ctx) => {
     `INSERT INTO audit_log (id, ts, actor_email, tenant_id, action, payload)
      VALUES (?, ?, ?, ?, 'theme.update', ?)`,
   )
-    .bind(crypto.randomUUID(), now, email, tenant.id, JSON.stringify({ keys: Object.keys(body.theme) }))
+    .bind(
+      crypto.randomUUID(),
+      now,
+      email,
+      tenant.id,
+      JSON.stringify({ keys: Object.keys(body.theme) }),
+    )
     .run()
 
   return ok({ theme: next })

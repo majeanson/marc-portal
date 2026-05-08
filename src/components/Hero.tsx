@@ -63,10 +63,7 @@ export function Hero({ lang }: { lang: Lang }) {
         )}
 
         {/* Quick-glance fact strip */}
-        <ul
-          className="hero__facts"
-          aria-label={lang === 'fr' ? 'Faits en bref' : 'Quick facts'}
-        >
+        <ul className="hero__facts" aria-label={lang === 'fr' ? 'Faits en bref' : 'Quick facts'}>
           {FACTS[lang].map((f) => (
             <li key={f}>{f}</li>
           ))}

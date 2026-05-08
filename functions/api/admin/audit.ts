@@ -47,9 +47,10 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 
   const url = new URL(ctx.request.url)
   const requested = Number.parseInt(url.searchParams.get('limit') ?? '', 10)
-  const limit = Number.isFinite(requested) && requested > 0 && requested <= MAX_LIMIT
-    ? requested
-    : DEFAULT_LIMIT
+  const limit =
+    Number.isFinite(requested) && requested > 0 && requested <= MAX_LIMIT
+      ? requested
+      : DEFAULT_LIMIT
 
   const [entries, slugs] = await Promise.all([
     ctx.env.DB.prepare(

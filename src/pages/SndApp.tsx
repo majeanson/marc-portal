@@ -39,7 +39,7 @@ const COPY = {
     when: 'Quand',
     transcript: 'Transcription (ce qui a été dicté)',
     transcriptPh:
-      "Ex. : Lundi 8h12 chez Bélanger. 3h de soudure, deux coudes en T 1/2 pouce, joint silicone.",
+      'Ex. : Lundi 8h12 chez Bélanger. 3h de soudure, deux coudes en T 1/2 pouce, joint silicone.',
     empty: 'Aucune note encore. Ajoutez la première en cliquant sur +.',
     error: 'Hmm, ça n’a pas marché. Réessayez.',
     by: 'par',
@@ -60,7 +60,7 @@ const COPY = {
     when: 'When',
     transcript: 'Transcript (what was dictated)',
     transcriptPh:
-      "e.g. Monday 8:12am at Bélanger’s. 3h of welding, two 1/2-inch T-elbows, silicone seal.",
+      'e.g. Monday 8:12am at Bélanger’s. 3h of welding, two 1/2-inch T-elbows, silicone seal.',
     empty: 'No notes yet. Add the first one by clicking +.',
     error: 'Hmm, that didn’t work. Try again.',
     by: 'by',
@@ -254,15 +254,7 @@ export function SndApp({ lang }: { lang: Lang }) {
 
 type SndCopy = (typeof COPY)[Lang]
 
-function ClipList({
-  clips,
-  t,
-  lang,
-}: {
-  clips: VoiceClip[] | null
-  t: SndCopy
-  lang: Lang
-}) {
+function ClipList({ clips, t, lang }: { clips: VoiceClip[] | null; t: SndCopy; lang: Lang }) {
   const grouped = useMemo(() => {
     if (!clips) return null
     return clips
@@ -276,7 +268,8 @@ function ClipList({
   return (
     <ul className="snd-clips" aria-label={t.title}>
       {(grouped ?? []).map((c) => {
-        const transcript = lang === 'en' ? (c.transcriptEn ?? c.transcriptFr) : (c.transcriptFr ?? c.transcriptEn)
+        const transcript =
+          lang === 'en' ? (c.transcriptEn ?? c.transcriptFr) : (c.transcriptFr ?? c.transcriptEn)
         return (
           <li key={c.id} className="snd-app-clip">
             <header className="snd-app-clip__head">

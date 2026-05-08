@@ -92,7 +92,10 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const value = useMemo<TenantState>(() => ({ tenant, loading, refresh }), [tenant, loading, refresh])
+  const value = useMemo<TenantState>(
+    () => ({ tenant, loading, refresh }),
+    [tenant, loading, refresh],
+  )
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>
 }

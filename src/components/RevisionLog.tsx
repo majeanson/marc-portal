@@ -119,12 +119,7 @@ function RevisionEntry({
             </button>
           )}
           {iframeSrc && (
-            <a
-              className="rev-log__open-tab mono"
-              href={iframeSrc}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a className="rev-log__open-tab mono" href={iframeSrc} target="_blank" rel="noreferrer">
               {t.openInNewTab}
             </a>
           )}

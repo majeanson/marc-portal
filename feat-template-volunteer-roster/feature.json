@@ -5,13 +5,7 @@
   "problem": "App #2 of the package shop. Built deliberately on a different domain shape than SND (no voice, no invoicing, no append-only event log) so the platform spine (tenants, theming, auth, admin shell, custom domains) gets pressure-tested against a second use case before we extract it. Volunteer Roster targets community organizations — parishes, food banks, neighborhood associations — that need to schedule volunteers for shifts: the owner adds shifts (time, role, slots needed); volunteers see upcoming shifts and sign up; the owner sees who's signed up and can nudge unfilled shifts. Two roles in one tenant (owner + volunteer), both signed in via magic link. Forward-looking time data (shifts have a future starts_at) instead of SND's backward-looking log. After this ships, comparing what code SND and Volunteer Roster duplicated identifies the real platform spine vs per-template specialization (Phase 3 generalization pass).",
   "schemaVersion": 1,
   "domain": "marc-portal/templates",
-  "tags": [
-    "template",
-    "volunteer-roster",
-    "scheduling",
-    "second-template",
-    "abstraction-test"
-  ],
+  "tags": ["template", "volunteer-roster", "scheduling", "second-template", "abstraction-test"],
   "analysis": "The second template installed on the package-shop platform. Picked specifically because its domain shape differs from SND: shifts are forward-dated time buckets with a fixed number of slots, signups are mutable (cancellable) and uniqueness-constrained per (shift, volunteer email), and the tenant has two role types (owner who creates shifts, volunteers who claim them). SND has none of these properties — voice clips are append-only, single-role, and reference past time. Building both reveals which abstractions in the platform spine (auth, tenant scoping, theming, admin shell, custom domains) actually generalize, vs which were SND-specific in disguise. Schema: vr_shifts (id, tenant_id, starts_at, ends_at, role, slots_needed, location, notes, created_by_email) and vr_signups (id, tenant_id, shift_id, volunteer_email, volunteer_name, status). UI is a list of upcoming shifts grouped by date, with owner-only 'add shift' and per-shift signup/cancel actions for any signed-in user. RootByTemplate dispatches to VolunteerApp when tenant.templateId === 'volunteer-roster'.",
   "decisions": [
     {
@@ -34,9 +28,7 @@
     {
       "decision": "Owner-only shift creation, anyone-signed-in can sign up",
       "rationale": "Mirrors the real org dynamic — the office manager curates the schedule; volunteers participate. Operator (Marc) acting on the tenant gets owner permissions for support cases.",
-      "alternativesConsidered": [
-        "Multi-role membership table (premature complexity for Phase 2)"
-      ],
+      "alternativesConsidered": ["Multi-role membership table (premature complexity for Phase 2)"],
       "date": "2026-05-07"
     }
   ],
@@ -55,12 +47,7 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis",
-        "decisions",
-        "implementation",
-        "successCriteria"
-      ],
+      "fields_changed": ["analysis", "decisions", "implementation", "successCriteria"],
       "reason": "Initial fill ahead of build — second template; locks the differs-from-SND-on-purpose decision and Phase 2 scope (no reminders, no public read).",
       "commit": "246603d",
       "buildUrl": "https://9b4cb9b0.marc-portal.pages.dev"

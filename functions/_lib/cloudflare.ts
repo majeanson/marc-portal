@@ -32,10 +32,7 @@ export interface AttachDomainResult {
  * CF side — re-attaching an existing domain returns the same record (we
  * report it as ok in that case).
  */
-export async function attachCustomDomain(
-  env: Env,
-  domain: string,
-): Promise<AttachDomainResult> {
+export async function attachCustomDomain(env: Env, domain: string): Promise<AttachDomainResult> {
   const config = readConfig(env)
   if (!config) return { ok: true, skipped: true }
 

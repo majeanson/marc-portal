@@ -5,13 +5,7 @@
   "problem": "SND today is a static interactive demo at /demo/sunday-night-dread, with composite voice clips and a parser that runs entirely in the browser. To sell it as Roger Voice Truck's actual app, it needs to become a tenanted template: real D1-backed data (voice clips uploaded by end-users, parsed entries, invoice drafts, end-user accounts as installers/dispatchers/accountants), bound per-tenant via feat-fleet-foundation, with the existing demo UX as the buyer-facing surface. The static demo stays at /demo/sunday-night-dread on lifeascode.app as a public preview/storefront. The productized SND is what gets installed at roger-voice-truck.com when someone buys. Distinguishes \"what Marc shows prospects\" from \"what buyers run\".",
   "schemaVersion": 1,
   "domain": "marc-portal/templates",
-  "tags": [
-    "template",
-    "snd",
-    "tenanted-app",
-    "voice",
-    "invoicing"
-  ],
+  "tags": ["template", "snd", "tenanted-app", "voice", "invoicing"],
   "analysis": "Productizing the static SND demo into a tenanted application. Today /demo/sunday-night-dread is an interactive showroom with 3 hardcoded voice clips (VOICE_CLIPS in src/lib/sndParser.ts) and an in-browser parser that produces an invoice draft for display. The static demo stays at its current URL on lifeascode.app as the marketing showroom. The productized template, when installed on a buyer's tenant, replaces those hardcoded clips with a per-tenant D1-backed corpus that buyers grow over time. Architecturally it adds: snd_voice_clips table (tenant_id-scoped), API endpoints to list/create clips, a buyer-facing /app surface that an SND tenant lands on when they visit their root domain, end-user accounts (installers/dispatchers/accountants invited via the existing magic-link auth, scoped to a single tenant). Audio upload and the parser/invoice generation reuse the existing sndParser.ts library — same code path, same math. The conditional that makes a tenant's root URL render SND instead of Marc's marketing portal lives in the App Shell composition: when ctx.data.tenant.templateId === 'snd', / renders SndApp; else Home (Marc's portal). One codebase, multiple front doors.",
   "decisions": [
     {
@@ -56,12 +50,7 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis",
-        "decisions",
-        "implementation",
-        "successCriteria"
-      ],
+      "fields_changed": ["analysis", "decisions", "implementation", "successCriteria"],
       "reason": "Initial fill — productize SND as the first sellable template. Locks the static-demo-vs-buyer-app split, the text-first/audio-later phasing, and the SND-tenant-lands-on-root routing decision.",
       "commit": "857df23",
       "buildUrl": "https://4f57df9a.marc-portal.pages.dev"

@@ -5,12 +5,7 @@
   "problem": "Each buyer wants their app at their own domain (e.g. roger-voice-truck.com). Cloudflare Pages supports unlimited custom domains per project via the HTTP API. To keep onboarding under 5 minutes of operator time, this feature wraps the CF API in: (a) a one-call domain-attach when a tenant is provisioned, (b) generated CNAME instructions emailed to the buyer, (c) a polling job that watches SSL provisioning state and updates tenants.status from 'pending' to 'active', (d) operator-console signals for the failure modes (domain conflict, DNS misconfig, SSL stuck). Without this automation, every onboarding requires Marc to log into the CF dashboard and click through the domain-add UI — which negates the 5-minute provisioning promise.",
   "schemaVersion": 1,
   "domain": "marc-portal/onboarding",
-  "tags": [
-    "onboarding",
-    "cloudflare-pages-api",
-    "custom-domain",
-    "ssl"
-  ],
+  "tags": ["onboarding", "cloudflare-pages-api", "custom-domain", "ssl"],
   "analysis": "Wraps the Cloudflare Pages API in a thin helper used by the operator's fleet wizard. Today /admin/fleet/new inserts a tenants row and a primary tenant_domains row (status=pending), then displays manual instructions: operator goes to the CF dashboard, adds the custom domain there, and asks the buyer to update DNS. This feature collapses the dashboard step into an API call made automatically when the wizard succeeds. CF Pages exposes POST /accounts/{id}/pages/projects/{p}/domains to attach a custom domain to a project; CF then handles SSL provisioning automatically once DNS resolves to the project's CNAME target. Errors from the API are surfaced to the operator inline; the tenant row still commits regardless (re-attach is idempotent later).",
   "decisions": [
     {
@@ -53,12 +48,7 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis",
-        "decisions",
-        "implementation",
-        "successCriteria"
-      ],
+      "fields_changed": ["analysis", "decisions", "implementation", "successCriteria"],
       "reason": "Initial fill ahead of build — captures the best-effort vs transactional decision and the SSL-polling deferral.",
       "commit": "3be0de2",
       "buildUrl": "https://021f9447.marc-portal.pages.dev"

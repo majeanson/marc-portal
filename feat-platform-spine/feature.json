@@ -5,13 +5,7 @@
   "problem": "Two templates (SND + Volunteer Roster) shipped on top of feat-fleet-foundation in Phase 1 + 2. Now we can observe what actually duplicated between them and extract the shared spine deliberately, instead of guessing. The duplications worth extracting: (1) the auth/tenant gate boilerplate at the top of every API handler — both templates write the same six-line pattern of requireTenant + templateId check + currentEmail + ownerEmail/isAdmin compute; (2) the buyer-app chrome (head bar with display name + settings link + email, main wrapper) — copy-pasted between SndApp and VolunteerApp under the .snd-app class names; (3) the empty-state and form-panel layout pattern. After this pass, adding template #3 should be smaller than #2 was, and the parts of feat-fleet-foundation that \"felt right\" get formal API surfaces (e.g. requireTemplate, AppShell) instead of being implicit copy-paste rules.",
   "schemaVersion": 1,
   "domain": "marc-portal/platform",
-  "tags": [
-    "platform",
-    "spine",
-    "refactor",
-    "template-primitives",
-    "phase-3"
-  ],
+  "tags": ["platform", "spine", "refactor", "template-primitives", "phase-3"],
   "analysis": "After SND (feat-2026-021) and Volunteer Roster (feat-2026-022) both shipped, the duplication is concrete enough to extract cleanly. Server-side: every template handler opens with the same six-line gate — requireTenant, templateId comparison, currentEmail null-guard, then a derived isOwner from ownerEmail or (isAdmin && isOperator). I extract this into requireTemplate(ctx, templateId, { mustBeOwner? }) which returns { tenant, email, isOwner } or a Response. Client-side: the buyer-app chrome (head bar with displayName + Settings nav + email, max-width main wrapper) is copy-pasted between SndApp and VolunteerApp under the .snd-app class names. I extract this into <AppShell title? children />. Both templates pass the same head shape, so the shell hosts it. The empty-state pattern (dashed-border container with grey text) is small enough to leave inline; not worth a component. The form-panel pattern reuses the existing .admin-block class — already shared, no change needed. After this commit, a third template is provably easier: gate handler in one line, render shell in one wrapper, focus on domain logic.",
   "decisions": [
     {
@@ -54,12 +48,7 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis",
-        "decisions",
-        "implementation",
-        "successCriteria"
-      ],
+      "fields_changed": ["analysis", "decisions", "implementation", "successCriteria"],
       "reason": "Initial fill ahead of build — captures Phase 3 generalization scope and the deliberate-not-renaming decision.",
       "commit": "f7759b8",
       "buildUrl": "https://dbe63eef.marc-portal.pages.dev"

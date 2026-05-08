@@ -117,10 +117,12 @@ export function AdminFleet({ lang }: { lang: Lang }) {
 
       <section className="admin-block fleet-block">
         {error === 'other' && <p className="form__error">{t.error}</p>}
-        {!rows && !error && <p className="mono" style={{ color: 'var(--text-soft)' }}>…</p>}
-        {rows && rows.length === 0 && (
-          <p style={{ color: 'var(--text-mid)' }}>{t.empty}</p>
+        {!rows && !error && (
+          <p className="mono" style={{ color: 'var(--text-soft)' }}>
+            …
+          </p>
         )}
+        {rows && rows.length === 0 && <p style={{ color: 'var(--text-mid)' }}>{t.empty}</p>}
         {rows && rows.length > 0 && (
           <table className="fleet-table">
             <thead>
@@ -153,14 +155,18 @@ export function AdminFleet({ lang }: { lang: Lang }) {
                       {r.primaryDomain ?? '—'}
                     </a>
                     {r.domains.length > 1 && (
-                      <div className="fleet-table__secondary mono">
-                        +{r.domains.length - 1}
-                      </div>
+                      <div className="fleet-table__secondary mono">+{r.domains.length - 1}</div>
                     )}
                   </td>
                   <td>
-                    <span className={`status status--${r.status === 'active' ? 'active' : r.status === 'frozen' ? 'deprecated' : 'draft'}`}>
-                      {r.status === 'active' ? t.statusActive : r.status === 'frozen' ? t.statusFrozen : t.statusPending}
+                    <span
+                      className={`status status--${r.status === 'active' ? 'active' : r.status === 'frozen' ? 'deprecated' : 'draft'}`}
+                    >
+                      {r.status === 'active'
+                        ? t.statusActive
+                        : r.status === 'frozen'
+                          ? t.statusFrozen
+                          : t.statusPending}
                     </span>
                   </td>
                   <td className="mono fleet-table__secondary">{formatAge(r.createdAt, lang)}</td>

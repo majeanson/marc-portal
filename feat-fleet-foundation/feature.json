@@ -96,10 +96,7 @@
       "description": "Returns an HTML <style> string that sets :root CSS custom properties from a ThemeJSON. Injected by the SSR layer into the document head."
     }
   ],
-  "externalDependencies": [
-    "feat-2026-009",
-    "feat-2026-015"
-  ],
+  "externalDependencies": ["feat-2026-009", "feat-2026-015"],
   "lastVerifiedDate": "2026-05-07",
   "codeSnippets": [
     {
@@ -162,12 +159,7 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis",
-        "decisions",
-        "implementation",
-        "successCriteria"
-      ],
+      "fields_changed": ["analysis", "decisions", "implementation", "successCriteria"],
       "reason": "Initial fill from product/architecture conversation. Captures the path-based admin / Host-header tenancy / single-deploy / runtime-theme-via-CSS-vars decisions and the full operator/buyer/end-user surface.",
       "commit": "89d43a4",
       "buildUrl": "https://d778e1c9.marc-portal.pages.dev"

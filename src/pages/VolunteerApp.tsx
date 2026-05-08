@@ -252,11 +252,7 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
         </button>
       )}
       {adding && (
-        <AddShiftForm
-          t={t}
-          onCancel={() => setAdding(false)}
-          onCreated={onShiftCreated}
-        />
+        <AddShiftForm t={t} onCancel={() => setAdding(false)} onCreated={onShiftCreated} />
       )}
 
       {error && <p className="form__error">{t.error}</p>}
@@ -265,59 +261,59 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
 
       {grouped.map(([dayKey, dayShifts]) => (
         <section key={dayKey} className="vr-day">
-          <h3 className="vr-day__head">{dayShifts[0] ? fmtDate(dayShifts[0].startsAt, lang, true) : dayKey}</h3>
+          <h3 className="vr-day__head">
+            {dayShifts[0] ? fmtDate(dayShifts[0].startsAt, lang, true) : dayKey}
+          </h3>
           <ul className="snd-clips">
             {dayShifts.map((s) => {
-                const full = s.filled >= s.slotsNeeded
-                const mineHere = mySignups.has(s.id)
-                return (
-                  <li key={s.id} className="snd-app-clip vr-shift">
-                    <header className="snd-app-clip__head vr-shift__head">
-                      <div className="snd-app-clip__when mono">
-                        {fmtTime(s.startsAt, lang)} – {fmtTime(s.endsAt, lang)}
-                      </div>
-                      <div className="snd-app-clip__client">{s.role}</div>
-                      <div className={`vr-shift__fill${full ? ' vr-shift__fill--full' : ''}`}>
-                        {full
-                          ? t.full
-                          : `${s.filled} ${t.of} ${s.slotsNeeded} ${t.filled}`}
-                      </div>
-                    </header>
-                    {s.location && (
-                      <p className="snd-app-clip__body" style={{ margin: '0 0 6px' }}>
-                        📍 {s.location}
-                      </p>
+              const full = s.filled >= s.slotsNeeded
+              const mineHere = mySignups.has(s.id)
+              return (
+                <li key={s.id} className="snd-app-clip vr-shift">
+                  <header className="snd-app-clip__head vr-shift__head">
+                    <div className="snd-app-clip__when mono">
+                      {fmtTime(s.startsAt, lang)} – {fmtTime(s.endsAt, lang)}
+                    </div>
+                    <div className="snd-app-clip__client">{s.role}</div>
+                    <div className={`vr-shift__fill${full ? ' vr-shift__fill--full' : ''}`}>
+                      {full ? t.full : `${s.filled} ${t.of} ${s.slotsNeeded} ${t.filled}`}
+                    </div>
+                  </header>
+                  {s.location && (
+                    <p className="snd-app-clip__body" style={{ margin: '0 0 6px' }}>
+                      📍 {s.location}
+                    </p>
+                  )}
+                  {s.notes && <p className="snd-app-clip__body">{s.notes}</p>}
+                  <footer className="vr-shift__foot">
+                    <span className="snd-app-clip__foot mono">
+                      {t.by} {s.createdByEmail}
+                    </span>
+                    {!full && !mineHere && (
+                      <button
+                        type="button"
+                        className="hero__cta vr-shift__action"
+                        onClick={() => onSignup(s.id)}
+                      >
+                        {t.signup}
+                      </button>
                     )}
-                    {s.notes && <p className="snd-app-clip__body">{s.notes}</p>}
-                    <footer className="vr-shift__foot">
-                      <span className="snd-app-clip__foot mono">
-                        {t.by} {s.createdByEmail}
-                      </span>
-                      {!full && !mineHere && (
-                        <button
-                          type="button"
-                          className="hero__cta vr-shift__action"
-                          onClick={() => onSignup(s.id)}
-                        >
-                          {t.signup}
-                        </button>
-                      )}
-                      {mineHere && (
-                        <button
-                          type="button"
-                          className="link-btn vr-shift__action"
-                          onClick={() => onCancelSignup(s.id)}
-                        >
-                          {t.cancelSignup}
-                        </button>
-                      )}
-                    </footer>
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-        ))}
+                    {mineHere && (
+                      <button
+                        type="button"
+                        className="link-btn vr-shift__action"
+                        onClick={() => onCancelSignup(s.id)}
+                      >
+                        {t.cancelSignup}
+                      </button>
+                    )}
+                  </footer>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ))}
     </AppShell>
   )
 }

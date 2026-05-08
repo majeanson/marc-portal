@@ -105,7 +105,11 @@ export function AdminAudit({ lang }: { lang: Lang }) {
 
       <section className="admin-block fleet-block">
         {error === 'other' && <p className="form__error">{t.error}</p>}
-        {!entries && !error && <p className="mono" style={{ color: 'var(--text-soft)' }}>…</p>}
+        {!entries && !error && (
+          <p className="mono" style={{ color: 'var(--text-soft)' }}>
+            …
+          </p>
+        )}
         {entries && entries.length === 0 && (
           <p style={{ color: 'var(--text-mid)', padding: 18 }}>{t.empty}</p>
         )}
@@ -134,7 +138,9 @@ export function AdminAudit({ lang }: { lang: Lang }) {
                   <td>
                     <div className="fleet-table__primary mono">{e.action}</div>
                     {e.payload !== null && (
-                      <div className="fleet-table__secondary mono">{summarizePayload(e.payload)}</div>
+                      <div className="fleet-table__secondary mono">
+                        {summarizePayload(e.payload)}
+                      </div>
                     )}
                   </td>
                 </tr>

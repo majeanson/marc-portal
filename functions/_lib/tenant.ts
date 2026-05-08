@@ -148,7 +148,10 @@ export async function tenantBySlug(db: D1Database, slug: string): Promise<Tenant
  * Look up a tenant by id. Cheap, indexed.
  */
 export async function tenantById(db: D1Database, id: string): Promise<Tenant | null> {
-  const row = await db.prepare('SELECT * FROM tenants WHERE id = ? LIMIT 1').bind(id).first<TenantRow>()
+  const row = await db
+    .prepare('SELECT * FROM tenants WHERE id = ? LIMIT 1')
+    .bind(id)
+    .first<TenantRow>()
   if (!row) return null
   return rowToTenant(row)
 }

@@ -18,7 +18,8 @@ const COPY = {
     title: 'Provisionner un nouveau client',
     sub: 'Crée l’instance, l’envoi du lien magique et la suite des opérations.',
     slug: 'Slug (interne, immuable)',
-    slugHint: 'Lettres minuscules, chiffres, traits d’union. Apparaît dans les logs et URLs internes.',
+    slugHint:
+      'Lettres minuscules, chiffres, traits d’union. Apparaît dans les logs et URLs internes.',
     ownerEmail: 'Courriel du propriétaire',
     ownerEmailHint: 'Personne qui paie + reçoit le lien magique pour gérer son app.',
     domain: 'Domaine (sans https://)',
@@ -88,14 +89,11 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
   const [displayName, setDisplayName] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [done, setDone] = useState<
-    | {
-        slug: string
-        domain: string
-        cf: { attached: boolean; skipped: boolean; cname?: string; error?: string }
-      }
-    | null
-  >(null)
+  const [done, setDone] = useState<{
+    slug: string
+    domain: string
+    cf: { attached: boolean; skipped: boolean; cname?: string; error?: string }
+  } | null>(null)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -148,8 +146,7 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
       cfTitle = t.cfErrorTitle
       cfBody = (
         <>
-          {t.cfErrorBody}{' '}
-          <code className="mono">{done.cf.error ?? 'unknown'}</code>
+          {t.cfErrorBody} <code className="mono">{done.cf.error ?? 'unknown'}</code>
         </>
       )
     }
@@ -163,7 +160,11 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
         </header>
         <section
           className={`admin-block${done.cf.attached ? ' admin-block--soon' : ''}`}
-          style={done.cf.attached === false && done.cf.skipped !== true ? { borderColor: 'var(--warm)' } : undefined}
+          style={
+            done.cf.attached === false && done.cf.skipped !== true
+              ? { borderColor: 'var(--warm)' }
+              : undefined
+          }
         >
           <h2>{cfTitle}</h2>
           <p>{cfBody}</p>
@@ -257,7 +258,15 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
           </label>
         </div>
 
-        <div style={{ marginTop: 28, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            marginTop: 28,
+            display: 'flex',
+            gap: 14,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
           <button type="submit" className="hero__cta" disabled={submitting}>
             {submitting ? t.submitting : t.submit}
           </button>
@@ -268,7 +277,11 @@ export function AdminFleetNew({ lang }: { lang: Lang }) {
           >
             {t.cancel}
           </button>
-          {error && <span className="form__error">{t.error} ({error})</span>}
+          {error && (
+            <span className="form__error">
+              {t.error} ({error})
+            </span>
+          )}
         </div>
       </form>
     </div>

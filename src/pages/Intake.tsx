@@ -317,11 +317,7 @@ function ProgressDots({
         return (
           <li key={s} className="intake__progress-item">
             {isJumpable ? (
-              <button
-                type="button"
-                className={`${stepClass} mono`}
-                onClick={() => onJump!(s)}
-              >
+              <button type="button" className={`${stepClass} mono`} onClick={() => onJump!(s)}>
                 {label}
               </button>
             ) : (
