@@ -60,7 +60,9 @@
         "implementation",
         "successCriteria"
       ],
-      "reason": "Initial fill ahead of build — captures Phase 3 generalization scope and the deliberate-not-renaming decision."
+      "reason": "Initial fill ahead of build — captures Phase 3 generalization scope and the deliberate-not-renaming decision.",
+      "commit": "f7759b8",
+      "buildUrl": "https://dbe63eef.marc-portal.pages.dev"
     }
   ],
   "annotations": [],
