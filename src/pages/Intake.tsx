@@ -122,6 +122,12 @@ export function Intake({ lang }: { lang: Lang }) {
     setStep('type')
   }
 
+  const onJumpStep = (s: Step) => {
+    // Progress dots are read-only after submission.
+    if (draft.submittedAt) return
+    setStep(s)
+  }
+
   const onSubmit = async () => {
     if (submitting) return
     if (!draft.type) return
@@ -182,7 +188,14 @@ export function Intake({ lang }: { lang: Lang }) {
         savedAt: new Date().toISOString(),
       }
       saveDraft(PENDING_INTAKE_KEY, pending)
-      await auth.requestLink(accountEmail, lang)
+      const sent = await auth.requestLink(accountEmail, lang)
+      if (!sent) {
+        // Network/API failure — keep the user on the form so they can retry.
+        // The server itself returns 200 even on Resend soft-failures, so reaching
+        // here means the request never landed (offline, server down).
+        setSubmitError(DICT[lang].intake.confirmation.submitError)
+        return
+      }
       const next: IntakeDraft = {
         ...draft,
         account,
@@ -227,7 +240,7 @@ export function Intake({ lang }: { lang: Lang }) {
 
             <CapacityNotice lang={lang} atCap={capacity.atCap} />
 
-            <ProgressDots step={step} lang={lang} />
+            <ProgressDots step={step} lang={lang} onJump={onJumpStep} />
 
             {step === 'vibe' && <VibeGate lang={lang} onAccept={onAcceptVibe} />}
 
@@ -282,21 +295,41 @@ function CapacityNotice({ lang, atCap }: { lang: Lang; atCap: boolean }) {
 
 const STEPS: Step[] = ['vibe', 'account', 'type', 'form', 'confirmation']
 
-function ProgressDots({ step, lang }: { step: Step; lang: Lang }) {
+function ProgressDots({
+  step,
+  lang,
+  onJump,
+}: {
+  step: Step
+  lang: Lang
+  onJump?: (s: Step) => void
+}) {
   const t = DICT[lang].intake.steps
   const currentIdx = STEPS.indexOf(step)
+  const locked = step === 'confirmation'
   return (
     <ol className="intake__progress">
-      {STEPS.map((s, i) => (
-        <li
-          key={s}
-          className={`intake__progress-item${i <= currentIdx ? ' intake__progress-item--done' : ''}${i === currentIdx ? ' intake__progress-item--current' : ''}`}
-        >
-          <span className="mono">
-            0{i + 1} · {t[s]}
-          </span>
-        </li>
-      ))}
+      {STEPS.map((s, i) => {
+        // Vibe is a one-way gate; confirmation freezes the trail.
+        const isJumpable = !!onJump && !locked && i < currentIdx && s !== 'vibe'
+        const stepClass = `intake__progress-step${i <= currentIdx ? ' intake__progress-step--done' : ''}${i === currentIdx ? ' intake__progress-step--current' : ''}`
+        const label = `0${i + 1} · ${t[s]}`
+        return (
+          <li key={s} className="intake__progress-item">
+            {isJumpable ? (
+              <button
+                type="button"
+                className={`${stepClass} mono`}
+                onClick={() => onJump!(s)}
+              >
+                {label}
+              </button>
+            ) : (
+              <span className={`${stepClass} mono`}>{label}</span>
+            )}
+          </li>
+        )
+      })}
     </ol>
   )
 }

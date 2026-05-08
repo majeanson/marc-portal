@@ -19,6 +19,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
+import { DICT } from '../i18n'
 import { Footer } from './Footer'
 import { useAuth } from '../lib/authContext'
 import { useTenant } from '../lib/tenantContext'
@@ -30,8 +31,9 @@ const COPY = {
 
 export function AppShell({ lang, children }: { lang: Lang; children: ReactNode }) {
   const t = COPY[lang]
+  const tNav = DICT[lang].nav
   const { tenant } = useTenant()
-  const { email } = useAuth()
+  const { email, isAdmin, realIsAdmin, previewAsUser, setPreviewAsUser } = useAuth()
   const langPrefix = lang === 'en' ? '/en' : ''
 
   return (
@@ -41,10 +43,22 @@ export function AppShell({ lang, children }: { lang: Lang; children: ReactNode }
           <h1>{tenant?.displayName ?? 'App'}</h1>
         </div>
         <nav className="snd-app__nav">
-          <Link to={`${langPrefix}/admin`} className="snd-app__nav-link">
-            ⚙ {t.settings}
-          </Link>
+          {isAdmin && (
+            <Link to={`${langPrefix}/admin`} className="snd-app__nav-link">
+              ⚙ {t.settings}
+            </Link>
+          )}
           {email && <span className="snd-app__user mono">{email}</span>}
+          {realIsAdmin && (
+            <button
+              type="button"
+              className={`snd-app__preview-toggle mono${previewAsUser ? ' snd-app__preview-toggle--on' : ''}`}
+              onClick={() => setPreviewAsUser(!previewAsUser)}
+              aria-pressed={previewAsUser}
+            >
+              {previewAsUser ? `← ${tNav.exitPreview}` : tNav.viewAsUser}
+            </button>
+          )}
         </nav>
       </header>
 

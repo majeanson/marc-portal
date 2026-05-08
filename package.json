@@ -9,7 +9,7 @@
   "packageManager": "npm@10.9.0",
   "scripts": {
     "dev": "vite",
-    "dev:cf": "wrangler pages dev -- vite",
+    "dev:cf": "wrangler pages dev --proxy 5180 --port 8788",
     "prebuild": "node scripts/build-sitemap.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview",

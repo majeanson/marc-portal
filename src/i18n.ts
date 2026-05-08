@@ -9,6 +9,13 @@ const FR = {
 
   skipToContent: 'Aller au contenu principal',
   langNavLabel: 'Choix de langue',
+  nav: {
+    signIn: 'Connexion',
+    signOut: 'Déconnexion',
+    mySessions: 'Mes sessions',
+    viewAsUser: 'Voir comme visiteur',
+    exitPreview: 'Quitter aperçu',
+  },
 
   brandTitle: 'Marc — dev à Québec',
   metaDescription:
@@ -389,6 +396,13 @@ const EN: Copy = {
 
   skipToContent: 'Skip to main content',
   langNavLabel: 'Language selection',
+  nav: {
+    signIn: 'Sign in',
+    signOut: 'Sign out',
+    mySessions: 'My sessions',
+    viewAsUser: 'View as user',
+    exitPreview: 'Exit preview',
+  },
 
   brandTitle: 'Marc — dev in Quebec City',
   metaDescription:
