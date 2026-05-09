@@ -416,6 +416,10 @@ const FR = {
     formIframePathPlaceholder: '/me, /demo/sunday-night-dread, etc.',
     formIframePathHint:
       'Site-relatif (commence par /). Vide = racine du déploiement. Sert à pointer l’iframe sur la page la plus pertinente.',
+    formBuildUrl: 'URL du build (optionnel)',
+    formBuildUrlPlaceholder: 'https://snd-demo.pages.dev',
+    formBuildUrlHint:
+      'Pour un build hébergé ailleurs (autre repo, autre projet Cloudflare). Vide = stamping automatique au prochain déploiement du portail.',
     formFlags: 'Visibilité',
     flagAllowedForPublic: 'Visible publiquement',
     flagShowInConversation: 'Afficher dans la conversation',
@@ -858,6 +862,10 @@ const EN: Copy = {
     formIframePathPlaceholder: '/me, /demo/sunday-night-dread, etc.',
     formIframePathHint:
       'Site-relative (starts with /). Empty = deploy root. Used to focus the iframe on the most relevant page.',
+    formBuildUrl: 'Build URL (optional)',
+    formBuildUrlPlaceholder: 'https://snd-demo.pages.dev',
+    formBuildUrlHint:
+      'For a build hosted elsewhere (different repo or Cloudflare project). Empty = auto-stamp on the portal’s next deploy.',
     formFlags: 'Visibility',
     flagAllowedForPublic: 'Visible publicly',
     flagShowInConversation: 'Show in the conversation',

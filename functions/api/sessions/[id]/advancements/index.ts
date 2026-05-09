@@ -56,6 +56,12 @@ interface PostBody {
   date?: unknown
   iframePath?: unknown
   flags?: unknown
+  /** Optional pre-filled deploy URL — for advancements pointing at builds
+   * outside this repo (e.g. snd-demo on its own Cloudflare project). When
+   * provided, auto-stamping skips this row (it only stamps WHERE
+   * build_url IS NULL). When omitted, CI fills it on the next deploy. */
+  buildUrl?: unknown
+  commitSha?: unknown
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }) => {
@@ -102,14 +108,42 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     showAsCurrentBuild: !!(flagsObj as Record<string, unknown>).showAsCurrentBuild,
   })
 
+  // Optional pre-fill of build_url + commit_sha on create. Validate same as
+  // the PATCH path: http(s) absolute URL, ≤64-char SHA. Defensive — bad
+  // input would otherwise corrupt the iframe src.
+  let buildUrl: string | null = null
+  if (typeof payload.buildUrl === 'string' && payload.buildUrl.length > 0) {
+    if (!/^https?:\/\//i.test(payload.buildUrl)) {
+      return badRequest('buildUrl must be an http(s) URL')
+    }
+    buildUrl = payload.buildUrl.replace(/\/+$/, '')
+  }
+  let commitSha: string | null = null
+  if (typeof payload.commitSha === 'string' && payload.commitSha.length > 0) {
+    commitSha = payload.commitSha.slice(0, 64)
+  }
+
   const advId = newAdvancementId()
   await env.DB.prepare(
     `INSERT INTO session_advancements
        (id, session_id, date, author, label, body, build_url, commit_sha,
         iframe_path, flags_json, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(advId, id, date, email, label, body, iframePath, flagsJson, now, now)
+    .bind(
+      advId,
+      id,
+      date,
+      email,
+      label,
+      body,
+      buildUrl,
+      commitSha,
+      iframePath,
+      flagsJson,
+      now,
+      now,
+    )
     .run()
 
   // Bump session updated_at so /me cards re-sort and the visitor sees
@@ -125,8 +159,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     author: email,
     label,
     body,
-    build_url: null,
-    commit_sha: null,
+    build_url: buildUrl,
+    commit_sha: commitSha,
     iframe_path: iframePath,
     flags_json: flagsJson,
     created_at: now,

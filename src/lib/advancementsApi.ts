@@ -46,6 +46,11 @@ export interface CreateAdvancementInput {
   date?: number
   iframePath?: string | null
   flags?: AdvancementFlags
+  /** Optional pre-fill — for advancements pointing at external deploys
+   * (e.g. a sibling repo on its own Cloudflare project). When set, the
+   * auto-stamp pipeline skips this row. */
+  buildUrl?: string | null
+  commitSha?: string | null
 }
 
 export function createAdvancement(

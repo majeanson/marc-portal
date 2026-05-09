@@ -178,6 +178,7 @@ function AdvancementForm({
   const [label, setLabel] = useState('')
   const [body, setBody] = useState('')
   const [iframePath, setIframePath] = useState('')
+  const [buildUrl, setBuildUrl] = useState('')
   const [allowedForPublic, setAllowedForPublic] = useState(false)
   const [showInConversation, setShowInConversation] = useState(false)
   const [showAsCurrentBuild, setShowAsCurrentBuild] = useState(false)
@@ -187,6 +188,7 @@ function AdvancementForm({
     setLabel('')
     setBody('')
     setIframePath('')
+    setBuildUrl('')
     setAllowedForPublic(false)
     setShowInConversation(false)
     setShowAsCurrentBuild(false)
@@ -203,6 +205,7 @@ function AdvancementForm({
         label: label.trim(),
         body: body.trim(),
         iframePath: iframePath.trim() || null,
+        buildUrl: buildUrl.trim() || null,
         flags: { allowedForPublic, showInConversation, showAsCurrentBuild },
       })
       onCreated(r.advancement)
@@ -238,6 +241,17 @@ function AdvancementForm({
           rows={3}
           placeholder={t.formBodyPlaceholder}
         />
+      </label>
+      <label className="field">
+        <span className="field__label">{t.formBuildUrl}</span>
+        <input
+          type="url"
+          className="field__input"
+          value={buildUrl}
+          onChange={(e) => setBuildUrl(e.target.value)}
+          placeholder={t.formBuildUrlPlaceholder}
+        />
+        <span className="field__hint">{t.formBuildUrlHint}</span>
       </label>
       <label className="field">
         <span className="field__label">{t.formIframePath}</span>
