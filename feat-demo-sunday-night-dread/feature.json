@@ -70,75 +70,55 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis",
-        "decisions",
-        "successCriteria"
-      ],
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
       "reason": "Initial fill from brainstorming — content captures Phase 2 Demo Session decisions (Q1 problem, Q2 hybrid build, Q3 composite voice, Q5 ship-before-post)."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "decisions"
-      ],
+      "fields_changed": ["decisions"],
       "reason": "Locked scope: MVP slice is voice→draft invoice ONLY. Project versioning, inventory, as-built docs, accounting export explicitly held back as 'next iterations.' Driven by Insight #33 — the demo session anchors visible price expectations; showing Tier 3 ambition undermines Tier 1-2 pricing."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "decisions"
-      ],
+      "fields_changed": ["decisions"],
       "reason": "Composite client voice approach locked (Phase 2 Q3): drawn from real conversations with 3 tradespeople, never named. Avoids both labeled-fake (undermines demo) and named-real (privacy work). Disclosure note appears on showcase page."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "decisions"
-      ],
+      "fields_changed": ["decisions"],
       "reason": "Hybrid build approach locked (Phase 2 Q2): real working app + portal artifacts visible together. Visitors see the entire engagement arc by scrolling AND can click into a real invoice generator. Single most important UX decision for the cornerstone demo."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "decisions"
-      ],
+      "fields_changed": ["decisions"],
       "reason": "Ship sequencing locked (Phase 2 Q5): demo MUST go live before first cold Facebook post. The post links to the page; the page without the demo is dead. Deadline: 2026-07-01. External accountability: Marc tells wife or trusted friend per Phase 5 push-back on F4."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "annotations"
-      ],
+      "fields_changed": ["annotations"],
       "reason": "Added schema-conformant showcase annotation: bilingual title/summary/disclosure, 6-stage engagement timeline, Tier 2 metadata, 4 engineering decisions about voice→invoice approach (email delivery, on-device processing, free-text + lexicon, bilingual mid-note). Renderer reads from data field."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "lineage"
-      ],
+      "fields_changed": ["lineage"],
       "reason": "Added lineage with parent (feat-2026-001) and 4 children scaffolded as next-iteration features (feat-2026-011 versioning, 012 inventory, 013 as-built, 014 accounting). Showcase page now renders these from the file tree — adding a future iteration = adding a folder."
     },
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "implementation"
-      ],
+      "fields_changed": ["implementation"],
       "reason": "Sync feature.json to shipped reality: SndDemo.tsx + sndParser.ts already deployed as a static interactive showcase. Documenting the deliberate choice to keep the showcase static (fixture clips, rendered email, no backend) — the on-device-voice + real-email decisions remain valid for the future production tradesperson app, but are out of scope for the showcase demo. Adds the four fields needed to advance to frozen."
     },
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "implementation"
-      ],
+      "fields_changed": ["implementation"],
       "reason": "Wired real audio playback into the 3 fixture clips. Added optional audioSrc field to VoiceClip, pointing to /audio/snd-{id}.mp3. SndDemo.tsx now renders an <audio preload=\"none\"> per clip and triggers .play()/.pause() in togglePlay. Graceful degradation: missing-file rejection is swallowed, transcript still reveals. Marc to record himself reading the existing transcripts as scrappy phone voice memos with ambient truck/garage noise; composite-voice disclosure covers attribution. Strengthens the cornerstone artifact's authenticity — the play button now does what visitors expect.",
       "commit": "18857c8",
       "buildUrl": "https://b063e525.marc-portal.pages.dev"
@@ -146,9 +126,7 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "implementation"
-      ],
+      "fields_changed": ["implementation"],
       "reason": "Auto-stamp pipeline test 1/3: prepended a 🎯 emoji to the SND disclaimer string (FR + EN). This revision should be the first one auto-stamped by the deploy.yml workflow with `commit` (the SHA of this push) and `buildUrl` (the wrangler-action deployment URL). Visitors clicking 'voir ce build →' on this entry should land on a build whose disclaimer reads '🎯 Démo statique...'.",
       "commit": "1a5a2e0",
       "buildUrl": "https://ba0c0615.marc-portal.pages.dev"
@@ -156,9 +134,7 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "implementation"
-      ],
+      "fields_changed": ["implementation"],
       "reason": "Auto-stamp pipeline test 2/3: swapped the disclaimer emoji 🎯 → 🔥 to verify a second sequential auto-stamp produces a distinct buildUrl. Visitors comparing the test 1 and test 2 iframes side-by-side should see one 🎯 and one 🔥 in the disclaimer line at the bottom of each demo.",
       "commit": "21b6bdd",
       "buildUrl": "https://9dc01e42.marc-portal.pages.dev"
@@ -166,9 +142,7 @@
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "implementation"
-      ],
+      "fields_changed": ["implementation"],
       "reason": "Auto-stamp pipeline test 3/3: removed the disclaimer emoji entirely (back to plain text). With this revision stamped, the build log shows three sequential iframes — 🎯, 🔥, none — that visitors can click through to compare actual rendered builds. Confirms the time-travel pipeline works end-to-end.",
       "commit": "55dad4b",
       "buildUrl": "https://0ef52045.marc-portal.pages.dev"
@@ -313,12 +287,7 @@
   ],
   "lineage": {
     "parent": "feat-2026-001",
-    "children": [
-      "feat-2026-011",
-      "feat-2026-012",
-      "feat-2026-013",
-      "feat-2026-014"
-    ]
+    "children": ["feat-2026-011", "feat-2026-012", "feat-2026-013", "feat-2026-014"]
   },
   "implementation": "Static-only interactive showcase deployed at /demo/sunday-night-dread (FR) and /en/demo/sunday-night-dread (EN). Three pre-recorded fixture voice clips with hand-typed bilingual transcripts live as VOICE_CLIPS in src/lib/sndParser.ts. Each clip carries an optional audioSrc pointing to /audio/snd-{id}.mp3 — a real voice recording (Marc reading the transcript with ambient truck/garage noise) that adds the one texture the static showcase cannot fake. Audio elements use preload=\"none\" so files only download on first play; .play() rejection on missing-file or autoplay policy is swallowed so the demo degrades gracefully to text-only. Visitor clicks the play button on a clip; the audio plays and the transcript reveals simultaneously. The transcript flows through parseTranscript() — a regex + curated Quebec-trades lexicon parser that extracts material mentions (with quantity + unit) and labor hours. After at least one clip is played, a Generate button calls buildInvoice() to render an email-shaped invoice card per client: a labor line at the standard $75/h rate × hours, material lines priced from the lexicon, TPS 5%, TVQ 9.975%, total. Bilingual rendering via the existing i18n.ts dictionary keyed off the lang prop (route-driven). No backend, no API, no real-time recording in the browser, no actual email delivery — the entire experience runs in the browser from static fixtures + bundled audio assets. The demo deliberately avoids mic permission prompts and model downloads to keep visitor flow frictionless. The on-device Whisper + email-delivery decisions in the brainstorming spec apply to the future production tradesperson app, not the showcase. Component: src/pages/SndDemo.tsx + src/lib/sndParser.ts (parser + invoice math + fixtures) + public/audio/ (bundled MP3 voiceovers).",
   "userGuide": "On the Sunday Night Dread page, three voice notes from a tradesperson's Friday afternoon are listed — each from a different job site. Click the play button on any clip to see the transcript. As clips play, a parsed panel appears showing what the system extracts: hours, job type, materials with quantity and unit. After at least one clip is played, click Génère/Generate to build the email-shaped invoice draft — one per client, with TPS/TVQ taxes and a labor line at the standard rate. Toggle clips on and off and the invoice rebuilds automatically. The whole thing runs in your browser — no recording, no upload, no account.",
