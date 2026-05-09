@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import type { Lang } from '../i18n'
+import { DICT, type Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { SessionAdvancements } from '../components/SessionAdvancements'
 import { useAuth } from '../lib/authContext'
 import {
   deleteSession,
@@ -15,6 +16,7 @@ import {
   type SessionRow,
   type SessionStatus,
 } from '../lib/sessionsApi'
+import { listAdvancements, type AdvancementRow } from '../lib/advancementsApi'
 import { ApiError } from '../lib/api'
 import type { Account } from '../components/intake/AccountStep'
 import type { FormData } from '../components/intake/TypeForm'
@@ -191,6 +193,8 @@ export function SessionPage({ lang }: { lang: Lang }) {
   const { email, isAdmin, loading: authLoading } = useAuth()
   const [session, setSession] = useState<SessionRow | null>(null)
   const [messages, setMessages] = useState<MessageRow[]>([])
+  const [advancements, setAdvancements] = useState<AdvancementRow[] | null>(null)
+  const [advancementsLoading, setAdvancementsLoading] = useState<boolean>(true)
   const [error, setError] = useState<'forbidden' | 'notfound' | null>(null)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
@@ -270,6 +274,40 @@ export function SessionPage({ lang }: { lang: Lang }) {
       cancelled = true
     }
   }, [authLoading, email, id, navigate, langPrefix])
+
+  // Advancements load — separate from the session+messages fetch so a 403/404
+  // on advancements doesn't unmount the rest of the page. Empty list on error
+  // is the safe default (matches the empty-state UI). Loading state is
+  // toggled only in the async callback to keep the effect body free of
+  // synchronous setState (lint rule react-hooks/set-state-in-effect).
+  useEffect(() => {
+    if (authLoading || !id || !email) return
+    let cancelled = false
+    listAdvancements(id)
+      .then((r) => {
+        if (cancelled) return
+        setAdvancements(r.advancements)
+        setAdvancementsLoading(false)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setAdvancements([])
+        setAdvancementsLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [authLoading, email, id])
+
+  const onAdvCreated = useCallback((row: AdvancementRow) => {
+    setAdvancements((prev) => (prev ? [row, ...prev] : [row]))
+  }, [])
+  const onAdvPatched = useCallback((row: AdvancementRow) => {
+    setAdvancements((prev) => (prev ? prev.map((p) => (p.id === row.id ? row : p)) : [row]))
+  }, [])
+  const onAdvDeleted = useCallback((advId: string) => {
+    setAdvancements((prev) => (prev ? prev.filter((p) => p.id !== advId) : prev))
+  }, [])
 
   // Visibility-based polling (per the bedrock decision: never push, never WS).
   // refresh() is invoked from inside the event handler, not the effect body.
@@ -418,6 +456,34 @@ export function SessionPage({ lang }: { lang: Lang }) {
       setWithdrawing(false)
     }
   }
+
+  // Unified timeline: session-created + status transitions + advancements,
+  // sorted ascending by timestamp. Computed before early returns so the
+  // useMemo always runs in the same order (hooks-rules compliance). When
+  // session is null the array is empty and the render block doesn't reach it.
+  const advT = DICT[lang].sessionAdvancements
+  type TimelineEntry =
+    | { kind: 'created'; at: number }
+    | {
+        kind: 'status'
+        at: number
+        from: SessionStatus
+        to: SessionStatus
+        by: string
+      }
+    | { kind: 'advancement'; at: number; row: AdvancementRow }
+  const timelineEntries = useMemo<TimelineEntry[]>(() => {
+    if (!session) return []
+    const out: TimelineEntry[] = [{ kind: 'created', at: session.created_at }]
+    for (const s of parseStatusHistory(session.status_history)) {
+      out.push({ kind: 'status', at: s.at, from: s.from, to: s.to, by: s.by })
+    }
+    for (const a of advancements ?? []) {
+      out.push({ kind: 'advancement', at: a.date, row: a })
+    }
+    out.sort((x, y) => x.at - y.at)
+    return out
+  }, [session, advancements])
 
   if (authLoading || (!session && !error)) {
     return (
@@ -608,35 +674,92 @@ export function SessionPage({ lang }: { lang: Lang }) {
             <section className="intake__step session-frame__panel">
               <h2>{t.timelineHeading}</h2>
               <ul className="session-timeline">
-                <li className="session-timeline__entry">
-                  <span className="session-timeline__dot" aria-hidden="true" />
-                  <div className="session-timeline__body">
-                    <div className="mono session-timeline__when">
-                      {formatDateTime(session.created_at, lang)}
-                    </div>
-                    <div>{t.timelineCreated(formatDateTime(session.created_at, lang))}</div>
-                  </div>
-                </li>
-                {parseStatusHistory(session.status_history).map((entry) => (
-                  <li key={entry.at} className="session-timeline__entry">
-                    <span className="session-timeline__dot" aria-hidden="true" />
-                    <div className="session-timeline__body">
-                      <div className="mono session-timeline__when">
-                        {formatDateTime(entry.at, lang)}
+                {timelineEntries.map((entry, i) => {
+                  if (entry.kind === 'created') {
+                    return (
+                      <li key={`c-${entry.at}`} className="session-timeline__entry">
+                        <span className="session-timeline__dot" aria-hidden="true" />
+                        <div className="session-timeline__body">
+                          <div className="mono session-timeline__when">
+                            {formatDateTime(entry.at, lang)}
+                          </div>
+                          <div>{t.timelineCreated(formatDateTime(entry.at, lang))}</div>
+                        </div>
+                      </li>
+                    )
+                  }
+                  if (entry.kind === 'status') {
+                    return (
+                      <li key={`s-${entry.at}-${i}`} className="session-timeline__entry">
+                        <span className="session-timeline__dot" aria-hidden="true" />
+                        <div className="session-timeline__body">
+                          <div className="mono session-timeline__when">
+                            {formatDateTime(entry.at, lang)}
+                          </div>
+                          <div>
+                            {t.timelineStatus(
+                              entry.from,
+                              entry.to,
+                              entry.by,
+                              formatDateTime(entry.at, lang),
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    )
+                  }
+                  // advancement
+                  const row = entry.row
+                  const linkHref =
+                    row.build_url && row.build_url.length > 0
+                      ? `${row.build_url}${row.iframe_path ?? ''}`
+                      : null
+                  return (
+                    <li
+                      key={`a-${row.id}`}
+                      className="session-timeline__entry session-timeline__entry--advancement"
+                    >
+                      <span className="session-timeline__dot session-timeline__dot--advancement" aria-hidden="true" />
+                      <div className="session-timeline__body">
+                        <div className="mono session-timeline__when">
+                          {formatDateTime(entry.at, lang)}
+                        </div>
+                        <div>
+                          <strong>{advT.timelineLabel}:</strong> {row.label}
+                          {linkHref ? (
+                            <>
+                              {' · '}
+                              <a href={linkHref} target="_blank" rel="noreferrer" className="mono">
+                                {advT.openInNewTab}
+                              </a>
+                            </>
+                          ) : (
+                            <>
+                              {' · '}
+                              <span className="mono session-timeline__pending">
+                                {advT.pillPendingStamp}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        {t.timelineStatus(
-                          entry.from,
-                          entry.to,
-                          entry.by,
-                          formatDateTime(entry.at, lang),
-                        )}
-                      </div>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  )
+                })}
               </ul>
             </section>
+
+            <SessionAdvancements
+              sessionId={session.id}
+              isAdmin={isAdmin}
+              lang={lang}
+              repoUrl="https://github.com/majeanson/marc-portal"
+              items={advancements}
+              loading={advancementsLoading}
+              onCreated={onAdvCreated}
+              onPatched={onAdvPatched}
+              onDeleted={onAdvDeleted}
+            />
 
             <section className="intake__step session-frame__panel">
               <h2>{t.threadHeading}</h2>

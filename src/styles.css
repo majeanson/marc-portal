@@ -3328,6 +3328,160 @@ button:focus-visible,
   background: var(--bg);
 }
 
+/* Session advancements — admin posts iterative build/demo entries that
+   the visitor can iframe-time-travel through. Visual language mirrors
+   rev-log so feature-revisions and session-advancements feel like the
+   same thing in two places. */
+.session-advancements__hint {
+  margin: 4px 0 18px;
+}
+.session-advancements__form {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  margin: 0 0 24px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+.session-advancements__form-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+}
+.session-advancements__flags {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.session-advancements__flag {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-mid);
+}
+.session-advancements__form-actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.session-advancements__current {
+  margin: 18px 0;
+  padding: 14px;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft, var(--bg-card));
+}
+.session-advancements__current-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-warm);
+  margin-bottom: 8px;
+}
+.session-advancements__list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  border-left: 2px solid var(--border);
+}
+.session-advancements__entry {
+  padding: 14px 0 14px 18px;
+  margin-left: 6px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.session-advancements__entry:last-child {
+  border-bottom: none;
+}
+.session-advancements__entry--featured {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.session-advancements__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.session-advancements__date {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.session-advancements__label {
+  font-weight: 600;
+  color: var(--text);
+}
+.session-advancements__flag-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  font-size: 10px;
+  color: var(--text-soft);
+}
+.session-advancements__flag-pill--pending {
+  border-color: var(--accent-warm);
+  color: var(--accent-warm);
+}
+.session-advancements__body {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-mid);
+}
+.session-advancements__build-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.session-advancements__frame {
+  margin-top: 12px;
+}
+.session-advancements__admin-row {
+  display: flex;
+  gap: 14px;
+  margin-top: 12px;
+  font-size: 12px;
+}
+.session-advancements__danger {
+  color: var(--text-soft);
+}
+.session-advancements__danger:hover {
+  color: var(--accent-warm);
+}
+.session-advancements__edit {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius-sm);
+}
+
+/* Activity timeline — advancement entries get a warmer dot to read distinctly
+   from session-created and status-change entries. */
+.session-timeline__dot--advancement {
+  background: var(--accent-warm) !important;
+}
+.session-timeline__entry--advancement strong {
+  color: var(--accent-warm);
+}
+.session-timeline__pending {
+  color: var(--accent-warm);
+  font-size: 12px;
+}
+
 /* Filter chips on showcase wall */
 .filters {
   display: flex;

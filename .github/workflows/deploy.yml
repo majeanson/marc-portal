@@ -66,3 +66,14 @@ jobs:
           git add feature.json feat-*/feature.json
           git commit -m "chore(lac): stamp revisions for ${GITHUB_SHA::7} [skip ci]"
           git push
+
+      # Auto-stamp un-stamped session_advancements rows with the same deploy
+      # URL. Mirrors the feature.json pipeline above but writes to D1 instead
+      # of the repo. Idempotent — only rows with build_url IS NULL are
+      # touched.
+      - name: Stamp session advancements with build URL
+        if: steps.deploy.outputs.deployment-url != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/stamp-session-advancements.mjs "${{ github.sha }}" "${{ steps.deploy.outputs.deployment-url }}"

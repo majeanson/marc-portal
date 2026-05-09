@@ -1,0 +1,136 @@
+// GET  /api/sessions/:id/advancements — list advancements (visitors see only
+//                                        allowedForPublic; owner+admin see all)
+// POST /api/sessions/:id/advancements — admin only; creates a draft
+//                                        advancement with build_url null. CI
+//                                        stamps build_url + commit_sha on the
+//                                        next deploy.
+
+import { currentEmail } from '../../../../_lib/auth'
+import {
+  type AdvancementRow,
+  listAdvancementsForSession,
+  newAdvancementId,
+  normalizeBody,
+  normalizeIframePath,
+  normalizeLabel,
+  parseFlags,
+  stringifyFlags,
+} from '../../../../_lib/advancements'
+import type { Env } from '../../../../_lib/env'
+import { isAdmin } from '../../../../_lib/env'
+import { badRequest, forbidden, notFound, ok, unauthorized } from '../../../../_lib/json'
+import { canAccessSession, loadSession } from '../../../../_lib/sessions'
+
+export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
+  const email = await currentEmail(request, env.SESSION_SECRET)
+  if (!email) return unauthorized()
+  const id = String(params.id ?? '')
+  if (!id) return badRequest('missing id')
+
+  const session = await loadSession(env.DB, id)
+  if (!session) return notFound()
+  const admin = isAdmin(env, email)
+  // Soft-deleted: visitor sees 404, admin still has read access.
+  if (session.deleted_at && !admin) return notFound()
+  // Non-owner non-admin can still read public advancements as long as the
+  // session itself is reachable (not soft-deleted). Today canAccessSession
+  // gates the read, so non-owners 403 — the iframe time-travel surface is
+  // owner+admin until we expose a public showcase route. Keep that gate here
+  // and revisit when public sharing lands.
+  if (!canAccessSession(email, admin, session)) return forbidden()
+
+  const rows = await listAdvancementsForSession(env.DB, id)
+  // Normalize: parse flags so the client doesn't re-do the same defensive
+  // try/catch. Keep flags_json on the wire too in case the client needs the
+  // raw blob.
+  const advancements = rows.map((r) => ({
+    ...r,
+    flags: parseFlags(r.flags_json),
+  }))
+  return ok({ advancements })
+}
+
+interface PostBody {
+  label?: unknown
+  body?: unknown
+  date?: unknown
+  iframePath?: unknown
+  flags?: unknown
+}
+
+export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }) => {
+  const email = await currentEmail(request, env.SESSION_SECRET)
+  if (!email) return unauthorized()
+  const id = String(params.id ?? '')
+  if (!id) return badRequest('missing id')
+
+  const session = await loadSession(env.DB, id)
+  if (!session) return notFound()
+  if (session.deleted_at) return notFound()
+  if (!isAdmin(env, email)) return forbidden('only admin can post advancements')
+
+  let payload: PostBody
+  try {
+    payload = (await request.json()) as PostBody
+  } catch {
+    return badRequest('invalid json')
+  }
+
+  const label = normalizeLabel(payload.label)
+  if (!label) return badRequest('label is required')
+  const body = normalizeBody(payload.body)
+  const iframePath =
+    payload.iframePath === null || payload.iframePath === undefined
+      ? null
+      : normalizeIframePath(payload.iframePath)
+  // null vs invalid — distinguish: if user provided something that didn't
+  // pass validation, refuse. If they omitted it, it stays null.
+  if (
+    payload.iframePath !== null &&
+    payload.iframePath !== undefined &&
+    iframePath === null
+  ) {
+    return badRequest('iframePath must be a site-relative path starting with /')
+  }
+  const now = Math.floor(Date.now() / 1000)
+  const date = typeof payload.date === 'number' && Number.isFinite(payload.date) ? payload.date : now
+
+  const flagsObj = payload.flags && typeof payload.flags === 'object' ? payload.flags : {}
+  const flagsJson = stringifyFlags({
+    allowedForPublic: !!(flagsObj as Record<string, unknown>).allowedForPublic,
+    showInConversation: !!(flagsObj as Record<string, unknown>).showInConversation,
+    showAsCurrentBuild: !!(flagsObj as Record<string, unknown>).showAsCurrentBuild,
+  })
+
+  const advId = newAdvancementId()
+  await env.DB.prepare(
+    `INSERT INTO session_advancements
+       (id, session_id, date, author, label, body, build_url, commit_sha,
+        iframe_path, flags_json, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)`,
+  )
+    .bind(advId, id, date, email, label, body, iframePath, flagsJson, now, now)
+    .run()
+
+  // Bump session updated_at so /me cards re-sort and the visitor sees
+  // recent activity. Mirrors the message-post flow.
+  await env.DB.prepare(`UPDATE sessions SET updated_at = ? WHERE id = ?`)
+    .bind(now, id)
+    .run()
+
+  const row: AdvancementRow = {
+    id: advId,
+    session_id: id,
+    date,
+    author: email,
+    label,
+    body,
+    build_url: null,
+    commit_sha: null,
+    iframe_path: iframePath,
+    flags_json: flagsJson,
+    created_at: now,
+    updated_at: now,
+  }
+  return ok({ advancement: { ...row, flags: parseFlags(flagsJson) } })
+}
