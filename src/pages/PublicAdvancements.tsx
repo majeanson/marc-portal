@@ -4,10 +4,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
-import {
-  listPublicAdvancements,
-  type PublicAdvancementRow,
-} from '../lib/advancementsApi'
+import { listPublicAdvancements, type PublicAdvancementRow } from '../lib/advancementsApi'
 
 /**
  * Unauthenticated share view. Renders only the advancements an admin has

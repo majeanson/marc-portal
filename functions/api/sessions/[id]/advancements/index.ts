@@ -91,15 +91,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
       : normalizeIframePath(payload.iframePath)
   // null vs invalid — distinguish: if user provided something that didn't
   // pass validation, refuse. If they omitted it, it stays null.
-  if (
-    payload.iframePath !== null &&
-    payload.iframePath !== undefined &&
-    iframePath === null
-  ) {
+  if (payload.iframePath !== null && payload.iframePath !== undefined && iframePath === null) {
     return badRequest('iframePath must be a site-relative path starting with /')
   }
   const now = Math.floor(Date.now() / 1000)
-  const date = typeof payload.date === 'number' && Number.isFinite(payload.date) ? payload.date : now
+  const date =
+    typeof payload.date === 'number' && Number.isFinite(payload.date) ? payload.date : now
 
   const flagsObj = payload.flags && typeof payload.flags === 'object' ? payload.flags : {}
   const flagsJson = stringifyFlags({
@@ -130,27 +127,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
         iframe_path, flags_json, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(
-      advId,
-      id,
-      date,
-      email,
-      label,
-      body,
-      buildUrl,
-      commitSha,
-      iframePath,
-      flagsJson,
-      now,
-      now,
-    )
+    .bind(advId, id, date, email, label, body, buildUrl, commitSha, iframePath, flagsJson, now, now)
     .run()
 
   // Bump session updated_at so /me cards re-sort and the visitor sees
   // recent activity. Mirrors the message-post flow.
-  await env.DB.prepare(`UPDATE sessions SET updated_at = ? WHERE id = ?`)
-    .bind(now, id)
-    .run()
+  await env.DB.prepare(`UPDATE sessions SET updated_at = ? WHERE id = ?`).bind(now, id).run()
 
   const row: AdvancementRow = {
     id: advId,

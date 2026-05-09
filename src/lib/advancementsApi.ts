@@ -34,9 +34,7 @@ export interface AdvancementRow {
   updated_at: number
 }
 
-export function listAdvancements(
-  sessionId: string,
-): Promise<{ advancements: AdvancementRow[] }> {
+export function listAdvancements(sessionId: string): Promise<{ advancements: AdvancementRow[] }> {
   return api(`/api/sessions/${encodeURIComponent(sessionId)}/advancements`)
 }
 
@@ -84,10 +82,7 @@ export function patchAdvancement(
   )
 }
 
-export function deleteAdvancement(
-  sessionId: string,
-  advId: string,
-): Promise<{ ok: true }> {
+export function deleteAdvancement(sessionId: string, advId: string): Promise<{ ok: true }> {
   return api(
     `/api/sessions/${encodeURIComponent(sessionId)}/advancements/${encodeURIComponent(advId)}`,
     { method: 'DELETE' },
@@ -112,7 +107,5 @@ export interface PublicAdvancementRow {
 export function listPublicAdvancements(
   sessionId: string,
 ): Promise<{ advancements: PublicAdvancementRow[] }> {
-  return api(
-    `/api/public/sessions/${encodeURIComponent(sessionId)}/advancements`,
-  )
+  return api(`/api/public/sessions/${encodeURIComponent(sessionId)}/advancements`)
 }

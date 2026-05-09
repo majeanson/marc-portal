@@ -148,9 +148,7 @@ export function SessionAdvancements({
                   isAdmin={isAdmin}
                   repoUrl={repoUrl}
                   isOpen={openBuild === row.id}
-                  onToggleBuild={() =>
-                    setOpenBuild((prev) => (prev === row.id ? null : row.id))
-                  }
+                  onToggleBuild={() => setOpenBuild((prev) => (prev === row.id ? null : row.id))}
                   onPatched={onPatched}
                   onDeleted={handleDeleted}
                   onError={setError}
@@ -292,11 +290,7 @@ function AdvancementForm({
         </label>
       </fieldset>
       <div className="session-advancements__form-actions">
-        <button
-          type="submit"
-          className="hero__cta"
-          disabled={submitting || !label.trim()}
-        >
+        <button type="submit" className="hero__cta" disabled={submitting || !label.trim()}>
           {submitting ? t.formSubmitting : t.formSubmit}
         </button>
         <span className="field__hint">{t.formStampHint}</span>
@@ -331,9 +325,7 @@ function AdvancementEntry({
   const t = DICT[lang].sessionAdvancements
   const [editing, setEditing] = useState(false)
   const canShowBuild = !!row.build_url
-  const iframeSrc = canShowBuild
-    ? `${row.build_url}${row.iframe_path ?? ''}`
-    : null
+  const iframeSrc = canShowBuild ? `${row.build_url}${row.iframe_path ?? ''}` : null
   const commitHref = row.commit_sha && repoUrl ? `${repoUrl}/commit/${row.commit_sha}` : null
 
   const onDelete = async () => {
@@ -392,22 +384,12 @@ function AdvancementEntry({
             </button>
           )}
           {iframeSrc && (
-            <a
-              className="rev-log__open-tab mono"
-              href={iframeSrc}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a className="rev-log__open-tab mono" href={iframeSrc} target="_blank" rel="noreferrer">
               {t.openInNewTab}
             </a>
           )}
           {commitHref && (
-            <a
-              className="rev-log__commit mono"
-              href={commitHref}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a className="rev-log__commit mono" href={commitHref} target="_blank" rel="noreferrer">
               {t.commitLabel} {row.commit_sha?.slice(0, 7)}
             </a>
           )}

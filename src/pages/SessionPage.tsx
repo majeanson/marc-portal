@@ -512,7 +512,6 @@ export function SessionPage({ lang }: { lang: Lang }) {
     return pinned.reduce((a, b) => (a.date >= b.date ? a : b))
   }, [advancements])
 
-
   if (authLoading || (!session && !error)) {
     return (
       <div className="app">
@@ -762,7 +761,10 @@ export function SessionPage({ lang }: { lang: Lang }) {
                       key={`a-${row.id}`}
                       className="session-timeline__entry session-timeline__entry--advancement"
                     >
-                      <span className="session-timeline__dot session-timeline__dot--advancement" aria-hidden="true" />
+                      <span
+                        className="session-timeline__dot session-timeline__dot--advancement"
+                        aria-hidden="true"
+                      />
                       <div className="session-timeline__body">
                         <div className="mono session-timeline__when">
                           {formatDateTime(entry.at, lang)}
@@ -814,13 +816,8 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     if (item.kind === 'message') {
                       const m = item.msg
                       const isMe =
-                        (isAdmin && m.author === 'marc') ||
-                        (!isAdmin && m.author === 'visitor')
-                      const authorLabel = isMe
-                        ? t.you
-                        : m.author === 'marc'
-                          ? t.marc
-                          : t.visitor
+                        (isAdmin && m.author === 'marc') || (!isAdmin && m.author === 'visitor')
+                      const authorLabel = isMe ? t.you : m.author === 'marc' ? t.marc : t.visitor
                       return (
                         <li
                           key={`m-${m.id}`}

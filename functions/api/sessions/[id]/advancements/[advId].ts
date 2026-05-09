@@ -117,9 +117,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     .bind(...updates.map((u) => u.val), advId)
     .run()
   // Bump session updated_at to surface activity in the visitor's /me list.
-  await env.DB.prepare(`UPDATE sessions SET updated_at = ? WHERE id = ?`)
-    .bind(now, sessionId)
-    .run()
+  await env.DB.prepare(`UPDATE sessions SET updated_at = ? WHERE id = ?`).bind(now, sessionId).run()
 
   const fresh = await loadAdvancement(env.DB, advId)
   if (!fresh) return notFound()

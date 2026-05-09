@@ -106,10 +106,7 @@ export function normalizeIframePath(input: unknown): string | null {
  * sees only entries flagged allowedForPublic. Soft-deleted sessions do not
  * leak advancements either way (caller handles that).
  */
-export function canSeeAdvancement(
-  flags: AdvancementFlags,
-  viewerIsOwnerOrAdmin: boolean,
-): boolean {
+export function canSeeAdvancement(flags: AdvancementFlags, viewerIsOwnerOrAdmin: boolean): boolean {
   if (viewerIsOwnerOrAdmin) return true
   return flags.allowedForPublic === true
 }
@@ -131,10 +128,7 @@ export async function listAdvancementsForSession(
   return res.results ?? []
 }
 
-export async function loadAdvancement(
-  db: D1Database,
-  id: string,
-): Promise<AdvancementRow | null> {
+export async function loadAdvancement(db: D1Database, id: string): Promise<AdvancementRow | null> {
   return db
     .prepare(
       `SELECT id, session_id, date, author, label, body, build_url, commit_sha,
