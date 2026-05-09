@@ -31,6 +31,22 @@ export function notFound(message = 'not found'): Response {
   return json({ error: message }, { status: 404 })
 }
 
+export function conflict(message = 'conflict'): Response {
+  return json({ error: message }, { status: 409 })
+}
+
+export function payloadTooLarge(message = 'payload too large'): Response {
+  return json({ error: message }, { status: 413 })
+}
+
+export function unsupportedMediaType(message = 'unsupported media type'): Response {
+  return json({ error: message }, { status: 415 })
+}
+
+export function serviceUnavailable(message = 'service unavailable'): Response {
+  return json({ error: message }, { status: 503 })
+}
+
 export function tooManyRequests(message = 'rate limit exceeded'): Response {
   return json({ error: message }, { status: 429 })
 }

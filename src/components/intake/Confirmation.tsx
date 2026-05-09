@@ -3,8 +3,8 @@ import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
 import type { Account } from './AccountStep'
 import type { ProblemType } from '../../lib/intakeSchemas'
-import { getSchemaForType, localized } from '../../lib/intakeSchemas'
 import type { FormData } from './TypeForm'
+import { IntakeSummary } from './IntakeSummary'
 
 export function Confirmation({
   lang,
@@ -30,7 +30,6 @@ export function Confirmation({
   onStartOver: () => void
 }) {
   const t = DICT[lang].intake.confirmation
-  const schema = getSchemaForType(type)
   const sessionHref = sessionId ? `${lang === 'en' ? '/en' : ''}/session/${sessionId}` : null
 
   const [resending, setResending] = useState(false)
@@ -64,6 +63,9 @@ export function Confirmation({
           <p className="field__hint" style={{ marginTop: 8 }}>
             {t.sessionLinkHint}
           </p>
+          <p className="field__hint" style={{ marginTop: 4 }}>
+            {t.sessionEditHint}
+          </p>
         </div>
       )}
 
@@ -85,35 +87,13 @@ export function Confirmation({
       )}
 
       <section className="showcase-page__block">
-        <h3 style={{ marginBottom: 12 }}>{t.summaryTitle}</h3>
-        <dl className="summary">
-          <dt>{t.summaryEmail}</dt>
-          <dd className="mono">{account.email}</dd>
-          {account.name && (
-            <>
-              <dt>{t.summaryName}</dt>
-              <dd>{account.name}</dd>
-            </>
-          )}
-          <dt>{t.summaryType}</dt>
-          <dd>{localized(schema.title, lang)}</dd>
-          <dt>{t.summarySubmittedAt}</dt>
-          <dd className="mono">{submittedAt}</dd>
-        </dl>
-
-        <h3 style={{ marginTop: 24, marginBottom: 12 }}>{t.summaryAnswers}</h3>
-        <dl className="summary">
-          {schema.fields.map((field) => {
-            const v = values[field.id]
-            if (!v) return null
-            return (
-              <div key={field.id} style={{ marginBottom: 10 }}>
-                <dt>{localized(field.label, lang)}</dt>
-                <dd>{v}</dd>
-              </div>
-            )
-          })}
-        </dl>
+        <IntakeSummary
+          lang={lang}
+          account={account}
+          type={type}
+          values={values}
+          submittedAt={submittedAt}
+        />
       </section>
 
       <button type="button" className="link-btn mono" onClick={onStartOver}>

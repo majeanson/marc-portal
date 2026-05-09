@@ -1,17 +1,30 @@
-// GET   /api/sessions/:id — fetch a single session (visitor: own; admin: any)
-// PATCH /api/sessions/:id — admin-only status transition. Visitor cannot
-//                           change status; that's Marc's triage decision.
+// GET    /api/sessions/:id  — fetch a single session (visitor: own; admin: any)
+// PATCH  /api/sessions/:id  — admin-only status; visitor or admin intakeJson;
+//                             optimistic concurrency via ifUpdatedAt.
+// DELETE /api/sessions/:id  — soft delete (sets deleted_at). Self or admin.
 
 import { currentEmail } from '../../_lib/auth'
+import {
+  sendIntakeEditedNotification,
+  sendStatusChangeNotification,
+  sendWithdrawalNotification,
+} from '../../_lib/email'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
-import { badRequest, forbidden, notFound, ok, unauthorized } from '../../_lib/json'
-import { canAccessSession, isValidStatus } from '../../_lib/sessions'
-import type { SessionRow } from '../../_lib/sessions'
+import { badRequest, conflict, forbidden, notFound, ok, unauthorized } from '../../_lib/json'
+import {
+  appendStatusHistory,
+  canAccessSession,
+  isValidStatus,
+  primaryAdminEmail,
+  visitorLang,
+} from '../../_lib/sessions'
+import type { SessionRow, StatusHistoryEntry } from '../../_lib/sessions'
 
 async function loadSession(env: Env, id: string): Promise<SessionRow | null> {
   return env.DB.prepare(
-    `SELECT id, email, intake_json, status, created_at, updated_at
+    `SELECT id, email, intake_json, status, created_at, updated_at,
+            deleted_at, status_history
      FROM sessions WHERE id = ?`,
   )
     .bind(id)
@@ -27,6 +40,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   const session = await loadSession(env, id)
   if (!session) return notFound()
   if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
+  // Soft-deleted rows: visitors get 404; admins still see them by id.
+  if (session.deleted_at && !isAdmin(env, email)) return notFound()
 
   return ok({ session })
 }
@@ -34,6 +49,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
 interface PatchBody {
   status?: unknown
   intakeJson?: unknown
+  ifUpdatedAt?: unknown
+  /** Admin-only: restore a soft-deleted session (clears deleted_at). */
+  undelete?: unknown
 }
 
 export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params }) => {
@@ -54,18 +72,53 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
 
   const admin = isAdmin(env, email)
   const now = Math.floor(Date.now() / 1000)
+  const origin = new URL(request.url).origin
+
+  // Undelete is admin-only and is the *only* PATCH operation valid against a
+  // soft-deleted row. Everything else 404s once the row is in trash.
+  if (body.undelete === true) {
+    if (!admin) return forbidden('only admin can restore')
+    if (!session.deleted_at) return ok({ session })
+    await env.DB.prepare(`UPDATE sessions SET deleted_at = NULL, updated_at = ? WHERE id = ?`)
+      .bind(now, id)
+      .run()
+    const fresh = await loadSession(env, id)
+    return ok({ session: fresh })
+  }
+  if (session.deleted_at) return notFound()
+
+  // Optimistic concurrency: if the client tells us what version they edited,
+  // refuse the patch when the row has changed since. Caller refreshes and
+  // retries. Accepts only numbers; missing/invalid is treated as no check.
+  if (typeof body.ifUpdatedAt === 'number' && body.ifUpdatedAt !== session.updated_at) {
+    return conflict('session has changed since you loaded it')
+  }
 
   // Status changes are admin-only — that's the triage decision.
+  let statusChanged: { from: typeof session.status; to: typeof session.status } | null = null
   if (body.status !== undefined) {
     if (!admin) return forbidden('only admin can change status')
     if (!isValidStatus(body.status)) return badRequest('invalid status')
-    await env.DB.prepare(`UPDATE sessions SET status = ?, updated_at = ? WHERE id = ?`)
-      .bind(body.status, now, id)
-      .run()
+    if (body.status !== session.status) {
+      const entry: StatusHistoryEntry = {
+        from: session.status,
+        to: body.status,
+        by: email,
+        at: now,
+      }
+      const nextHistory = appendStatusHistory(session.status_history, entry)
+      await env.DB.prepare(
+        `UPDATE sessions SET status = ?, status_history = ?, updated_at = ? WHERE id = ?`,
+      )
+        .bind(body.status, nextHistory, now, id)
+        .run()
+      statusChanged = { from: session.status, to: body.status }
+    }
   }
 
   // intakeJson edits are visitor-self or admin-on-anyone (the visitor can
   // refine their own draft; admin can also patch on a visitor's behalf).
+  let intakeEdited = false
   if (body.intakeJson !== undefined) {
     if (!canAccessSession(email, admin, session)) return forbidden()
     const intake =
@@ -77,8 +130,74 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     await env.DB.prepare(`UPDATE sessions SET intake_json = ?, updated_at = ? WHERE id = ?`)
       .bind(intake, now, id)
       .run()
+    intakeEdited = intake !== session.intake_json
   }
 
   const fresh = await loadSession(env, id)
+
+  // Best-effort notifications. Failures are logged but don't fail the PATCH —
+  // the data is in D1; emails are nudges.
+  if (statusChanged && fresh) {
+    await sendStatusChangeNotification(
+      env.RESEND_API_KEY,
+      fresh.email,
+      id,
+      statusChanged.from,
+      statusChanged.to,
+      origin,
+      visitorLang(fresh),
+    )
+  }
+  // Visitor edited their own intake → notify Marc. Admin self-editing on
+  // someone's behalf is not surfaced (Marc already knows).
+  if (intakeEdited && !admin && fresh) {
+    const marc = primaryAdminEmail(env.ADMIN_EMAILS)
+    if (marc) {
+      await sendIntakeEditedNotification(env.RESEND_API_KEY, marc, fresh.email, id, origin)
+    }
+  }
+
   return ok({ session: fresh })
+}
+
+export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params }) => {
+  const email = await currentEmail(request, env.SESSION_SECRET)
+  if (!email) return unauthorized()
+  const id = String(params.id ?? '')
+  if (!id) return badRequest('missing id')
+
+  const session = await loadSession(env, id)
+  if (!session) return notFound()
+  if (session.deleted_at) return ok({ ok: true })
+
+  const admin = isAdmin(env, email)
+  if (!canAccessSession(email, admin, session)) return forbidden()
+
+  const now = Math.floor(Date.now() / 1000)
+  await env.DB.prepare(`UPDATE sessions SET deleted_at = ?, updated_at = ? WHERE id = ?`)
+    .bind(now, now, id)
+    .run()
+
+  // Symmetric notification: visitor self-withdraws → Marc; Marc force-deletes
+  // someone else's → visitor. Both are best-effort; the soft-delete is the
+  // source of truth.
+  const origin = new URL(request.url).origin
+  if (admin && session.email !== email) {
+    await sendWithdrawalNotification(
+      env.RESEND_API_KEY,
+      session.email,
+      email,
+      id,
+      origin,
+      visitorLang(session),
+      'visitor',
+    )
+  } else {
+    const marc = primaryAdminEmail(env.ADMIN_EMAILS)
+    if (marc && marc.toLowerCase() !== email.toLowerCase()) {
+      await sendWithdrawalNotification(env.RESEND_API_KEY, marc, email, id, origin, 'en', 'admin')
+    }
+  }
+
+  return ok({ ok: true })
 }

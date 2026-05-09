@@ -20,6 +20,7 @@ const COPY = {
     open: 'Ouvrir',
     refreshing: 'Mise à jour…',
     logout: 'Se déconnecter',
+    viewTrash: 'Voir la corbeille →',
   },
   en: {
     title: 'Admin inbox',
@@ -34,6 +35,7 @@ const COPY = {
     open: 'Open',
     refreshing: 'Refreshing…',
     logout: 'Sign out',
+    viewTrash: 'View trash →',
   },
 } as const
 
@@ -153,7 +155,16 @@ export function AdminInbox({ lang }: { lang: Lang }) {
         <section className="page__panel">
           <h1>{t.title}</h1>
           <p>{t.intro}</p>
-          {refreshing && <p className="mono">{t.refreshing}</p>}
+          <p>
+            <a href={`${langPrefix}/admin/trash`} className="mono">
+              {t.viewTrash}
+            </a>
+          </p>
+          {refreshing && (
+            <p className="mono" role="status" aria-live="polite">
+              {t.refreshing}
+            </p>
+          )}
 
           {sessions === null ? (
             <p>{t.loading}</p>

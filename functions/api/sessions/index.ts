@@ -6,7 +6,8 @@ import { currentEmail } from '../../_lib/auth'
 import { randomTokenB64url } from '../../_lib/bytes'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
-import { badRequest, ok, unauthorized } from '../../_lib/json'
+import { badRequest, ok, tooManyRequests, unauthorized } from '../../_lib/json'
+import { clientIp, rateLimitCheck, rateLimitSweep } from '../../_lib/ratelimit'
 import type { SessionRow } from '../../_lib/sessions'
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
@@ -14,14 +15,24 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   if (!email) return unauthorized()
 
   const admin = isAdmin(env, email)
+  // ?deleted=true returns *only* soft-deleted rows (admin trash). Default
+  // is live rows only. Visitors can never see deleted rows in either mode.
+  const url = new URL(request.url)
+  const wantDeleted = admin && url.searchParams.get('deleted') === 'true'
+
   const stmt = admin
     ? env.DB.prepare(
-        `SELECT id, email, intake_json, status, created_at, updated_at
-         FROM sessions ORDER BY updated_at DESC`,
+        `SELECT id, email, intake_json, status, created_at, updated_at,
+                deleted_at, status_history
+         FROM sessions
+         WHERE deleted_at ${wantDeleted ? 'IS NOT NULL' : 'IS NULL'}
+         ORDER BY updated_at DESC`,
       )
     : env.DB.prepare(
-        `SELECT id, email, intake_json, status, created_at, updated_at
-         FROM sessions WHERE email = ? ORDER BY updated_at DESC`,
+        `SELECT id, email, intake_json, status, created_at, updated_at,
+                deleted_at, status_history
+         FROM sessions WHERE email = ? AND deleted_at IS NULL
+         ORDER BY updated_at DESC`,
       ).bind(email)
 
   const res = await stmt.all<SessionRow>()
@@ -35,6 +46,16 @@ interface CreateBody {
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
+
+  // Throttle session creation: 5/h per email, 10/h per IP. Above the
+  // intended 1-2/day usage but well below abuse. 429 is friendlier than
+  // a silent drop here — the visitor sees the cap in the UI.
+  const ip = clientIp(request)
+  const okEmail = await rateLimitCheck(env, `sessions:create:email:${email}`, 5, 3600)
+  if (!okEmail) return tooManyRequests('too many sessions in the last hour')
+  const okIp = await rateLimitCheck(env, `sessions:create:ip:${ip}`, 10, 3600)
+  if (!okIp) return tooManyRequests('too many sessions in the last hour')
+  await rateLimitSweep(env)
 
   let body: CreateBody
   try {
@@ -68,6 +89,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     status: 'draft',
     created_at: now,
     updated_at: now,
+    deleted_at: null,
+    status_history: null,
   }
   return ok({ session: row })
 }

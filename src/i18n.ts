@@ -347,6 +347,12 @@ const FR = {
       cta: 'Continuer →',
       alreadyHaveAccount: 'Tu as déjà un compte ?',
       signIn: 'Connecte-toi →',
+      signedInAsEyebrow: 'compte connecté',
+      signedInAsTitle: 'Connecté en tant que',
+      signedInAsBody:
+        'Cette demande sera rattachée à ton compte. Tu pourras la rouvrir et la modifier dans tes sessions.',
+      signedInAsCta: 'Continuer avec ce compte →',
+      signedInAsSwitch: 'Utiliser une autre adresse',
     },
     typePicker: {
       eyebrow: 'quel genre de problème',
@@ -381,6 +387,8 @@ const FR = {
         'Hmm, problème de connexion en envoyant ton intake. Ton brouillon est sauvegardé — réessaie dans un instant.',
       sessionLinkLabel: 'Voir ta session →',
       sessionLinkHint: 'Ta proposition est enregistrée. Tu peux la suivre et y répondre ici.',
+      sessionEditHint:
+        'Tu peux modifier tes réponses à tout moment depuis ton portail (« Mes sessions »).',
       magicLinkSentTitle: 'Vérifie ton courriel pour finaliser',
       magicLinkSentBody: (email: string) =>
         `On a envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session — il expire dans 30 minutes.`,
@@ -731,6 +739,12 @@ const EN: Copy = {
       cta: 'Continue →',
       alreadyHaveAccount: 'Already have an account?',
       signIn: 'Sign in →',
+      signedInAsEyebrow: 'signed-in account',
+      signedInAsTitle: 'Signed in as',
+      signedInAsBody:
+        "This proposal will be tied to your account. You'll be able to reopen and edit it in your sessions.",
+      signedInAsCta: 'Continue with this account →',
+      signedInAsSwitch: 'Use a different email',
     },
     typePicker: {
       eyebrow: 'what kind of problem',
@@ -765,6 +779,7 @@ const EN: Copy = {
         'Connection hiccup while sending your intake. Your draft is saved — try again in a moment.',
       sessionLinkLabel: 'See your session →',
       sessionLinkHint: 'Your proposal is saved. You can follow it and reply here.',
+      sessionEditHint: 'You can edit your answers anytime from your portal ("My sessions").',
       magicLinkSentTitle: 'Check your email to finish',
       magicLinkSentBody: (email: string) =>
         `A sign-in link was sent to ${email}. Open it to access your session — it expires in 30 minutes.`,

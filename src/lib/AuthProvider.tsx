@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api } from './api'
 import { AuthContext, type AuthState } from './authContext'
+import { clearDraft } from './draft'
 
 interface MeResponse {
   email: string | null
@@ -97,6 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setEmail(null)
       setRealIsAdmin(false)
+      // Drop any pending-intake stash so it doesn't follow the user across
+      // accounts on a shared device. Drafts in progress (intake-draft) stay
+      // — those are device-local and unauthenticated by design.
+      clearDraft('pending-intake')
     }
   }, [])
 

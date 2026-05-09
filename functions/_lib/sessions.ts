@@ -4,6 +4,13 @@
 
 export type SessionStatus = 'draft' | 'triage' | 'active' | 'shipped' | 'rejected'
 
+export interface StatusHistoryEntry {
+  from: SessionStatus
+  to: SessionStatus
+  by: string // email of actor
+  at: number // unix seconds
+}
+
 export interface SessionRow {
   id: string
   email: string
@@ -11,6 +18,10 @@ export interface SessionRow {
   status: SessionStatus
   created_at: number
   updated_at: number
+  /** Unix seconds when soft-deleted by visitor or admin. NULL = live. */
+  deleted_at: number | null
+  /** JSON-encoded StatusHistoryEntry[] or null. Parse defensively. */
+  status_history: string | null
 }
 
 export interface MessageRow {
@@ -47,4 +58,35 @@ export function canAccessSession(
 export function primaryAdminEmail(adminEmails: string): string | null {
   const first = adminEmails.split(',')[0]?.trim()
   return first && first.length > 0 ? first : null
+}
+
+export function parseStatusHistory(raw: string | null): StatusHistoryEntry[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed as StatusHistoryEntry[]
+  } catch {
+    // fall through
+  }
+  return []
+}
+
+export function appendStatusHistory(raw: string | null, entry: StatusHistoryEntry): string {
+  return JSON.stringify([...parseStatusHistory(raw), entry])
+}
+
+/**
+ * Best-effort lookup of the visitor's preferred language from the stored
+ * intake payload. Falls back to 'fr' (the canonical language of the app)
+ * when the row was created without intake_json or it is malformed.
+ */
+export function visitorLang(session: SessionRow): 'fr' | 'en' {
+  if (!session.intake_json) return 'fr'
+  try {
+    const obj = JSON.parse(session.intake_json) as { lang?: unknown }
+    if (obj.lang === 'en' || obj.lang === 'fr') return obj.lang
+  } catch {
+    // fall through
+  }
+  return 'fr'
 }

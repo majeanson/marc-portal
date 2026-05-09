@@ -79,6 +79,159 @@ export async function sendVisitorMessageNotification(
   return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
 }
 
+/**
+ * Marc replied in the visitor's session thread. Visitor gets an email with a
+ * preview and a link to the session page (where they can read + reply).
+ */
+export async function sendMarcMessageNotification(
+  apiKey: string,
+  visitorEmail: string,
+  sessionId: string,
+  origin: string,
+  preview: string,
+  lang: 'fr' | 'en',
+): Promise<boolean> {
+  const subject = lang === 'fr' ? 'Marc a répondu à ta session' : 'Marc replied to your session'
+  const intro =
+    lang === 'fr'
+      ? 'Marc a posté un message dans ta session :'
+      : 'Marc posted a message in your session:'
+  const cta = lang === 'fr' ? 'Ouvrir la session' : 'Open the session'
+  const url = `${origin}${lang === 'fr' ? '' : '/en'}/session/${sessionId}`
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
+<p>${intro}</p>
+<blockquote style="border-left:3px solid #3d6e4e;padding:8px 12px;color:#444;background:#fbf7ec">${escapeHtml(preview).slice(0, 400)}</blockquote>
+<p><a href="${url}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">${cta}</a></p>
+<p style="color:#999;font-size:12px;word-break:break-all">${url}</p>
+</body></html>`
+  const text = `${intro}\n\n${preview.slice(0, 400)}\n\n${cta}: ${url}`
+  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+}
+
+/**
+ * Status of the visitor's session changed. They get a short email in their
+ * own language with the new status and a deep link to the session.
+ */
+export async function sendStatusChangeNotification(
+  apiKey: string,
+  visitorEmail: string,
+  sessionId: string,
+  fromStatus: string,
+  toStatus: string,
+  origin: string,
+  lang: 'fr' | 'en',
+): Promise<boolean> {
+  const langPrefix = lang === 'en' ? '/en' : ''
+  const url = `${origin}${langPrefix}/session/${sessionId}`
+  const fromLabel = statusLabel(fromStatus, lang)
+  const toLabel = statusLabel(toStatus, lang)
+  const subject =
+    lang === 'fr' ? `Ta session est maintenant : ${toLabel}` : `Your session is now: ${toLabel}`
+  const lead =
+    lang === 'fr'
+      ? `Marc a déplacé ta session de <code>${escapeHtml(fromLabel)}</code> à <code>${escapeHtml(toLabel)}</code>.`
+      : `Marc moved your session from <code>${escapeHtml(fromLabel)}</code> to <code>${escapeHtml(toLabel)}</code>.`
+  const sub =
+    lang === 'fr' ? 'Ouvre la session pour voir la suite.' : "Open the session to see what's next."
+  const cta = lang === 'fr' ? 'Voir ma session' : 'Open my session'
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
+<p><strong>${lead}</strong></p>
+<p style="color:#444">${sub}</p>
+<p><a href="${url}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">${cta}</a></p>
+<p style="color:#999;font-size:12px;word-break:break-all">${url}</p>
+</body></html>`
+  const text =
+    lang === 'fr'
+      ? `Marc a déplacé ta session de ${fromLabel} à ${toLabel}.\n\n${url}`
+      : `Marc moved your session from ${fromLabel} to ${toLabel}.\n\n${url}`
+  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+}
+
+/**
+ * Visitor edited their own intake mid-flight. Marc gets a heads-up so he can
+ * re-read before triaging — small change, possibly large reframe of the ask.
+ */
+export async function sendIntakeEditedNotification(
+  apiKey: string,
+  marcEmail: string,
+  visitorEmail: string,
+  sessionId: string,
+  origin: string,
+): Promise<boolean> {
+  const subject = `${visitorEmail} edited their intake`
+  const url = `${origin}/admin/inbox/${sessionId}`
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
+<p><strong>${escapeHtml(visitorEmail)}</strong> updated their intake answers.</p>
+<p style="color:#444">Re-read before triaging — they may have reframed the ask.</p>
+<p><a href="${url}">Open in admin inbox</a></p>
+</body></html>`
+  const text = `${visitorEmail} updated their intake answers.\n\n${url}`
+  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+}
+
+/**
+ * Symmetric counterparty notification on session withdrawal:
+ *   - visitor self-withdrew → Marc gets the heads-up
+ *   - admin force-withdrew → visitor gets a courtesy note
+ * Both share copy: "session was withdrawn" + actor + link.
+ */
+export async function sendWithdrawalNotification(
+  apiKey: string,
+  toEmail: string,
+  byEmail: string,
+  sessionId: string,
+  origin: string,
+  lang: 'fr' | 'en',
+  audience: 'admin' | 'visitor',
+): Promise<boolean> {
+  const subject =
+    audience === 'admin'
+      ? `${byEmail} withdrew their session`
+      : lang === 'fr'
+        ? 'Ta session a été retirée du portail'
+        : 'Your session was withdrawn from the portal'
+  const url =
+    audience === 'admin'
+      ? `${origin}/admin/inbox/${sessionId}`
+      : `${origin}${lang === 'en' ? '/en' : ''}/me`
+  const lead =
+    audience === 'admin'
+      ? `<strong>${escapeHtml(byEmail)}</strong> withdrew their session. The row is soft-deleted but still visible in the admin trash.`
+      : lang === 'fr'
+        ? `Marc a retiré une session du portail. Si c'est une erreur, écris-lui — la session existe encore en arrière-plan.`
+        : `Marc withdrew a session from the portal. If this was a mistake, reach out — the session still exists in the background.`
+  const cta =
+    audience === 'admin'
+      ? 'Open in admin'
+      : lang === 'fr'
+        ? 'Voir mes sessions'
+        : 'Open my sessions'
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
+<p>${lead}</p>
+<p><a href="${url}">${cta}</a></p>
+</body></html>`
+  const text = `${lead.replace(/<[^>]+>/g, '')}\n\n${url}`
+  return send(apiKey, { from: RESEND_FROM, to: toEmail, subject, html, text })
+}
+
+function statusLabel(status: string, lang: 'fr' | 'en'): string {
+  const FR: Record<string, string> = {
+    draft: 'brouillon',
+    triage: 'en triage',
+    active: 'active',
+    shipped: 'livrée',
+    rejected: 'refusée',
+  }
+  const EN: Record<string, string> = {
+    draft: 'draft',
+    triage: 'in triage',
+    active: 'active',
+    shipped: 'shipped',
+    rejected: 'rejected',
+  }
+  return (lang === 'fr' ? FR[status] : EN[status]) ?? status
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')

@@ -46,12 +46,14 @@ function emptyDraft(): IntakeDraft {
   return { formData: {} }
 }
 
-function pickStep(draft: IntakeDraft, vibeAccepted: boolean, authEmail: string | null): Step {
+function pickStep(draft: IntakeDraft, vibeAccepted: boolean): Step {
   if (draft.submittedAt) return 'confirmation'
   if (!vibeAccepted) return 'vibe'
-  // A signed-in visitor doesn't need to retype their email; carry the auth
-  // identity into the next step automatically.
-  if (!draft.account?.email && !authEmail) return 'account'
+  // Even when signed-in, surface the account step once so the visitor sees a
+  // visible "Signed in as X" confirmation and can opt to use a different
+  // email. AccountStep auto-advances draft.account on Continue, after which
+  // this guard skips the step on subsequent navigations.
+  if (!draft.account?.email) return 'account'
   if (!draft.type) return 'type'
   return 'form'
 }
@@ -63,7 +65,7 @@ export function Intake({ lang }: { lang: Lang }) {
     () => loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft(),
   )
   const [step, setStep] = useState<Step>(() =>
-    pickStep(loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft(), flagSet(VIBE_FLAG), null),
+    pickStep(loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft(), flagSet(VIBE_FLAG)),
   )
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -93,13 +95,13 @@ export function Intake({ lang }: { lang: Lang }) {
 
   const onAcceptVibe = () => {
     flagWrite(VIBE_FLAG, true)
-    setStep(pickStep(draft, true, auth.email))
+    setStep(pickStep(draft, true))
   }
 
   const onAccount = (acc: Account) => {
     const next = { ...draft, account: acc }
     setDraft(next)
-    setStep(pickStep(next, true, auth.email))
+    setStep(pickStep(next, true))
   }
 
   const onPickType = (type: ProblemType) => {
@@ -245,7 +247,12 @@ export function Intake({ lang }: { lang: Lang }) {
             {step === 'vibe' && <VibeGate lang={lang} onAccept={onAcceptVibe} />}
 
             {step === 'account' && (
-              <AccountStep lang={lang} initial={accountInitial} onContinue={onAccount} />
+              <AccountStep
+                lang={lang}
+                initial={accountInitial}
+                signedInAs={auth.email ?? undefined}
+                onContinue={onAccount}
+              />
             )}
 
             {step === 'type' && (

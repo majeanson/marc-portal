@@ -10,17 +10,73 @@ export interface Account {
 export function AccountStep({
   lang,
   initial,
+  signedInAs,
   onContinue,
 }: {
   lang: Lang
   initial: Partial<Account>
+  signedInAs?: string
   onContinue: (acc: Account) => void
 }) {
   const t = DICT[lang].intake.account
   const [email, setEmail] = useState(initial.email ?? '')
   const [name, setName] = useState(initial.name ?? '')
+  // When signed-in, default to the confirmation card; the visitor can opt out
+  // and switch to a different email via "Use a different email".
+  const [useOther, setUseOther] = useState(false)
   const valid = /\S+@\S+\.\S+/.test(email)
   const loginHref = lang === 'en' ? '/en/login' : '/login'
+
+  if (signedInAs && !useOther) {
+    return (
+      <div className="intake__step intake__step--signed-in">
+        <div className="section__eyebrow">{t.signedInAsEyebrow}</div>
+        <div className="intake__signed-in-card">
+          <div className="intake__signed-in-check" aria-hidden="true">
+            ✓
+          </div>
+          <div className="intake__signed-in-body">
+            <div className="intake__signed-in-label">{t.signedInAsTitle}</div>
+            <div className="intake__signed-in-email mono">{signedInAs}</div>
+          </div>
+        </div>
+
+        <p>{t.signedInAsBody}</p>
+
+        <label className="field">
+          <span className="field__label">{t.nameLabel}</span>
+          <input
+            type="text"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t.namePlaceholder}
+            className="field__input"
+          />
+        </label>
+
+        <div className="intake__signed-in-actions">
+          <button
+            type="button"
+            className="hero__cta"
+            onClick={() => onContinue({ email: signedInAs, name: name || undefined })}
+          >
+            {t.signedInAsCta}
+          </button>
+          <button
+            type="button"
+            className="link-btn mono"
+            onClick={() => {
+              setUseOther(true)
+              setEmail('')
+            }}
+          >
+            {t.signedInAsSwitch}
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="intake__step">

@@ -1,0 +1,115 @@
+// GET    /api/sessions/:id/attachments/:attId — stream the file from R2.
+//                                                Auth: same as the parent
+//                                                session (visitor self or admin).
+// DELETE /api/sessions/:id/attachments/:attId — soft-removes the row + R2
+//                                                object. Allowed to: the
+//                                                uploader (only while still
+//                                                unlinked) or admin (any time).
+
+import { currentEmail } from '../../../../_lib/auth'
+import type { Env } from '../../../../_lib/env'
+import { isAdmin } from '../../../../_lib/env'
+import {
+  badRequest,
+  forbidden,
+  notFound,
+  ok,
+  serviceUnavailable,
+  unauthorized,
+} from '../../../../_lib/json'
+import { canAccessSession } from '../../../../_lib/sessions'
+import type { SessionRow } from '../../../../_lib/sessions'
+import type { AttachmentRow } from '../../../../_lib/attachments'
+
+async function loadSession(env: Env, id: string): Promise<SessionRow | null> {
+  return env.DB.prepare(
+    `SELECT id, email, intake_json, status, created_at, updated_at,
+            deleted_at, status_history
+     FROM sessions WHERE id = ?`,
+  )
+    .bind(id)
+    .first<SessionRow>()
+}
+
+async function loadAttachment(
+  env: Env,
+  sessionId: string,
+  attId: string,
+): Promise<AttachmentRow | null> {
+  return env.DB.prepare(
+    `SELECT id, session_id, message_id, uploaded_by, filename, content_type,
+            size, r2_key, created_at
+     FROM attachments WHERE id = ? AND session_id = ?`,
+  )
+    .bind(attId, sessionId)
+    .first<AttachmentRow>()
+}
+
+/** RFC 5987 encode for Content-Disposition filename* parameter. */
+function encodeContentDispositionFilename(name: string): string {
+  return `filename*=UTF-8''${encodeURIComponent(name)}`
+}
+
+export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
+  if (!env.MEDIA) return serviceUnavailable('attachments are not enabled')
+  const email = await currentEmail(request, env.SESSION_SECRET)
+  if (!email) return unauthorized()
+  const sessionId = String(params.id ?? '')
+  const attId = String(params.attId ?? '')
+  if (!sessionId || !attId) return badRequest('missing id')
+
+  const session = await loadSession(env, sessionId)
+  if (!session) return notFound()
+  if (session.deleted_at && !isAdmin(env, email)) return notFound()
+  if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
+
+  const att = await loadAttachment(env, sessionId, attId)
+  if (!att) return notFound()
+
+  const obj = await env.MEDIA.get(att.r2_key)
+  if (!obj) return notFound()
+
+  // Inline for images (so they preview) and attachment otherwise (so the
+  // browser downloads with the original filename instead of opening it).
+  const disposition = att.content_type.startsWith('image/') ? 'inline' : 'attachment'
+  return new Response(obj.body, {
+    headers: {
+      'content-type': att.content_type,
+      'content-length': String(att.size),
+      'content-disposition': `${disposition}; ${encodeContentDispositionFilename(att.filename)}`,
+      // Conservative default — visitor's session cookie is HttpOnly + same-site,
+      // so caching shared computers' files is risky. No-store keeps it tight.
+      'cache-control': 'private, no-store',
+    },
+  })
+}
+
+export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params }) => {
+  if (!env.MEDIA) return serviceUnavailable('attachments are not enabled')
+  const email = await currentEmail(request, env.SESSION_SECRET)
+  if (!email) return unauthorized()
+  const sessionId = String(params.id ?? '')
+  const attId = String(params.attId ?? '')
+  if (!sessionId || !attId) return badRequest('missing id')
+
+  const session = await loadSession(env, sessionId)
+  if (!session) return notFound()
+  if (session.deleted_at) return notFound()
+
+  const admin = isAdmin(env, email)
+  if (!canAccessSession(email, admin, session)) return forbidden()
+
+  const att = await loadAttachment(env, sessionId, attId)
+  if (!att) return ok({ ok: true })
+
+  // Once attached to a sent message, only admin can prune. Pre-message
+  // uploads are fair game for the uploader.
+  const isUploader = att.uploaded_by.toLowerCase() === email.toLowerCase()
+  const allowed = admin || (isUploader && att.message_id === null)
+  if (!allowed) return forbidden('cannot delete attached file')
+
+  await env.MEDIA.delete(att.r2_key).catch(() => {})
+  await env.DB.prepare(`DELETE FROM attachments WHERE id = ?`).bind(attId).run()
+
+  return ok({ ok: true })
+}

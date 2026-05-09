@@ -8,6 +8,13 @@ import { api } from './api'
 
 export type SessionStatus = 'draft' | 'triage' | 'active' | 'shipped' | 'rejected'
 
+export interface StatusHistoryEntry {
+  from: SessionStatus
+  to: SessionStatus
+  by: string
+  at: number
+}
+
 export interface SessionRow {
   id: string
   email: string
@@ -15,6 +22,20 @@ export interface SessionRow {
   status: SessionStatus
   created_at: number
   updated_at: number
+  deleted_at: number | null
+  status_history: string | null
+}
+
+export interface AttachmentRow {
+  id: string
+  session_id: string
+  message_id: string | null
+  uploaded_by: string
+  filename: string
+  content_type: string
+  size: number
+  r2_key: string
+  created_at: number
 }
 
 export interface MessageRow {
@@ -23,10 +44,16 @@ export interface MessageRow {
   author: 'visitor' | 'marc'
   body: string
   created_at: number
+  /** Always present (empty array if none). Server populates from
+   * attachments.message_id = this.id. */
+  attachments?: AttachmentRow[]
 }
 
-export function listSessions(): Promise<{ sessions: SessionRow[] }> {
-  return api('/api/sessions')
+export function listSessions(opts: { deleted?: boolean } = {}): Promise<{
+  sessions: SessionRow[]
+}> {
+  const qs = opts.deleted ? '?deleted=true' : ''
+  return api(`/api/sessions${qs}`)
 }
 
 export function createSession(intakeJson?: unknown): Promise<{ session: SessionRow }> {
@@ -39,19 +66,50 @@ export function getSession(id: string): Promise<{ session: SessionRow }> {
 
 export function patchSession(
   id: string,
-  patch: { status?: SessionStatus; intakeJson?: unknown },
+  patch: {
+    status?: SessionStatus
+    intakeJson?: unknown
+    /** Optimistic concurrency: server returns 409 if updated_at differs. */
+    ifUpdatedAt?: number
+  },
 ): Promise<{ session: SessionRow }> {
   return api(`/api/sessions/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch })
+}
+
+export function deleteSession(id: string): Promise<{ ok: true }> {
+  return api(`/api/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' })
+}
+
+export function undeleteSession(id: string): Promise<{ session: SessionRow }> {
+  return api(`/api/sessions/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: { undelete: true },
+  })
+}
+
+export function parseStatusHistory(raw: string | null): StatusHistoryEntry[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed as StatusHistoryEntry[]
+  } catch {
+    // fall through
+  }
+  return []
 }
 
 export function listMessages(sessionId: string): Promise<{ messages: MessageRow[] }> {
   return api(`/api/sessions/${encodeURIComponent(sessionId)}/messages`)
 }
 
-export function postMessage(sessionId: string, body: string): Promise<{ message: MessageRow }> {
+export function postMessage(
+  sessionId: string,
+  body: string,
+  attachmentIds: string[] = [],
+): Promise<{ message: MessageRow }> {
   return api(`/api/sessions/${encodeURIComponent(sessionId)}/messages`, {
     method: 'POST',
-    body: { body },
+    body: { body, attachmentIds },
   })
 }
 

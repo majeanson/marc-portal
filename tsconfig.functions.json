@@ -15,5 +15,6 @@
     "verbatimModuleSyntax": true,
     "types": ["@cloudflare/workers-types"]
   },
-  "include": ["functions/**/*.ts"]
+  "include": ["functions/**/*.ts"],
+  "exclude": ["functions/**/*.test.ts"]
 }

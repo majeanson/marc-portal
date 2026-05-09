@@ -17,6 +17,18 @@ migrations_dir = "functions/db/migrations"
 #   ADMIN_EMAILS          - comma-separated allowlist, e.g. "marc.jeanson92@gmail.com"
 #   SESSION_SECRET        - 32+ random bytes hex, e.g. `openssl rand -hex 32`
 #
+# Optional R2 binding for message attachments (feat-message-attachments).
+# When unset, the attachment endpoints return 503; everything else (sessions,
+# threads without files) keeps working. To enable:
+#   1. npx wrangler r2 bucket create marc-portal-media
+#   2. Uncomment the block below
+#   3. Redeploy — the attachment UI then unlocks automatically
+#
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "marc-portal-media"
+preview_bucket_name = "marc-portal-media"
+
 # Optional env vars (feat-2026-018 — automate buyer custom-domain attach).
 # When all three are set, /admin/fleet/new attaches the buyer's domain to this
 # Pages project automatically. When any is unset, the wizard falls back to

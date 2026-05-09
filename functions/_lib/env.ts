@@ -6,6 +6,10 @@ export interface Env {
   RESEND_API_KEY: string
   ADMIN_EMAILS: string
   SESSION_SECRET: string
+  // feat-message-attachments: optional R2 bucket for file uploads on session
+  // threads. When unset, attachment endpoints return 503 and the UI hides
+  // the file picker. The rest of the app works unchanged.
+  MEDIA?: R2Bucket
   // feat-custom-domain-onboarding: optional CF API credentials. When set, the
   // operator's new-tenant wizard auto-attaches the buyer's domain to this CF
   // Pages project. When unset (dev or pre-config), wizard falls back to the
