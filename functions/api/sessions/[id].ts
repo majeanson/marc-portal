@@ -46,6 +46,12 @@ interface PatchBody {
   ifUpdatedAt?: unknown
   /** Admin-only: restore a soft-deleted session (clears deleted_at). */
   undelete?: unknown
+  /** Admin-only: opt this session into / out of the public /projects gallery
+   * and edit its display title + tagline. Object shape:
+   *   showcase: { enabled?: boolean, title?: string|null, tagline?: string|null }
+   * Setting enabled flips showcased_at to now() / null. Title and tagline can
+   * be updated independently of enabled. */
+  showcase?: unknown
 }
 
 export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params }) => {
@@ -139,6 +145,53 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
       .bind(intake, now, id)
       .run()
     intakeEdited = intake !== session.intake_json
+  }
+
+  // Showcase fields — admin-only. Object shape lets us patch enabled / title
+  // / tagline independently. enabled flips showcased_at to now / null.
+  if (body.showcase !== undefined) {
+    if (!admin) return forbidden('only admin can showcase a session')
+    if (!body.showcase || typeof body.showcase !== 'object') {
+      return badRequest('showcase must be an object')
+    }
+    const sc = body.showcase as {
+      enabled?: unknown
+      title?: unknown
+      tagline?: unknown
+    }
+    const updates: { col: string; val: unknown }[] = []
+    if (sc.enabled !== undefined) {
+      if (typeof sc.enabled !== 'boolean') {
+        return badRequest('showcase.enabled must be a boolean')
+      }
+      updates.push({ col: 'showcased_at', val: sc.enabled ? now : null })
+    }
+    if (sc.title !== undefined) {
+      if (sc.title === null) {
+        updates.push({ col: 'showcase_title', val: null })
+      } else if (typeof sc.title === 'string') {
+        const trimmed = sc.title.trim().slice(0, 200)
+        updates.push({ col: 'showcase_title', val: trimmed.length > 0 ? trimmed : null })
+      } else {
+        return badRequest('showcase.title must be a string or null')
+      }
+    }
+    if (sc.tagline !== undefined) {
+      if (sc.tagline === null) {
+        updates.push({ col: 'showcase_tagline', val: null })
+      } else if (typeof sc.tagline === 'string') {
+        const trimmed = sc.tagline.trim().slice(0, 500)
+        updates.push({ col: 'showcase_tagline', val: trimmed.length > 0 ? trimmed : null })
+      } else {
+        return badRequest('showcase.tagline must be a string or null')
+      }
+    }
+    if (updates.length > 0) {
+      const setClause = updates.map((u) => `${u.col} = ?`).join(', ') + ', updated_at = ?'
+      await env.DB.prepare(`UPDATE sessions SET ${setClause} WHERE id = ?`)
+        .bind(...updates.map((u) => u.val), now, id)
+        .run()
+    }
   }
 
   const fresh = await loadSession(env.DB, id)

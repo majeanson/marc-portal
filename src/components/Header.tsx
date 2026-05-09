@@ -25,6 +25,9 @@ export function Header({ lang }: { lang: Lang }) {
             marc<span className="dot">.</span>portal
           </a>
           <div className="site-header__right">
+            <a href={`${langPrefix}/projects`} className="site-header__auth-link">
+              {t.projects.eyebrow}
+            </a>
             {!loading && (
               <div className="site-header__auth">
                 {email ? (

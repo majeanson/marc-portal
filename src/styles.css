@@ -3550,6 +3550,160 @@ button:focus-visible,
   color: var(--text-soft);
 }
 
+/* Public /projects gallery — cards for sessions admin opted into the
+   showcase. Each card links to its /share/<id> detail view; the build URL
+   opens the deploy itself. */
+.projects {
+  padding-top: 32px;
+}
+.projects__title {
+  font-size: clamp(36px, 6vw, 56px);
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+.projects__intro {
+  margin: 0 0 32px;
+  color: var(--text-mid);
+  max-width: 60ch;
+}
+.projects__grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+.project-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+.project-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.project-card__link {
+  display: block;
+  padding: 18px 20px 16px;
+  text-decoration: none;
+  color: inherit;
+}
+.project-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.project-card__date {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+.project-card__status {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.project-card__status--active {
+  border-color: var(--accent);
+  color: var(--accent-warm);
+}
+.project-card__status--shipped {
+  background: var(--accent-soft, var(--bg));
+  border-color: var(--accent);
+  color: var(--accent-warm);
+}
+.project-card__title {
+  font-size: 22px;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+.project-card__tagline {
+  margin: 0 0 14px;
+  color: var(--text-mid);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.project-card__build {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--accent-soft, var(--bg));
+  border-left: 3px solid var(--accent-warm);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.project-card__build--none {
+  background: transparent;
+  border-left: 3px dashed var(--border);
+  color: var(--text-soft);
+}
+.project-card__build-eyebrow {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-warm);
+}
+.project-card__build-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.project-card__cta {
+  font-size: 12px;
+  color: var(--accent-warm);
+  font-weight: 600;
+}
+.project-card__build-link {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 11px;
+  color: var(--accent-warm);
+  text-decoration: none;
+  padding: 4px 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  background: var(--bg);
+}
+.project-card__build-link:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft, var(--bg-card));
+}
+
+/* Admin "Showcase as project" panel on SessionPage. */
+.session-showcase {
+  background: var(--bg-card);
+}
+.session-showcase__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--accent-soft, var(--bg));
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-sm);
+  margin: 12px 0 18px;
+  font-weight: 600;
+  color: var(--accent-warm);
+  cursor: pointer;
+}
+.session-showcase__actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
 /* Filter chips on showcase wall */
 .filters {
   display: flex;

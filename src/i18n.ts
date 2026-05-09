@@ -450,6 +450,37 @@ const FR = {
     shareCopy: 'Copier le lien',
     shareCopied: 'Copié ✓',
   },
+
+  projects: {
+    eyebrow: 'projets',
+    heading: 'Projets en cours',
+    intro:
+      'Sessions que je publie au public — chacune un projet vivant, avec son dernier build accessible.',
+    loading: 'Chargement…',
+    empty: 'Rien de publié pour le moment. Reviens bientôt.',
+    error: 'Impossible de charger les projets.',
+    untitled: 'Projet sans titre',
+    currentBuildLabel: 'Build actuel',
+    noBuildYet: 'Pas encore de build épinglé',
+    openCta: 'Voir les avancées →',
+    openBuild: 'Ouvrir le build ↗',
+  },
+
+  showcaseAdmin: {
+    sectionHeading: 'Projets en vitrine',
+    sectionHint:
+      'Quand tu actives la vitrine, cette session apparaît sur /projects avec le titre et le sous-titre que tu donnes ici.',
+    enabledLabel: 'Publier comme projet sur /projects',
+    titleLabel: 'Titre du projet (optionnel)',
+    titlePlaceholder: 'Truck Notes — voix → facture',
+    taglineLabel: 'Sous-titre court (optionnel)',
+    taglinePlaceholder: 'Notes vocales du truck → brouillon de facture le dimanche.',
+    save: 'Enregistrer',
+    saving: 'Enregistrement…',
+    saveError: 'Échec — réessaie.',
+    saved: 'Enregistré ✓',
+    galleryLink: 'Voir la galerie →',
+  },
 }
 
 const EN: Copy = {
@@ -894,6 +925,37 @@ const EN: Copy = {
     shareHeading: 'Public share link',
     shareCopy: 'Copy link',
     shareCopied: 'Copied ✓',
+  },
+
+  projects: {
+    eyebrow: 'projects',
+    heading: 'Projects in flight',
+    intro:
+      'Sessions I’m publishing to the public — each a living project with its latest build open for inspection.',
+    loading: 'Loading…',
+    empty: 'Nothing published yet. Check back soon.',
+    error: 'Failed to load projects.',
+    untitled: 'Untitled project',
+    currentBuildLabel: 'Current build',
+    noBuildYet: 'No pinned build yet',
+    openCta: 'See the advancements →',
+    openBuild: 'Open the build ↗',
+  },
+
+  showcaseAdmin: {
+    sectionHeading: 'Showcase as project',
+    sectionHint:
+      'When you turn this on, this session appears on /projects with the title and tagline you set here.',
+    enabledLabel: 'Publish as a project on /projects',
+    titleLabel: 'Project title (optional)',
+    titlePlaceholder: 'Truck Notes — voice → invoice',
+    taglineLabel: 'Short tagline (optional)',
+    taglinePlaceholder: 'Truck voice notes → draft invoice by Sunday morning.',
+    save: 'Save',
+    saving: 'Saving…',
+    saveError: 'Failed — try again.',
+    saved: 'Saved ✓',
+    galleryLink: 'See the gallery →',
   },
 }
 

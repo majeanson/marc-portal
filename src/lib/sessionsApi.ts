@@ -24,6 +24,9 @@ export interface SessionRow {
   updated_at: number
   deleted_at: number | null
   status_history: string | null
+  showcased_at: number | null
+  showcase_title: string | null
+  showcase_tagline: string | null
 }
 
 export interface AttachmentRow {
@@ -64,6 +67,12 @@ export function getSession(id: string): Promise<{ session: SessionRow }> {
   return api(`/api/sessions/${encodeURIComponent(id)}`)
 }
 
+export interface ShowcasePatch {
+  enabled?: boolean
+  title?: string | null
+  tagline?: string | null
+}
+
 export function patchSession(
   id: string,
   patch: {
@@ -71,6 +80,7 @@ export function patchSession(
     intakeJson?: unknown
     /** Optimistic concurrency: server returns 409 if updated_at differs. */
     ifUpdatedAt?: number
+    showcase?: ShowcasePatch
   },
 ): Promise<{ session: SessionRow }> {
   return api(`/api/sessions/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch })
@@ -154,4 +164,24 @@ export interface CapacityLive {
 
 export function getCapacityLive(): Promise<CapacityLive> {
   return api('/api/capacity')
+}
+
+/** Public-facing project gallery row. Returned by /api/public/projects. */
+export interface PublicProject {
+  id: string
+  showcasedAt: number
+  title: string | null
+  tagline: string | null
+  status: string
+  currentBuild: {
+    label: string
+    body: string
+    buildUrl: string | null
+    iframePath: string | null
+    date: number
+  } | null
+}
+
+export function listPublicProjects(): Promise<{ projects: PublicProject[] }> {
+  return api('/api/public/projects')
 }

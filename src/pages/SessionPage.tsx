@@ -4,6 +4,7 @@ import { DICT, type Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { SessionAdvancements } from '../components/SessionAdvancements'
+import { SessionShowcase } from '../components/SessionShowcase'
 import { useAuth } from '../lib/authContext'
 import {
   deleteSession,
@@ -793,6 +794,14 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 })}
               </ul>
             </section>
+
+            {isAdmin && (
+              <SessionShowcase
+                session={session}
+                lang={lang}
+                onPatched={(next) => setSession(next)}
+              />
+            )}
 
             <SessionAdvancements
               sessionId={session.id}

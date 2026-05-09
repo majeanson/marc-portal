@@ -34,6 +34,7 @@ const AdminAudit = lazy(() => import('./pages/AdminAudit').then((m) => ({ defaul
 const PublicAdvancements = lazy(() =>
   import('./pages/PublicAdvancements').then((m) => ({ default: m.PublicAdvancements })),
 )
+const Projects = lazy(() => import('./pages/Projects').then((m) => ({ default: m.Projects })))
 
 function L({ children }: { children: ReactNode }) {
   // Minimal fallback — just the page chrome would require importing Header,
@@ -152,6 +153,22 @@ export function App() {
         element={
           <L>
             <PublicAdvancements lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/projects"
+        element={
+          <L>
+            <Projects lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/projects"
+        element={
+          <L>
+            <Projects lang="en" />
           </L>
         }
       />

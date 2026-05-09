@@ -31,6 +31,13 @@ export interface SessionRow {
   deleted_at: number | null
   /** JSON-encoded StatusHistoryEntry[] or null. Parse defensively. */
   status_history: string | null
+  /** Unix seconds when admin opted this session into the public /projects
+   * gallery. NULL = not showcased. */
+  showcased_at: number | null
+  /** Admin-set display name on the public card. NULL = fall back to intake. */
+  showcase_title: string | null
+  /** Admin-set short blurb on the public card. NULL = no tagline. */
+  showcase_tagline: string | null
 }
 
 export interface MessageRow {
@@ -93,7 +100,8 @@ export async function loadSession(db: D1Database, id: string): Promise<SessionRo
   return db
     .prepare(
       `SELECT id, email, intake_json, status, created_at, updated_at,
-              deleted_at, status_history
+              deleted_at, status_history,
+              showcased_at, showcase_title, showcase_tagline
        FROM sessions WHERE id = ?`,
     )
     .bind(id)

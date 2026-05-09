@@ -20,6 +20,9 @@ interface SessionRowMock {
   updated_at: number
   deleted_at: number | null
   status_history: string | null
+  showcased_at: number | null
+  showcase_title: string | null
+  showcase_tagline: string | null
 }
 
 interface MessageRowMock {
@@ -341,6 +344,9 @@ class MockPreparedStatement {
         updated_at: a[4] as number,
         deleted_at: null,
         status_history: null,
+        showcased_at: null,
+        showcase_title: null,
+        showcase_tagline: null,
       })
       return 1
     }
