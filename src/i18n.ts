@@ -19,22 +19,21 @@ const FR = {
 
   brandTitle: 'Marc — dev à Québec',
   metaDescription:
-    "Marc, dev à Québec. Soir et fin de semaine, j'aide les gens à régler des problèmes du quotidien avec des petits logiciels. Async, à ton rythme.",
+    "Marc, dev à Québec. Le soir et la fin de semaine, j'aide les gens à régler des problèmes du quotidien avec du code. Async — pas de meetings, à ton rythme.",
 
   hero: {
     eyebrow: 'side-pratique · Québec · async',
     salut: 'Salut, c’est Marc, dev à Québec.',
     body1:
-      'Job de jour le jour. Le soir et la fin de semaine, j’aide les gens à régler des problèmes du quotidien. En async, à ton rythme et au mien — pas de calls, pas de meetings.',
+      'Job de jour la semaine. Le soir et la fin de semaine, j’aide les gens à régler des problèmes du quotidien. En async (pas de calls, pas de meetings) — à ton rythme et au mien.',
     body2:
-      'Tu as un problème répétitif — paperasse, suivi, coordination, n’importe quoi du genre? Décris-le-moi via mon portail.',
-    body3:
-      'Compte gratuit. Démos testables tout le long du projet. Premier brouillon en quelques jours.',
+      'Tu as un problème qui revient toujours — paperasse, suivi, coordination? Décris-le-moi via le portail.',
+    body3: 'Compte gratuit. Tu testes la démo à chaque étape. Premier brouillon en quelques jours.',
     cta: 'Crée ton compte gratuit →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle proposition →',
     mySessionsLink: 'Voir mes sessions',
-    bilingual: '(Disponible aussi en anglais — réponse dans ta langue.)',
+    bilingual: '(Aussi en anglais — je réponds dans ta langue.)',
   },
 
   how: {
@@ -68,17 +67,17 @@ const FR = {
     eyebrow: 'démo principale',
     title: 'À quoi ça ressemble',
     sub: 'Sunday Night Dread — voix → brouillon de facture, pour les gens de métier.',
-    body: 'Pendant la semaine, le plombier dicte des notes vocales depuis son truck — matériaux, heures, clients. Le dimanche matin, un brouillon de facture l’attend dans son inbox. Plus de paperasse à 22h le dimanche soir.',
+    body: 'Pendant la semaine, le plombier dicte des notes vocales dans son truck — matériaux, heures, clients. Le dimanche matin, un brouillon de facture l’attend dans son inbox. Plus de paperasse à 22 h le dimanche soir.',
     cta: 'Tester la démo →',
     disclosure:
-      'Voix client composite — basée sur des conversations réelles avec 3 gens de métier. Le code et l’app sont vrais et déployés.',
+      'Voix client composite — bâtie à partir de vraies conversations avec 3 gens de métier. Le code et l’app sont vrais et déployés.',
     tag: 'Tier 2 · ≈ 1 500 $ · livré en 3 semaines',
   },
 
   showcases: {
     eyebrow: 'projets livrés',
     title: 'Ce qui a été livré',
-    body: 'Chaque projet livré devient une page publique. Tu vois le tier, le prix, et les heures réelles. Le mur grandit chaque mois.',
+    body: 'Chaque projet livré devient une page publique. Tu vois le tier, le prix, et les vraies heures. Le mur grandit chaque mois.',
     seeAll: 'Voir tous les projets →',
     filterTier: 'tier',
     filterStatus: 'statut',
@@ -115,13 +114,13 @@ const FR = {
   pricing: {
     eyebrow: 'prix publics',
     title: 'Combien ça coûte',
-    body: 'Prix concrets, pas « contactez-nous ». Chaque tier renvoie à des projets réels du même tier — tu vois ce que ça donne avant de soumettre.',
+    body: 'Prix concrets, pas « contactez-nous ». Chaque tier (niveau de prix) renvoie à des projets réels du même niveau — tu vois ce que ça donne avant de soumettre.',
     tiers: [
       {
         name: 'Tier 0',
         price: 'Gratuit',
         scope:
-          'Ton problème est trop petit pour engager un dev. Je te redirige vers un patron similaire ou un template no-code.',
+          'Ton problème est trop petit pour engager un dev. Je te redirige vers un patron (modèle prêt-à-utiliser) ou un template no-code.',
         after: 'auto-service',
       },
       {
@@ -134,7 +133,8 @@ const FR = {
       {
         name: 'Tier 2',
         price: '≈ 1 500 $',
-        scope: 'Projet d’1-3 semaines. Outil interne qui dure. La démo Sunday Night Dread est ici.',
+        scope:
+          'Projet de 1 à 3 semaines. Outil interne qui dure. La démo Sunday Night Dread est ici.',
         after: '1 ronde de retouches incluse',
         anchor: true,
       },
@@ -142,7 +142,7 @@ const FR = {
         name: 'Tier 3',
         price: '≈ 3 000 $+',
         scope:
-          'Projet plus gros. Sur devis après triage. Toujours scopé pour livrer en moins de 6 semaines.',
+          'Projet plus gros. Sur devis après triage (l’étape où je lis et je décide). Toujours scopé pour livrer en moins de 6 semaines.',
         after: 'devis post-triage',
       },
     ],
@@ -161,9 +161,9 @@ const FR = {
   about: {
     eyebrow: 'qui je suis',
     title: 'À propos',
-    body: 'Je suis dev senior depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail est l’architecture qui rend tout ça possible — pour toi comme pour moi.',
+    body: 'Je suis dev senior depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible — pour toi comme pour moi.',
     body2:
-      'Pas une agence. Pas une plateforme. Un humain dans le siège du jugement, et un peu de machine au milieu pour qu’on respecte tous les deux nos soirs et nos fins de semaine.',
+      'Pas une agence. Pas une plateforme. Un humain qui décide, une machine au milieu pour gérer le reste — pour qu’on respecte tous les deux nos soirs et nos fins de semaine.',
     portraitAlt: 'Marc Jeanson',
     githubLabel: 'GitHub',
     linkedinLabel: 'LinkedIn',
@@ -220,7 +220,7 @@ const FR = {
       hideBuild: 'Cacher l’aperçu',
       openInNewTab: 'Ouvrir dans un onglet ↗',
       buildHint:
-        'Aperçu réel du déploiement à cette révision (Cloudflare Pages). Si l’aperçu reste vide, ce build est antérieur au correctif d’en-tête — ouvre-le dans un onglet.',
+        'Aperçu réel du déploiement à cette révision (Cloudflare Pages). Si l’aperçu reste vide, ce build est trop vieux — ouvre-le dans un onglet.',
       commitLabel: 'commit',
     },
   },
@@ -271,7 +271,7 @@ const FR = {
     eyebrow: 'Tier 0 · auto-service · gratuit',
     title: 'Ton problème est trop petit pour engager un dev — voici comment le régler toi-même',
     intro:
-      "Pas de honte. Si ton budget est sous 200 $ et que ton problème cadre dans une de ces 4 catégories, voici la formule. Tu n'as besoin de rien acheter et tu n'as pas besoin de moi.",
+      "Pas de honte. Si ton budget est sous 200 $ et que ton problème entre dans une de ces 4 catégories, voici la recette. Tu n'as rien à acheter et tu n'as pas besoin de moi.",
     principle:
       "Principe : la bonne solution pour un problème de 50 $ est gratuite. Si ton problème grandit (5+ employés, plusieurs équipes, données critiques), reviens me voir — c'est là que je vaux mon prix.",
     problemLabel: 'Le problème',
@@ -286,14 +286,14 @@ const FR = {
     eyebrow: 'démo · voix → brouillon de facture',
     title: 'Sunday Night Dread',
     intro:
-      "Pendant la semaine, tu dictes des notes vocales depuis ton truck. Ici tu peux 'jouer' 3 notes composites pour voir comment elles deviennent un brouillon de facture le dimanche matin.",
+      "Pendant la semaine, tu dictes des notes vocales dans ton truck. Ici, tu peux 'jouer' 3 notes composites pour voir comment elles deviennent un brouillon de facture le dimanche matin.",
     clipsTitle: '1. Notes vocales de la semaine',
     clipsHint: "Clique pour 'jouer' chaque note. Tu peux en jouer une, deux ou les trois.",
     transcriptLabel: 'Transcription',
     atClient: 'chez {name}',
     parsedTitle: '2. Ce que le système extrait',
     parsedHint:
-      'Texte libre + lexique de chantier québécois. Pas de listes déroulantes. Le parser identifie le client, les heures, les matériaux.',
+      'Texte libre + lexique de chantier québécois. Pas de listes déroulantes. Le parser (l’algorithme qui lit) trouve le client, les heures, les matériaux.',
     invoiceTitle: '3. Brouillon de facture',
     invoiceHint:
       'Le dimanche matin, un brouillon arrive dans ta boîte de réception (pas une nouvelle app). TPS + TVQ calculées. À toi de réviser et envoyer.',
@@ -321,11 +321,11 @@ const FR = {
   intake: {
     pageTitle: 'Décris ton problème — formulaire',
     metaDescription:
-      "Formulaire d'intake pour la pratique-side de Marc. Async, à ton rythme. Sauvegarde automatique. Réponse en 72h.",
+      "Formulaire d'intake (demande de projet) pour Marc. Async, à ton rythme. Sauvegarde automatique. Réponse en 72 h.",
     backHome: "← Retour à l'accueil",
     capacity: {
       atCap:
-        "Je suis présentement plein. Tu peux quand même soumettre ton formulaire — je te placerai sur la liste d'attente et je te répondrai quand un slot ouvre.",
+        "Je suis plein en ce moment. Tu peux quand même soumettre — je te mets sur la liste d'attente et je te réponds quand un slot ouvre.",
     },
     steps: {
       vibe: 'On se comprend',
@@ -342,7 +342,7 @@ const FR = {
     account: {
       eyebrow: 'compte gratuit',
       title: "On a besoin d'une adresse courriel",
-      body: "C'est tout. Pas de mot de passe pendant que tu remplis. Si tu reviens plus tard, je t'envoie un lien magique pour reprendre. Le brouillon est sauvegardé automatiquement à chaque champ.",
+      body: "C'est tout. Pas de mot de passe pendant que tu remplis. Si tu reviens plus tard, je t'envoie un lien magique (un lien par courriel) pour reprendre. Le brouillon se sauvegarde tout seul à chaque champ.",
       emailLabel: 'Courriel',
       nameLabel: 'Ton prénom (optionnel)',
       namePlaceholder: 'Marie',
@@ -360,7 +360,7 @@ const FR = {
     typePicker: {
       eyebrow: 'quel genre de problème',
       title: 'Quel genre de problème?',
-      body: 'Choisis celui qui se rapproche le plus. Si rien ne colle, prends « autre » — Marc lira en personne et redirigera au besoin.',
+      body: 'Choisis celui qui se rapproche le plus. Si rien ne colle, prends « autre » — Marc va le lire et le rediriger au besoin.',
     },
     form: {
       eyebrow: 'le détail',
@@ -374,9 +374,9 @@ const FR = {
       titleAccepted: "Merci, c'est reçu.",
       titleWaitlist: "Merci, tu es sur la liste d'attente.",
       bodyAccepted:
-        "Je lis chaque formulaire moi-même — pas d'IA entre toi et moi. Tu auras une réponse honnête (oui, non, ou « raconte-moi plus ») dans les 72 prochaines heures, par courriel.",
+        "Je lis chaque formulaire moi-même. Pas d'IA entre toi et moi. Tu auras une réponse honnête en 72 h, par courriel — oui, non, ou « raconte-moi plus ».",
       bodyWaitlist:
-        "Je suis présentement plein (1 projet actif + 1 en triage, c'est mon plafond pour respecter ma famille). Je te réponds dès qu'un slot ouvre — généralement quelques semaines. Le brouillon reste sauvegardé.",
+        "Je suis plein en ce moment : 1 projet actif + 1 en triage, c'est mon plafond pour respecter ma famille. Je te réponds dès qu'un slot ouvre, en général quelques semaines. Le brouillon reste sauvegardé.",
       sla: 'Réponse honnête en 72 h — oui, non, ou « raconte-moi plus ».',
       summaryTitle: "Ce que tu m'as envoyé",
       summaryEmail: 'Courriel',
@@ -394,9 +394,9 @@ const FR = {
         'Tu peux modifier tes réponses à tout moment depuis ton portail (« Mes sessions »).',
       magicLinkSentTitle: 'Vérifie ton courriel pour finaliser',
       magicLinkSentBody: (email: string) =>
-        `On a envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session — il expire dans 30 minutes.`,
+        `On t’a envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session — il expire dans 30 minutes.`,
       magicLinkAgain: 'Pas reçu ? Renvoyer le lien',
-      parkedStripHint: 'Ton intake est en attente — démarre dès ta connexion.',
+      parkedStripHint: 'Ton formulaire est en attente — il démarre dès ta connexion.',
     },
   },
 }
@@ -418,21 +418,21 @@ const EN: Copy = {
 
   brandTitle: 'Marc — dev in Quebec City',
   metaDescription:
-    'Marc, a dev in Quebec City. Evenings and weekends, I help people solve everyday problems with small software. Async, at your pace.',
+    'Marc, a dev in Quebec City. Evenings and weekends, I help people solve everyday problems with code. Async — no meetings, at your pace.',
 
   hero: {
     eyebrow: 'side-practice · Quebec · async',
     salut: "Hi, I'm Marc, a dev in Quebec City.",
     body1:
-      'Day job during the week. Evenings and weekends, I help people solve everyday problems. Async, at your pace and mine — no calls, no meetings.',
+      'Day job during the week. Evenings and weekends, I help people solve everyday problems. Async (no calls, no meetings) — at your pace and mine.',
     body2:
-      'Got a recurring problem — paperwork, tracking, coordination, anything along those lines? Tell me about it through the portal.',
-    body3: 'Free account. Live demos testable throughout the project. First draft in a few days.',
+      'Got a recurring problem — paperwork, tracking, coordination? Tell me about it through the portal.',
+    body3: 'Free account. You can test the demo at every step. First draft in a few days.',
     cta: 'Create a free account →',
     ctaWaitlist: 'Join the waitlist →',
     ctaLoggedIn: 'Start a new proposal →',
     mySessionsLink: 'View my sessions',
-    bilingual: '(Also available in French — reply in your language.)',
+    bilingual: '(Also in French — I reply in your language.)',
   },
 
   how: {
@@ -469,7 +469,7 @@ const EN: Copy = {
     body: 'During the week, the plumber dictates voice notes from the truck — materials, hours, clients. Sunday morning, a draft invoice is waiting in the inbox. No more 10pm Sunday paperwork.',
     cta: 'Try the demo →',
     disclosure:
-      'Composite client voice — drawn from real conversations with 3 tradespeople. The code and the app are real and deployed.',
+      'Composite client voice — built from real conversations with 3 tradespeople. The code and the app are real and deployed.',
     tag: 'Tier 2 · ≈ $1500 · shipped in 3 weeks',
   },
 
@@ -513,13 +513,13 @@ const EN: Copy = {
   pricing: {
     eyebrow: 'public pricing',
     title: 'What it costs',
-    body: 'Concrete prices, no "contact us." Each tier links to actual past projects of the same tier — you see what it looks like before you submit.',
+    body: 'Concrete prices, no "contact us." Each tier (price level) links to actual past projects of the same level — you see what it looks like before you submit.',
     tiers: [
       {
         name: 'Tier 0',
         price: 'Free',
         scope:
-          'Your problem is too small to hire a dev. I redirect you to a similar pattern or a no-code template.',
+          'Your problem is too small to hire a dev. I redirect you to a similar pattern (a ready-made recipe) or a no-code template.',
         after: 'self-service',
       },
       {
@@ -531,7 +531,7 @@ const EN: Copy = {
       {
         name: 'Tier 2',
         price: '≈ $1500',
-        scope: 'A 1-3 week project. An internal tool that lasts. Sunday Night Dread sits here.',
+        scope: 'A 1-to-3-week project. An internal tool that lasts. Sunday Night Dread sits here.',
         after: '1 round of tweaks included',
         anchor: true,
       },
@@ -539,7 +539,7 @@ const EN: Copy = {
         name: 'Tier 3',
         price: '≈ $3000+',
         scope:
-          'Bigger project. Custom-quoted after triage. Always scoped to ship in under 6 weeks.',
+          'Bigger project. Custom-quoted after triage (the step where I read it and decide). Always scoped to ship in under 6 weeks.',
         after: 'post-triage quote',
       },
     ],
@@ -557,9 +557,9 @@ const EN: Copy = {
   about: {
     eyebrow: 'who I am',
     title: 'About',
-    body: "I've been a senior dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is the architecture that makes that possible — for both of us.",
+    body: "I've been a senior dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible — for both of us.",
     body2:
-      'Not an agency. Not a platform. A human in the judgment seat, with a bit of machine in the middle so we both keep our evenings and weekends.',
+      'Not an agency. Not a platform. A human who decides, with a bit of machine in the middle so we both keep our evenings and weekends.',
     portraitAlt: 'Marc Jeanson',
     githubLabel: 'GitHub',
     linkedinLabel: 'LinkedIn',
@@ -616,7 +616,7 @@ const EN: Copy = {
       hideBuild: 'Hide preview',
       openInNewTab: 'Open in new tab ↗',
       buildHint:
-        'Live preview of the deployment as it shipped at this revision (Cloudflare Pages). If the preview stays blank, this build predates the header fix — open it in a new tab instead.',
+        'Live preview of the deployment as it shipped at this revision (Cloudflare Pages). If the preview stays blank, this build is too old — open it in a new tab instead.',
       commitLabel: 'commit',
     },
   },
@@ -667,7 +667,7 @@ const EN: Copy = {
     eyebrow: 'Tier 0 · self-service · free',
     title: "Your problem is too small to hire a dev — here's how to handle it yourself",
     intro:
-      "No shame. If your budget is under $200 and your problem fits one of these 4 categories, here's the formula. You don't need to buy anything and you don't need me.",
+      "No shame. If your budget is under $200 and your problem fits one of these 4 categories, here's the recipe. You don't need to buy anything and you don't need me.",
     principle:
       "Principle: the right solution for a $50 problem is free. If your problem grows (5+ employees, multiple teams, critical data), come back — that's where I earn my price.",
     problemLabel: 'The problem',
@@ -689,7 +689,7 @@ const EN: Copy = {
     atClient: "at {name}'s",
     parsedTitle: '2. What the system extracts',
     parsedHint:
-      'Free text + Quebec construction lexicon. No dropdowns. The parser identifies the client, hours, and materials.',
+      'Free text + Quebec construction lexicon. No dropdowns. The parser (the algorithm that reads it) finds the client, hours, and materials.',
     invoiceTitle: '3. Draft invoice',
     invoiceHint:
       'Sunday morning, a draft lands in your inbox (not yet another app). GST + QST calculated. You review and send.',
@@ -717,11 +717,11 @@ const EN: Copy = {
   intake: {
     pageTitle: 'Describe your problem — form',
     metaDescription:
-      "Intake form for Marc's side-practice. Async, at your pace. Auto-save. Reply within 72h.",
+      "Intake (project request) form for Marc's side-practice. Async, at your pace. Auto-save. Reply within 72h.",
     backHome: '← Back home',
     capacity: {
       atCap:
-        "I'm currently full. You can still submit — I'll put you on the waitlist and reply when a slot opens.",
+        "I'm full right now. You can still submit — I'll put you on the waitlist and reply when a slot opens.",
     },
     steps: {
       vibe: 'We agree',
@@ -738,7 +738,7 @@ const EN: Copy = {
     account: {
       eyebrow: 'free account',
       title: 'We just need an email',
-      body: "That's it. No password while you fill the form. If you come back later I'll send a magic link to resume. Your draft auto-saves on every field.",
+      body: "That's it. No password while you fill the form. If you come back later, I'll send a magic link (a sign-in link by email) to resume. Your draft auto-saves on every field.",
       emailLabel: 'Email',
       nameLabel: 'First name (optional)',
       namePlaceholder: 'Marie',
@@ -770,9 +770,9 @@ const EN: Copy = {
       titleAccepted: "Thanks, it's received.",
       titleWaitlist: "Thanks, you're on the waitlist.",
       bodyAccepted:
-        "I read every form myself — no AI between you and me. You'll get an honest reply (yes, no, or 'tell me more') in the next 72 hours, by email.",
+        "I read every form myself. No AI between you and me. You'll get an honest reply in 72h, by email — yes, no, or 'tell me more.'",
       bodyWaitlist:
-        "I'm currently full (1 active build + 1 in triage — my cap, to respect my family time). I'll reply as soon as a slot opens, usually a few weeks. Your draft stays saved.",
+        "I'm full right now: 1 active build + 1 in triage — my cap, to respect my family time. I'll reply as soon as a slot opens, usually a few weeks. Your draft stays saved.",
       sla: "Honest reply in 72h — yes, no, or 'tell me more.'",
       summaryTitle: 'What you sent me',
       summaryEmail: 'Email',
@@ -791,7 +791,7 @@ const EN: Copy = {
       magicLinkSentBody: (email: string) =>
         `A sign-in link was sent to ${email}. Open it to access your session — it expires in 30 minutes.`,
       magicLinkAgain: "Didn't get it? Resend the link",
-      parkedStripHint: 'Your intake is parked — it kicks off as soon as you sign in.',
+      parkedStripHint: 'Your form is parked — it kicks off as soon as you sign in.',
     },
   },
 }
