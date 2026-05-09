@@ -4,6 +4,11 @@ import { DICT } from '../i18n'
 export function Pricing({ lang }: { lang: Lang }) {
   const t = DICT[lang].pricing
   const tier0Href = lang === 'fr' ? '/tier-0' : '/en/tier-0'
+  // The "anchor" tier card is the price-anchor — Tier 2 in the lineup. Linking
+  // it to the SND demo turns the price tag into a proof-of-concept; visitors
+  // who care about the number get to see the work behind it.
+  const anchorHref =
+    lang === 'fr' ? '/showcase/sunday-night-dread' : '/en/showcase/sunday-night-dread'
   return (
     <section className="section section--alt" id="pricing">
       <div className="section__inner">
@@ -13,7 +18,8 @@ export function Pricing({ lang }: { lang: Lang }) {
         <div className="tiers">
           {t.tiers.map((tier) => {
             const isTier0 = tier.name === 'Tier 0'
-            const cardClass = `tier${'anchor' in tier && tier.anchor ? ' tier--anchor' : ''}`
+            const isAnchor = 'anchor' in tier && tier.anchor
+            const cardClass = `tier${isAnchor ? ' tier--anchor' : ''}`
             const inner = (
               <>
                 <div className="tier__name">{tier.name}</div>
@@ -25,6 +31,13 @@ export function Pricing({ lang }: { lang: Lang }) {
             if (isTier0) {
               return (
                 <a key={tier.name} className={`${cardClass} tier--link`} href={tier0Href}>
+                  {inner}
+                </a>
+              )
+            }
+            if (isAnchor) {
+              return (
+                <a key={tier.name} className={`${cardClass} tier--link`} href={anchorHref}>
                   {inner}
                 </a>
               )

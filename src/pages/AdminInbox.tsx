@@ -5,39 +5,61 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
 import { listSessions, type SessionRow, type SessionStatus } from '../lib/sessionsApi'
+import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
+import { computeSla, formatDate, formatRelativeWindow } from '../lib/format'
 
 const COPY = {
   fr: {
+    eyebrow: 'admin',
     title: 'Inbox admin',
     intro: 'Toutes les sessions, toutes statuts confondus.',
     forbidden: 'Réservé à l’admin.',
     loading: 'Chargement…',
     none: 'Aucune session.',
-    headerStatus: 'Statut',
-    headerEmail: 'Visiteur',
-    headerUpdated: 'Mis à jour',
-    headerOpen: '',
-    open: 'Ouvrir',
+    open: 'Ouvrir →',
     refreshing: 'Mise à jour…',
     logout: 'Se déconnecter',
     viewTrash: 'Voir la corbeille →',
+    untitled: 'Session sans intake',
+    slaDueLabel: 'Réponse',
+    slaOverdue: 'En retard',
+    countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
   },
   en: {
+    eyebrow: 'admin',
     title: 'Admin inbox',
     intro: 'All sessions, every status.',
     forbidden: 'Admin only.',
     loading: 'Loading…',
     none: 'No sessions.',
-    headerStatus: 'Status',
-    headerEmail: 'Visitor',
-    headerUpdated: 'Updated',
-    headerOpen: '',
-    open: 'Open',
+    open: 'Open →',
     refreshing: 'Refreshing…',
     logout: 'Sign out',
     viewTrash: 'View trash →',
+    untitled: 'Session without intake',
+    slaDueLabel: 'Reply',
+    slaOverdue: 'Overdue',
+    countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
   },
 } as const
+
+interface IntakePreview {
+  type: ProblemType
+  submittedAt: string
+}
+
+function previewFromIntake(raw: string | null): IntakePreview | null {
+  if (!raw) return null
+  try {
+    const obj = JSON.parse(raw) as { type?: unknown; submittedAt?: unknown }
+    if (typeof obj.type === 'string' && typeof obj.submittedAt === 'string') {
+      return { type: obj.type as ProblemType, submittedAt: obj.submittedAt }
+    }
+  } catch {
+    // fall through
+  }
+  return null
+}
 
 const STATUS_ORDER: Record<SessionStatus, number> = {
   triage: 0,
@@ -52,6 +74,55 @@ function formatTime(unix: number, lang: Lang): string {
     dateStyle: 'short',
     timeStyle: 'short',
   })
+}
+
+function AdminCard({
+  session,
+  lang,
+  langPrefix,
+  copy,
+}: {
+  session: SessionRow
+  lang: Lang
+  langPrefix: string
+  copy: (typeof COPY)[Lang]
+}) {
+  const preview = previewFromIntake(session.intake_json)
+  const title = preview ? localized(getSchemaForType(preview.type).title, lang) : copy.untitled
+  const submittedAt = preview?.submittedAt ? formatDate(preview.submittedAt, lang) : null
+  const sla = computeSla(session)
+  const href = `${langPrefix}/session/${session.id}`
+  return (
+    <li className="me-portal__card">
+      <a href={href} className="me-portal__card-link" aria-label={`${session.email} — ${title}`}>
+        <div className="me-portal__card-main">
+          <div className="me-portal__card-meta">
+            <span className="mono admin-inbox__email">{session.email}</span>
+            <span className="me-portal__id mono">{session.id.slice(0, 8)}</span>
+            {submittedAt && <span className="me-portal__date">{submittedAt}</span>}
+            <span className="mono me-portal__date">{formatTime(session.updated_at, lang)}</span>
+            {sla.active && (
+              <span
+                className={`me-portal__sla mono${sla.overdue ? ' me-portal__sla--overdue' : ''}`}
+              >
+                {copy.slaDueLabel}{' '}
+                {sla.overdue ? copy.slaOverdue : formatRelativeWindow(sla.msLeft, lang)}
+              </span>
+            )}
+          </div>
+          <h2 className="me-portal__card-title">{title}</h2>
+        </div>
+        <div className="me-portal__card-side">
+          <span
+            className={`session-frame__status-pill session-frame__status-pill--${session.status}`}
+          >
+            {session.status}
+          </span>
+          <span className="me-portal__open mono">{copy.open}</span>
+        </div>
+      </a>
+    </li>
+  )
 }
 
 export function AdminInbox({ lang }: { lang: Lang }) {
@@ -124,87 +195,90 @@ export function AdminInbox({ lang }: { lang: Lang }) {
 
   if (authLoading) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
-          <p>{t.loading}</p>
+        <main id="main-content">
+          <article className="section intake session-frame">
+            <div className="section__inner">
+              <p className="session-frame__pending">{t.loading}</p>
+            </div>
+          </article>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   if (!email || !isAdmin) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
-          <section className="page__panel">
-            <p>{t.forbidden}</p>
-          </section>
+        <main id="main-content">
+          <article className="section intake session-frame">
+            <div className="section__inner">
+              <div className="intake__step">
+                <div className="section__eyebrow">{t.eyebrow}</div>
+                <h1 className="session-frame__title">{t.forbidden}</h1>
+              </div>
+            </div>
+          </article>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div className="app">
       <Header lang={lang} />
-      <main className="page">
-        <section className="page__panel">
-          <h1>{t.title}</h1>
-          <p>{t.intro}</p>
-          <p>
-            <a href={`${langPrefix}/admin/trash`} className="mono">
-              {t.viewTrash}
-            </a>
-          </p>
-          {refreshing && (
-            <p className="mono" role="status" aria-live="polite">
-              {t.refreshing}
-            </p>
-          )}
+      <main id="main-content">
+        <article className="section intake session-frame">
+          <div className="section__inner">
+            <header className="session-frame__header">
+              <div className="section__eyebrow">{t.eyebrow}</div>
+              <h1 className="session-frame__title">{t.title}</h1>
+              <p>{t.intro}</p>
+              <div className="session-frame__meta">
+                {sessions !== null && (
+                  <span className="mono admin-inbox__count">{t.countLabel(sessions.length)}</span>
+                )}
+                <a href={`${langPrefix}/admin/trash`} className="link-btn mono">
+                  {t.viewTrash}
+                </a>
+                <span
+                  className="mono session-frame__refresh"
+                  role="status"
+                  aria-live="polite"
+                  hidden={!refreshing}
+                >
+                  {refreshing ? t.refreshing : ''}
+                </span>
+              </div>
+            </header>
 
-          {sessions === null ? (
-            <p>{t.loading}</p>
-          ) : sessions.length === 0 ? (
-            <p>{t.none}</p>
-          ) : (
-            <table className="inbox-table">
-              <thead>
-                <tr>
-                  <th>{t.headerStatus}</th>
-                  <th>{t.headerEmail}</th>
-                  <th>{t.headerUpdated}</th>
-                  <th>{t.headerOpen}</th>
-                </tr>
-              </thead>
-              <tbody>
+            {sessions === null ? (
+              <p className="session-frame__pending">{t.loading}</p>
+            ) : sessions.length === 0 ? (
+              <div className="me-portal__empty">
+                <p className="me-portal__empty-title">{t.none}</p>
+              </div>
+            ) : (
+              <ul className="me-portal__cards">
                 {sessions.map((s) => (
-                  <tr key={s.id}>
-                    <td>
-                      <span className={`status-pill status-pill--${s.status}`}>{s.status}</span>
-                    </td>
-                    <td>{s.email}</td>
-                    <td className="mono">{formatTime(s.updated_at, lang)}</td>
-                    <td>
-                      <a href={`${langPrefix}/session/${s.id}`}>{t.open}</a>
-                    </td>
-                  </tr>
+                  <AdminCard key={s.id} session={s} lang={lang} langPrefix={langPrefix} copy={t} />
                 ))}
-              </tbody>
-            </table>
-          )}
+              </ul>
+            )}
 
-          <p>
-            <button onClick={logout} className="form__link">
-              {t.logout}
-            </button>
-          </p>
-        </section>
+            <p className="admin-inbox__signout">
+              <button onClick={logout} className="link-btn mono">
+                {t.logout}
+              </button>
+            </p>
+          </div>
+        </article>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }

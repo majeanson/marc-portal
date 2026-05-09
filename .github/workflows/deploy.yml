@@ -27,6 +27,18 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+
+      # Apply any pending D1 migrations before the deploy. Idempotent — wrangler
+      # no-ops migrations that are already applied. Without this step the code
+      # ships with schema-ahead expectations and the API 500s until someone
+      # runs `npm run db:migrate:prod` by hand.
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply marc-portal-db --remote
+
       - id: deploy
         name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

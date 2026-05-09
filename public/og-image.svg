@@ -1,38 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#15120f"/>
-      <stop offset="100%" stop-color="#0e0c0a"/>
+      <stop offset="0%" stop-color="#fbf7ec"/>
+      <stop offset="100%" stop-color="#f6f1e6"/>
     </linearGradient>
     <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#c4a255"/>
-      <stop offset="100%" stop-color="#e8b865"/>
+      <stop offset="0%" stop-color="#3d6e4e"/>
+      <stop offset="100%" stop-color="#2c5239"/>
     </linearGradient>
   </defs>
 
   <rect width="1200" height="630" fill="url(#bg)"/>
 
   <!-- subtle grid -->
-  <g stroke="#2a2420" stroke-width="1" opacity="0.5">
+  <g stroke="#deead9" stroke-width="1" opacity="0.7">
     <line x1="0" y1="120" x2="1200" y2="120"/>
     <line x1="0" y1="510" x2="1200" y2="510"/>
   </g>
 
   <!-- top eyebrow -->
-  <text x="80" y="100" font-family="Cascadia Code, JetBrains Mono, monospace" font-size="22" fill="#7a6a5a" letter-spacing="3">
+  <text x="80" y="100" font-family="Cascadia Code, JetBrains Mono, monospace" font-size="22" fill="#7a7568" letter-spacing="3">
     SIDE-PRATIQUE · QUÉBEC · ASYNC
   </text>
 
   <!-- brand -->
-  <text x="80" y="200" font-family="Cascadia Code, JetBrains Mono, monospace" font-size="44" font-weight="700" fill="#e8ddd4">
+  <text x="80" y="200" font-family="Cascadia Code, JetBrains Mono, monospace" font-size="44" font-weight="700" fill="#1f1d18">
     marc<tspan fill="url(#accent)">.</tspan>portal
   </text>
 
   <!-- main line FR -->
-  <text x="80" y="305" font-family="-apple-system, Segoe UI, system-ui, sans-serif" font-size="52" font-weight="700" fill="#e8ddd4">
+  <text x="80" y="305" font-family="-apple-system, Segoe UI, system-ui, sans-serif" font-size="52" font-weight="700" fill="#1f1d18">
     Dev à Québec.
   </text>
-  <text x="80" y="370" font-family="-apple-system, Segoe UI, system-ui, sans-serif" font-size="52" font-weight="700" fill="#e8ddd4">
+  <text x="80" y="370" font-family="-apple-system, Segoe UI, system-ui, sans-serif" font-size="52" font-weight="700" fill="#1f1d18">
     Job de jour.
   </text>
   <text x="80" y="435" font-family="-apple-system, Segoe UI, system-ui, sans-serif" font-size="52" font-weight="700" fill="url(#accent)">
@@ -40,12 +40,12 @@
   </text>
 
   <!-- subtitle -->
-  <text x="80" y="488" font-family="-apple-system, Segoe UI, system-ui, sans-serif" font-size="22" fill="#b0a49c">
+  <text x="80" y="488" font-family="-apple-system, Segoe UI, system-ui, sans-serif" font-size="22" fill="#3f3c34">
     Petits problèmes du quotidien · async · pas de calls · démos testables
   </text>
 
   <!-- footer ribbon -->
-  <text x="80" y="575" font-family="Cascadia Code, JetBrains Mono, monospace" font-size="20" fill="#7a6a5a" letter-spacing="2">
-    1 PROJET ACTIF  ·  WAITLIST 3  ·  PROCHAIN DÉPART ≈ 15 AOÛT
+  <text x="80" y="575" font-family="Cascadia Code, JetBrains Mono, monospace" font-size="20" fill="#7a7568" letter-spacing="2">
+    1 PROJET ACTIF  ·  RÉPONSE 72H  ·  HÉBERGÉ AU CANADA
   </text>
 </svg>

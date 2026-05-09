@@ -17,8 +17,13 @@ import {
   unauthorized,
 } from '../../../_lib/json'
 import { rateLimitCheck, rateLimitSweep } from '../../../_lib/ratelimit'
-import { canAccessSession, primaryAdminEmail, visitorLang } from '../../../_lib/sessions'
-import type { MessageRow, SessionRow } from '../../../_lib/sessions'
+import {
+  canAccessSession,
+  loadSession,
+  primaryAdminEmail,
+  visitorLang,
+} from '../../../_lib/sessions'
+import type { MessageRow } from '../../../_lib/sessions'
 import {
   listAttachmentsForMessages,
   MAX_ATTACHMENTS_PER_MESSAGE,
@@ -27,23 +32,13 @@ import {
 
 const MAX_BODY_LEN = 8000
 
-async function loadSession(env: Env, id: string): Promise<SessionRow | null> {
-  return env.DB.prepare(
-    `SELECT id, email, intake_json, status, created_at, updated_at,
-            deleted_at, status_history
-     FROM sessions WHERE id = ?`,
-  )
-    .bind(id)
-    .first<SessionRow>()
-}
-
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
   const id = String(params.id ?? '')
   if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env, id)
+  const session = await loadSession(env.DB, id)
   if (!session) return notFound()
   const adminGet = isAdmin(env, email)
   if (!canAccessSession(email, adminGet, session)) return forbidden()
@@ -85,7 +80,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   const id = String(params.id ?? '')
   if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env, id)
+  const session = await loadSession(env.DB, id)
   if (!session) return notFound()
   if (session.deleted_at) return notFound()
   const admin = isAdmin(env, email)

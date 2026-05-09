@@ -7,6 +7,7 @@ import { useAuth } from '../lib/authContext'
 import {
   listSessions,
   createSession,
+  deleteMyAccount,
   type SessionRow,
   type SessionStatus,
 } from '../lib/sessionsApi'
@@ -53,6 +54,14 @@ const COPY = {
     slaOverdue: 'En retard',
     exportData: 'Télécharger mes données',
     exporting: 'Préparation…',
+    deleteHeading: 'Supprimer mon compte et toutes mes données',
+    deleteBody:
+      'Loi 25 — droit à l’effacement. Cette action est immédiate et irréversible. Toutes tes sessions, messages et pièces jointes sont supprimés du serveur.',
+    deleteBtn: 'Supprimer mes données',
+    deleteConfirm: 'Confirmer la suppression',
+    deleteCancel: 'Annuler',
+    deleting: 'Suppression…',
+    deleteFailed: 'La suppression a échoué — réessaie ou écris-moi.',
     unreadBadge: 'NOUVEAU',
     helpToggle: 'Comment ça marche ?',
     helpItems: [
@@ -117,6 +126,14 @@ const COPY = {
     slaOverdue: 'Overdue',
     exportData: 'Download my data',
     exporting: 'Preparing…',
+    deleteHeading: 'Delete my account and all my data',
+    deleteBody:
+      'Bill 25 — right to erasure. This action is immediate and irreversible. All your sessions, messages, and attachments are deleted from the server.',
+    deleteBtn: 'Delete my data',
+    deleteConfirm: 'Confirm deletion',
+    deleteCancel: 'Cancel',
+    deleting: 'Deleting…',
+    deleteFailed: 'Deletion failed — retry or write to me.',
     unreadBadge: 'NEW',
     helpToggle: 'How this works',
     helpItems: [
@@ -182,7 +199,26 @@ export function MePortal({ lang }: { lang: Lang }) {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<SessionStatus | 'all'>('all')
   const [exporting, setExporting] = useState(false)
+  const [deleteState, setDeleteState] = useState<'idle' | 'confirming' | 'deleting' | 'error'>(
+    'idle',
+  )
   const langPrefix = lang === 'en' ? '/en' : ''
+
+  const onDeleteAccount = async () => {
+    if (deleteState !== 'confirming') {
+      setDeleteState('confirming')
+      return
+    }
+    setDeleteState('deleting')
+    try {
+      await deleteMyAccount()
+      // Cookie is cleared server-side; navigate home and force a reload so the
+      // auth context starts cold.
+      window.location.href = lang === 'fr' ? '/' : '/en'
+    } catch {
+      setDeleteState('error')
+    }
+  }
 
   const onExport = async () => {
     if (!email || exporting) return
@@ -252,33 +288,42 @@ export function MePortal({ lang }: { lang: Lang }) {
 
   if (loading || finalizing) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
-          <p>{finalizing ? t.finalizing : t.loading}</p>
+        <main id="main-content">
+          <article className="section intake session-frame">
+            <div className="section__inner">
+              <p className="session-frame__pending">{finalizing ? t.finalizing : t.loading}</p>
+            </div>
+          </article>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   if (!email) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
-          <section className="page__panel">
-            <h1>{t.title}</h1>
-            <p>{t.notLoggedIn}</p>
-            <p>
-              <a href={`${langPrefix}/login`} className="hero__cta">
-                {t.signIn}
-              </a>
-            </p>
-          </section>
+        <main id="main-content">
+          <article className="section intake session-frame">
+            <div className="section__inner">
+              <div className="intake__step">
+                <div className="section__eyebrow">{t.eyebrow}</div>
+                <h1 className="session-frame__title">{t.title}</h1>
+                <p>{t.notLoggedIn}</p>
+                <p>
+                  <a href={`${langPrefix}/login`} className="hero__cta">
+                    {t.signIn}
+                  </a>
+                </p>
+              </div>
+            </div>
+          </article>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
@@ -414,6 +459,42 @@ export function MePortal({ lang }: { lang: Lang }) {
             </>
           )}
         </section>
+
+        <section className="me-portal__danger-zone">
+          <h2 className="me-portal__danger-heading">{t.deleteHeading}</h2>
+          <p className="me-portal__danger-body">{t.deleteBody}</p>
+          {deleteState === 'idle' || deleteState === 'error' ? (
+            <button
+              type="button"
+              className="me-portal__danger-btn"
+              onClick={() => setDeleteState('confirming')}
+            >
+              {t.deleteBtn}
+            </button>
+          ) : (
+            <div className="me-portal__danger-actions">
+              <button
+                type="button"
+                className="me-portal__danger-btn me-portal__danger-btn--confirm"
+                onClick={onDeleteAccount}
+                disabled={deleteState === 'deleting'}
+              >
+                {deleteState === 'deleting' ? t.deleting : t.deleteConfirm}
+              </button>
+              <button
+                type="button"
+                className="link-btn mono"
+                onClick={() => setDeleteState('idle')}
+                disabled={deleteState === 'deleting'}
+              >
+                {t.deleteCancel}
+              </button>
+            </div>
+          )}
+          {deleteState === 'error' && (
+            <p className="me-portal__danger-error mono">{t.deleteFailed}</p>
+          )}
+        </section>
       </main>
       <Footer lang={lang} />
     </>
@@ -536,7 +617,9 @@ function SessionCard({
           <h2 className="me-portal__card-title">{title}</h2>
         </div>
         <div className="me-portal__card-side">
-          <span className={`me-portal__pill me-portal__pill--${session.status}`}>
+          <span
+            className={`session-frame__status-pill session-frame__status-pill--${session.status}`}
+          >
             {statusLabel}
           </span>
           <span className="me-portal__open mono">{copy.openBtn}</span>

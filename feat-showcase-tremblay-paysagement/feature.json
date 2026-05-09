@@ -1,0 +1,116 @@
+{
+  "featureKey": "feat-showcase-tremblay-paysagement",
+  "title": "Showcase: Tremblay Paysagement — 40-client tracker (composite)",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "content/showcase",
+  "tags": ["showcase", "composite", "tier-2", "trades"],
+  "problem": "Composite case: a Quebec landscaping owner tracks 40 clients in a shared spreadsheet that her partner also edits. Visit-to-invoice latency is 3 days; 3x/month a snow-clearing job goes un-invoiced (~3000 $/yr lost). She doesn't want another app — she wants the next visit to auto-trigger a draft invoice in her inbox.",
+  "analysis": "Backfill showcase from the original engagements.ts entry (Tremblay Paysagement). Labelled as a composite case (real coordination problems, not a real client) so the wall has more than the SND demo on it. Tier 2 work, ships in 3 weeks, costs ~1500 $ — exactly the price-anchor the homepage advertises.",
+  "decisions": [
+    {
+      "decision": "Trigger draft invoice from the visit-completion checkmark",
+      "rationale": "She and her partner both close jobs from their phones on the morning run. The lowest-friction trigger is the existing checkmark she already taps — not a new button, not a new app.",
+      "date": "2026-04-25"
+    },
+    {
+      "decision": "Ship to email, not to a portal",
+      "rationale": "Same lesson as SND — the trade owner already lives in their inbox Sunday morning. Adding another tool to learn is friction.",
+      "date": "2026-04-25"
+    }
+  ],
+  "successCriteria": "Visit-to-invoice latency under 4 hours. Forgotten invoice rate to zero over a 30-day pilot.",
+  "knownLimitations": [
+    "No payment processing in scope — Marie keeps her existing e-Transfer flow.",
+    "Shared spreadsheet stays as the visit log; tool reads it rather than replacing it."
+  ],
+  "userGuide": "Composite case — no live URL. The showcase wall card links to this feature.json's revision log.",
+  "componentFile": "src/lib/engagements.ts",
+  "annotations": [
+    {
+      "id": "showcase-tremblay-paysagement",
+      "type": "showcase",
+      "date": "2026-05-09",
+      "author": "marc+claude",
+      "body": "[exemple composite] Public showcase metadata, surfaced on the homepage wall and at /showcase/<slug>.",
+      "data": {
+        "slug": "tremblay-paysagement-suivi-clients",
+        "tier": "Tier 2",
+        "price": "≈ 1 500 $",
+        "hours": "≈ 24h sur 3 semaines",
+        "shippedDate": "2026-05-12",
+        "liveUrl": null,
+        "sourceUrl": null,
+        "primaryLang": "fr",
+        "title": {
+          "fr": "Tremblay Paysagement — visite → facture, sans app de plus",
+          "en": "Tremblay Landscaping — visit → invoice, no extra app"
+        },
+        "summary": {
+          "fr": "40 clients suivis dans un Excel partagé. Trois oublis de facturation par mois (≈ 3000 $/an perdus). On déclenche le brouillon de facture depuis le coche \"visite faite\" qu'elle utilise déjà.",
+          "en": "40 clients tracked in a shared Excel. Three missed invoices a month (~3000 $/yr lost). Draft invoice fires from the existing 'visit done' checkmark she already taps."
+        },
+        "compositeDisclosure": {
+          "fr": "[exemple composite] Voix-cliente composée à partir de problèmes de coordination réels. Le scope, le prix et les décisions reflètent un vrai engagement Tier 2.",
+          "en": "[composite example] Client voice composed from real coordination problems. Scope, price, and decisions reflect a real Tier 2 engagement."
+        },
+        "engagement": [
+          {
+            "stage": "intake",
+            "date": "2026-04-22",
+            "completed": true,
+            "label": {
+              "fr": "Formulaire reçu",
+              "en": "Form received"
+            }
+          },
+          {
+            "stage": "triage",
+            "date": "2026-04-23",
+            "completed": true,
+            "label": {
+              "fr": "Triage en 24h — scopé Tier 2",
+              "en": "Triaged in 24h — scoped as Tier 2"
+            }
+          },
+          {
+            "stage": "plan",
+            "date": "2026-04-24",
+            "completed": true,
+            "label": {
+              "fr": "Plan figé : trigger sur la coche, pas de portail client",
+              "en": "Plan locked: checkmark trigger, no client portal"
+            }
+          },
+          {
+            "stage": "build",
+            "date": "2026-04-26",
+            "completed": true,
+            "label": {
+              "fr": "Construit en 2 semaines",
+              "en": "Built in 2 weeks"
+            }
+          },
+          {
+            "stage": "review",
+            "date": "2026-05-08",
+            "completed": true,
+            "label": {
+              "fr": "Revue + 1 ronde de retouches",
+              "en": "Review + 1 round of tweaks"
+            }
+          },
+          {
+            "stage": "shipped",
+            "date": "2026-05-12",
+            "completed": true,
+            "label": {
+              "fr": "Livré — pilote 30 jours en cours",
+              "en": "Shipped — 30-day pilot running"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

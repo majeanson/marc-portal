@@ -4,6 +4,15 @@
 
 export type SessionStatus = 'draft' | 'triage' | 'active' | 'shipped' | 'rejected'
 
+/**
+ * The single load-bearing rule of the practice: no more than ACTIVE_CAP
+ * sessions in `active` and no more than TRIAGE_CAP in `triage` at any time.
+ * Insight #39 from the brainstorm — if this gets raised, family-time stops
+ * being protected. Server enforces it; UI mirrors it.
+ */
+export const ACTIVE_CAP = 1
+export const TRIAGE_CAP = 1
+
 export interface StatusHistoryEntry {
   from: SessionStatus
   to: SessionStatus
@@ -73,6 +82,84 @@ export function parseStatusHistory(raw: string | null): StatusHistoryEntry[] {
 
 export function appendStatusHistory(raw: string | null, entry: StatusHistoryEntry): string {
   return JSON.stringify([...parseStatusHistory(raw), entry])
+}
+
+/**
+ * One-row session lookup used by every per-session handler. Centralized so the
+ * SELECT shape stays in lockstep with SessionRow (4 handlers used to inline
+ * this same SQL).
+ */
+export async function loadSession(db: D1Database, id: string): Promise<SessionRow | null> {
+  return db
+    .prepare(
+      `SELECT id, email, intake_json, status, created_at, updated_at,
+              deleted_at, status_history
+       FROM sessions WHERE id = ?`,
+    )
+    .bind(id)
+    .first<SessionRow>()
+}
+
+/**
+ * Live counts of `active` and `triage` sessions (excludes soft-deleted rows).
+ * The capacity endpoint reads this; POST /sessions and PATCH status->{triage,
+ * active} call it before mutating to enforce the cap.
+ */
+export interface CapacityCounts {
+  active: number
+  triage: number
+}
+
+export async function countActiveAndTriage(
+  db: D1Database,
+  excludeSessionId?: string,
+): Promise<CapacityCounts> {
+  interface Row {
+    status: 'active' | 'triage'
+    n: number
+  }
+  // Excluding a session is needed when checking a status transition: the row
+  // being moved already counts toward its current bucket, and we want the post-
+  // move state. SQL stays parameterized either way.
+  const stmt =
+    excludeSessionId === undefined
+      ? db.prepare(
+          `SELECT status, COUNT(*) AS n FROM sessions
+           WHERE status IN ('active', 'triage') AND deleted_at IS NULL
+           GROUP BY status`,
+        )
+      : db
+          .prepare(
+            `SELECT status, COUNT(*) AS n FROM sessions
+             WHERE status IN ('active', 'triage') AND deleted_at IS NULL AND id != ?
+             GROUP BY status`,
+          )
+          .bind(excludeSessionId)
+  const res = await stmt.all<Row>()
+  let active = 0
+  let triage = 0
+  for (const r of res.results ?? []) {
+    if (r.status === 'active') active = r.n
+    else if (r.status === 'triage') triage = r.n
+  }
+  return { active, triage }
+}
+
+/**
+ * True when a *new* triage entry would overflow the bedrock rule. Used at
+ * POST /sessions and at PATCH status->triage. (`shipped`/`rejected` and
+ * intake `draft` don't count against the cap.)
+ */
+export function isTriageAtCap(c: CapacityCounts): boolean {
+  return c.triage >= TRIAGE_CAP
+}
+
+/**
+ * True when a transition into `active` would overflow the active cap. Used at
+ * PATCH status->active.
+ */
+export function isActiveAtCap(c: CapacityCounts): boolean {
+  return c.active >= ACTIVE_CAP
 }
 
 /**

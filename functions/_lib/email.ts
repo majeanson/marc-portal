@@ -68,7 +68,10 @@ export async function sendVisitorMessageNotification(
   origin: string,
   preview: string,
 ): Promise<boolean> {
-  const subject = `New message from ${visitorEmail}`
+  // Loi 25 / lock-screen privacy: keep the visitor's email out of the subject
+  // line so a glance at Marc's notifications doesn't leak which client is
+  // talking. The body still carries the full identifying info.
+  const subject = 'New message in the portal'
   const url = `${origin}/admin/inbox/${sessionId}`
   const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
 <p><strong>${visitorEmail}</strong> posted in their session:</p>
@@ -158,7 +161,9 @@ export async function sendIntakeEditedNotification(
   sessionId: string,
   origin: string,
 ): Promise<boolean> {
-  const subject = `${visitorEmail} edited their intake`
+  // Generic subject — body carries the identifying info. See the lock-screen
+  // privacy comment in sendVisitorMessageNotification.
+  const subject = 'A visitor edited their intake'
   const url = `${origin}/admin/inbox/${sessionId}`
   const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
 <p><strong>${escapeHtml(visitorEmail)}</strong> updated their intake answers.</p>
@@ -184,9 +189,11 @@ export async function sendWithdrawalNotification(
   lang: 'fr' | 'en',
   audience: 'admin' | 'visitor',
 ): Promise<boolean> {
+  // Generic admin subject (no email leak on lock screen); the visitor-side
+  // subject is already non-identifying.
   const subject =
     audience === 'admin'
-      ? `${byEmail} withdrew their session`
+      ? 'A session was withdrawn'
       : lang === 'fr'
         ? 'Ta session a été retirée du portail'
         : 'Your session was withdrawn from the portal'

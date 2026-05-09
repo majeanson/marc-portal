@@ -281,6 +281,143 @@ describe('DELETE /api/sessions/:id', () => {
   })
 })
 
+describe('POST /api/sessions — bedrock cap enforcement', () => {
+  function seedTriage(env: ReturnType<typeof makeMockEnv>, id = 'existing') {
+    env._db.sessions.set(id, {
+      id,
+      email: 'someone@x.com',
+      intake_json: JSON.stringify({ lang: 'fr' }),
+      status: 'triage',
+      created_at: 1,
+      updated_at: 1,
+      deleted_at: null,
+      status_history: null,
+    })
+  }
+
+  it('returns 409 when triage is full and visitor submits intake', async () => {
+    const env = makeMockEnv()
+    seedTriage(env)
+    mockedCurrentEmail.mockResolvedValue('visitor@x.com')
+    const ctx = {
+      request: new Request('https://x.test/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ intakeJson: { lang: 'fr', formData: {} } }),
+      }),
+      env,
+      params: {},
+    }
+    const res = await onRequestPostSession(ctx as never)
+    expect(res.status).toBe(409)
+    // No row was inserted.
+    expect(env._db.sessions.size).toBe(1)
+  })
+
+  it('admin is exempt — can seed a draft even when triage is full', async () => {
+    const env = makeMockEnv()
+    seedTriage(env)
+    mockedCurrentEmail.mockResolvedValue('marc@x.com')
+    const ctx = {
+      request: new Request('https://x.test/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ intakeJson: { lang: 'fr', formData: {} } }),
+      }),
+      env,
+      params: {},
+    }
+    const res = await onRequestPostSession(ctx as never)
+    expect(res.status).toBe(200)
+    expect(env._db.sessions.size).toBe(2)
+  })
+
+  it('empty intakeJson (Marc creating placeholder draft) is not capped', async () => {
+    const env = makeMockEnv()
+    seedTriage(env)
+    mockedCurrentEmail.mockResolvedValue('visitor@x.com')
+    const ctx = {
+      request: new Request('https://x.test/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({}),
+      }),
+      env,
+      params: {},
+    }
+    const res = await onRequestPostSession(ctx as never)
+    expect(res.status).toBe(200)
+  })
+})
+
+describe('PATCH /api/sessions/:id — cap enforcement on status transitions', () => {
+  it('refuses Draft -> triage when triage is full', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { status: 'triage' },
+    })
+    seedSession(ctx.env._db) // s1: draft
+    ctx.env._db.sessions.set('other', {
+      id: 'other',
+      email: 'a@x.com',
+      intake_json: null,
+      status: 'triage',
+      created_at: 1,
+      updated_at: 1,
+      deleted_at: null,
+      status_history: null,
+    })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(409)
+    expect(ctx.env._db.sessions.get('s1')?.status).toBe('draft')
+  })
+
+  it('allows triage -> active when active slot is empty (and excludes self)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { status: 'active' },
+    })
+    seedSession(ctx.env._db, { status: 'triage' })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(ctx.env._db.sessions.get('s1')?.status).toBe('active')
+  })
+
+  it('refuses Draft -> active when active is full', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { status: 'active' },
+    })
+    seedSession(ctx.env._db) // s1: draft
+    ctx.env._db.sessions.set('blocker', {
+      id: 'blocker',
+      email: 'a@x.com',
+      intake_json: null,
+      status: 'active',
+      created_at: 1,
+      updated_at: 1,
+      deleted_at: null,
+      status_history: null,
+    })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(409)
+  })
+
+  it('shipped/rejected transitions are not capped', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { status: 'shipped' },
+    })
+    seedSession(ctx.env._db, { status: 'active' })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+  })
+})
+
 describe('POST /api/sessions — rate limit', () => {
   it('allows the first batch then blocks after limit', async () => {
     // 5/hour per email is the cap. 6th attempt → 429.

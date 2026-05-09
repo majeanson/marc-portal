@@ -33,6 +33,14 @@ export function randomTokenB64url(byteLen = 32): string {
   return bytesToB64url(buf)
 }
 
+// SHA-256 a string and return base64url. Used for at-rest hashing of magic-link
+// tokens — we send the plaintext in the URL once, store only the hash, and look
+// up by hash on /verify. A DB snapshot leak no longer leaks usable tokens.
+export async function sha256B64url(input: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', utf8ToBytes(input))
+  return bytesToB64url(new Uint8Array(digest))
+}
+
 // Constant-time byte comparison. Workers crypto.subtle.verify already does this
 // for HMAC; this helper is for any ad-hoc string comparison we add later.
 export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {

@@ -19,7 +19,9 @@ import { ApiError } from '../lib/api'
 import type { Account } from '../components/intake/AccountStep'
 import type { FormData } from '../components/intake/TypeForm'
 import { IntakeSummary } from '../components/intake/IntakeSummary'
-import type { ProblemType } from '../lib/intakeSchemas'
+import { SessionStatusStrip } from '../components/intake/SessionStatusStrip'
+import { SessionHeader } from '../components/intake/SessionHeader'
+import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDateTime, formatRelativeWindow } from '../lib/format'
 import { markSeen } from '../lib/unread'
 import {
@@ -69,11 +71,12 @@ function tryParseIntake(raw: string | null): ParsedIntake | null {
 const COPY = {
   fr: {
     title: 'Session',
+    eyebrow: 'Session',
     loading: 'Chargement…',
     notFound: 'Session introuvable.',
     forbidden: 'Tu n’as pas accès à cette session.',
     threadHeading: 'Discussion',
-    none: 'Aucun message pour l’instant.',
+    none: 'Marc répond en moins de 72h. Laisse-lui un mot ici dès que tu en as un.',
     placeholder: 'Écris un message…',
     sending: 'Envoi…',
     send: 'Envoyer',
@@ -82,6 +85,15 @@ const COPY = {
     visitor: 'Visiteur',
     statusLabel: 'Statut',
     changeStatus: 'Changer le statut',
+    statusHint: 'Clique une étape pour changer le statut de la session.',
+    statusConfirmReject: (id: string) =>
+      `Marquer la session ${id} comme refusée ? Le visiteur le verra. Continue ?`,
+    statusConfirmShip: (id: string) =>
+      `Marquer la session ${id} comme livrée ? Cette transition signale que c’est fini.`,
+    statusConfirmReopenShipped: (id: string) =>
+      `Rouvrir la session ${id} (déjà livrée) ? Le visiteur sera notifié.`,
+    statusConfirmReopenRejected: (id: string) =>
+      `Réactiver la session ${id} (refusée) ? Le visiteur sera notifié.`,
     intakeHeading: 'Intake',
     noIntake: 'Aucun contenu d’intake — la session a été démarrée vide.',
     backToInbox: '← Retour à la liste',
@@ -116,11 +128,12 @@ const COPY = {
   },
   en: {
     title: 'Session',
+    eyebrow: 'Session',
     loading: 'Loading…',
     notFound: 'Session not found.',
     forbidden: "You don't have access to this session.",
     threadHeading: 'Thread',
-    none: 'No messages yet.',
+    none: 'Marc replies within 72h. Drop him a note here whenever you have one.',
     placeholder: 'Write a message…',
     sending: 'Sending…',
     send: 'Send',
@@ -129,6 +142,15 @@ const COPY = {
     visitor: 'Visitor',
     statusLabel: 'Status',
     changeStatus: 'Change status',
+    statusHint: 'Click a stage to change the session status.',
+    statusConfirmReject: (id: string) =>
+      `Mark session ${id} as rejected? The visitor will see this. Continue?`,
+    statusConfirmShip: (id: string) =>
+      `Mark session ${id} as shipped? This signals the work is done.`,
+    statusConfirmReopenShipped: (id: string) =>
+      `Reopen session ${id} (already shipped)? The visitor will be notified.`,
+    statusConfirmReopenRejected: (id: string) =>
+      `Reactivate session ${id} (rejected)? The visitor will be notified.`,
     intakeHeading: 'Intake',
     noIntake: 'No intake content — session was started empty.',
     backToInbox: '← Back to inbox',
@@ -161,8 +183,6 @@ const COPY = {
     attachMax: 'Max 5 files, 10 MB each',
   },
 } as const
-
-const STATUSES: SessionStatus[] = ['draft', 'triage', 'active', 'shipped', 'rejected']
 
 export function SessionPage({ lang }: { lang: Lang }) {
   const t = COPY[lang]
@@ -314,6 +334,18 @@ export function SessionPage({ lang }: { lang: Lang }) {
 
   const onStatusChange = async (next: SessionStatus) => {
     if (!id || !session) return
+    // Confirm destructive transitions: any move that touches a terminal state
+    // (shipped/rejected) — either entering one, or reopening from one. The
+    // visitor sees these transitions, so a stray click shouldn't drive them.
+    const current = session.status
+    const idTag = session.id.slice(0, 8)
+    let prompt: string | null = null
+    if (next === 'rejected') prompt = t.statusConfirmReject(idTag)
+    else if (next === 'shipped') prompt = t.statusConfirmShip(idTag)
+    else if (current === 'shipped') prompt = t.statusConfirmReopenShipped(idTag)
+    else if (current === 'rejected') prompt = t.statusConfirmReopenRejected(idTag)
+    if (prompt && !window.confirm(prompt)) return
+
     try {
       const r = await patchSession(id, { status: next, ifUpdatedAt: session.updated_at })
       setSession(r.session)
@@ -389,41 +421,55 @@ export function SessionPage({ lang }: { lang: Lang }) {
 
   if (authLoading || (!session && !error)) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
-          <p>{t.loading}</p>
+        <main id="main-content">
+          <article className="section intake session-frame">
+            <div className="section__inner">
+              <p className="session-frame__pending">{t.loading}</p>
+            </div>
+          </article>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   if (error === 'notfound') {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
-          <section className="page__panel">
-            <p>{t.notFound}</p>
-          </section>
+        <main id="main-content">
+          <article className="section intake session-frame">
+            <div className="section__inner">
+              <div className="intake__step">
+                <div className="section__eyebrow">{t.eyebrow}</div>
+                <h1 className="session-frame__title">{t.notFound}</h1>
+              </div>
+            </div>
+          </article>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   if (error === 'forbidden' || !session) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
-          <section className="page__panel">
-            <p>{t.forbidden}</p>
-          </section>
+        <main id="main-content">
+          <article className="section intake session-frame">
+            <div className="section__inner">
+              <div className="intake__step">
+                <div className="section__eyebrow">{t.eyebrow}</div>
+                <h1 className="session-frame__title">{t.forbidden}</h1>
+              </div>
+            </div>
+          </article>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
@@ -443,261 +489,272 @@ export function SessionPage({ lang }: { lang: Lang }) {
   // Visitor edits their own; admin can edit any. Server enforces this too.
   const canEditIntake = !!parsed && (isAdmin || session.email === email)
 
+  const sla = computeSla(session)
+  const slaPill = sla.active ? (
+    <span className={`me-portal__sla mono${sla.overdue ? ' me-portal__sla--overdue' : ''}`}>
+      {t.slaPrefix} {sla.overdue ? t.slaOverdue : formatRelativeWindow(sla.msLeft, lang)}
+    </span>
+  ) : null
+
   return (
-    <>
+    <div className="app">
       <Header lang={lang} />
-      <main className="page session-page">
-        <p>
-          <a href={backHref}>{backLabel}</a>
-        </p>
-        <header className="session-page__header">
-          <h1>
-            {t.title} <span className="mono">{session.id.slice(0, 8)}</span>
-          </h1>
-          <div className="session-page__meta">
-            <span>
-              <strong>{t.statusLabel}:</strong> {session.status}
-            </span>
-            {(() => {
-              const sla = computeSla(session)
-              if (!sla.active) return null
-              return (
-                <span
-                  className={`me-portal__sla mono${sla.overdue ? ' me-portal__sla--overdue' : ''}`}
-                >
-                  {t.slaPrefix}{' '}
-                  {sla.overdue ? t.slaOverdue : formatRelativeWindow(sla.msLeft, lang)}
-                </span>
-              )
-            })()}
-            <span className="mono" role="status" aria-live="polite" hidden={!refreshing}>
-              {refreshing ? t.refreshing : ''}
-            </span>
-          </div>
-        </header>
+      <main id="main-content">
+        <article className="section intake session-frame">
+          <div className="section__inner">
+            <a className="showcase-page__back" href={backHref}>
+              {backLabel}
+            </a>
 
-        {isAdmin && (
-          <section className="page__panel">
-            <h2 className="snd-demo__h">{t.changeStatus}</h2>
-            <div className="status-buttons">
-              {STATUSES.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => onStatusChange(s)}
-                  disabled={s === session.status}
-                  className={`status-btn${s === session.status ? ' status-btn--current' : ''}`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="page__panel">
-          <header className="session-page__intake-head">
-            <h2 className="snd-demo__h">{t.intakeHeading}</h2>
-            <div className="session-page__intake-actions">
-              <span
-                role="status"
-                aria-live="polite"
-                className="mono session-page__saving"
-                hidden={!saving}
-              >
-                {saving ? t.saving : ''}
-              </span>
-              {saveError && !saving && (
-                <span className="mono session-page__save-error" role="alert" aria-live="assertive">
-                  {t.saveError}
-                </span>
-              )}
-              {canEditIntake && (
-                <button
-                  type="button"
-                  className="link-btn mono"
-                  onClick={() => {
-                    setEditing((v) => !v)
-                    setSaveError(false)
-                  }}
-                  aria-pressed={editing}
-                >
-                  {editing ? t.doneEditing : t.editIntake}
-                </button>
-              )}
-            </div>
-          </header>
-          {staleConflict && (
-            <p className="session-page__stale" role="alert" aria-live="assertive">
-              {t.staleConflict}
-            </p>
-          )}
-          {parsed ? (
-            <>
-              {editing && <p className="field__hint">{t.editHint}</p>}
-              <IntakeSummary
-                lang={lang}
-                account={parsed.account}
-                type={parsed.type}
-                values={parsed.formData}
-                submittedAt={parsed.submittedAt}
-                editable={editing}
-                editableType={editing}
-                typeChangeConfirm={t.typeChangeWarn}
-                requiredEmptyConfirm={t.requiredEmptyConfirm}
-                onChange={onIntakeChange}
-              />
-            </>
-          ) : intakePretty ? (
-            <pre className="mono session-page__intake">{intakePretty}</pre>
-          ) : (
-            <p>{t.noIntake}</p>
-          )}
-        </section>
-
-        <section className="page__panel">
-          <h2 className="snd-demo__h">{t.timelineHeading}</h2>
-          <ul className="session-timeline">
-            <li className="session-timeline__entry">
-              <span className="session-timeline__dot" aria-hidden="true" />
-              <div className="session-timeline__body">
-                <div className="mono session-timeline__when">
-                  {formatDateTime(session.created_at, lang)}
-                </div>
-                <div>{t.timelineCreated(formatDateTime(session.created_at, lang))}</div>
-              </div>
-            </li>
-            {parseStatusHistory(session.status_history).map((entry) => (
-              <li key={entry.at} className="session-timeline__entry">
-                <span className="session-timeline__dot" aria-hidden="true" />
-                <div className="session-timeline__body">
-                  <div className="mono session-timeline__when">
-                    {formatDateTime(entry.at, lang)}
-                  </div>
-                  <div>
-                    {t.timelineStatus(
-                      entry.from,
-                      entry.to,
-                      entry.by,
-                      formatDateTime(entry.at, lang),
-                    )}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="page__panel">
-          <h2 className="snd-demo__h">{t.threadHeading}</h2>
-          {messages.length === 0 ? (
-            <p>{t.none}</p>
-          ) : (
-            <ul className="thread">
-              {messages.map((m) => {
-                const isMe =
-                  (isAdmin && m.author === 'marc') || (!isAdmin && m.author === 'visitor')
-                const authorLabel = isMe ? t.you : m.author === 'marc' ? t.marc : t.visitor
-                return (
-                  <li
-                    key={m.id}
-                    className={`thread__msg thread__msg--${m.author}${isMe ? ' thread__msg--mine' : ''}`}
-                  >
-                    <div className="thread__head mono">
-                      {authorLabel} · {formatDateTime(m.created_at, lang)}
-                    </div>
-                    {m.body && <div className="thread__body">{m.body}</div>}
-                    {m.attachments && m.attachments.length > 0 && (
-                      <ul className="thread__attach-list">
-                        {m.attachments.map((a) => (
-                          <AttachmentTile
-                            key={a.id}
-                            att={a}
-                            sessionId={session.id}
-                            openLabel={t.attachOpen}
-                          />
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-
-          <form onSubmit={onSend} className="thread__form">
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder={t.placeholder}
-              rows={3}
-              className="form__input"
+            <SessionStatusStrip
+              lang={lang}
+              status={session.status}
+              onPick={isAdmin ? onStatusChange : undefined}
             />
-            {pendingAttachments.length > 0 && (
-              <ul className="thread__attach-pending" aria-label="pending attachments">
-                {pendingAttachments.map((a) => (
-                  <li key={a.id} className="thread__attach-chip">
-                    <span className="mono thread__attach-name">{a.filename}</span>
-                    <span className="mono thread__attach-size">{formatFileSize(a.size)}</span>
+            {isAdmin && <p className="field__hint session-frame__strip-hint">{t.statusHint}</p>}
+
+            <SessionHeader
+              eyebrow={
+                parsed
+                  ? `${localized(getSchemaForType(parsed.type).title, lang)} · ${session.status}`
+                  : `${t.eyebrow} · ${session.status}`
+              }
+              title={t.title}
+              idTag={session.id.slice(0, 8)}
+              meta={
+                <>
+                  <span
+                    className={`session-frame__status-pill session-frame__status-pill--${session.status}`}
+                  >
+                    {session.status}
+                  </span>
+                  {slaPill}
+                  <span
+                    className="mono session-frame__refresh"
+                    role="status"
+                    aria-live="polite"
+                    hidden={!refreshing}
+                  >
+                    {refreshing ? t.refreshing : ''}
+                  </span>
+                </>
+              }
+            />
+
+            <section className="intake__step session-frame__panel">
+              <header className="session-page__intake-head">
+                <h2>{t.intakeHeading}</h2>
+                <div className="session-page__intake-actions">
+                  <span
+                    role="status"
+                    aria-live="polite"
+                    className="mono session-page__saving"
+                    hidden={!saving}
+                  >
+                    {saving ? t.saving : ''}
+                  </span>
+                  {saveError && !saving && (
+                    <span
+                      className="mono session-page__save-error"
+                      role="alert"
+                      aria-live="assertive"
+                    >
+                      {t.saveError}
+                    </span>
+                  )}
+                  {canEditIntake && (
                     <button
                       type="button"
-                      className="link-btn mono thread__attach-remove"
-                      onClick={() => onRemoveAttachment(a)}
-                      aria-label={`${t.attachRemove} ${a.filename}`}
+                      className="link-btn mono"
+                      onClick={() => {
+                        setEditing((v) => !v)
+                        setSaveError(false)
+                      }}
+                      aria-pressed={editing}
                     >
-                      ×
+                      {editing ? t.doneEditing : t.editIntake}
                     </button>
+                  )}
+                </div>
+              </header>
+              {staleConflict && (
+                <p className="session-page__stale" role="alert" aria-live="assertive">
+                  {t.staleConflict}
+                </p>
+              )}
+              {parsed ? (
+                <>
+                  {editing && <p className="field__hint">{t.editHint}</p>}
+                  <IntakeSummary
+                    lang={lang}
+                    account={parsed.account}
+                    type={parsed.type}
+                    values={parsed.formData}
+                    submittedAt={parsed.submittedAt}
+                    editable={editing}
+                    editableType={editing}
+                    typeChangeConfirm={t.typeChangeWarn}
+                    requiredEmptyConfirm={t.requiredEmptyConfirm}
+                    onChange={onIntakeChange}
+                  />
+                </>
+              ) : intakePretty ? (
+                <pre className="mono session-page__intake">{intakePretty}</pre>
+              ) : (
+                <p>{t.noIntake}</p>
+              )}
+            </section>
+
+            <section className="intake__step session-frame__panel">
+              <h2>{t.timelineHeading}</h2>
+              <ul className="session-timeline">
+                <li className="session-timeline__entry">
+                  <span className="session-timeline__dot" aria-hidden="true" />
+                  <div className="session-timeline__body">
+                    <div className="mono session-timeline__when">
+                      {formatDateTime(session.created_at, lang)}
+                    </div>
+                    <div>{t.timelineCreated(formatDateTime(session.created_at, lang))}</div>
+                  </div>
+                </li>
+                {parseStatusHistory(session.status_history).map((entry) => (
+                  <li key={entry.at} className="session-timeline__entry">
+                    <span className="session-timeline__dot" aria-hidden="true" />
+                    <div className="session-timeline__body">
+                      <div className="mono session-timeline__when">
+                        {formatDateTime(entry.at, lang)}
+                      </div>
+                      <div>
+                        {t.timelineStatus(
+                          entry.from,
+                          entry.to,
+                          entry.by,
+                          formatDateTime(entry.at, lang),
+                        )}
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
-            )}
-            <div className="thread__form-actions">
-              <label className="link-btn mono thread__attach-trigger">
-                <input
-                  type="file"
-                  multiple
-                  className="thread__attach-input"
-                  disabled={uploading || pendingAttachments.length >= 5}
-                  onChange={(e) => {
-                    void onAttach(e.target.files)
-                    e.target.value = ''
-                  }}
-                />
-                {uploading ? t.attaching : `+ ${t.attachLabel}`}
-              </label>
-              <span className="field__hint thread__attach-max">{t.attachMax}</span>
-              {attachError && (
-                <span role="alert" aria-live="assertive" className="mono session-page__save-error">
-                  {attachError}
-                </span>
-              )}
-              <button
-                type="submit"
-                disabled={
-                  sending || uploading || (!draft.trim() && pendingAttachments.length === 0)
-                }
-                className="hero__cta"
-              >
-                {sending ? t.sending : t.send}
-              </button>
-            </div>
-          </form>
-        </section>
+            </section>
 
-        {(isAdmin || session.email === email) && (
-          <section className="page__panel session-page__danger">
-            <button
-              type="button"
-              className="link-btn mono session-page__withdraw"
-              onClick={onWithdraw}
-              disabled={withdrawing}
-            >
-              {t.withdrawCta}
-            </button>
-          </section>
-        )}
+            <section className="intake__step session-frame__panel">
+              <h2>{t.threadHeading}</h2>
+              {messages.length === 0 ? (
+                <p className="thread__empty">{t.none}</p>
+              ) : (
+                <ul className="thread">
+                  {messages.map((m) => {
+                    const isMe =
+                      (isAdmin && m.author === 'marc') || (!isAdmin && m.author === 'visitor')
+                    const authorLabel = isMe ? t.you : m.author === 'marc' ? t.marc : t.visitor
+                    return (
+                      <li
+                        key={m.id}
+                        className={`thread__msg thread__msg--${m.author}${isMe ? ' thread__msg--mine' : ''}`}
+                      >
+                        <div className="thread__head mono">
+                          {authorLabel} · {formatDateTime(m.created_at, lang)}
+                        </div>
+                        {m.body && <div className="thread__body">{m.body}</div>}
+                        {m.attachments && m.attachments.length > 0 && (
+                          <ul className="thread__attach-list">
+                            {m.attachments.map((a) => (
+                              <AttachmentTile
+                                key={a.id}
+                                att={a}
+                                sessionId={session.id}
+                                openLabel={t.attachOpen}
+                              />
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+
+              <form onSubmit={onSend} className="thread__form">
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder={t.placeholder}
+                  rows={3}
+                  className="field__input thread__input"
+                />
+                {pendingAttachments.length > 0 && (
+                  <ul className="thread__attach-pending" aria-label="pending attachments">
+                    {pendingAttachments.map((a) => (
+                      <li key={a.id} className="thread__attach-chip">
+                        <span className="mono thread__attach-name">{a.filename}</span>
+                        <span className="mono thread__attach-size">{formatFileSize(a.size)}</span>
+                        <button
+                          type="button"
+                          className="link-btn mono thread__attach-remove"
+                          onClick={() => onRemoveAttachment(a)}
+                          aria-label={`${t.attachRemove} ${a.filename}`}
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="thread__form-actions">
+                  <label className="link-btn mono thread__attach-trigger">
+                    <input
+                      type="file"
+                      multiple
+                      className="thread__attach-input"
+                      disabled={uploading || pendingAttachments.length >= 5}
+                      onChange={(e) => {
+                        void onAttach(e.target.files)
+                        e.target.value = ''
+                      }}
+                    />
+                    {uploading ? t.attaching : `+ ${t.attachLabel}`}
+                  </label>
+                  <span className="field__hint thread__attach-max">{t.attachMax}</span>
+                  {attachError && (
+                    <span
+                      role="alert"
+                      aria-live="assertive"
+                      className="mono session-page__save-error"
+                    >
+                      {attachError}
+                    </span>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={
+                      sending || uploading || (!draft.trim() && pendingAttachments.length === 0)
+                    }
+                    className="hero__cta"
+                  >
+                    {sending ? t.sending : t.send}
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            {(isAdmin || session.email === email) && (
+              <section className="session-page__danger">
+                <button
+                  type="button"
+                  className="link-btn mono session-page__withdraw"
+                  onClick={onWithdraw}
+                  disabled={withdrawing}
+                >
+                  {t.withdrawCta}
+                </button>
+              </section>
+            )}
+          </div>
+        </article>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }
 

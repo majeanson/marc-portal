@@ -4,7 +4,9 @@ import { DICT } from '../../i18n'
 import type { Account } from './AccountStep'
 import type { ProblemType } from '../../lib/intakeSchemas'
 import type { FormData } from './TypeForm'
+import type { SessionStatus } from '../../lib/sessionsApi'
 import { IntakeSummary } from './IntakeSummary'
+import { SessionStatusStrip } from './SessionStatusStrip'
 
 export function Confirmation({
   lang,
@@ -14,6 +16,7 @@ export function Confirmation({
   waitlist,
   submittedAt,
   sessionId,
+  sessionStatus,
   magicLinkSent,
   onResendLink,
   onStartOver,
@@ -25,6 +28,10 @@ export function Confirmation({
   waitlist: boolean
   submittedAt: string
   sessionId?: string
+  /** Real status of the freshly-created session, threaded from the
+   * createSession response. Falls back to 'draft' (the server's actual
+   * default) if absent. */
+  sessionStatus?: SessionStatus
   magicLinkSent?: boolean
   onResendLink?: () => void | Promise<void>
   onStartOver: () => void
@@ -55,6 +62,16 @@ export function Confirmation({
         </span>
       </div>
 
+      {/* Continuity: once a session exists, show the same status strip the live
+          session page renders so the visitor sees one consistent journey. The
+          status comes from the createSession response (server defaults to
+          'draft'); we fall back to 'draft' rather than guessing. */}
+      {sessionHref && (
+        <div className="confirmation__strip">
+          <SessionStatusStrip lang={lang} status={sessionStatus ?? 'draft'} />
+        </div>
+      )}
+
       {sessionHref && (
         <div className="confirmation__cta">
           <a className="hero__cta" href={sessionHref}>
@@ -70,20 +87,28 @@ export function Confirmation({
       )}
 
       {magicLinkSent && !sessionHref && (
-        <div className="confirmation__cta">
-          <h3 style={{ marginBottom: 8 }}>{t.magicLinkSentTitle}</h3>
-          <p>{t.magicLinkSentBody(account.email)}</p>
-          {onResendLink && (
-            <button
-              type="button"
-              className="link-btn mono"
-              onClick={onResendClick}
-              disabled={resending}
-            >
-              {resending ? t.submitting : t.magicLinkAgain}
-            </button>
-          )}
-        </div>
+        <>
+          {/* Parked-intake strip — locked at draft, dimmed via .session-strip--parked
+              so the visitor sees their intake hasn't vanished, just hasn't booted. */}
+          <div className="confirmation__strip session-strip--parked">
+            <SessionStatusStrip lang={lang} status="draft" />
+            <p className="field__hint session-strip__parked-hint">{t.parkedStripHint}</p>
+          </div>
+          <div className="confirmation__cta">
+            <h3 style={{ marginBottom: 8 }}>{t.magicLinkSentTitle}</h3>
+            <p>{t.magicLinkSentBody(account.email)}</p>
+            {onResendLink && (
+              <button
+                type="button"
+                className="link-btn mono"
+                onClick={onResendClick}
+                disabled={resending}
+              >
+                {resending ? t.submitting : t.magicLinkAgain}
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       <section className="showcase-page__block">

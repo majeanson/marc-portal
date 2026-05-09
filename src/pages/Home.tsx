@@ -47,14 +47,16 @@ export function Home({ lang }: { lang: Lang }) {
       <main id="main-content">
         {/* 1 — Hero: the offer + primary CTA, above the fold */}
         <Hero lang={lang} />
-        {/* 2 — How: 4-step expectation-setter, very fast read */}
-        <HowItWorks lang={lang} />
-        {/* 3 — Pricing: concrete numbers so visitors self-qualify before the demo */}
-        <Pricing lang={lang} />
-        {/* 4 — Vibe filter: do/don't lists — second self-qualification gate */}
-        <VibeFilter lang={lang} />
-        {/* 5 — Demo: deepest proof of work for those who passed the gates */}
+        {/* 2 — Demo: proof of work, foregrounded — a cold visitor hits "play"
+              within seconds. Embed is inline (lazy-loaded) so there's no extra
+              click between landing and the cornerstone CTA. */}
         <DemoEmbed lang={lang} />
+        {/* 3 — How: 4-step expectation-setter, very fast read */}
+        <HowItWorks lang={lang} />
+        {/* 4 — Pricing: concrete numbers so visitors self-qualify */}
+        <Pricing lang={lang} />
+        {/* 5 — Vibe filter: do/don't lists — final self-qualification gate */}
+        <VibeFilter lang={lang} />
         {/* 6 — Showcases: full gallery with filters */}
         <ShowcasesWall lang={lang} />
         {/* 7 — About: short bio near the end (visitors who care, scroll) */}

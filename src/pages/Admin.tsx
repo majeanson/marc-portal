@@ -77,26 +77,17 @@ export function Admin({ lang }: { lang: Lang }) {
           <div className="admin__brand-role">{isOperator ? t.operator : t.owner}</div>
         </div>
 
+        {/* Marketplace-shaped surfaces (Apparence, Équipe, Facturation, Flotte)
+            are no longer in the sidebar — vision is solo practice, not SaaS.
+            They still exist as routes for direct-URL access if Marc ever needs
+            them. The audit log is the only operator-only surface kept visible.
+            See feature.json analysis: "Fleet/tenant primitives exist as
+            architecture for per-engagement isolation; this is not a marketplace." */}
         <nav className="admin__links">
-          <NavLink to={`${langPrefix}/admin/apparence`} className="admin__link">
-            <span className="admin__link-dot" /> {t.appearance}
-          </NavLink>
-          <NavLink to={`${langPrefix}/admin/equipe`} className="admin__link">
-            <span className="admin__link-dot" /> {t.team}
-          </NavLink>
-          <NavLink to={`${langPrefix}/admin/facturation`} className="admin__link">
-            <span className="admin__link-dot" /> {t.billing}
-          </NavLink>
           {isOperator && (
-            <>
-              <div className="admin__link-divider" />
-              <NavLink to={`${langPrefix}/admin/fleet`} className="admin__link">
-                <span className="admin__link-dot admin__link-dot--operator" /> {t.fleet}
-              </NavLink>
-              <NavLink to={`${langPrefix}/admin/audit`} className="admin__link">
-                <span className="admin__link-dot admin__link-dot--operator" /> {t.audit}
-              </NavLink>
-            </>
+            <NavLink to={`${langPrefix}/admin/audit`} className="admin__link">
+              <span className="admin__link-dot admin__link-dot--operator" /> {t.audit}
+            </NavLink>
           )}
         </nav>
 

@@ -68,6 +68,8 @@ const NUM_WORDS_EN: Record<string, number> = {
 }
 
 const CLIENT_RE = /\bchez\s+([A-ZÀ-Ÿ][\wÀ-ÿ-]+)/i
+// EN matches "at Tremblay's place" or "at Côté's" — strip the trailing 's.
+const CLIENT_RE_EN = /\bat\s+([A-ZÀ-Ÿ][\wÀ-ÿ-]+?)(?:'s)?\b/
 const HOURS_RE_FR =
   /([\d.,]+|une?|deux|trois|quatre|cinq|six|sept|huit|neuf|dix)\s+heures?(?:\s+(et\s+demie|et\s+quart))?/i
 const HOURS_RE_EN =
@@ -99,92 +101,82 @@ function extractHours(text: string): number | undefined {
 }
 
 function extractClient(text: string): string | undefined {
-  const m = text.match(CLIENT_RE)
+  const m = text.match(CLIENT_RE) ?? text.match(CLIENT_RE_EN)
   return m?.[1]
 }
 
+/**
+ * Material extraction patterns. Each entry can carry separate FR / EN regexes;
+ * the parser tries the FR pattern first, falls back to EN. The `item` field is
+ * what surfaces in parses + invoices and is intentionally always FR (that's the
+ * canonical price-book key in PRICE_BOOK below).
+ *
+ * Adding a new material: add the regexes for both languages (each can be
+ * undefined if a material truly has no equivalent in the other transcript
+ * style), set the FR-canonical item label, and optionally a unit.
+ */
 const MATERIAL_PATTERNS: Array<{
-  re: RegExp
-  itemFr: string
-  itemEn: string
-  unitFr?: string
-  unitEn?: string
-  lang: 'fr' | 'en' | 'both'
+  reFr?: RegExp
+  reEn?: RegExp
+  item: string
+  unit?: string
 }> = [
-  // 2x4 boards
   {
-    re: /(\d+|un|une|deux|trois|quatre|cinq|two|three|four|five)\s+(planches?\s+(de\s+)?)?2x4/i,
-    itemFr: '2x4',
-    itemEn: '2x4 board',
-    unitFr: 'planche',
-    unitEn: 'board',
-    lang: 'both',
+    reFr: /(\d+|un|une|deux|trois|quatre|cinq)\s+(planches?\s+(de\s+)?)?2x4/i,
+    reEn: /(\d+|two|three|four|five)\s+(2x4|two[- ]by[- ]four)\s+boards?/i,
+    item: '2x4',
+    unit: 'planche',
   },
-  // bucket of plaster / plâtre
   {
-    re: /(\d+|un|une|deux|a)\s+seau(x)?\s+de\s+plâtre/i,
-    itemFr: 'seau de plâtre',
-    itemEn: 'bucket of plaster',
-    lang: 'fr',
+    reFr: /(\d+|un|une|deux|a)\s+seau(x)?\s+de\s+plâtre/i,
+    reEn: /(\d+|a|one|two|three)\s+buckets?\s+of\s+plaster/i,
+    item: 'seau de plâtre',
   },
-  // sheets of drywall
   {
-    re: /(\d+|two|three|four|five|deux|trois)\s+sheets?\s+of\s+drywall/i,
-    itemFr: 'feuilles de gypse',
-    itemEn: 'sheets of drywall',
-    lang: 'both',
+    reFr: /(\d+|deux|trois|quatre|cinq)\s+feuilles?\s+de\s+gypse/i,
+    reEn: /(\d+|two|three|four|five)\s+sheets?\s+of\s+drywall/i,
+    item: 'feuilles de gypse',
   },
-  // wire (FR: fil 14/2)
   {
-    re: /(\d+|trente|thirty)\s+pieds?\s+(de\s+)?fil\s+(\d+\/\d+)/i,
-    itemFr: 'pieds de fil 14/2',
-    itemEn: 'feet of 14/2 wire',
-    unitFr: 'pi',
-    unitEn: 'ft',
-    lang: 'fr',
+    reFr: /(\d+|trente)\s+pieds?\s+(de\s+)?fil\s+(\d+\/\d+)/i,
+    reEn: /(\d+|thirty)\s+feet\s+of\s+(\d+\/\d+)\s+wire/i,
+    item: 'pieds de fil 14/2',
+    unit: 'pi',
   },
-  // switches
   {
-    re: /(\d+|deux|two|trois|three)\s+interrupteurs?/i,
-    itemFr: 'interrupteurs',
-    itemEn: 'switches',
-    lang: 'fr',
+    reFr: /(\d+|deux|trois)\s+interrupteurs?/i,
+    reEn: /(\d+|two|three)\s+switches?/i,
+    item: 'interrupteurs',
   },
-  // sink (évier)
   {
-    re: /(un|une|a|one)\s+évier/i,
-    itemFr: 'évier',
-    itemEn: 'sink',
-    lang: 'fr',
+    reFr: /(un|une)\s+évier/i,
+    reEn: /(a|one)\s+sink/i,
+    item: 'évier',
   },
-  // faucet
   {
-    re: /(un|une|a|one|le)\s+robinet/i,
-    itemFr: 'robinet',
-    itemEn: 'faucet',
-    lang: 'fr',
+    reFr: /(un|une|le)\s+robinet/i,
+    reEn: /(a|one|the)\s+faucet/i,
+    item: 'robinet',
   },
-  // grease trap
   {
-    re: /(une?|a|one)\s+trappe\s+à\s+grease/i,
-    itemFr: 'trappe à grease',
-    itemEn: 'grease trap',
-    lang: 'fr',
+    reFr: /(une?)\s+trappe\s+à\s+grease/i,
+    reEn: /(a|one)\s+grease\s+trap/i,
+    item: 'trappe à grease',
   },
 ]
 
 function extractMaterials(text: string): ParsedMaterial[] {
   const out: ParsedMaterial[] = []
   for (const p of MATERIAL_PATTERNS) {
-    const m = text.match(p.re)
+    const m = (p.reFr ? text.match(p.reFr) : null) ?? (p.reEn ? text.match(p.reEn) : null)
     if (m) {
       const qToken = m[1]
       const q = parseNum(qToken, 'fr') ?? parseNum(qToken, 'en')
       out.push({
         raw: m[0],
         quantity: q,
-        unit: p.unitFr,
-        item: p.itemFr,
+        unit: p.unit,
+        item: p.item,
       })
     }
   }
@@ -198,6 +190,7 @@ const JOB_KEYWORDS_FR = [
   ['peinture', 'peinture'],
   ['plumbing', 'plomberie'],
   ['electrical', 'électrique'],
+  ['painting', 'peinture'],
 ] as const
 
 function extractJobType(text: string): string | undefined {

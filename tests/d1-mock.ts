@@ -130,6 +130,62 @@ class MockPreparedStatement {
       return row ? [{ count: row.count, window_start: row.window_start }] : []
     }
 
+    // SELECT COUNT(*) FROM magic_link_tokens WHERE (email = ? OR ip = ?) AND created_at > ?
+    if (
+      sql.includes('FROM magic_link_tokens') &&
+      sql.includes('SELECT COUNT(*)') &&
+      sql.includes('email = ? OR ip = ?')
+    ) {
+      const email = a[0] as string
+      const ip = a[1] as string
+      const since = a[2] as number
+      let n = 0
+      for (const r of this.db.magic_link_tokens.values()) {
+        if ((r.email === email || r.ip === ip) && r.created_at > since) n++
+      }
+      return [{ n }]
+    }
+
+    // SELECT token, email, expires_at, used_at FROM magic_link_tokens WHERE token = ?
+    if (
+      sql.includes('FROM magic_link_tokens WHERE token = ?') &&
+      sql.includes('SELECT token, email')
+    ) {
+      const r = this.db.magic_link_tokens.get(a[0] as string)
+      return r
+        ? [
+            {
+              token: r.token,
+              email: r.email,
+              expires_at: r.expires_at,
+              used_at: r.used_at,
+            },
+          ]
+        : []
+    }
+
+    // SELECT status, COUNT(*) AS n FROM sessions WHERE status IN ('active', 'triage')
+    // AND deleted_at IS NULL [AND id != ?] GROUP BY status
+    if (
+      sql.includes('FROM sessions') &&
+      sql.includes("status IN ('active', 'triage')") &&
+      sql.includes('deleted_at IS NULL') &&
+      sql.includes('GROUP BY status')
+    ) {
+      const excludeId = sql.includes('id != ?') ? (a[0] as string) : null
+      const buckets = { active: 0, triage: 0 }
+      for (const s of this.db.sessions.values()) {
+        if (s.deleted_at !== null) continue
+        if (excludeId && s.id === excludeId) continue
+        if (s.status === 'active') buckets.active++
+        else if (s.status === 'triage') buckets.triage++
+      }
+      const out: Record<string, unknown>[] = []
+      if (buckets.active > 0) out.push({ status: 'active', n: buckets.active })
+      if (buckets.triage > 0) out.push({ status: 'triage', n: buckets.triage })
+      return out
+    }
+
     // SELECT session by id (full)
     if (sql.includes('FROM sessions WHERE id = ?') && sql.includes('SELECT id, email')) {
       const s = this.db.sessions.get(a[0] as string)
@@ -252,6 +308,26 @@ class MockPreparedStatement {
         }
       }
       return n
+    }
+
+    if (sql.startsWith('INSERT INTO magic_link_tokens')) {
+      const token = a[0] as string
+      this.db.magic_link_tokens.set(token, {
+        token,
+        email: a[1] as string,
+        expires_at: a[2] as number,
+        used_at: null,
+        created_at: a[3] as number,
+        ip: a[4] as string,
+      })
+      return 1
+    }
+
+    if (sql.startsWith('UPDATE magic_link_tokens SET used_at = ?')) {
+      const token = a[1] as string
+      const r = this.db.magic_link_tokens.get(token)
+      if (r) r.used_at = a[0] as number
+      return r ? 1 : 0
     }
 
     if (sql.startsWith('INSERT INTO sessions')) {

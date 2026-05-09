@@ -113,6 +113,45 @@ export function postMessage(
   })
 }
 
-export function getCapacityLive(): Promise<{ active: number; triage: number; cap: number }> {
+/**
+ * Loi 25 self-serve erasure. Deletes all of the signed-in visitor's data on the
+ * server (sessions, messages, attachments, magic-link tokens) and clears the
+ * session cookie. The caller should redirect to the home page after success.
+ */
+export function deleteMyAccount(): Promise<{ ok: true }> {
+  return api('/api/me', { method: 'DELETE' })
+}
+
+/**
+ * Server-side intake draft (cross-device resume). Keyed by the signed-in
+ * email. Returns null until the visitor signs in or has never autosaved.
+ */
+export interface IntakeDraftResponse<T = unknown> {
+  draft: { payload: T; createdAt: number; updatedAt: number } | null
+}
+
+export function getIntakeDraft<T = unknown>(): Promise<IntakeDraftResponse<T>> {
+  return api('/api/intake-drafts')
+}
+
+export function saveIntakeDraft(payload: unknown): Promise<{ saved: true; updatedAt: number }> {
+  return api('/api/intake-drafts', { method: 'POST', body: { payload } })
+}
+
+export function clearIntakeDraft(): Promise<{ ok: true }> {
+  return api('/api/intake-drafts', { method: 'DELETE' })
+}
+
+export interface CapacityLive {
+  active: number
+  triage: number
+  /** Legacy single-cap (== activeCap). Newer callers prefer activeCap/triageCap. */
+  cap: number
+  activeCap: number
+  triageCap: number
+  atCap: boolean
+}
+
+export function getCapacityLive(): Promise<CapacityLive> {
   return api('/api/capacity')
 }

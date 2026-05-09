@@ -14,8 +14,11 @@ const REPO_URL = 'https://github.com/majeanson/marc-portal'
  * Sunday Night Dread — interactive static demo. Iframe-friendly (no Header/Footer)
  * so it embeds cleanly into the showcase page. 3 voice clip fixtures, real parser
  * (regex + bilingual lexicon), real invoice math (labor rate, GST, QST).
+ *
+ * `embedded` mode: skip the page-level meta side effects (document.title etc.)
+ * so the homepage embedding doesn't clobber the home title.
  */
-export function SndDemo({ lang }: { lang: Lang }) {
+export function SndDemo({ lang, embedded = false }: { lang: Lang; embedded?: boolean }) {
   const dict = DICT[lang]
   const t = dict.sndDemo
   const [played, setPlayed] = useState<Set<string>>(new Set())
@@ -27,15 +30,16 @@ export function SndDemo({ lang }: { lang: Lang }) {
   const sndEntry = getShowcaseBySlug(SND_SLUG)
 
   useEffect(() => {
+    if (embedded) return
     document.documentElement.lang = dict.langCode
     document.title = `${t.pageTitle} — Marc`
-  }, [dict, t])
+  }, [dict, t, embedded])
 
   const parses = useMemo<Array<{ clipId: string; client: string; result: ParseResult }>>(() => {
     return VOICE_CLIPS.filter((c) => played.has(c.id)).map((c) => ({
       clipId: c.id,
       client: c.client,
-      result: parseTranscript(c.transcript[lang === 'fr' ? 'fr' : 'fr']),
+      result: parseTranscript(c.transcript[lang]),
     }))
   }, [played, lang])
 
@@ -43,7 +47,7 @@ export function SndDemo({ lang }: { lang: Lang }) {
     const byClient: Record<string, ReturnType<typeof buildInvoice>> = {}
     for (const c of VOICE_CLIPS) {
       if (!played.has(c.id)) continue
-      const result = parseTranscript(c.transcript.fr)
+      const result = parseTranscript(c.transcript[lang])
       const existing = byClient[c.client]
       if (existing) {
         // Already have one for this client — merge by rebuilding from all of theirs
@@ -54,7 +58,7 @@ export function SndDemo({ lang }: { lang: Lang }) {
       }
     }
     return byClient
-  }, [played, parses])
+  }, [played, parses, lang])
 
   const togglePlay = (id: string) => {
     const audio = audioRefs.current[id]

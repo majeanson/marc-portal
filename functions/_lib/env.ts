@@ -17,6 +17,11 @@ export interface Env {
   CF_API_TOKEN?: string
   CF_ACCOUNT_ID?: string
   CF_PAGES_PROJECT_NAME?: string
+  // Optional: shared secret guarding /api/admin/digest. Set to a long random
+  // string in the Pages dashboard, then point a free cron service (cron-job.org
+  // etc.) at the endpoint with the X-Digest-Token header. Unset = endpoint is
+  // unreachable (the rare case Marc opens it manually).
+  DIGEST_TOKEN?: string
 }
 
 export function isAdmin(env: Env, email: string): boolean {

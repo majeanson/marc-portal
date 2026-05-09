@@ -21,8 +21,7 @@ import {
   unsupportedMediaType,
 } from '../../../../_lib/json'
 import { rateLimitCheck, rateLimitSweep } from '../../../../_lib/ratelimit'
-import { canAccessSession } from '../../../../_lib/sessions'
-import type { SessionRow } from '../../../../_lib/sessions'
+import { canAccessSession, loadSession } from '../../../../_lib/sessions'
 import {
   isAllowedContentType,
   MAX_ATTACHMENT_SIZE,
@@ -31,16 +30,6 @@ import {
   safeFilename,
   type AttachmentRow,
 } from '../../../../_lib/attachments'
-
-async function loadSession(env: Env, id: string): Promise<SessionRow | null> {
-  return env.DB.prepare(
-    `SELECT id, email, intake_json, status, created_at, updated_at,
-            deleted_at, status_history
-     FROM sessions WHERE id = ?`,
-  )
-    .bind(id)
-    .first<SessionRow>()
-}
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }) => {
   if (!env.MEDIA) {
@@ -51,7 +40,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   const id = String(params.id ?? '')
   if (!id) return badRequest('missing session id')
 
-  const session = await loadSession(env, id)
+  const session = await loadSession(env.DB, id)
   if (!session) return notFound()
   if (session.deleted_at) return notFound()
   if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
@@ -136,7 +125,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   const id = String(params.id ?? '')
   if (!id) return badRequest('missing session id')
 
-  const session = await loadSession(env, id)
+  const session = await loadSession(env.DB, id)
   if (!session) return notFound()
   if (session.deleted_at) return notFound()
   if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()

@@ -15,6 +15,7 @@ const Showcase = lazy(() => import('./pages/Showcase').then((m) => ({ default: m
 const SndDemo = lazy(() => import('./pages/SndDemo').then((m) => ({ default: m.SndDemo })))
 const Engagement = lazy(() => import('./pages/Engagement').then((m) => ({ default: m.Engagement })))
 const Tier0 = lazy(() => import('./pages/Tier0').then((m) => ({ default: m.Tier0 })))
+const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
 const AdminInbox = lazy(() => import('./pages/AdminInbox').then((m) => ({ default: m.AdminInbox })))
 const AdminTrash = lazy(() => import('./pages/AdminTrash').then((m) => ({ default: m.AdminTrash })))
 const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
@@ -74,6 +75,22 @@ export function App() {
         element={
           <L>
             <SndDemo lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/confidentialite"
+        element={
+          <L>
+            <Privacy lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/privacy"
+        element={
+          <L>
+            <Privacy lang="en" />
           </L>
         }
       />
@@ -154,7 +171,13 @@ export function App() {
       <Route path="/admin/inbox/:id" element={<SessionPage lang="fr" />} />
       <Route path="/en/admin/inbox/:id" element={<SessionPage lang="en" />} />
 
-      {/* Admin shell — fleet feat-2026-016. */}
+      {/* Admin shell — fleet feat-2026-016.
+          Deliberate duplication: the FR + EN subtrees are mirrored explicitly
+          rather than collapsed under <Route path="/:lang?/admin"> because the
+          per-page components currently receive `lang` as a prop. A future
+          refactor (audit 30-day item #13) can move `lang` to useParams and
+          unify the trees. Until then, when adding an admin route, add it to
+          BOTH blocks. */}
       <Route
         path="/admin"
         element={

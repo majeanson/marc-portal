@@ -3,9 +3,15 @@ compatibility_date = "2026-01-15"
 pages_build_output_dir = "dist"
 
 # D1 — Cloudflare's serverless SQLite. Backs sessions, messages, magic-link tokens.
-# Marc must run `npx wrangler d1 create marc-portal-db` once, then paste the
-# resulting database_id below. Until then, Pages Functions that touch D1 will
-# return 500 in production.
+# Marc must run `npx wrangler d1 create marc-portal-db --location enam` once,
+# then paste the resulting database_id below. Until then, Pages Functions that
+# touch D1 will return 500 in production.
+#
+# Loi 25 / Quebec data residency: the `enam` (Eastern North America) hint pins
+# the primary region to Toronto, the closest Canadian D1 region. The footer's
+# "Hébergé au Canada" claim is hollow without it. If this database was created
+# without the hint, CF Support can move it; the migration is offline (~30 min).
+# See /confidentialite for the policy version visitors see.
 [[d1_databases]]
 binding = "DB"
 database_name = "marc-portal-db"

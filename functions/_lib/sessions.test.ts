@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
+import { D1Mock } from '../../tests/d1-mock'
 import {
+  ACTIVE_CAP,
+  TRIAGE_CAP,
   appendStatusHistory,
   canAccessSession,
+  countActiveAndTriage,
+  isActiveAtCap,
+  isTriageAtCap,
   isValidStatus,
   parseStatusHistory,
   primaryAdminEmail,
@@ -9,6 +15,7 @@ import {
   type SessionRow,
   type StatusHistoryEntry,
 } from './sessions'
+import type { D1Database } from '@cloudflare/workers-types'
 
 function makeSession(over: Partial<SessionRow> = {}): SessionRow {
   return {
@@ -99,6 +106,57 @@ describe('parseStatusHistory + appendStatusHistory', () => {
   it('append discards malformed prior history rather than throwing', () => {
     const raw = appendStatusHistory('garbage', entry)
     expect(parseStatusHistory(raw)).toEqual([entry])
+  })
+})
+
+describe('countActiveAndTriage + isActiveAtCap + isTriageAtCap', () => {
+  function seed(
+    db: D1Mock,
+    rows: Array<{ id: string; status: string; deleted_at?: number | null }>,
+  ) {
+    for (const r of rows) {
+      db.sessions.set(r.id, {
+        id: r.id,
+        email: 'x@x.com',
+        intake_json: null,
+        status: r.status,
+        created_at: 1,
+        updated_at: 1,
+        deleted_at: r.deleted_at ?? null,
+        status_history: null,
+      })
+    }
+  }
+
+  it('counts only live active/triage rows', async () => {
+    const db = new D1Mock()
+    seed(db, [
+      { id: 'a', status: 'active' },
+      { id: 't', status: 'triage' },
+      { id: 'd', status: 'draft' },
+      { id: 's', status: 'shipped' },
+      { id: 'r', status: 'rejected' },
+      { id: 'gone', status: 'active', deleted_at: 100 },
+    ])
+    const c = await countActiveAndTriage(db as unknown as D1Database)
+    expect(c).toEqual({ active: 1, triage: 1 })
+  })
+
+  it('excludeSessionId removes the targeted row from counts', async () => {
+    const db = new D1Mock()
+    seed(db, [
+      { id: 'a', status: 'active' },
+      { id: 't', status: 'triage' },
+    ])
+    const c = await countActiveAndTriage(db as unknown as D1Database, 'a')
+    expect(c).toEqual({ active: 0, triage: 1 })
+  })
+
+  it('cap predicates match the constants', () => {
+    expect(isActiveAtCap({ active: ACTIVE_CAP, triage: 0 })).toBe(true)
+    expect(isActiveAtCap({ active: ACTIVE_CAP - 1, triage: 0 })).toBe(false)
+    expect(isTriageAtCap({ active: 0, triage: TRIAGE_CAP })).toBe(true)
+    expect(isTriageAtCap({ active: 0, triage: TRIAGE_CAP - 1 })).toBe(false)
   })
 })
 

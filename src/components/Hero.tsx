@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { CapacityCounter } from './CapacityCounter'
-import { getCapacity } from '../lib/capacity'
 import { useAuth } from '../lib/authContext'
+import { getCapacityLive } from '../lib/sessionsApi'
 
 const FACTS: Record<Lang, string[]> = {
   fr: ['72 h · réponse honnête', 'Async · pas de calls', 'Démos testables', '≈ $300 – $3000+'],
@@ -11,29 +12,47 @@ const FACTS: Record<Lang, string[]> = {
 
 const ANCHORS: Record<Lang, Array<[string, string]>> = {
   fr: [
+    ['#demo', 'Démo'],
     ['#how', 'Comment ça marche'],
     ['#pricing', 'Prix'],
     ['#vibe', 'On fait / on fait pas'],
-    ['#demo', 'Démo'],
     ['#about', 'À propos'],
   ],
   en: [
+    ['#demo', 'Demo'],
     ['#how', 'How it works'],
     ['#pricing', 'Pricing'],
     ['#vibe', 'We do / we don’t'],
-    ['#demo', 'Demo'],
     ['#about', 'About'],
   ],
 }
 
 export function Hero({ lang }: { lang: Lang }) {
   const t = DICT[lang].hero
-  const capacity = getCapacity()
   const { email, isAdmin } = useAuth()
   const langPrefix = lang === 'en' ? '/en' : ''
   const intakeHref = `${langPrefix}/intake`
   const sessionsHref = `${langPrefix}${isAdmin ? '/admin/inbox' : '/me'}`
-  const ctaLabel = email ? t.ctaLoggedIn : capacity.atCap ? t.ctaWaitlist : t.cta
+
+  // Hero CTA flips to "join the waitlist" when at cap. We render the standard
+  // CTA on first paint (no static fixture to fall back on) and swap once the
+  // live count arrives — better than forcing a layout shift on the bedrock
+  // value-prop element.
+  const [atCap, setAtCap] = useState<boolean>(false)
+  useEffect(() => {
+    let cancelled = false
+    getCapacityLive()
+      .then((c) => {
+        if (!cancelled) setAtCap(c.atCap)
+      })
+      .catch(() => {
+        // No paint change on failure.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  const ctaLabel = email ? t.ctaLoggedIn : atCap ? t.ctaWaitlist : t.cta
 
   return (
     <section className="section hero" aria-labelledby="hero-title">

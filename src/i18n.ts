@@ -72,7 +72,7 @@ const FR = {
     cta: 'Tester la démo →',
     disclosure:
       'Voix client composite — basée sur des conversations réelles avec 3 gens de métier. Le code et l’app sont vrais et déployés.',
-    tag: 'Tier 2 · ≈ $1500 · livré en 3 semaines',
+    tag: 'Tier 2 · ≈ 1 500 $ · livré en 3 semaines',
   },
 
   showcases: {
@@ -126,21 +126,21 @@ const FR = {
       },
       {
         name: 'Tier 1',
-        price: '≈ $300',
+        price: '≈ 300 $',
         scope:
           'Projet d’une demi-journée. Petit script, automatisation simple, formulaire qui marche.',
         after: '0 retouches après livraison',
       },
       {
         name: 'Tier 2',
-        price: '≈ $1500',
+        price: '≈ 1 500 $',
         scope: 'Projet d’1-3 semaines. Outil interne qui dure. La démo Sunday Night Dread est ici.',
         after: '1 ronde de retouches incluse',
         anchor: true,
       },
       {
         name: 'Tier 3',
-        price: '≈ $3000+',
+        price: '≈ 3 000 $+',
         scope:
           'Projet plus gros. Sur devis après triage. Toujours scopé pour livrer en moins de 6 semaines.',
         after: 'devis post-triage',
@@ -164,6 +164,9 @@ const FR = {
     body: 'Je suis dev senior depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail est l’architecture qui rend tout ça possible — pour toi comme pour moi.',
     body2:
       'Pas une agence. Pas une plateforme. Un humain dans le siège du jugement, et un peu de machine au milieu pour qu’on respecte tous les deux nos soirs et nos fins de semaine.',
+    portraitAlt: 'Marc Jeanson',
+    githubLabel: 'GitHub',
+    linkedinLabel: 'LinkedIn',
   },
 
   footer: {
@@ -268,9 +271,9 @@ const FR = {
     eyebrow: 'Tier 0 · auto-service · gratuit',
     title: 'Ton problème est trop petit pour engager un dev — voici comment le régler toi-même',
     intro:
-      "Pas de honte. Si ton budget est sous $200 et que ton problème cadre dans une de ces 4 catégories, voici la formule. Tu n'as besoin de rien acheter et tu n'as pas besoin de moi.",
+      "Pas de honte. Si ton budget est sous 200 $ et que ton problème cadre dans une de ces 4 catégories, voici la formule. Tu n'as besoin de rien acheter et tu n'as pas besoin de moi.",
     principle:
-      "Principe : la bonne solution pour un problème de $50 est gratuite. Si ton problème grandit (5+ employés, plusieurs équipes, données critiques), reviens me voir — c'est là que je vaux mon prix.",
+      "Principe : la bonne solution pour un problème de 50 $ est gratuite. Si ton problème grandit (5+ employés, plusieurs équipes, données critiques), reviens me voir — c'est là que je vaux mon prix.",
     problemLabel: 'Le problème',
     recipeLabel: 'La recette',
     growBack:
@@ -393,6 +396,7 @@ const FR = {
       magicLinkSentBody: (email: string) =>
         `On a envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session — il expire dans 30 minutes.`,
       magicLinkAgain: 'Pas reçu ? Renvoyer le lien',
+      parkedStripHint: 'Ton intake est en attente — démarre dès ta connexion.',
     },
   },
 }
@@ -556,6 +560,9 @@ const EN: Copy = {
     body: "I've been a senior dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is the architecture that makes that possible — for both of us.",
     body2:
       'Not an agency. Not a platform. A human in the judgment seat, with a bit of machine in the middle so we both keep our evenings and weekends.',
+    portraitAlt: 'Marc Jeanson',
+    githubLabel: 'GitHub',
+    linkedinLabel: 'LinkedIn',
   },
 
   footer: {
@@ -784,6 +791,7 @@ const EN: Copy = {
       magicLinkSentBody: (email: string) =>
         `A sign-in link was sent to ${email}. Open it to access your session — it expires in 30 minutes.`,
       magicLinkAgain: "Didn't get it? Resend the link",
+      parkedStripHint: 'Your intake is parked — it kicks off as soon as you sign in.',
     },
   },
 }

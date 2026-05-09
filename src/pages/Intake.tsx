@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
@@ -11,10 +11,16 @@ import { TypeForm } from '../components/intake/TypeForm'
 import type { FormData } from '../components/intake/TypeForm'
 import { Confirmation } from '../components/intake/Confirmation'
 import type { ProblemType } from '../lib/intakeSchemas'
-import { getCapacity } from '../lib/capacity'
 import { flagSet, flagWrite, loadDraft, saveDraft, clearDraft } from '../lib/draft'
 import { useAuth } from '../lib/authContext'
-import { createSession } from '../lib/sessionsApi'
+import {
+  createSession,
+  getCapacityLive,
+  getIntakeDraft,
+  saveIntakeDraft,
+  clearIntakeDraft,
+  type SessionStatus,
+} from '../lib/sessionsApi'
 import { ApiError } from '../lib/api'
 
 type Step = 'vibe' | 'account' | 'type' | 'form' | 'confirmation'
@@ -27,6 +33,9 @@ interface IntakeDraft {
   waitlist?: boolean
   /** Set after a successful createSession() call. */
   sessionId?: string
+  /** Status of the freshly-created session, captured from the createSession
+   * response so the confirmation strip reflects truth instead of guessing. */
+  sessionStatus?: SessionStatus
   /** True after a magic-link request succeeded for a non-logged-in visitor. */
   magicLinkSent?: boolean
 }
@@ -78,10 +87,21 @@ export function Intake({ lang }: { lang: Lang }) {
     name: draft.account?.name,
   }
 
-  // Autosave draft on every change
+  // Autosave draft on every change. localStorage is always written; the
+  // server-side mirror only kicks in when the visitor is signed in (cross-
+  // device resume — they may sign in on phone, open the magic link on desktop).
+  // Both paths are best-effort.
   useEffect(() => {
     saveDraft(DRAFT_KEY, draft)
-  }, [draft])
+    if (!auth.email) return
+    // Debounce the server write so a flurry of keystrokes doesn't hammer D1.
+    const handle = setTimeout(() => {
+      saveIntakeDraft({ draft, lang }).catch(() => {
+        // Network blip — localStorage is still authoritative.
+      })
+    }, 800)
+    return () => clearTimeout(handle)
+  }, [draft, auth.email, lang])
 
   // Update meta
   useEffect(() => {
@@ -91,7 +111,51 @@ export function Intake({ lang }: { lang: Lang }) {
     if (meta) meta.setAttribute('content', t.intake.metaDescription)
   }, [t])
 
-  const capacity = useMemo(() => getCapacity(), [])
+  // Cross-device resume: when signed-in and our local draft is empty (the
+  // visitor may have arrived from a magic link on a different browser), pull
+  // the server-side draft if one exists. Local autosave still writes through.
+  useEffect(() => {
+    if (!auth.email) return
+    const localDraft = loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft()
+    const localIsEmpty =
+      !localDraft.type && Object.keys(localDraft.formData ?? {}).length === 0 && !localDraft.account
+    if (!localIsEmpty) return
+    let cancelled = false
+    getIntakeDraft<{ draft: IntakeDraft; lang: Lang }>()
+      .then((res) => {
+        if (cancelled || !res.draft) return
+        const recovered = res.draft.payload?.draft
+        if (recovered) {
+          setDraft(recovered)
+          setStep(pickStep(recovered, flagSet(VIBE_FLAG)))
+        }
+      })
+      .catch(() => {
+        // Best-effort.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [auth.email])
+
+  // Live capacity: null until the first /api/capacity response. We default to
+  // "not at cap" for first paint so the form is interactive; the badge appears
+  // once the real number arrives. The server is the structural enforcer (POST
+  // /sessions returns 409 when at cap) — this state only drives copy.
+  const [atCap, setAtCap] = useState<boolean>(false)
+  useEffect(() => {
+    let cancelled = false
+    getCapacityLive()
+      .then((c) => {
+        if (!cancelled) setAtCap(c.atCap)
+      })
+      .catch(() => {
+        // Stay optimistic on network failure; the server will still 409 if at cap.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const onAcceptVibe = () => {
     flagWrite(VIBE_FLAG, true)
@@ -143,7 +207,7 @@ export function Intake({ lang }: { lang: Lang }) {
     setSubmitError(null)
 
     const submittedAt = new Date().toISOString().slice(0, 10)
-    const waitlist = capacity.atCap
+    const waitlist = atCap
     const intakePayload = {
       type: draft.type,
       account,
@@ -162,20 +226,40 @@ export function Intake({ lang }: { lang: Lang }) {
     if (isSameLoggedInUser) {
       try {
         const { session } = await createSession(intakePayload)
+        // Successful submit — drop the server-side draft (best-effort).
+        clearIntakeDraft().catch(() => {})
         const next: IntakeDraft = {
           ...draft,
           account,
           submittedAt,
           waitlist,
           sessionId: session.id,
+          sessionStatus: session.status,
           magicLinkSent: false,
         }
         setDraft(next)
         setStep('confirmation')
       } catch (err) {
-        setSubmitError(
-          err instanceof ApiError ? err.message : DICT[lang].intake.confirmation.submitError,
-        )
+        // 409 = bedrock cap hit. We still take the visitor to confirmation but
+        // flip them to the waitlist branch — the message they see is "I'm at
+        // capacity right now; you're on the list." No session row was created.
+        if (err instanceof ApiError && err.status === 409) {
+          setAtCap(true)
+          const next: IntakeDraft = {
+            ...draft,
+            account,
+            submittedAt,
+            waitlist: true,
+            sessionId: undefined,
+            magicLinkSent: false,
+          }
+          setDraft(next)
+          setStep('confirmation')
+        } else {
+          setSubmitError(
+            err instanceof ApiError ? err.message : DICT[lang].intake.confirmation.submitError,
+          )
+        }
       } finally {
         setSubmitting(false)
       }
@@ -240,7 +324,7 @@ export function Intake({ lang }: { lang: Lang }) {
               {t.intake.backHome}
             </a>
 
-            <CapacityNotice lang={lang} atCap={capacity.atCap} />
+            <CapacityNotice lang={lang} atCap={atCap} />
 
             <ProgressDots step={step} lang={lang} onJump={onJumpStep} />
 
@@ -281,6 +365,7 @@ export function Intake({ lang }: { lang: Lang }) {
                 waitlist={draft.waitlist ?? false}
                 submittedAt={draft.submittedAt}
                 sessionId={draft.sessionId}
+                sessionStatus={draft.sessionStatus}
                 magicLinkSent={draft.magicLinkSent ?? false}
                 onResendLink={onResendLink}
                 onStartOver={onStartOver}

@@ -13,7 +13,42 @@ export interface SessionPayload {
   x: number
 }
 
+/**
+ * Reject early when SESSION_SECRET is missing, empty, or trivially short.
+ * Without this guard, `TextEncoder().encode(undefined)` produces the bytes for
+ * the literal string `"undefined"` — a publicly-known HMAC key that would
+ * silently downgrade every cookie to forgeable. Type signature of `string`
+ * doesn't catch this; only runtime does.
+ *
+ * Threshold: 32 chars (≈ 192 bits at base64). Real secrets are much longer
+ * (we generate 64 hex chars in tests). The threshold is the floor, not a
+ * recommended length.
+ */
+const SESSION_SECRET_MIN_LENGTH = 32
+
+export class SessionSecretMisconfiguredError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'SessionSecretMisconfiguredError'
+  }
+}
+
+export function requireSessionSecret(secret: string | undefined | null): string {
+  if (typeof secret !== 'string' || secret.length === 0) {
+    throw new SessionSecretMisconfiguredError(
+      'SESSION_SECRET is missing. Set it on the Pages project (Settings → Environment variables) before any auth-touching request runs.',
+    )
+  }
+  if (secret.length < SESSION_SECRET_MIN_LENGTH) {
+    throw new SessionSecretMisconfiguredError(
+      `SESSION_SECRET is too short (got ${secret.length} chars, need >= ${SESSION_SECRET_MIN_LENGTH}). Regenerate a long random value.`,
+    )
+  }
+  return secret
+}
+
 async function importHmacKey(secret: string, usage: 'sign' | 'verify'): Promise<CryptoKey> {
+  requireSessionSecret(secret)
   return crypto.subtle.importKey(
     'raw',
     utf8ToBytes(secret),
@@ -101,6 +136,30 @@ export async function currentEmail(request: Request, secret: string): Promise<st
   if (!cookie) return null
   const payload = await verifySessionCookie(secret, cookie)
   return payload?.e ?? null
+}
+
+/**
+ * Resolve the signed-in email or return a 401 Response. Handlers that always
+ * require auth can early-out:
+ *
+ *   const auth = await requireSignedIn(request, env.SESSION_SECRET)
+ *   if (auth instanceof Response) return auth
+ *   const email = auth
+ *
+ * This mirrors the `requireTemplate` shape in functions/_lib/template.ts.
+ */
+export async function requireSignedIn(
+  request: Request,
+  secret: string,
+): Promise<string | Response> {
+  const email = await currentEmail(request, secret)
+  if (!email) {
+    return new Response(JSON.stringify({ error: 'unauthorized' }), {
+      status: 401,
+      headers: { 'content-type': 'application/json; charset=utf-8' },
+    })
+  }
+  return email
 }
 
 // Conservative email validator: rejects whitespace and bare TLDs. Not a full

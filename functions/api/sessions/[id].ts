@@ -15,21 +15,15 @@ import { badRequest, conflict, forbidden, notFound, ok, unauthorized } from '../
 import {
   appendStatusHistory,
   canAccessSession,
+  countActiveAndTriage,
+  isActiveAtCap,
+  isTriageAtCap,
   isValidStatus,
+  loadSession,
   primaryAdminEmail,
   visitorLang,
 } from '../../_lib/sessions'
-import type { SessionRow, StatusHistoryEntry } from '../../_lib/sessions'
-
-async function loadSession(env: Env, id: string): Promise<SessionRow | null> {
-  return env.DB.prepare(
-    `SELECT id, email, intake_json, status, created_at, updated_at,
-            deleted_at, status_history
-     FROM sessions WHERE id = ?`,
-  )
-    .bind(id)
-    .first<SessionRow>()
-}
+import type { StatusHistoryEntry } from '../../_lib/sessions'
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
@@ -37,7 +31,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   const id = String(params.id ?? '')
   if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env, id)
+  const session = await loadSession(env.DB, id)
   if (!session) return notFound()
   if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
   // Soft-deleted rows: visitors get 404; admins still see them by id.
@@ -60,7 +54,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   const id = String(params.id ?? '')
   if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env, id)
+  const session = await loadSession(env.DB, id)
   if (!session) return notFound()
 
   let body: PatchBody
@@ -82,7 +76,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     await env.DB.prepare(`UPDATE sessions SET deleted_at = NULL, updated_at = ? WHERE id = ?`)
       .bind(now, id)
       .run()
-    const fresh = await loadSession(env, id)
+    const fresh = await loadSession(env.DB, id)
     return ok({ session: fresh })
   }
   if (session.deleted_at) return notFound()
@@ -100,6 +94,20 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     if (!admin) return forbidden('only admin can change status')
     if (!isValidStatus(body.status)) return badRequest('invalid status')
     if (body.status !== session.status) {
+      // Bedrock cap enforcement: transitions *into* `triage` or `active` are
+      // checked against the live counts (excluding this row, since it may
+      // already be in the bucket we're checking against). 409 is the structural
+      // signal — admin sees a clear "at cap" message and can ship/reject the
+      // current occupant first.
+      if (body.status === 'triage' || body.status === 'active') {
+        const counts = await countActiveAndTriage(env.DB, id)
+        if (body.status === 'triage' && isTriageAtCap(counts)) {
+          return conflict('triage at capacity — ship or reject the current entry first')
+        }
+        if (body.status === 'active' && isActiveAtCap(counts)) {
+          return conflict('active at capacity — ship or reject the current build first')
+        }
+      }
       const entry: StatusHistoryEntry = {
         from: session.status,
         to: body.status,
@@ -133,7 +141,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     intakeEdited = intake !== session.intake_json
   }
 
-  const fresh = await loadSession(env, id)
+  const fresh = await loadSession(env.DB, id)
 
   // Best-effort notifications. Failures are logged but don't fail the PATCH —
   // the data is in D1; emails are nudges.
@@ -166,7 +174,7 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params
   const id = String(params.id ?? '')
   if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env, id)
+  const session = await loadSession(env.DB, id)
   if (!session) return notFound()
   if (session.deleted_at) return ok({ ok: true })
 

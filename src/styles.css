@@ -579,6 +579,127 @@ p {
   margin: 0;
 }
 
+/* MePortal — danger zone (Loi 25 self-serve erasure) */
+.me-portal__danger-zone {
+  max-width: 640px;
+  margin: 56px auto 32px;
+  padding: 20px 24px;
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+}
+.me-portal__danger-heading {
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+.me-portal__danger-body {
+  font-size: 14px;
+  color: var(--text-soft);
+  margin: 0 0 12px;
+}
+.me-portal__danger-btn {
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.me-portal__danger-btn:hover {
+  background: var(--bg-hover);
+}
+.me-portal__danger-btn--confirm {
+  background: #b22222;
+  color: #fff;
+  border-color: #b22222;
+}
+.me-portal__danger-btn--confirm:hover {
+  background: #8b1a1a;
+}
+.me-portal__danger-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.me-portal__danger-error {
+  margin-top: 10px;
+  color: #b22222;
+}
+
+/* Privacy / Loi 25 page */
+.privacy h1 {
+  margin-top: 0;
+}
+.privacy__intro {
+  font-size: 17px;
+  color: var(--text);
+  max-width: 60ch;
+}
+.privacy__asof {
+  color: var(--text-soft);
+  font-size: 13px;
+  margin-bottom: 32px;
+}
+.privacy__section {
+  max-width: 70ch;
+  margin: 24px 0;
+}
+.privacy__section h2 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.privacy__section p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.55;
+}
+.privacy__section a {
+  color: var(--accent-warm);
+}
+.privacy__section code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--bg-card);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* About — portrait + copy + outbound links */
+.about__layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.about__portrait {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  flex: 0 0 auto;
+}
+.about__copy {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.about__links {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 14px;
+}
+.about__links a {
+  color: var(--accent-warm);
+}
+
 /* Demo embed */
 .demo-embed {
   background: var(--bg-card);
@@ -2378,42 +2499,9 @@ button.intake__progress-step:focus-visible {
   opacity: 1;
 }
 
-.me-portal__pill {
-  font-family: var(--mono);
-  font-size: 11px;
-  text-transform: lowercase;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text-mid);
-  letter-spacing: 0.02em;
-}
-.me-portal__pill--active {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: var(--accent-warm);
-}
-.me-portal__pill--triage {
-  background: var(--cool-soft);
-  border-color: var(--cool);
-  color: var(--cool);
-}
-.me-portal__pill--shipped {
-  background: var(--accent);
-  border-color: var(--accent-warm);
-  color: #fff;
-}
-.me-portal__pill--rejected {
-  background: var(--warm-soft);
-  border-color: var(--warm);
-  color: var(--warm);
-}
-.me-portal__pill--draft {
-  background: var(--bg-card);
-  border-color: var(--border);
-  color: var(--text-soft);
-}
+/* Status pill — `me-portal__pill--*` was unified into
+   `session-frame__status-pill--*` so cards, detail page, and admin views
+   share one chip. The shared pill rules live near the bottom of the file. */
 
 .me-portal__sla {
   display: inline-flex;
@@ -3341,4 +3429,326 @@ button:focus-visible,
   line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* ------------------------------------------------------------------
+   Session frame — shared shell between /intake confirmation and
+   /session/:id. Same article container, same eyebrow + title, same
+   panel rhythm. Keeps the journey visually continuous.
+   ------------------------------------------------------------------ */
+.session-frame .section__inner {
+  max-width: 760px;
+}
+.session-frame__pending {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--text-soft);
+  font-family: var(--mono);
+}
+.session-frame__header {
+  margin: 8px 0 28px;
+}
+.session-frame__title {
+  margin: 4px 0 12px;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.01em;
+}
+.session-frame__id {
+  color: var(--text-soft);
+  font-size: 0.5em;
+  font-weight: 500;
+  letter-spacing: 0;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+.session-frame__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.session-frame__refresh {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+.session-frame__strip-hint {
+  margin: -6px 2px 18px;
+  font-size: 11px;
+  color: var(--text-soft);
+}
+.session-frame__panel {
+  margin-bottom: 28px;
+  padding: 28px 28px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 14px rgba(31, 29, 24, 0.04);
+}
+.session-frame__panel h2 {
+  margin: 0 0 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+/* Status pill — small uppercase chip used in the meta row. Color shifts
+   to match the current status so the eye finds it immediately. */
+.session-frame__status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-mid);
+}
+.session-frame__status-pill--draft {
+  border-color: var(--border);
+  background: var(--bg-card);
+  color: var(--text-soft);
+}
+.session-frame__status-pill--triage {
+  border-color: var(--cool);
+  background: var(--cool-soft);
+  color: var(--cool);
+}
+.session-frame__status-pill--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-warm);
+}
+.session-frame__status-pill--shipped {
+  border-color: var(--accent-warm);
+  background: var(--accent-soft);
+  color: var(--accent-warm);
+}
+.session-frame__status-pill--rejected {
+  border-color: var(--warm);
+  background: var(--warm-soft);
+  color: var(--warm);
+}
+
+/* Session status strip — visually mirrors `intake__progress` but is
+   rendered after submission. Reuses the same pill styling. */
+.session-strip {
+  margin-top: 0;
+  margin-bottom: 14px;
+}
+.session-strip__off-rail {
+  margin-left: auto;
+}
+.session-strip__rejected {
+  border-color: var(--border);
+  color: var(--text-soft);
+  background: transparent;
+}
+.session-strip__rejected--on {
+  background: var(--warm-soft);
+  border-color: var(--warm);
+  color: var(--warm);
+  font-weight: 600;
+}
+button.session-strip__rejected:hover:not(:disabled),
+button.session-strip__rejected:focus-visible:not(:disabled) {
+  border-color: var(--warm);
+  color: var(--warm);
+  outline: none;
+}
+button.intake__progress-step:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------
+   Thread — message bubbles. Replaces the previously-unstyled list.
+   Visitor messages flush left in cream; Marc's flush right in sage.
+   ------------------------------------------------------------------ */
+.thread {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* .thread__empty is defined further down — it picks up the warmer
+   accent-soft band styling. Keeping the rule out of this block avoids
+   shadowing it with the older italic version. */
+.thread__msg {
+  max-width: 78%;
+  padding: 12px 16px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+}
+.thread__msg--marc {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-warm);
+}
+.thread__msg--mine {
+  align-self: flex-end;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: 4px;
+}
+.thread__msg--mine.thread__msg--visitor {
+  background: var(--bg-active);
+  border-color: var(--accent);
+  color: var(--accent-warm);
+}
+.thread__head {
+  font-size: 11px;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+.thread__msg--marc .thread__head,
+.thread__msg--mine.thread__msg--visitor .thread__head {
+  color: var(--accent-warm);
+  opacity: 0.75;
+}
+.thread__body {
+  font-size: 15px;
+  line-height: 1.55;
+  color: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.thread__form {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.thread__input {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.confirmation__strip {
+  margin: 18px 0 6px;
+}
+
+/* Override .page__panel danger styling for the new flat layout */
+.session-frame .session-page__danger {
+  margin: 8px 0 0;
+  padding: 16px 0 0;
+  border-top: 1px dashed var(--border);
+  background: transparent;
+}
+
+@media (max-width: 720px) {
+  .session-frame__panel {
+    padding: 22px 18px 20px;
+  }
+  .thread__msg {
+    max-width: 92%;
+  }
+}
+
+/* Admin inbox — reuses the unified frame + card shape from /me */
+.admin-inbox__email {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  word-break: break-all;
+}
+.admin-inbox__count {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-mid);
+  font-size: 12px;
+}
+.admin-inbox__signout {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border);
+}
+
+/* Tighten the unified surfaces for narrow phones (~360-420px). The pill row,
+   meta row, and panel padding all start to crowd at this width. */
+@media (max-width: 480px) {
+  .session-frame__panel {
+    padding: 20px 16px 18px;
+    border-radius: var(--radius);
+  }
+  .session-frame__title {
+    font-size: clamp(24px, 7vw, 30px);
+  }
+  .session-frame__id {
+    display: block;
+    margin: 4px 0 0;
+    font-size: 12px;
+  }
+  .session-strip .intake__progress-step {
+    padding: 4px 9px;
+    font-size: 10px;
+  }
+  .session-strip__off-rail {
+    margin-left: 0;
+  }
+  .session-frame__meta,
+  .me-portal__card-meta {
+    gap: 6px;
+  }
+  .thread__msg {
+    max-width: 100%;
+  }
+  .me-portal__card-link {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .me-portal__card-side {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+/* Parked-intake strip — visitor submitted but isn't signed in yet, so no
+   real session row exists. Dimmed so it reads as "not started" rather than
+   "in progress." */
+.session-strip--parked {
+  opacity: 0.62;
+  filter: grayscale(0.2);
+}
+.session-strip__parked-hint {
+  margin: 4px 2px 0;
+  font-size: 11px;
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+/* Thread empty state — warmer than the bare italic line. Small leading
+   accent bar nudges it visually without shouting. */
+.thread__empty {
+  margin: 8px 0 16px;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--accent-warm);
+  font-size: 14px;
+  font-style: normal;
 }

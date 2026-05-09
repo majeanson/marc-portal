@@ -17,19 +17,8 @@ import {
   serviceUnavailable,
   unauthorized,
 } from '../../../../_lib/json'
-import { canAccessSession } from '../../../../_lib/sessions'
-import type { SessionRow } from '../../../../_lib/sessions'
+import { canAccessSession, loadSession } from '../../../../_lib/sessions'
 import type { AttachmentRow } from '../../../../_lib/attachments'
-
-async function loadSession(env: Env, id: string): Promise<SessionRow | null> {
-  return env.DB.prepare(
-    `SELECT id, email, intake_json, status, created_at, updated_at,
-            deleted_at, status_history
-     FROM sessions WHERE id = ?`,
-  )
-    .bind(id)
-    .first<SessionRow>()
-}
 
 async function loadAttachment(
   env: Env,
@@ -58,7 +47,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   const attId = String(params.attId ?? '')
   if (!sessionId || !attId) return badRequest('missing id')
 
-  const session = await loadSession(env, sessionId)
+  const session = await loadSession(env.DB, sessionId)
   if (!session) return notFound()
   if (session.deleted_at && !isAdmin(env, email)) return notFound()
   if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
@@ -92,7 +81,7 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params
   const attId = String(params.attId ?? '')
   if (!sessionId || !attId) return badRequest('missing id')
 
-  const session = await loadSession(env, sessionId)
+  const session = await loadSession(env.DB, sessionId)
   if (!session) return notFound()
   if (session.deleted_at) return notFound()
 

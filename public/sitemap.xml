@@ -16,4 +16,20 @@
     <loc>https://marc.example/en/showcase/sunday-night-dread</loc>
     <lastmod>2026-05-07</lastmod>
   </url>
+  <url>
+    <loc>https://marc.example/showcase/cote-electricite-quote-builder</loc>
+    <lastmod>2026-03-15</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/en/showcase/cote-electricite-quote-builder</loc>
+    <lastmod>2026-03-15</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/showcase/tremblay-paysagement-suivi-clients</loc>
+    <lastmod>2026-05-12</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/en/showcase/tremblay-paysagement-suivi-clients</loc>
+    <lastmod>2026-05-12</lastmod>
+  </url>
 </urlset>
