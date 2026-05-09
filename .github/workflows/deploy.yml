@@ -29,10 +29,12 @@ jobs:
       - run: npm run build
 
       # Apply any pending D1 migrations before the deploy. Idempotent — wrangler
-      # no-ops migrations that are already applied. Without this step the code
-      # ships with schema-ahead expectations and the API 500s until someone
-      # runs `npm run db:migrate:prod` by hand.
+      # no-ops migrations that are already applied. Non-blocking: the current
+      # CLOUDFLARE_API_TOKEN lacks D1 write permission, so this step fails until
+      # the token is rescoped. Until then, run `npm run db:migrate:prod` by hand
+      # before pushing schema changes.
       - name: Apply D1 migrations
+        continue-on-error: true
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
