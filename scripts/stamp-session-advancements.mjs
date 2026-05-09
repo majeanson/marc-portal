@@ -37,13 +37,16 @@ const shortSha = fullSha.slice(0, 7)
 // inside the SQL and escape any embedded single quotes defensively.
 const safeBuildUrl = buildUrl.replace(/'/g, "''")
 const safeSha = shortSha.replace(/'/g, "''")
-const nowExpr = `CAST(strftime('%s', 'now') AS INTEGER)`
 
-const sql = `UPDATE session_advancements
-  SET build_url = '${safeBuildUrl}',
-      commit_sha = '${safeSha}',
-      updated_at = ${nowExpr}
-  WHERE build_url IS NULL;`
+// Single-line SQL. Multi-line works locally but breaks when JSON.stringify
+// embeds literal "\n" through bash double-quoting — wrangler then sees a
+// literal backslash-n in the SQL and rejects it.
+const sql =
+  `UPDATE session_advancements ` +
+  `SET build_url = '${safeBuildUrl}', ` +
+  `commit_sha = '${safeSha}', ` +
+  `updated_at = CAST(strftime('%s', 'now') AS INTEGER) ` +
+  `WHERE build_url IS NULL;`
 
 console.log('Running stamp SQL:')
 console.log(sql)
@@ -67,6 +70,9 @@ try {
     console.log(out)
   }
 } catch (err) {
-  console.error('wrangler d1 execute failed:', err.message ?? err)
-  process.exit(1)
+  // The deploy itself already succeeded — this script is bookkeeping. Log
+  // and exit 0 so a stamp glitch doesn't redden a green deploy. Operator
+  // can re-run via workflow_dispatch if needed.
+  console.error('wrangler d1 execute failed (non-fatal):', err.message ?? err)
+  process.exit(0)
 }
