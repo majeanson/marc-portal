@@ -485,6 +485,34 @@ export function SessionPage({ lang }: { lang: Lang }) {
     return out
   }, [session, advancements])
 
+  // Thread items: messages + advancements flagged showInConversation,
+  // chronological. Separate from the activity timeline above (which shows
+  // ALL advancements regardless of flag). The flag opts an entry INTO the
+  // back-and-forth conversation alongside messages.
+  type ThreadItem =
+    | { kind: 'message'; at: number; msg: MessageRow }
+    | { kind: 'advancement'; at: number; row: AdvancementRow }
+  const threadItems = useMemo<ThreadItem[]>(() => {
+    const out: ThreadItem[] = []
+    for (const m of messages) out.push({ kind: 'message', at: m.created_at, msg: m })
+    for (const a of advancements ?? []) {
+      if (a.flags.showInConversation) out.push({ kind: 'advancement', at: a.date, row: a })
+    }
+    out.sort((x, y) => x.at - y.at)
+    return out
+  }, [messages, advancements])
+
+  // Most-recent advancement flagged showAsCurrentBuild — surfaced as a pinned
+  // header pill. Falls back to null when admin hasn't pinned anything.
+  const currentBuild = useMemo<AdvancementRow | null>(() => {
+    if (!advancements || advancements.length === 0) return null
+    const pinned = advancements.filter((a) => a.flags.showAsCurrentBuild)
+    if (pinned.length === 0) return null
+    // listAdvancements returns newest-first by date; pick the freshest pin.
+    return pinned.reduce((a, b) => (a.date >= b.date ? a : b))
+  }, [advancements])
+
+
   if (authLoading || (!session && !error)) {
     return (
       <div className="app">
@@ -595,6 +623,21 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     {session.status}
                   </span>
                   {slaPill}
+                  {currentBuild &&
+                    (currentBuild.build_url ? (
+                      <a
+                        className="session-frame__current-build mono"
+                        href={`${currentBuild.build_url}${currentBuild.iframe_path ?? ''}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {advT.currentLabel}: {currentBuild.label} ↗
+                      </a>
+                    ) : (
+                      <span className="session-frame__current-build session-frame__current-build--pending mono">
+                        {advT.currentLabel}: {currentBuild.label} ({advT.pillPendingStamp})
+                      </span>
+                    ))}
                   <span
                     className="mono session-frame__refresh"
                     role="status"
@@ -763,34 +806,72 @@ export function SessionPage({ lang }: { lang: Lang }) {
 
             <section className="intake__step session-frame__panel">
               <h2>{t.threadHeading}</h2>
-              {messages.length === 0 ? (
+              {threadItems.length === 0 ? (
                 <p className="thread__empty">{t.none}</p>
               ) : (
                 <ul className="thread">
-                  {messages.map((m) => {
-                    const isMe =
-                      (isAdmin && m.author === 'marc') || (!isAdmin && m.author === 'visitor')
-                    const authorLabel = isMe ? t.you : m.author === 'marc' ? t.marc : t.visitor
+                  {threadItems.map((item) => {
+                    if (item.kind === 'message') {
+                      const m = item.msg
+                      const isMe =
+                        (isAdmin && m.author === 'marc') ||
+                        (!isAdmin && m.author === 'visitor')
+                      const authorLabel = isMe
+                        ? t.you
+                        : m.author === 'marc'
+                          ? t.marc
+                          : t.visitor
+                      return (
+                        <li
+                          key={`m-${m.id}`}
+                          className={`thread__msg thread__msg--${m.author}${isMe ? ' thread__msg--mine' : ''}`}
+                        >
+                          <div className="thread__head mono">
+                            {authorLabel} · {formatDateTime(m.created_at, lang)}
+                          </div>
+                          {m.body && <div className="thread__body">{m.body}</div>}
+                          {m.attachments && m.attachments.length > 0 && (
+                            <ul className="thread__attach-list">
+                              {m.attachments.map((a) => (
+                                <AttachmentTile
+                                  key={a.id}
+                                  att={a}
+                                  sessionId={session.id}
+                                  openLabel={t.attachOpen}
+                                />
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      )
+                    }
+                    // advancement bubble — visually distinct from messages so
+                    // a build announcement reads as a *milestone*, not chat.
+                    const row = item.row
+                    const linkHref =
+                      row.build_url && row.build_url.length > 0
+                        ? `${row.build_url}${row.iframe_path ?? ''}`
+                        : null
                     return (
-                      <li
-                        key={m.id}
-                        className={`thread__msg thread__msg--${m.author}${isMe ? ' thread__msg--mine' : ''}`}
-                      >
+                      <li key={`a-${row.id}`} className="thread__msg thread__msg--build">
                         <div className="thread__head mono">
-                          {authorLabel} · {formatDateTime(m.created_at, lang)}
+                          {advT.timelineLabel} · {formatDateTime(row.date, lang)}
                         </div>
-                        {m.body && <div className="thread__body">{m.body}</div>}
-                        {m.attachments && m.attachments.length > 0 && (
-                          <ul className="thread__attach-list">
-                            {m.attachments.map((a) => (
-                              <AttachmentTile
-                                key={a.id}
-                                att={a}
-                                sessionId={session.id}
-                                openLabel={t.attachOpen}
-                              />
-                            ))}
-                          </ul>
+                        <div className="thread__build-label">{row.label}</div>
+                        {row.body && <div className="thread__body">{row.body}</div>}
+                        {linkHref ? (
+                          <a
+                            className="thread__build-link mono"
+                            href={linkHref}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {advT.openInNewTab}
+                          </a>
+                        ) : (
+                          <span className="mono session-timeline__pending">
+                            {advT.pillPendingStamp}
+                          </span>
                         )}
                       </li>
                     )

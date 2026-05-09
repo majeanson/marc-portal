@@ -442,6 +442,9 @@ const FR = {
     commitLabel: 'commit',
     iframeTitle: 'Aperçu du build',
     timelineLabel: 'Avancée publiée',
+    shareHeading: 'Lien public partageable',
+    shareCopy: 'Copier le lien',
+    shareCopied: 'Copié ✓',
   },
 }
 
@@ -880,6 +883,9 @@ const EN: Copy = {
     commitLabel: 'commit',
     iframeTitle: 'Build preview',
     timelineLabel: 'Advancement posted',
+    shareHeading: 'Public share link',
+    shareCopy: 'Copy link',
+    shareCopied: 'Copied ✓',
   },
 }
 

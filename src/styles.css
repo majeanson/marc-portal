@@ -579,24 +579,7 @@ p {
   margin: 0;
 }
 
-/* MePortal — danger zone (Loi 25 self-serve erasure) */
-.me-portal__danger-zone {
-  max-width: 640px;
-  margin: 56px auto 32px;
-  padding: 20px 24px;
-  border: 1px dashed var(--border-soft);
-  border-radius: var(--radius);
-  background: var(--bg-card);
-}
-.me-portal__danger-heading {
-  font-size: 16px;
-  margin: 0 0 6px;
-}
-.me-portal__danger-body {
-  font-size: 14px;
-  color: var(--text-soft);
-  margin: 0 0 12px;
-}
+/* MePortal — Account section button styles (Loi 25 self-serve erasure + export) */
 .me-portal__danger-btn {
   font-family: var(--mono);
   font-size: 13px;
@@ -2333,56 +2316,50 @@ button.intake__progress-step:focus-visible {
   line-height: 1.5;
 }
 
-.me-portal__toolbar {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* MePortal — Account section (collapsible: download + delete) */
+.me-portal__account-section {
+  max-width: 640px;
+  margin: 56px auto 32px;
+  padding: 0 var(--gutter);
+}
+.me-portal__account {
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  padding: 16px 22px;
+}
+.me-portal__account-summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-mid);
+  list-style: none;
+  user-select: none;
+}
+.me-portal__account-summary::-webkit-details-marker {
+  display: none;
+}
+.me-portal__account-summary::before {
+  content: '⚙';
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--text-soft);
+}
+.me-portal__account[open] .me-portal__account-summary {
   margin-bottom: 16px;
 }
-.me-portal__search {
-  width: 100%;
-  max-width: none;
+.me-portal__account-block + .me-portal__account-block {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-soft);
 }
-.me-portal__filter-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.me-portal__account-heading {
+  font-size: 16px;
+  margin: 0 0 6px;
 }
-.me-portal__filter-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-family: var(--mono);
-  background: transparent;
-  border: 1px solid var(--border-soft);
-  border-radius: 999px;
-  color: var(--text-mid);
-  cursor: pointer;
-  transition: all 120ms ease;
-}
-.me-portal__filter-pill:hover {
-  border-color: var(--text-mid);
-  color: var(--text);
-}
-.me-portal__filter-pill--active {
-  background: var(--text);
-  color: var(--bg);
-  border-color: var(--text);
-}
-.me-portal__filter-pill--active.me-portal__filter-pill--active {
-  font-weight: 600;
-}
-.me-portal__filter-pill-n {
-  font-size: 11px;
-  opacity: 0.7;
-}
-.me-portal__no-matches {
-  text-align: center;
+.me-portal__account-body {
+  font-size: 14px;
   color: var(--text-soft);
-  padding: 24px 12px;
-  font-style: italic;
+  margin: 0 0 12px;
 }
 
 .me-portal__skeleton {
@@ -2576,19 +2553,6 @@ button.intake__progress-step:focus-visible {
   .me-portal__open {
     opacity: 1;
   }
-  .me-portal__filter-pills {
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .me-portal__filter-pills::-webkit-scrollbar {
-    display: none;
-  }
-  .me-portal__filter-pill {
-    flex-shrink: 0;
-  }
-
   .intake__signed-in-card {
     padding: 14px 16px;
     gap: 12px;
@@ -3480,6 +3444,110 @@ button:focus-visible,
 .session-timeline__pending {
   color: var(--accent-warm);
   font-size: 12px;
+}
+
+/* Inline flag toggles on each admin row. Click to flip on/off. */
+.session-advancements__admin-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.session-advancements__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-soft);
+  cursor: pointer;
+  font-family: var(--display);
+}
+.session-advancements__toggle:hover {
+  border-color: var(--accent);
+  color: var(--text-mid);
+}
+.session-advancements__toggle--active {
+  background: var(--accent-soft, var(--bg-card));
+  border-color: var(--accent);
+  color: var(--accent-warm);
+}
+.session-advancements__toggle-mark {
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* Public share-link box — surfaced when at least one entry is allowedForPublic. */
+.session-advancements__share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin: 0 0 18px;
+  background: var(--accent-soft, var(--bg-card));
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-sm);
+}
+.session-advancements__share-url {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--accent-warm);
+  background: transparent;
+  padding: 4px 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+}
+
+/* Build bubble in the conversation thread — distinct from messages so a
+   build announcement reads as a milestone, not chat. */
+.thread__msg--build {
+  background: var(--accent-soft, var(--bg-card));
+  border-left: 3px solid var(--accent-warm);
+  padding: 12px 14px;
+}
+.thread__build-label {
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.thread__build-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--accent-warm);
+  text-decoration: underline;
+}
+
+/* Pinned current-build link in the SessionHeader meta row. */
+.session-frame__current-build {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent-soft, var(--bg-card));
+  color: var(--accent-warm);
+  text-decoration: none;
+}
+.session-frame__current-build:hover {
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+}
+.session-frame__current-build--pending {
+  border-style: dashed;
+  background: transparent;
+  color: var(--text-soft);
 }
 
 /* Filter chips on showcase wall */

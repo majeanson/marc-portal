@@ -88,3 +88,26 @@ export function deleteAdvancement(
     { method: 'DELETE' },
   )
 }
+
+/**
+ * Public-facing slimmed-down shape — returned by the unauth share endpoint.
+ * No author email, no flags_json blob; only what the share view needs.
+ */
+export interface PublicAdvancementRow {
+  id: string
+  session_id: string
+  date: number
+  label: string
+  body: string
+  build_url: string | null
+  commit_sha: string | null
+  iframe_path: string | null
+}
+
+export function listPublicAdvancements(
+  sessionId: string,
+): Promise<{ advancements: PublicAdvancementRow[] }> {
+  return api(
+    `/api/public/sessions/${encodeURIComponent(sessionId)}/advancements`,
+  )
+}

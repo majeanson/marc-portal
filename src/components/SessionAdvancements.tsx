@@ -45,10 +45,30 @@ export function SessionAdvancements({
   const t = DICT[lang].sessionAdvancements
   const [error, setError] = useState<string | null>(null)
   const [openBuild, setOpenBuild] = useState<string | null>(null)
+  const [shareCopied, setShareCopied] = useState(false)
 
   const handleDeleted = (id: string) => {
     onDeleted(id)
     setOpenBuild((prev) => (prev === id ? null : prev))
+  }
+
+  const hasPublic = (items ?? []).some((a) => a.flags.allowedForPublic)
+  const langPrefix = lang === 'en' ? '/en' : ''
+  const shareUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}${langPrefix}/share/${sessionId}`
+      : `${langPrefix}/share/${sessionId}`
+
+  const onCopyShare = async () => {
+    if (typeof navigator === 'undefined' || !navigator.clipboard) return
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+    } catch {
+      // Clipboard access can be blocked; the URL is still visible in the
+      // adjacent <code> element so the admin can copy by hand.
+    }
   }
 
   if (items === null && loading) {
@@ -68,6 +88,16 @@ export function SessionAdvancements({
     <section className="intake__step session-frame__panel session-advancements">
       <h2>{t.heading}</h2>
       <p className="field__hint session-advancements__hint">{t.subtitle}</p>
+
+      {isAdmin && hasPublic && (
+        <div className="session-advancements__share" role="group" aria-label={t.shareHeading}>
+          <span className="session-advancements__form-eyebrow mono">{t.shareHeading}</span>
+          <code className="session-advancements__share-url mono">{shareUrl}</code>
+          <button type="button" className="link-btn mono" onClick={onCopyShare}>
+            {shareCopied ? t.shareCopied : t.shareCopy}
+          </button>
+        </div>
+      )}
 
       {isAdmin && (
         <AdvancementForm
@@ -381,6 +411,25 @@ function AdvancementEntry({
         </div>
       )}
       {isAdmin && (
+        <div className="session-advancements__admin-toggles" role="group" aria-label={t.formFlags}>
+          <FlagToggle
+            label={t.flagAllowedForPublic}
+            active={!!row.flags.allowedForPublic}
+            onClick={() => onToggleFlag('allowedForPublic')}
+          />
+          <FlagToggle
+            label={t.flagShowInConversation}
+            active={!!row.flags.showInConversation}
+            onClick={() => onToggleFlag('showInConversation')}
+          />
+          <FlagToggle
+            label={t.flagShowAsCurrentBuild}
+            active={!!row.flags.showAsCurrentBuild}
+            onClick={() => onToggleFlag('showAsCurrentBuild')}
+          />
+        </div>
+      )}
+      {isAdmin && (
         <div className="session-advancements__admin-row">
           <button
             type="button"
@@ -515,5 +564,29 @@ function EditPanel({
         </button>
       </div>
     </div>
+  )
+}
+
+function FlagToggle({
+  label,
+  active,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className={`session-advancements__toggle mono${active ? ' session-advancements__toggle--active' : ''}`}
+      onClick={onClick}
+      aria-pressed={active}
+    >
+      <span className="session-advancements__toggle-mark" aria-hidden="true">
+        {active ? '●' : '○'}
+      </span>
+      {label}
+    </button>
   )
 }

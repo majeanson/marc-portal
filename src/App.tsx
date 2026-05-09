@@ -31,6 +31,9 @@ const AdminFleetNew = lazy(() =>
   import('./pages/AdminFleetNew').then((m) => ({ default: m.AdminFleetNew })),
 )
 const AdminAudit = lazy(() => import('./pages/AdminAudit').then((m) => ({ default: m.AdminAudit })))
+const PublicAdvancements = lazy(() =>
+  import('./pages/PublicAdvancements').then((m) => ({ default: m.PublicAdvancements })),
+)
 
 function L({ children }: { children: ReactNode }) {
   // Minimal fallback — just the page chrome would require importing Header,
@@ -136,6 +139,22 @@ export function App() {
       <Route path="/en/me" element={<MePortal lang="en" />} />
       <Route path="/session/:id" element={<SessionPage lang="fr" />} />
       <Route path="/en/session/:id" element={<SessionPage lang="en" />} />
+      <Route
+        path="/share/:id"
+        element={
+          <L>
+            <PublicAdvancements lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/share/:id"
+        element={
+          <L>
+            <PublicAdvancements lang="en" />
+          </L>
+        }
+      />
       <Route
         path="/admin/inbox"
         element={
