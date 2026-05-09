@@ -37,9 +37,11 @@ describe('signSessionCookie + verifySessionCookie', () => {
   it('returns null on tampered signature', async () => {
     const cookie = await signSessionCookie(STRONG_SECRET, 'visitor@x.com')
     const [head, sig] = cookie.split('.')
-    // Flip the last char of the sig — base64url, so a single-char change
-    // virtually always invalidates the HMAC.
-    const flipped = sig!.slice(0, -1) + (sig!.endsWith('A') ? 'B' : 'A')
+    // Flip the FIRST char of the sig. The last char of a 32-byte HMAC encodes
+    // only 4 data bits + 2 padding bits, so an A↔B swap there can decode to
+    // identical bytes and the HMAC still verifies. The first char is always
+    // 6 data bits, so any change there guarantees different bytes.
+    const flipped = (sig![0] === 'A' ? 'B' : 'A') + sig!.slice(1)
     const tampered = `${head}.${flipped}`
     const payload = await verifySessionCookie(STRONG_SECRET, tampered)
     expect(payload).toBeNull()
