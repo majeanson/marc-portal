@@ -390,8 +390,18 @@ p {
   font-size: 13px;
   color: var(--text-mid);
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.capacity__row {
+  display: flex;
   flex-wrap: wrap;
   gap: 18px;
+}
+.capacity__line {
+  color: var(--text-mid);
+  opacity: 0.85;
 }
 .capacity__pill {
   display: inline-flex;
