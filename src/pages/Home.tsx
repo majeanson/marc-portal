@@ -4,8 +4,7 @@ import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Hero } from '../components/Hero'
 import { HowItWorks } from '../components/HowItWorks'
-import { DemoEmbed } from '../components/DemoEmbed'
-import { ShowcasesWall } from '../components/ShowcasesWall'
+import { FeaturedProjects } from '../components/FeaturedProjects'
 import { VibeFilter } from '../components/VibeFilter'
 import { Pricing } from '../components/Pricing'
 import { CTA } from '../components/CTA'
@@ -47,21 +46,20 @@ export function Home({ lang }: { lang: Lang }) {
       <main id="main-content">
         {/* 1 — Hero: the offer + primary CTA, above the fold */}
         <Hero lang={lang} />
-        {/* 2 — Demo: proof of work, foregrounded — a cold visitor hits "play"
-              within seconds. Embed is inline (lazy-loaded) so there's no extra
-              click between landing and the cornerstone CTA. */}
-        <DemoEmbed lang={lang} />
+        {/* 2 — Featured projects: real /projects feed, top 3, foregrounded as
+              proof-of-work for cold visitors. Hides itself if the gallery is
+              empty so the home page never looks half-built. Full gallery lives
+              at /projects (see-all link in-section). */}
+        <FeaturedProjects lang={lang} />
         {/* 3 — How: 4-step expectation-setter, very fast read */}
         <HowItWorks lang={lang} />
         {/* 4 — Pricing: concrete numbers so visitors self-qualify */}
         <Pricing lang={lang} />
         {/* 5 — Vibe filter: do/don't lists — final self-qualification gate */}
         <VibeFilter lang={lang} />
-        {/* 6 — Showcases: full gallery with filters */}
-        <ShowcasesWall lang={lang} />
-        {/* 7 — About: short bio near the end (visitors who care, scroll) */}
+        {/* 6 — About: short bio near the end (visitors who care, scroll) */}
         <About lang={lang} />
-        {/* 8 — Final CTA: one last push before the footer */}
+        {/* 7 — Final CTA: one last push before the footer */}
         <CTA lang={lang} />
       </main>
       <Footer lang={lang} />

@@ -32,7 +32,6 @@ export interface Engagement {
   livePreviewNote: { fr: string; en: string }
   stages: StageEvent[]
   messages: EngagementMessage[]
-  relatedShowcaseSlug?: string
 }
 
 const TREMBLAY_LANDSCAPING: Engagement = {
@@ -143,7 +142,6 @@ const TREMBLAY_LANDSCAPING: Engagement = {
       },
     },
   ],
-  relatedShowcaseSlug: undefined,
 }
 
 const ALL_ENGAGEMENTS: Engagement[] = [TREMBLAY_LANDSCAPING]

@@ -52,6 +52,8 @@ interface PatchBody {
    * Setting enabled flips showcased_at to now() / null. Title and tagline can
    * be updated independently of enabled. */
   showcase?: unknown
+  /** Admin-only: tier classification (0/1/2/3) or null to clear. */
+  tier?: unknown
 }
 
 export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params }) => {
@@ -192,6 +194,17 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
         .bind(...updates.map((u) => u.val), now, id)
         .run()
     }
+  }
+
+  // Tier — admin-only. Accepts 0/1/2/3 or null to clear. Anything else 400s.
+  if (body.tier !== undefined) {
+    if (!admin) return forbidden('only admin can set tier')
+    if (body.tier !== null && (typeof body.tier !== 'number' || ![0, 1, 2, 3].includes(body.tier))) {
+      return badRequest('tier must be 0, 1, 2, 3, or null')
+    }
+    await env.DB.prepare(`UPDATE sessions SET tier = ?, updated_at = ? WHERE id = ?`)
+      .bind(body.tier, now, id)
+      .run()
   }
 
   const fresh = await loadSession(env.DB, id)

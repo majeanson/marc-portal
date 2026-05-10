@@ -546,49 +546,6 @@ p {
   letter-spacing: 0.04em;
 }
 
-/* Showcases wall */
-.showcase-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.showcase {
-  display: block;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 22px 24px;
-  color: var(--text);
-  transition:
-    box-shadow 0.15s,
-    transform 0.08s,
-    border-color 0.15s;
-}
-.showcase:hover {
-  background: var(--bg-card);
-  border-color: var(--text-faint);
-  text-decoration: none;
-  box-shadow: 0 8px 24px rgba(31, 29, 24, 0.06);
-  transform: translateY(-2px);
-}
-.showcase__meta {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text-soft);
-  margin-bottom: 6px;
-  letter-spacing: 0.04em;
-}
-.showcase__title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-.showcase__problem {
-  font-size: 14px;
-  color: var(--text-mid);
-  margin: 0;
-}
-
 /* MePortal — Account section button styles (Loi 25 self-serve erasure + export) */
 .me-portal__danger-btn {
   font-family: var(--mono);
@@ -693,20 +650,46 @@ p {
   color: var(--accent-warm);
 }
 
-/* Demo embed */
-.demo-embed {
-  background: var(--bg-card);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-lg);
-  padding: 24px;
+/* Featured projects strip — top 3 from /projects, rendered on the home page
+   under the hero. Reuses .project-card / .projects__grid from the gallery
+   page; the overrides here just tighten spacing for the cornerstone slot
+   and add the centered "see all →" footer link. */
+.featured-projects__sub {
+  margin: 0 0 24px;
+  color: var(--text-mid);
+  max-width: 60ch;
+  font-size: 17px;
 }
-.demo-embed__disclosure {
-  font-family: var(--mono);
-  font-size: 12px;
+.featured-projects__grid {
+  /* Three cards on desktop, gracefully collapsing — but a touch tighter than
+     the gallery so the strip doesn't dominate the home page vertically. */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.featured-projects__loading {
   color: var(--text-soft);
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px dashed var(--border);
+  margin: 0;
+}
+.featured-projects__more {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+.featured-projects__see-all {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-warm);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.featured-projects__see-all:hover,
+.featured-projects__see-all:focus-visible {
+  border-bottom-color: var(--accent-warm);
 }
 
 /* Footer */
@@ -743,26 +726,10 @@ p {
 .showcase-page__back:hover {
   color: var(--accent-warm);
 }
-.showcase-page__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  font-size: 12px;
-  color: var(--text-soft);
-  margin-bottom: 14px;
-}
 .showcase-page__summary {
   font-size: 18px;
   color: var(--text-mid);
   max-width: 65ch;
-}
-.showcase-page__disclosure {
-  margin-top: 12px;
-  padding: 12px 16px;
-  border: 1px dashed var(--border);
-  border-radius: 4px;
-  font-size: 13px;
-  color: var(--text-soft);
 }
 .showcase-page__block {
   margin-top: 40px;
@@ -771,21 +738,6 @@ p {
   font-size: 20px;
   border-bottom: 1px solid var(--border-soft);
   padding-bottom: 8px;
-}
-.showcase-page__placeholder {
-  background: var(--bg-card);
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  padding: 24px;
-  color: var(--text-soft);
-  font-size: 14px;
-}
-.showcase-page__iframe {
-  width: 100%;
-  height: 540px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
 }
 
 /* Status pill — Bonjour soft pill */
@@ -827,84 +779,6 @@ p {
 .status--deprecated {
   color: var(--warm);
   background: var(--warm-soft);
-}
-
-/* Engagement timeline */
-.timeline {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  border-left: 2px solid var(--border);
-}
-.timeline__item {
-  position: relative;
-  padding: 14px 0 14px 22px;
-  margin-left: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 12px;
-  color: var(--text-soft);
-}
-.timeline__item::before {
-  content: '';
-  position: absolute;
-  left: -7px;
-  top: 20px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--bg);
-  border: 2px solid var(--border);
-}
-.timeline__item--done {
-  color: var(--text);
-}
-.timeline__item--done::before {
-  background: var(--status-active);
-  border-color: var(--status-active);
-}
-.timeline__stage {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--accent-warm);
-  min-width: 80px;
-}
-.timeline__label {
-  flex: 1;
-  font-size: 14px;
-}
-.timeline__date {
-  font-size: 12px;
-  color: var(--text-soft);
-}
-
-/* Decisions list (reused on showcase page) */
-.decisions {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.decision {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-}
-.decision h3 {
-  margin: 0 0 6px;
-  font-size: 15px;
-  color: var(--text);
-}
-.decision p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--text-mid);
 }
 
 /* Intake page */
@@ -3084,224 +2958,6 @@ button:focus-visible,
   margin-top: 14px !important;
 }
 
-/* Lifecycle strip — draft → active → frozen */
-.lifecycle {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  margin: 24px 0 8px;
-  padding: 16px 18px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.lifecycle__node {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  padding: 4px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.lifecycle__node + .lifecycle__node::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 1px;
-  height: 70%;
-  transform: translateY(-50%);
-  background: var(--border-soft);
-}
-.lifecycle__dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0;
-}
-.lifecycle__node--past .lifecycle__dot {
-  background: var(--status-active);
-  border-color: var(--status-active);
-}
-.lifecycle__node--current .lifecycle__dot {
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(61, 110, 78, 0.2);
-}
-.lifecycle__node--target .lifecycle__dot {
-  background: var(--bg);
-  border-color: var(--accent);
-  border-style: dashed;
-}
-.lifecycle__label {
-  min-width: 0;
-}
-.lifecycle__stage {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-.lifecycle__node--past .lifecycle__stage {
-  color: var(--status-active);
-}
-.lifecycle__node--current .lifecycle__stage {
-  color: var(--accent-warm);
-}
-.lifecycle__node--target .lifecycle__stage,
-.lifecycle__node--future .lifecycle__stage {
-  color: var(--text-soft);
-}
-.lifecycle__date {
-  font-size: 11px;
-  color: var(--text-soft);
-  margin-top: 2px;
-}
-
-/* Revision log — collapsible */
-.rev-log {
-  margin-top: 8px;
-}
-.rev-log__toggle {
-  background: transparent;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-mid);
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 14px;
-  padding: 10px 14px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-.rev-log__toggle:hover {
-  background: var(--bg-hover);
-  color: var(--text);
-  border-color: var(--accent);
-}
-.rev-log__toggle-arrow {
-  color: var(--accent);
-  font-size: 10px;
-}
-.rev-log__list {
-  list-style: none;
-  padding: 0;
-  margin: 16px 0 0;
-  border-left: 2px solid var(--border);
-}
-.rev-log__entry {
-  padding: 14px 0 14px 18px;
-  margin-left: 6px;
-  border-bottom: 1px solid var(--border-soft);
-}
-.rev-log__entry:last-child {
-  border-bottom: none;
-}
-.rev-log__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-.rev-log__date {
-  font-size: 12px;
-  color: var(--accent);
-  font-weight: 600;
-}
-.rev-log__author {
-  font-size: 12px;
-  color: var(--text-soft);
-}
-.rev-log__fields {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.rev-log__pill {
-  display: inline-block;
-  padding: 1px 8px;
-  background: var(--bg);
-  border: 1px solid var(--border-soft);
-  border-radius: 999px;
-  font-size: 10px;
-  color: var(--text-soft);
-}
-.rev-log__reason {
-  margin: 0;
-  font-size: 14px;
-  color: var(--text-mid);
-}
-.rev-log__build-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  margin-top: 10px;
-}
-.rev-log__build-toggle {
-  background: var(--bg-active);
-  color: var(--accent-warm);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-sm);
-  padding: 6px 12px;
-  font-size: 12px;
-  font-family: var(--display);
-  font-weight: 600;
-  cursor: pointer;
-}
-.rev-log__build-toggle:hover {
-  background: var(--accent);
-  color: #fff;
-}
-.rev-log__commit {
-  font-size: 12px;
-  color: var(--text-soft);
-}
-.rev-log__commit:hover {
-  color: var(--accent-warm);
-}
-.rev-log__open-tab {
-  font-size: 12px;
-  font-family: var(--display);
-  font-weight: 600;
-  color: var(--accent-warm);
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  text-decoration: none;
-}
-.rev-log__open-tab:hover {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent-warm);
-  text-decoration: none;
-}
-.rev-log__build-frame {
-  margin-top: 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-card);
-  padding: 12px;
-}
-.rev-log__build-hint {
-  font-size: 11px;
-  color: var(--text-soft);
-  margin: 0 0 10px;
-}
-.rev-log__build-frame iframe {
-  width: 100%;
-  height: 600px;
-  border: none;
-  border-radius: 4px;
-  background: var(--bg);
-}
-
 /* Session advancements — admin posts iterative build/demo entries that
    the visitor can iframe-time-travel through. Visual language mirrors
    rev-log so feature-revisions and session-advancements feel like the
@@ -3631,6 +3287,41 @@ button:focus-visible,
   border-color: var(--accent);
   color: var(--accent-warm);
 }
+.project-card__head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+/* Tier badge — tiny mono pill alongside the status. Numeric (Tier 0/1/2/3)
+   matches the Pricing copy. The accent intensifies as tier rises so the eye
+   can scan the gallery without reading. */
+.project-card__tier {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  color: var(--text-mid);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.project-card__tier--t0 {
+  border-style: dashed;
+}
+.project-card__tier--t1 {
+  border-color: var(--border);
+  color: var(--text-mid);
+}
+.project-card__tier--t2 {
+  border-color: var(--accent);
+  color: var(--accent-warm);
+  background: var(--accent-soft, transparent);
+}
+.project-card__tier--t3 {
+  border-color: var(--accent-warm);
+  color: var(--accent-warm);
+  background: var(--accent-soft, transparent);
+  font-weight: 600;
+}
 .project-card__title {
   font-size: 22px;
   margin: 0 0 6px;
@@ -3763,14 +3454,6 @@ button:focus-visible,
   background: var(--accent-soft);
   border-color: var(--accent);
   font-weight: 600;
-}
-.showcase-list__empty {
-  padding: 32px;
-  text-align: center;
-  color: var(--text-soft);
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  font-size: 13px;
 }
 
 /* Next iterations — rendered from child features */

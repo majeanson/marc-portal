@@ -38,6 +38,9 @@ export interface SessionRow {
   showcase_title: string | null
   /** Admin-set short blurb on the public card. NULL = no tagline. */
   showcase_tagline: string | null
+  /** Tier classification (0/1/2/3) matching the public Pricing copy. NULL =
+   * not yet classified by admin. Used to badge the public gallery card. */
+  tier: number | null
 }
 
 export interface MessageRow {
@@ -101,7 +104,7 @@ export async function loadSession(db: D1Database, id: string): Promise<SessionRo
     .prepare(
       `SELECT id, email, intake_json, status, created_at, updated_at,
               deleted_at, status_history,
-              showcased_at, showcase_title, showcase_tagline
+              showcased_at, showcase_title, showcase_tagline, tier
        FROM sessions WHERE id = ?`,
     )
     .bind(id)

@@ -1,78 +1,66 @@
 import { useEffect, useState } from 'react'
-import { Header } from '../components/Header'
-import { Footer } from '../components/Footer'
-import { DICT, type Lang } from '../i18n'
+import type { Lang } from '../i18n'
+import { DICT } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 
-/**
- * Public projects gallery. Lists every session admin has opted into the
- * showcase (showcased_at IS NOT NULL). Each card shows the admin-set title +
- * tagline, the pinned current-build label, and a button to open the share
- * detail view at /share/<id>. No auth — the gallery is the front-facing
- * "what I've shipped" surface.
- */
-export function Projects({ lang }: { lang: Lang }) {
-  const t = DICT[lang].projects
-  const [projects, setProjects] = useState<PublicProject[] | null>(null)
-  const [error, setError] = useState(false)
-  const langPrefix = lang === 'en' ? '/en' : ''
+const FEATURED_LIMIT = 3
 
-  useEffect(() => {
-    document.title = `${t.heading} — Marc`
-  }, [t])
+export function FeaturedProjects({ lang }: { lang: Lang }) {
+  const t = DICT[lang].featured
+  const langPrefix = lang === 'en' ? '/en' : ''
+  const [projects, setProjects] = useState<PublicProject[] | null>(null)
+  const [errored, setErrored] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     listPublicProjects()
       .then((r) => {
         if (cancelled) return
-        setProjects(r.projects)
+        setProjects(r.projects.slice(0, FEATURED_LIMIT))
       })
       .catch(() => {
-        if (!cancelled) setError(true)
+        if (!cancelled) setErrored(true)
       })
     return () => {
       cancelled = true
     }
   }, [])
 
+  // Hide the section entirely on error or empty — the home page is a point of
+  // sale; an empty/broken "featured" strip undermines trust more than its
+  // absence does.
+  if (errored) return null
+  if (projects && projects.length === 0) return null
+
   return (
-    <div className="app">
-      <Header lang={lang} />
-      <main id="main-content">
-        <article className="section projects">
-          <div className="section__inner">
-            <div className="section__eyebrow">{t.eyebrow}</div>
-            <h1 className="projects__title">{t.heading}</h1>
-            <p className="projects__intro">{t.intro}</p>
+    <section className="section featured-projects" id="featured">
+      <div className="section__inner">
+        <div className="section__eyebrow">{t.eyebrow}</div>
+        <h2>{t.title}</h2>
+        <p className="featured-projects__sub">{t.sub}</p>
 
-            {error && (
-              <p className="thread__empty mono" role="alert">
-                {t.error}
-              </p>
-            )}
+        {projects === null ? (
+          <p className="mono featured-projects__loading">{t.loading}</p>
+        ) : (
+          <ul className="projects__grid featured-projects__grid">
+            {projects.map((p) => (
+              <FeaturedCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} />
+            ))}
+          </ul>
+        )}
 
-            {projects === null && !error ? (
-              <p className="mono">{t.loading}</p>
-            ) : projects && projects.length === 0 ? (
-              <p className="thread__empty">{t.empty}</p>
-            ) : (
-              <ul className="projects__grid">
-                {(projects ?? []).map((p) => (
-                  <ProjectCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} />
-                ))}
-              </ul>
-            )}
-          </div>
-        </article>
-      </main>
-      <Footer lang={lang} />
-    </div>
+        <div className="featured-projects__more">
+          <a className="featured-projects__see-all" href={`${langPrefix}/projects`}>
+            {t.seeAll}
+          </a>
+        </div>
+      </div>
+    </section>
   )
 }
 
-function ProjectCard({
+function FeaturedCard({
   project,
   lang,
   langPrefix,
@@ -81,7 +69,7 @@ function ProjectCard({
   lang: Lang
   langPrefix: string
 }) {
-  const t = DICT[lang].projects
+  const t = DICT[lang].featured
   const shareHref = `${langPrefix}/share/${project.id}`
   const buildHref = project.currentBuild?.buildUrl
     ? `${project.currentBuild.buildUrl}${project.currentBuild.iframePath ?? ''}`
@@ -89,7 +77,7 @@ function ProjectCard({
   const title = project.title || t.untitled
   return (
     <li className="project-card">
-      <a href={shareHref} className="project-card__link">
+      <a href={shareHref} className="project-card__link" aria-label={title}>
         <div className="project-card__head">
           <span className="project-card__date mono">{formatDate(project.showcasedAt, lang)}</span>
           <span className="project-card__head-right">
@@ -103,7 +91,7 @@ function ProjectCard({
             </span>
           </span>
         </div>
-        <h2 className="project-card__title">{title}</h2>
+        <h3 className="project-card__title">{title}</h3>
         {project.tagline && <p className="project-card__tagline">{project.tagline}</p>}
         {project.currentBuild ? (
           <div className="project-card__build">
@@ -115,7 +103,6 @@ function ProjectCard({
             <span className="mono project-card__build-eyebrow">{t.noBuildYet}</span>
           </div>
         )}
-        <div className="project-card__cta mono">{t.openCta}</div>
       </a>
       {buildHref && (
         <a

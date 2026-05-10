@@ -9,9 +9,8 @@ import { MagicLinkSent } from './pages/MagicLinkSent'
 import { MePortal } from './pages/MePortal'
 import { SessionPage } from './pages/SessionPage'
 
-// Cold-path pages — lazy. Cuts the initial bundle (showcase, demos, all admin
+// Cold-path pages — lazy. Cuts the initial bundle (demos, all admin
 // surfaces) at the cost of one network round-trip when first visited.
-const Showcase = lazy(() => import('./pages/Showcase').then((m) => ({ default: m.Showcase })))
 const SndDemo = lazy(() => import('./pages/SndDemo').then((m) => ({ default: m.SndDemo })))
 const Engagement = lazy(() => import('./pages/Engagement').then((m) => ({ default: m.Engagement })))
 const Tier0 = lazy(() => import('./pages/Tier0').then((m) => ({ default: m.Tier0 })))
@@ -95,22 +94,6 @@ export function App() {
         element={
           <L>
             <Privacy lang="en" />
-          </L>
-        }
-      />
-      <Route
-        path="/showcase/:slug"
-        element={
-          <L>
-            <Showcase lang="fr" />
-          </L>
-        }
-      />
-      <Route
-        path="/en/showcase/:slug"
-        element={
-          <L>
-            <Showcase lang="en" />
           </L>
         }
       />

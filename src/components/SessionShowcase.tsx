@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { DICT, type Lang } from '../i18n'
-import { patchSession, type SessionRow } from '../lib/sessionsApi'
+import { patchSession, type SessionRow, type SessionTier } from '../lib/sessionsApi'
 
 /**
  * Admin-only "Showcase as project" panel. Toggles whether this session
@@ -27,6 +27,7 @@ export function SessionShowcase({
   const [enabled, setEnabled] = useState(session.showcased_at !== null)
   const [title, setTitle] = useState(session.showcase_title ?? '')
   const [tagline, setTagline] = useState(session.showcase_tagline ?? '')
+  const [tier, setTier] = useState<SessionTier | null>(session.tier ?? null)
   const [saving, setSaving] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
   const [error, setError] = useState(false)
@@ -34,7 +35,8 @@ export function SessionShowcase({
   const dirty =
     enabled !== (session.showcased_at !== null) ||
     title.trim() !== (session.showcase_title ?? '') ||
-    tagline.trim() !== (session.showcase_tagline ?? '')
+    tagline.trim() !== (session.showcase_tagline ?? '') ||
+    tier !== (session.tier ?? null)
 
   const onSave = async () => {
     if (saving || !dirty) return
@@ -48,6 +50,7 @@ export function SessionShowcase({
           title: title.trim() || null,
           tagline: tagline.trim() || null,
         },
+        tier,
       })
       onPatched(r.session)
       setSavedFlash(true)
@@ -91,6 +94,25 @@ export function SessionShowcase({
           rows={2}
           maxLength={500}
         />
+      </label>
+
+      <label className="field">
+        <span className="field__label">{t.tierLabel}</span>
+        <span className="field__hint">{t.tierHint}</span>
+        <select
+          className="field__input"
+          value={tier === null ? '' : String(tier)}
+          onChange={(e) => {
+            const v = e.target.value
+            setTier(v === '' ? null : (Number(v) as SessionTier))
+          }}
+        >
+          <option value="">{t.tierOptionNone}</option>
+          <option value="0">{t.tierOption0}</option>
+          <option value="1">{t.tierOption1}</option>
+          <option value="2">{t.tierOption2}</option>
+          <option value="3">{t.tierOption3}</option>
+        </select>
       </label>
 
       <div className="session-showcase__actions">

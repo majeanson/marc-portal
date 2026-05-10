@@ -50,11 +50,6 @@ export function Engagement({ lang }: { lang: Lang }) {
 
   const title = engagement.title[lang] ?? engagement.title.fr
   const problem = engagement.problem[lang] ?? engagement.problem.fr
-  const showcaseHref = engagement.relatedShowcaseSlug
-    ? lang === 'fr'
-      ? `/showcase/${engagement.relatedShowcaseSlug}`
-      : `/en/showcase/${engagement.relatedShowcaseSlug}`
-    : null
 
   return (
     <div className="app">
@@ -92,14 +87,6 @@ export function Engagement({ lang }: { lang: Lang }) {
               <EngagementThread lang={lang} messages={engagement.messages} />
             </section>
 
-            {showcaseHref && (
-              <section className="showcase-page__block">
-                <h2>{t.engagement.relatedShowcase}</h2>
-                <a className="hero__cta" href={showcaseHref}>
-                  {t.engagement.viewShowcase} →
-                </a>
-              </section>
-            )}
           </div>
         </article>
       </main>

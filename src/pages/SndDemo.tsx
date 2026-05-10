@@ -3,20 +3,14 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { VOICE_CLIPS, parseTranscript, buildInvoice } from '../lib/sndParser'
 import type { ParseResult } from '../lib/sndParser'
-import { getShowcaseBySlug } from '../lib/showcases'
-import { StatusHistoryStrip } from '../components/StatusHistoryStrip'
-import { RevisionLog } from '../components/RevisionLog'
-
-const SND_SLUG = 'sunday-night-dread'
-const REPO_URL = 'https://github.com/majeanson/marc-portal'
 
 /**
  * Sunday Night Dread — interactive static demo. Iframe-friendly (no Header/Footer)
- * so it embeds cleanly into the showcase page. 3 voice clip fixtures, real parser
- * (regex + bilingual lexicon), real invoice math (labor rate, GST, QST).
+ * so it embeds cleanly. 3 voice clip fixtures, real parser (regex + bilingual
+ * lexicon), real invoice math (labor rate, GST, QST).
  *
  * `embedded` mode: skip the page-level meta side effects (document.title etc.)
- * so the homepage embedding doesn't clobber the home title.
+ * so an embedding host doesn't clobber its own title.
  */
 export function SndDemo({ lang, embedded = false }: { lang: Lang; embedded?: boolean }) {
   const dict = DICT[lang]
@@ -24,10 +18,6 @@ export function SndDemo({ lang, embedded = false }: { lang: Lang; embedded?: boo
   const [played, setPlayed] = useState<Set<string>>(new Set())
   const [showInvoice, setShowInvoice] = useState(false)
   const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({})
-  // The feature.json behind this demo is the source of truth for its own
-  // lifecycle + revision log. Pulling it in lets the demo show its own
-  // build provenance alongside the interactive flow.
-  const sndEntry = getShowcaseBySlug(SND_SLUG)
 
   useEffect(() => {
     if (embedded) return
@@ -87,13 +77,6 @@ export function SndDemo({ lang, embedded = false }: { lang: Lang; embedded?: boo
         <div className="section__eyebrow">{t.eyebrow}</div>
         <h1 className="snd-demo__title">{t.title}</h1>
         <p className="snd-demo__intro">{t.intro}</p>
-        {sndEntry && (
-          <StatusHistoryStrip
-            feature={sndEntry.feature}
-            lang={lang}
-            targetShipDate={sndEntry.showcase.targetShipDate}
-          />
-        )}
       </header>
 
       <section className="snd-demo__panel">
@@ -249,19 +232,6 @@ export function SndDemo({ lang, embedded = false }: { lang: Lang; embedded?: boo
               ))}
             </div>
           )}
-        </section>
-      )}
-
-      {sndEntry && (
-        <section className="snd-demo__panel snd-demo__buildlog">
-          <h2 className="snd-demo__h">{t.buildLogTitle}</h2>
-          <p className="snd-demo__hint">{t.buildLogHint}</p>
-          <RevisionLog
-            feature={sndEntry.feature}
-            lang={lang}
-            iframePath={lang === 'en' ? '/en/demo/sunday-night-dread' : '/demo/sunday-night-dread'}
-            repoUrl={REPO_URL}
-          />
         </section>
       )}
 

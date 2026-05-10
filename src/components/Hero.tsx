@@ -12,14 +12,14 @@ const FACTS: Record<Lang, string[]> = {
 
 const ANCHORS: Record<Lang, Array<[string, string]>> = {
   fr: [
-    ['#demo', 'Démo'],
+    ['#featured', 'Projets'],
     ['#how', 'Comment ça marche'],
     ['#pricing', 'Prix'],
     ['#vibe', 'On fait / on fait pas'],
     ['#about', 'À propos'],
   ],
   en: [
-    ['#demo', 'Demo'],
+    ['#featured', 'Projects'],
     ['#how', 'How it works'],
     ['#pricing', 'Pricing'],
     ['#vibe', 'We do / we don’t'],

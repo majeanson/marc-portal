@@ -15,6 +15,10 @@ export interface StatusHistoryEntry {
   at: number
 }
 
+/** Tier classification (0/1/2/3) matching the public Pricing copy. NULL =
+ * not yet classified by admin. */
+export type SessionTier = 0 | 1 | 2 | 3
+
 export interface SessionRow {
   id: string
   email: string
@@ -27,6 +31,7 @@ export interface SessionRow {
   showcased_at: number | null
   showcase_title: string | null
   showcase_tagline: string | null
+  tier: SessionTier | null
 }
 
 export interface AttachmentRow {
@@ -81,6 +86,8 @@ export function patchSession(
     /** Optimistic concurrency: server returns 409 if updated_at differs. */
     ifUpdatedAt?: number
     showcase?: ShowcasePatch
+    /** Admin-only tier classification. Pass null to clear. */
+    tier?: SessionTier | null
   },
 ): Promise<{ session: SessionRow }> {
   return api(`/api/sessions/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch })
@@ -173,6 +180,7 @@ export interface PublicProject {
   title: string | null
   tagline: string | null
   status: string
+  tier: SessionTier | null
   currentBuild: {
     label: string
     body: string

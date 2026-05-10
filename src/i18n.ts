@@ -63,26 +63,17 @@ const FR = {
     ],
   },
 
-  demo: {
-    eyebrow: 'démo principale',
-    title: 'À quoi ça ressemble',
-    sub: 'Sunday Night Dread — voix → brouillon de facture, pour les gens de métier.',
-    body: 'Pendant la semaine, le plombier dicte des notes vocales dans son truck — matériaux, heures, clients. Le dimanche matin, un brouillon de facture l’attend dans son inbox. Plus de paperasse à 22 h le dimanche soir.',
-    cta: 'Tester la démo →',
-    disclosure:
-      'Voix client composite — bâtie à partir de vraies conversations avec 3 gens de métier. Le code et l’app sont vrais et déployés.',
-    tag: 'Tier 2 · ≈ 1 500 $ · livré en 3 semaines',
-  },
-
-  showcases: {
-    eyebrow: 'projets livrés',
-    title: 'Ce qui a été livré',
-    body: 'Chaque projet livré devient une page publique. Tu vois le tier, le prix, et les vraies heures. Le mur grandit chaque mois.',
+  featured: {
+    eyebrow: 'projets en cours',
+    title: 'Ce que je livre, en vrai',
+    sub: 'Chaque carte est un projet vivant — vrai code, vrais clients, dernier build accessible.',
     seeAll: 'Voir tous les projets →',
-    filterTier: 'tier',
-    filterStatus: 'statut',
-    filterAll: 'tous',
-    empty: 'Aucun projet ne correspond à ces filtres.',
+    loading: 'Chargement…',
+    openBuild: 'Ouvrir le build ↗',
+    untitled: 'Projet sans titre',
+    currentBuildLabel: 'Build actuel',
+    noBuildYet: 'Pas encore de build épinglé',
+    tierPrefix: 'Tier',
   },
 
   vibe: {
@@ -134,7 +125,7 @@ const FR = {
         name: 'Tier 2',
         price: '≈ 1 500 $',
         scope:
-          'Projet de 1 à 3 semaines. Outil interne qui dure. La démo Sunday Night Dread est ici.',
+          'Projet de 1 à 3 semaines. Outil interne qui dure. Voir des projets de cette taille en cours.',
         after: '1 ronde de retouches incluse',
         anchor: true,
       },
@@ -175,56 +166,6 @@ const FR = {
     copyright: '© Marc 2026',
   },
 
-  showcase: {
-    backToWall: '← Retour aux projets',
-    statusDraft: 'Brouillon — projet en construction',
-    statusActive: 'En cours — démo testable bientôt',
-    statusFrozen: 'Livré',
-    statusDeprecated: 'Archivé',
-    targetShip: 'Livraison cible',
-    shippedOn: 'Livré le',
-    livePreviewTitle: 'Démo en direct',
-    livePreviewPending: 'L’app n’est pas encore déployée. Cible : {date}. La démo apparaîtra ici.',
-    livePreviewIframeTitle: 'Démo de cette page de projet',
-    timelineTitle: 'Le déroulement de l’engagement',
-    timelinePending: 'À venir',
-    decisionsTitle: 'Décisions prises en cours de route',
-    sourceTitle: 'Source',
-    sourcePending: 'Source publiée à la livraison',
-    nextIterTitle: 'Prochaines itérations (hors scope du MVP)',
-    composite: 'Voix client composite',
-    notFoundTitle: 'Projet introuvable',
-    notFoundBody:
-      'Cette adresse ne correspond à aucun projet. Le projet a peut-être été retiré, ou le lien est incorrect.',
-    stageLabels: {
-      intake: 'Intake',
-      triage: 'Triage',
-      plan: 'Plan',
-      build: 'Construction',
-      review: 'Revue',
-      shipped: 'Livré',
-    },
-    lifecycle: {
-      label: 'Cycle de vie de la fonctionnalité',
-      today: 'aujourd’hui',
-      stages: {
-        draft: 'Brouillon',
-        active: 'Actif',
-        frozen: 'Figé',
-      },
-    },
-    revisionLog: {
-      title: 'Historique des révisions',
-      summary: 'Voir les {n} révisions de cette fonctionnalité',
-      viewBuild: 'Aperçu inline →',
-      hideBuild: 'Cacher l’aperçu',
-      openInNewTab: 'Ouvrir dans un onglet ↗',
-      buildHint:
-        'Aperçu réel du déploiement à cette révision (Cloudflare Pages). Si l’aperçu reste vide, ce build est trop vieux — ouvre-le dans un onglet.',
-      commitLabel: 'commit',
-    },
-  },
-
   engagement: {
     statusBarLabel: "Étape de l'engagement",
     demoNotice: 'EXEMPLE — engagement en cours',
@@ -255,8 +196,6 @@ const FR = {
         system: 'système',
       },
     },
-    relatedShowcase: 'Page publique de ce projet',
-    viewShowcase: 'Voir la page publique',
     notFound: {
       title: 'Engagement introuvable',
       body: "Cette URL ne correspond à aucun engagement public. Si tu es un client, vérifie ton lien — sinon, retour à l'accueil.",
@@ -311,9 +250,6 @@ const FR = {
     subtotal: 'Sous-total',
     total: 'Total',
     invoiceSign: '— Brouillon généré · à réviser et envoyer manuellement.',
-    buildLogTitle: 'Journal de construction',
-    buildLogHint:
-      'Cette démo est documentée comme une fonctionnalité réelle — chaque révision est inscrite ici, lisible, datée.',
     disclaimer:
       'Démo statique avec voix-clients composites. Le code et le parser sont vrais. Aucune donnée réelle, aucun email envoyé.',
   },
@@ -464,6 +400,7 @@ const FR = {
     noBuildYet: 'Pas encore de build épinglé',
     openCta: 'Voir les avancées →',
     openBuild: 'Ouvrir le build ↗',
+    tierPrefix: 'Tier',
   },
 
   showcaseAdmin: {
@@ -475,6 +412,13 @@ const FR = {
     titlePlaceholder: 'Truck Notes — voix → facture',
     taglineLabel: 'Sous-titre court (optionnel)',
     taglinePlaceholder: 'Notes vocales du truck → brouillon de facture le dimanche.',
+    tierLabel: 'Tier',
+    tierHint: 'Calibre la session par rapport à la grille de prix publique.',
+    tierOptionNone: 'Non classé',
+    tierOption0: 'Tier 0 · auto-service',
+    tierOption1: 'Tier 1 · ≈ 300 $',
+    tierOption2: 'Tier 2 · ≈ 1 500 $',
+    tierOption3: 'Tier 3 · ≈ 3 000 $+',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
     saveError: 'Échec — réessaie.',
@@ -544,26 +488,17 @@ const EN: Copy = {
     ],
   },
 
-  demo: {
-    eyebrow: 'main demo',
-    title: "Here's what it looks like",
-    sub: 'Sunday Night Dread — voice → draft invoice, for tradespeople.',
-    body: 'During the week, the plumber dictates voice notes from the truck — materials, hours, clients. Sunday morning, a draft invoice is waiting in the inbox. No more 10pm Sunday paperwork.',
-    cta: 'Try the demo →',
-    disclosure:
-      'Composite client voice — built from real conversations with 3 tradespeople. The code and the app are real and deployed.',
-    tag: 'Tier 2 · ≈ $1500 · shipped in 3 weeks',
-  },
-
-  showcases: {
-    eyebrow: 'shipped projects',
-    title: "What's been shipped",
-    body: 'Every shipped project becomes a public page. You see the tier, the price, the actual hours. The wall grows every month.',
+  featured: {
+    eyebrow: 'in flight',
+    title: 'What I’m actually shipping',
+    sub: 'Each card is a living project — real code, real clients, latest build open for inspection.',
     seeAll: 'See all projects →',
-    filterTier: 'tier',
-    filterStatus: 'status',
-    filterAll: 'all',
-    empty: 'No projects match these filters.',
+    loading: 'Loading…',
+    openBuild: 'Open the build ↗',
+    untitled: 'Untitled project',
+    currentBuildLabel: 'Current build',
+    noBuildYet: 'No pinned build yet',
+    tierPrefix: 'Tier',
   },
 
   vibe: {
@@ -613,7 +548,8 @@ const EN: Copy = {
       {
         name: 'Tier 2',
         price: '≈ $1500',
-        scope: 'A 1-to-3-week project. An internal tool that lasts. Sunday Night Dread sits here.',
+        scope:
+          'A 1-to-3-week project. An internal tool that lasts. See projects of this size in flight.',
         after: '1 round of tweaks included',
         anchor: true,
       },
@@ -653,56 +589,6 @@ const EN: Copy = {
     copyright: '© Marc 2026',
   },
 
-  showcase: {
-    backToWall: '← Back to projects',
-    statusDraft: 'Draft — work in progress',
-    statusActive: 'In progress — testable demo soon',
-    statusFrozen: 'Shipped',
-    statusDeprecated: 'Archived',
-    targetShip: 'Target ship',
-    shippedOn: 'Shipped on',
-    livePreviewTitle: 'Live demo',
-    livePreviewPending: "The app isn't deployed yet. Target: {date}. The demo will appear here.",
-    livePreviewIframeTitle: 'Live demo for this project page',
-    timelineTitle: 'How the engagement went',
-    timelinePending: 'Upcoming',
-    decisionsTitle: 'Decisions made along the way',
-    sourceTitle: 'Source',
-    sourcePending: 'Source published at ship',
-    nextIterTitle: 'Next iterations (out of MVP scope)',
-    composite: 'Composite client voice',
-    notFoundTitle: 'Project not found',
-    notFoundBody:
-      "This URL doesn't match any project. It may have been removed, or the link is incorrect.",
-    stageLabels: {
-      intake: 'Intake',
-      triage: 'Triage',
-      plan: 'Plan',
-      build: 'Build',
-      review: 'Review',
-      shipped: 'Shipped',
-    },
-    lifecycle: {
-      label: 'Feature lifecycle',
-      today: 'today',
-      stages: {
-        draft: 'Draft',
-        active: 'Active',
-        frozen: 'Frozen',
-      },
-    },
-    revisionLog: {
-      title: 'Revision history',
-      summary: 'See {n} revisions of this feature',
-      viewBuild: 'Preview inline →',
-      hideBuild: 'Hide preview',
-      openInNewTab: 'Open in new tab ↗',
-      buildHint:
-        'Live preview of the deployment as it shipped at this revision (Cloudflare Pages). If the preview stays blank, this build is too old — open it in a new tab instead.',
-      commitLabel: 'commit',
-    },
-  },
-
   engagement: {
     statusBarLabel: 'Engagement stage',
     demoNotice: 'EXAMPLE — engagement in progress',
@@ -733,8 +619,6 @@ const EN: Copy = {
         system: 'system',
       },
     },
-    relatedShowcase: 'Public page for this project',
-    viewShowcase: 'View public page',
     notFound: {
       title: 'Engagement not found',
       body: "This URL doesn't match any public engagement. If you're a client, check your link — otherwise, back to home.",
@@ -789,9 +673,6 @@ const EN: Copy = {
     subtotal: 'Subtotal',
     total: 'Total',
     invoiceSign: '— Draft generated · review and send manually.',
-    buildLogTitle: 'Build log',
-    buildLogHint:
-      'This demo is documented like a real feature — every revision is recorded here, readable, dated.',
     disclaimer:
       'Static demo with composite client voices. The code and parser are real. No real data, no email sent.',
   },
@@ -940,6 +821,7 @@ const EN: Copy = {
     noBuildYet: 'No pinned build yet',
     openCta: 'See the advancements →',
     openBuild: 'Open the build ↗',
+    tierPrefix: 'Tier',
   },
 
   showcaseAdmin: {
@@ -951,6 +833,13 @@ const EN: Copy = {
     titlePlaceholder: 'Truck Notes — voice → invoice',
     taglineLabel: 'Short tagline (optional)',
     taglinePlaceholder: 'Truck voice notes → draft invoice by Sunday morning.',
+    tierLabel: 'Tier',
+    tierHint: 'Position the session against the public pricing tiers.',
+    tierOptionNone: 'Unclassified',
+    tierOption0: 'Tier 0 · self-serve',
+    tierOption1: 'Tier 1 · ≈ $300',
+    tierOption2: 'Tier 2 · ≈ $1500',
+    tierOption3: 'Tier 3 · ≈ $3000+',
     save: 'Save',
     saving: 'Saving…',
     saveError: 'Failed — try again.',

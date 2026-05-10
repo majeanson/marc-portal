@@ -9,27 +9,43 @@
     <lastmod>2026-05-10</lastmod>
   </url>
   <url>
-    <loc>https://marc.example/showcase/sunday-night-dread</loc>
-    <lastmod>2026-05-07</lastmod>
+    <loc>https://marc.example/projects</loc>
+    <lastmod>2026-05-10</lastmod>
   </url>
   <url>
-    <loc>https://marc.example/en/showcase/sunday-night-dread</loc>
-    <lastmod>2026-05-07</lastmod>
+    <loc>https://marc.example/en/projects</loc>
+    <lastmod>2026-05-10</lastmod>
   </url>
   <url>
-    <loc>https://marc.example/showcase/cote-electricite-quote-builder</loc>
-    <lastmod>2026-03-15</lastmod>
+    <loc>https://marc.example/intake</loc>
+    <lastmod>2026-05-10</lastmod>
   </url>
   <url>
-    <loc>https://marc.example/en/showcase/cote-electricite-quote-builder</loc>
-    <lastmod>2026-03-15</lastmod>
+    <loc>https://marc.example/en/intake</loc>
+    <lastmod>2026-05-10</lastmod>
   </url>
   <url>
-    <loc>https://marc.example/showcase/tremblay-paysagement-suivi-clients</loc>
-    <lastmod>2026-05-12</lastmod>
+    <loc>https://marc.example/tier-0</loc>
+    <lastmod>2026-05-10</lastmod>
   </url>
   <url>
-    <loc>https://marc.example/en/showcase/tremblay-paysagement-suivi-clients</loc>
-    <lastmod>2026-05-12</lastmod>
+    <loc>https://marc.example/en/tier-0</loc>
+    <lastmod>2026-05-10</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/demo/sunday-night-dread</loc>
+    <lastmod>2026-05-10</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/en/demo/sunday-night-dread</loc>
+    <lastmod>2026-05-10</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/confidentialite</loc>
+    <lastmod>2026-05-10</lastmod>
+  </url>
+  <url>
+    <loc>https://marc.example/en/privacy</loc>
+    <lastmod>2026-05-10</lastmod>
   </url>
 </urlset>

@@ -4,11 +4,11 @@ import { DICT } from '../i18n'
 export function Pricing({ lang }: { lang: Lang }) {
   const t = DICT[lang].pricing
   const tier0Href = lang === 'fr' ? '/tier-0' : '/en/tier-0'
-  // The "anchor" tier card is the price-anchor — Tier 2 in the lineup. Linking
-  // it to the SND demo turns the price tag into a proof-of-concept; visitors
-  // who care about the number get to see the work behind it.
-  const anchorHref =
-    lang === 'fr' ? '/showcase/sunday-night-dread' : '/en/showcase/sunday-night-dread'
+  // The "anchor" tier card is the price-anchor — Tier 2 in the lineup. It
+  // links to the live /projects gallery; visitors who care about the price
+  // see actual Tier 2 work being shipped (badged on each card) instead of a
+  // single curated demo.
+  const anchorHref = lang === 'fr' ? '/projects' : '/en/projects'
   return (
     <section className="section section--alt" id="pricing">
       <div className="section__inner">
