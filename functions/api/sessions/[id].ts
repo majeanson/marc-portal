@@ -199,7 +199,10 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   // Tier — admin-only. Accepts 0/1/2/3 or null to clear. Anything else 400s.
   if (body.tier !== undefined) {
     if (!admin) return forbidden('only admin can set tier')
-    if (body.tier !== null && (typeof body.tier !== 'number' || ![0, 1, 2, 3].includes(body.tier))) {
+    if (
+      body.tier !== null &&
+      (typeof body.tier !== 'number' || ![0, 1, 2, 3].includes(body.tier))
+    ) {
       return badRequest('tier must be 0, 1, 2, 3, or null')
     }
     await env.DB.prepare(`UPDATE sessions SET tier = ?, updated_at = ? WHERE id = ?`)

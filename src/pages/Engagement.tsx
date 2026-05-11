@@ -86,7 +86,6 @@ export function Engagement({ lang }: { lang: Lang }) {
               <p>{t.engagement.thread.body}</p>
               <EngagementThread lang={lang} messages={engagement.messages} />
             </section>
-
           </div>
         </article>
       </main>
