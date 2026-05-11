@@ -3,6 +3,10 @@
 // (DB-backed, no build-time enumeration), so this script no longer scans
 // feat-*/feature.json files. /projects renders client-side from D1; search
 // engines can still discover individual /share/<id> URLs via outbound links.
+//
+// No <lastmod>: every route shared the same "today" stamp, which made the
+// committed sitemap mutate daily and tripped CI's `git diff --quiet` check.
+// <lastmod> is a hint, not required; crawlers fall back to their own cadence.
 
 import { writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
@@ -12,26 +16,23 @@ const __filename = fileURLToPath(import.meta.url)
 const portalRoot = dirname(dirname(__filename))
 const baseUrl = process.env.PORTAL_BASE_URL ?? 'https://marc.example'
 
-function urlEntry(loc, lastmod) {
-  const lm = lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ''
-  return `  <url>\n    <loc>${baseUrl}${loc}</loc>${lm}\n  </url>`
+function urlEntry(loc) {
+  return `  <url>\n    <loc>${baseUrl}${loc}</loc>\n  </url>`
 }
 
-const today = new Date().toISOString().slice(0, 10)
-
 const urls = [
-  urlEntry('/', today),
-  urlEntry('/en', today),
-  urlEntry('/projects', today),
-  urlEntry('/en/projects', today),
-  urlEntry('/intake', today),
-  urlEntry('/en/intake', today),
-  urlEntry('/tier-0', today),
-  urlEntry('/en/tier-0', today),
-  urlEntry('/demo/sunday-night-dread', today),
-  urlEntry('/en/demo/sunday-night-dread', today),
-  urlEntry('/confidentialite', today),
-  urlEntry('/en/privacy', today),
+  urlEntry('/'),
+  urlEntry('/en'),
+  urlEntry('/projects'),
+  urlEntry('/en/projects'),
+  urlEntry('/intake'),
+  urlEntry('/en/intake'),
+  urlEntry('/tier-0'),
+  urlEntry('/en/tier-0'),
+  urlEntry('/demo/sunday-night-dread'),
+  urlEntry('/en/demo/sunday-night-dread'),
+  urlEntry('/confidentialite'),
+  urlEntry('/en/privacy'),
 ]
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

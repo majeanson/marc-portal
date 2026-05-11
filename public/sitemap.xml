@@ -2,50 +2,38 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://marc.example/</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/en</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/projects</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/en/projects</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/intake</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/en/intake</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/tier-0</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/en/tier-0</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/demo/sunday-night-dread</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/en/demo/sunday-night-dread</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/confidentialite</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
   <url>
     <loc>https://marc.example/en/privacy</loc>
-    <lastmod>2026-05-11</lastmod>
   </url>
 </urlset>
