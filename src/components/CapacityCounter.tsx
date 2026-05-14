@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Lang } from '../i18n'
 import { nextDepartureText } from '../lib/capacity'
 import { formatRelativeWindow } from '../lib/format'
@@ -54,8 +54,10 @@ function pickLatestShipment(projects: PublicProject[], lang: Lang): LatestShipme
 export function CapacityCounter({ lang }: { lang: Lang }) {
   const [active, setActive] = useState<number | null>(null)
   const [triage, setTriage] = useState<number | null>(null)
-  const [shipment, setShipment] = useState<LatestShipment | null>(null)
+  const [projects, setProjects] = useState<PublicProject[]>([])
   const labels = CAPACITY_LABELS[lang]
+  // Derived so the shipment line re-localizes when lang flips without refetching.
+  const shipment = useMemo(() => pickLatestShipment(projects, lang), [projects, lang])
 
   useEffect(() => {
     let cancelled = false
@@ -71,7 +73,7 @@ export function CapacityCounter({ lang }: { lang: Lang }) {
     listPublicProjects()
       .then((r) => {
         if (cancelled) return
-        setShipment(pickLatestShipment(r.projects, lang))
+        setProjects(r.projects)
       })
       .catch(() => {
         // Silent — the capacity row still renders without the shipment line.

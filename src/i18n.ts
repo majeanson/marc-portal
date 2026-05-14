@@ -23,12 +23,12 @@ const FR = {
 
   hero: {
     eyebrow: 'side-pratique · Québec · async',
-    salut: 'Salut, c’est Marc, dev à Québec.',
+    salut: 'Marc-Antoine, là pour résoudre des problèmes important pour ma communité',
     body1:
-      'Job de jour la semaine. Le soir et la fin de semaine, j’aide les gens à régler des problèmes du quotidien. En async (pas de calls, pas de meetings) — à ton rythme et au mien.',
+      'Comme side-gig, j’aide les gens à régler des problèmes du quotidien. En asynchrone/différé (pas de calls, pas de meetings), à travers mon portail, à ton rythme et au mien.',
     body2:
-      'Tu as un problème qui revient toujours — paperasse, suivi, coordination? Décris-le-moi via le portail.',
-    body3: 'Compte gratuit. Tu testes la démo à chaque étape. Premier brouillon en quelques jours.',
+      'Tu as un problème qui revient toujours, paperasse, suivi, coordination? Ton problème n\'est pas un enjeu national, mais tout de même irritant ? Décris-le-moi via le portail.',
+    body3: 'Compte gratuit. Tu tests, vois la démo à chaque étape. Premier brouillon en quelques jours.',
     cta: 'Crée ton compte gratuit →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle proposition →',
