@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams, useViewTransitionState } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { MobileStickyCta } from '../components/MobileStickyCta'
 import { ProjectCardPreview } from '../components/ProjectCardPreview'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
@@ -133,6 +134,10 @@ export function Projects({ lang }: { lang: Lang }) {
         </article>
       </main>
       <Footer lang={lang} />
+      {/* Gallery has no hero, so a smaller scroll threshold makes the pill
+          appear right after the first card. `.site-footer` is the hide-near
+          sentinel (no `#cta` section on this page). */}
+      <MobileStickyCta lang={lang} appearAfterRatio={0.3} />
     </div>
   )
 }

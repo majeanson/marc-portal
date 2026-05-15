@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-type State = 'idle' | 'loading' | 'loaded' | 'errored'
+type Outcome = 'loaded' | 'errored' | null
 
 // Hard timeout: if the iframe never fires `load` (slow build, CSP block,
 // 504, hung deploy), we surrender after this and show the gradient
@@ -10,16 +10,22 @@ const LOAD_TIMEOUT_MS = 5000
 /**
  * Tiny live thumbnail of a deployed build, rendered inside a project card.
  *
- * Mounting flow:
- * - `idle` while the card is off-screen (IntersectionObserver gate).
- * - On intersect → `loading` (iframe mounted, shimmer overlay visible).
- * - `onLoad` → `loaded` (shimmer fades).
- * - `onError` or 5s timeout → `errored` (iframe hidden, gradient placeholder
- *   takes the slot so the card height stays stable).
+ * State machine — driven by two values:
+ * - `visible`: IntersectionObserver gate. Stays false until the card is
+ *   ~200px from the viewport, then flips true once and never back.
+ * - `outcome`: null while loading, then `loaded` (onLoad) or `errored`
+ *   (onError, or 5s without onLoad). Once set, sticky.
+ *
+ * Rendering follows directly:
+ * - !visible → empty box (skeleton shimmer optional, but the IO gate keeps
+ *   us off-screen so it's not visible anyway).
+ * - visible && outcome === null → iframe in DOM (loading), shimmer overlay.
+ * - visible && outcome === 'loaded' → iframe fades in, shimmer gone.
+ * - visible && outcome === 'errored' → iframe unmounted, gradient fallback.
  *
  * The iframe renders at its natural desktop width (1280×800) and is scaled
- * down via CSS transform. That's deliberate: we want the card to *look* like
- * the deployed app, not a mobile-narrow rendering of it.
+ * down via CSS transform. That's deliberate: we want the card to *look*
+ * like the deployed app, not a mobile-narrow rendering of it.
  */
 export function ProjectCardPreview({
   buildHref,
@@ -33,7 +39,7 @@ export function ProjectCardPreview({
   // iframe right away — they're old enough that "perf" isn't the priority.
   const hasIO = typeof IntersectionObserver !== 'undefined'
   const [visible, setVisible] = useState(!hasIO)
-  const [state, setState] = useState<State>('idle')
+  const [outcome, setOutcome] = useState<Outcome>(null)
 
   useEffect(() => {
     if (!buildHref || !hasIO) return
@@ -55,14 +61,13 @@ export function ProjectCardPreview({
     return () => io.disconnect()
   }, [buildHref, hasIO])
 
-  // Once the iframe is in the DOM, flip to `loading` and arm the timeout.
+  // Once the iframe is in the DOM, arm a timeout. If `onLoad` doesn't fire
+  // within 5s, we declare it errored. onLoad / onError clear the timeout
+  // by setting outcome, which short-circuits the setter inside.
   useEffect(() => {
     if (!visible || !buildHref) return
-    setState('loading')
     const tid = window.setTimeout(() => {
-      // Only stamp errored if we're still loading — onLoad already moved
-      // us to loaded; we don't want to clobber a slow-but-eventual success.
-      setState((s) => (s === 'loading' ? 'errored' : s))
+      setOutcome((prev) => (prev === null ? 'errored' : prev))
     }, LOAD_TIMEOUT_MS)
     return () => window.clearTimeout(tid)
   }, [visible, buildHref])
@@ -71,31 +76,31 @@ export function ProjectCardPreview({
     return <div className="project-card__preview project-card__preview--empty" aria-hidden="true" />
   }
 
-  const showFrame = visible && state !== 'errored'
+  const isLoading = visible && outcome === null
+  const isLoaded = outcome === 'loaded'
+  const isErrored = outcome === 'errored'
+  const state = isErrored ? 'errored' : isLoaded ? 'loaded' : isLoading ? 'loading' : 'idle'
+
   return (
     <div
       ref={ref}
       className={`project-card__preview project-card__preview--${state}`}
       aria-hidden="true"
     >
-      {showFrame && (
+      {visible && !isErrored && (
         <iframe
-          className={`project-card__preview-frame${state === 'loaded' ? ' is-loaded' : ''}`}
+          className={`project-card__preview-frame${isLoaded ? ' is-loaded' : ''}`}
           src={buildHref}
           title={`${title} — aperçu`}
           loading="lazy"
           sandbox="allow-scripts allow-same-origin"
           tabIndex={-1}
-          onLoad={() => setState('loaded')}
-          onError={() => setState('errored')}
+          onLoad={() => setOutcome('loaded')}
+          onError={() => setOutcome('errored')}
         />
       )}
-      {(state === 'loading' || !visible) && (
-        <div className="project-card__preview-skeleton" aria-hidden="true" />
-      )}
-      {state === 'errored' && (
-        <div className="project-card__preview-fallback" aria-hidden="true" />
-      )}
+      {isLoading && <div className="project-card__preview-skeleton" aria-hidden="true" />}
+      {isErrored && <div className="project-card__preview-fallback" aria-hidden="true" />}
     </div>
   )
 }

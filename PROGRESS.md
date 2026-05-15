@@ -45,9 +45,13 @@
 - [x] Committed (hash: pending)
 
 ## Phase 6 — MobileStickyCta on /projects
-- [ ] Mounted on `Projects.tsx`
-- [ ] Visibility heuristic tuned for the gallery page
-- [ ] Committed (hash: __)
+- [x] Mounted on `Projects.tsx`
+- [x] Component generalized with `appearAfterRatio` and `hideNearSelectors` props (defaults preserve home behavior)
+- [x] Projects passes `appearAfterRatio={0.3}` since no hero on this page
+- [x] Default hide-near now considers `.site-footer` too (not just `#cta`)
+- [x] Refactor: extracted `src/router.tsx` (router config) from `main.tsx` so the entry file is just `createRoot + RouterProvider`; eslint react-refresh rule is happy now
+- [x] Tightened `ProjectCardPreview` outcome state machine (lint: no setState-in-effect)
+- [x] Committed (hash: pending)
 
 ## Phase 7 — Language switch view-transition
 - [ ] FR/EN links use `Link` + `startViewTransition`

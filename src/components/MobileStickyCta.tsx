@@ -4,33 +4,51 @@ import { DICT } from '../i18n'
 
 /**
  * Bottom-fixed "start a session" pill, visible only on narrow viewports.
- * Appears after the visitor has scrolled past the hero (~70vh) so it never
- * competes with the hero's primary CTA, and hides again when the final
- * CTA section (`#cta`) is within ~140px of the viewport to avoid
- * doubling-up on the same action.
+ *
+ * Appears once the visitor has scrolled enough (`appearAfterRatio` of the
+ * viewport height) so it never competes with a page's primary above-fold
+ * CTA. Hides again when a "we're near the bottom" sentinel is in view —
+ * by default `#cta` (the home page's final CTA section) or `.site-footer`
+ * (every other page), to avoid stacking two of the same action.
  *
  * Hidden via `display: none` on viewports > 768px so the desktop layout is
  * untouched. Respects prefers-reduced-motion (snap, no slide).
  */
-export function MobileStickyCta({ lang }: { lang: Lang }) {
+export function MobileStickyCta({
+  lang,
+  appearAfterRatio = 0.7,
+  hideNearSelectors = ['#cta', '.site-footer'],
+}: {
+  lang: Lang
+  appearAfterRatio?: number
+  hideNearSelectors?: string[]
+}) {
   const t = DICT[lang].stickyCta
   const intakeHref = `${lang === 'en' ? '/en' : ''}/intake`
   const [show, setShow] = useState(false)
+  // Stringify selectors for the effect dep array. Callers typically pass an
+  // inline literal that's reference-unstable; the join lets us compare by
+  // value and avoids re-arming the listener on every parent render.
+  const hideNearKey = hideNearSelectors.join('|')
 
   useEffect(() => {
+    const selectors = hideNearKey.split('|').filter(Boolean)
     let ticking = false
     const compute = () => {
       ticking = false
-      const scrolledPastHero = window.scrollY > window.innerHeight * 0.7
-      // Hide near the final CTA so we don't render two of the same button
-      // stacked. Looks for the CTA section by id.
-      let nearFinalCta = false
-      const finalCta = document.getElementById('cta')
-      if (finalCta) {
-        const rect = finalCta.getBoundingClientRect()
-        nearFinalCta = rect.top < window.innerHeight + 140
+      const scrolledPastHero = window.scrollY > window.innerHeight * appearAfterRatio
+      // Hide near a sentinel (final CTA section or footer). First match wins.
+      let nearBottom = false
+      for (const sel of selectors) {
+        const el = document.querySelector(sel)
+        if (!el) continue
+        const rect = el.getBoundingClientRect()
+        if (rect.top < window.innerHeight + 140) {
+          nearBottom = true
+          break
+        }
       }
-      setShow(scrolledPastHero && !nearFinalCta)
+      setShow(scrolledPastHero && !nearBottom)
     }
     const onScroll = () => {
       if (ticking) return
@@ -44,7 +62,7 @@ export function MobileStickyCta({ lang }: { lang: Lang }) {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
-  }, [])
+  }, [appearAfterRatio, hideNearKey])
 
   return (
     <a
