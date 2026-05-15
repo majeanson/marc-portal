@@ -66,6 +66,9 @@ export function InlineIntakeTeaser({ lang }: { lang: Lang }) {
             )
           })}
         </div>
+        <a className="inline-teaser__napkin-link mono" href={`${langPrefix}/napkin`}>
+          {DICT[lang].napkin.homeTeaser}
+        </a>
       </div>
     </section>
   )

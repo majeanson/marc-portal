@@ -178,6 +178,21 @@ const FR = {
     switchToNight: 'Mode nuit',
   },
 
+  napkin: {
+    eyebrow: 'sur un napperon',
+    title: 'Dessine-moi le problème',
+    sub: 'Pas de bon ou mauvais dessin. Trace, écris, gribouille. Tout ce qui aide à comprendre.',
+    instruction:
+      "Une boîte, deux flèches, un mot — n'importe quoi. Quand tu es prêt(e), un trait sur la description et envoie.",
+    descLabel: 'En une phrase, c’est quoi?',
+    descPlaceholder: 'Ex. « Mon café veut savoir qui prend quels quarts. »',
+    submit: 'Envoyer au formulaire →',
+    saving: 'Préparation…',
+    blankErr: 'Trace au moins une chose ou écris une phrase avant d’envoyer.',
+    loadingCanvas: 'Chargement du tableau blanc…',
+    homeTeaser: 'Préfères dessiner? Essaie le napperon →',
+  },
+
   projectsFilter: {
     tierLabel: 'Tier',
     statusLabel: 'État',
@@ -713,6 +728,21 @@ const EN: Copy = {
   themeToggle: {
     switchToDay: 'Day mode',
     switchToNight: 'Night mode',
+  },
+
+  napkin: {
+    eyebrow: 'on a napkin',
+    title: 'Sketch me the problem',
+    sub: 'No good or bad drawings. Lines, words, arrows. Whatever helps me understand.',
+    instruction:
+      'A box, two arrows, a word — anything goes. When you’re done, a line on the description and send.',
+    descLabel: 'In one sentence, what is it?',
+    descPlaceholder: "e.g. 'My café wants to know who works which shifts.'",
+    submit: 'Send to the form →',
+    saving: 'Preparing…',
+    blankErr: 'Draw at least one thing or write a sentence before sending.',
+    loadingCanvas: 'Loading the whiteboard…',
+    homeTeaser: 'Prefer to draw? Try the napkin →',
   },
 
   projectsFilter: {

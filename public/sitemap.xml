@@ -19,6 +19,12 @@
     <loc>https://marc.example/en/intake</loc>
   </url>
   <url>
+    <loc>https://marc.example/napkin</loc>
+  </url>
+  <url>
+    <loc>https://marc.example/en/napkin</loc>
+  </url>
+  <url>
     <loc>https://marc.example/tier-0</loc>
   </url>
   <url>

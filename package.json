@@ -27,6 +27,7 @@
     "db:migrate:prod": "wrangler d1 migrations apply marc-portal-db --remote"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.1.1"

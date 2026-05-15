@@ -73,13 +73,23 @@
 - [x] Committed (hash: pending)
 
 ## Phase 9 — /napkin whiteboard intake
-- [ ] `@excalidraw/excalidraw` installed
-- [ ] `Napkin.tsx` page authored
-- [ ] Route registered (`/napkin`, `/en/napkin`)
-- [ ] Submit → PNG into `intake-draft`, navigate to `/intake`
-- [ ] Home page teaser link added
-- [ ] Lazy-loaded chunk verified
-- [ ] Committed (hash: __)
+- [x] `@excalidraw/excalidraw` installed (397 packages — npm audit shows 14 moderate/1 high in indirect deps; not pursuing without user consent)
+- [x] `Napkin.tsx` page authored (lazy import of `Excalidraw` + dynamic `exportToBlob`)
+- [x] Route registered (`/napkin`, `/en/napkin`) via router.tsx (was already wired with stub in Phase 1)
+- [x] Submit → PNG (data URL) into `marc-portal:napkin-sketch`; intake-draft flagged with `__hasNapkinSketch`; navigate to `/intake?from=napkin`
+- [x] Home page teaser link added under InlineIntakeTeaser (dashed mono, soft)
+- [x] Lazy-loaded chunk verified: production build splits Excalidraw into its own chunks (mermaid, katex, etc.); main bundle unaffected
+- [x] Sitemap regenerated (now 14 URLs incl. /napkin + /en/napkin)
+- [x] i18n strings under `napkin` (FR + EN)
+- [x] Committed (hash: pending)
+
+## Known gaps to follow up
+- Per-project OG image generation (C.8): deferred. Static index.html ships FR OG; crawlers on `/en` see FR.
+- Per-language OG via SSR/middleware: deferred. Runtime swap covers human re-share but not initial crawl on `/en`.
+- Server-side upload of napkin PNG: not wired. PNG lives only in localStorage; `/intake` doesn't yet pick it up and attach. Follow-up:
+  1. Detect `formData.__hasNapkinSketch` in Intake.tsx → show "sketch attached ✓" pill.
+  2. On `createSession`, base64 upload the PNG as an attachment (new endpoint).
+- `npm audit` reports 15 vulnerabilities (14 moderate, 1 high) brought in by Excalidraw's deep dep tree. Worth a `npm audit fix` pass with user approval next session.
 
 ## Final — `npm run check`
 - [ ] Full check green

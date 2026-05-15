@@ -5874,6 +5874,23 @@ button.intake__progress-step:disabled {
 .inline-teaser__card.is-picked .inline-teaser__card-cta {
   color: var(--accent-warm);
 }
+.inline-teaser__napkin-link {
+  display: inline-block;
+  margin: 22px auto 0;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 2px;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+.inline-teaser__napkin-link:hover,
+.inline-teaser__napkin-link:focus-visible {
+  color: var(--accent-warm);
+  border-bottom-color: var(--accent-warm);
+  outline: none;
+}
 
 /* ──────────────────────────────────────────────────────────────────────────
    MOBILE STICKY CTA — bottom-fixed pill that appears after the hero on
@@ -5965,6 +5982,116 @@ button.intake__progress-step:disabled {
     animation-duration: 80ms !important;
     animation-timing-function: linear !important;
   }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   NAPKIN — /napkin whiteboard intake. Excalidraw renders inside
+   .napkin__canvas-wrap; we tame its chrome with --color-* tokens that match
+   the atelier palette so it doesn't look like a stray app embedded in the
+   page.
+   ────────────────────────────────────────────────────────────────────── */
+.napkin {
+  padding-top: 56px;
+  padding-bottom: 80px;
+}
+.napkin__title {
+  font-family: var(--display);
+  font-size: clamp(32px, 5vw, 48px);
+  letter-spacing: -0.015em;
+  margin: 8px 0 12px;
+  color: var(--text);
+  text-wrap: balance;
+}
+.napkin__sub {
+  color: var(--text-mid);
+  font-size: 17px;
+  max-width: 56ch;
+  margin: 0 0 28px;
+}
+.napkin__canvas-wrap {
+  position: relative;
+  height: clamp(360px, 60vh, 620px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #fbf7ec;
+  margin-bottom: 16px;
+}
+.napkin__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+.napkin__instruction {
+  color: var(--text-soft);
+  font-size: 14px;
+  margin: 6px 0 24px;
+  font-style: italic;
+}
+.napkin__desc {
+  display: block;
+  margin: 0 0 18px;
+}
+.napkin__desc-label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+}
+.napkin__desc-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color 140ms ease;
+}
+.napkin__desc-input:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 0;
+}
+.napkin__err {
+  color: var(--warm);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+.napkin__submit {
+  appearance: none;
+  background: var(--accent-warm);
+  color: #fffaf0;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+.napkin__submit:hover:not(:disabled),
+.napkin__submit:focus-visible:not(:disabled) {
+  background: var(--accent);
+  transform: translateY(-1px);
+  outline: none;
+}
+.napkin__submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+:root[data-theme='night'] .napkin__canvas-wrap {
+  background: #f3ecd9;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
