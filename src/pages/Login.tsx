@@ -7,9 +7,9 @@ import { useAuth } from '../lib/authContext'
 
 const COPY = {
   fr: {
-    title: 'Connexion',
+    title: 'Connexion au portail',
     intro:
-      'Entre ton courriel — on t’envoie un lien de connexion à usage unique. Pas de mot de passe.',
+      'Entre ton courriel - on t’envoie un lien de connexion à usage unique. Pas de mot de passe.',
     placeholder: 'ton@courriel.com',
     submit: 'Envoyer le lien',
     sending: 'Envoi…',

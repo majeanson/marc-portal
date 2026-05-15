@@ -84,9 +84,10 @@ export function CapacityCounter({ lang }: { lang: Lang }) {
   }, [])
 
   if (active === null || triage === null) {
-    // First paint: render a slot with empty pills so the layout doesn't jump
-    // when the live numbers arrive. aria-hidden until populated.
-    return <div className="capacity" aria-hidden="true" />
+    // Don't render anything while the live count loads. The capacity row
+    // sits at the bottom of the hero (above the TOC) — a brief layout shift
+    // when data arrives is preferable to a blank pill that reads as broken.
+    return null
   }
 
   return (

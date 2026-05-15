@@ -24,10 +24,24 @@ export function Header({ lang }: { lang: Lang }) {
           >
             marc<span className="dot">.</span>portal
           </a>
-          <div className="site-header__right">
-            <a href={`${langPrefix}/projects`} className="site-header__auth-link">
-              {t.projects.eyebrow}
+          <nav className="site-header__sections" aria-label={t.nav.sections.projects}>
+            <a href={`${langPrefix}/projects`} className="site-header__section-link">
+              {t.nav.sections.projects}
             </a>
+            <a href={`${langPrefix}/#how`} className="site-header__section-link">
+              {t.nav.sections.how}
+            </a>
+            <a href={`${langPrefix}/#pricing`} className="site-header__section-link">
+              {t.nav.sections.pricing}
+            </a>
+            <a href={`${langPrefix}/#vibe`} className="site-header__section-link">
+              {t.nav.sections.vibe}
+            </a>
+            <a href={`${langPrefix}/#about`} className="site-header__section-link">
+              {t.nav.sections.about}
+            </a>
+          </nav>
+          <div className="site-header__right">
             {!loading && (
               <div className="site-header__auth">
                 {email ? (

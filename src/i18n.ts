@@ -15,6 +15,13 @@ const FR = {
     mySessions: 'Mes sessions',
     viewAsUser: 'Voir comme visiteur',
     exitPreview: 'Quitter aperçu',
+    sections: {
+      projects: 'Projets',
+      how: 'Comment ça marche',
+      pricing: 'Prix',
+      vibe: 'Je fais / Je fais pas',
+      about: 'À propos',
+    },
   },
 
   brandTitle: 'Marc — dev à Québec',
@@ -23,12 +30,21 @@ const FR = {
 
   hero: {
     eyebrow: 'side-pratique · Québec · async',
-    salut: 'Marc-Antoine, là pour résoudre des problèmes important pour ma communité',
+    folio: '№ 01 — Marc, dev à Québec',
+    salut: 'Marc-Antoine, là pour résoudre des problèmes importants pour ma communauté',
+    display: {
+      pre: 'Marc-Antoine,',
+      lead: 'là pour résoudre',
+      emphasis: 'des problèmes importants',
+      tail: 'pour ma communauté.',
+    },
+    signature: 'Marc — Québec',
     body1:
-      'Comme side-gig, j’aide les gens à régler des problèmes du quotidien. En asynchrone/différé (pas de calls, pas de meetings), à travers mon portail, à ton rythme et au mien.',
+      'Comme side-gig, j’aide les gens à régler des problèmes du quotidien. En asynchrone/différé (pas de calls, pas de meetings). Le tout à travers mon portail, à ton rythme et au mien.',
     body2:
-      'Tu as un problème qui revient toujours, paperasse, suivi, coordination? Ton problème n\'est pas un enjeu national, mais tout de même irritant ? Décris-le-moi via le portail.',
-    body3: 'Compte gratuit. Tu tests, vois la démo à chaque étape. Premier brouillon en quelques jours.',
+      "Tu as un problème qui revient toujours, paperasse, suivi, coordination? Ton problème n'est pas un enjeu national, mais tout de même irritant ? Décris-le moi via le portail.",
+    body3:
+      "Compte gratuit. Tu testes, vois la démo à chaque étape. Premier brouillon en quelques jours. On se rend jusqu'au bout ensemble. Tout transparent.",
     cta: 'Crée ton compte gratuit →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle proposition →',
@@ -37,7 +53,7 @@ const FR = {
   },
 
   how: {
-    eyebrow: '04 étapes',
+    eyebrow: 'Quatre étapes',
     title: 'Comment ça marche',
     steps: [
       {
@@ -66,7 +82,7 @@ const FR = {
   featured: {
     eyebrow: 'projets en cours',
     title: 'Ce que je livre, en vrai',
-    sub: 'Chaque carte est un projet vivant — vrai code, vrais clients, dernier build accessible.',
+    sub: 'Chaque carte est un projet vivant, vrai code, vrais problèmes, dernier build accessible.',
     seeAll: 'Voir tous les projets →',
     loading: 'Chargement…',
     openBuild: 'Ouvrir le build ↗',
@@ -74,30 +90,34 @@ const FR = {
     currentBuildLabel: 'Build actuel',
     noBuildYet: 'Pas encore de build épinglé',
     tierPrefix: 'Tier',
+    emptyTitle: 'Le premier projet atterrit ici très bientôt.',
+    emptyBody:
+      'Pas encore de projet publié — la galerie est neuve. Tu peux quand même découvrir comment ça marche, ou m’écrire via le portail pour ouvrir le premier dossier.',
+    emptyCta: 'Décris ton problème →',
+    errorTitle: 'Impossible de charger les projets pour le moment.',
+    errorBody: 'Tu peux toujours ouvrir la galerie complète, ou écrire via le portail.',
   },
 
   vibe: {
     eyebrow: 'attrape mon vibe',
-    title: 'Ce qu’on fait, ce qu’on ne fait pas',
-    body: 'Lis cette liste avant de remplir le formulaire. Si ça matche, on va bien s’entendre. Sinon, pas de drame — y a plein d’autres devs qui font autre chose.',
+    title: 'Ce que je fais, ce que je ne fais pas',
+    body: 'Lis cette liste avant de remplir le formulaire. Si ça matche, on va bien s’entendre. Sinon, pas de drame, y a plein d’autres devs qui font autre chose.',
     do: {
-      title: 'On fait',
+      title: 'Je fais',
       items: [
-        'Automatisation de paperasse répétitive',
+        'Tout simplement votre idée',
+        'Automatisation de tout genre',
         'Coordination de petites équipes ou de bénévoles',
-        'Voix → document, voix → facture',
-        'Suivi clients, inventaire simple',
-        'Petits outils internes qui doivent durer 2-3 ans',
+        'Portfolios, sites découvertes',
       ],
     },
     dont: {
-      title: 'On ne fait pas',
+      title: 'Je ne fais pas',
       items: [
         'Calls, meetings, vidéos planifiées',
         'Bug fixes urgents ou support 24/7',
         'Changements de scope en cours de projet',
-        'Hosting de longue durée ou maintenance',
-        'Apps temps-réel (chat, booking, dashboards minute-par-minute)',
+        'Du travail dans le beurre',
       ],
     },
   },
@@ -118,22 +138,20 @@ const FR = {
         name: 'Tier 1',
         price: '≈ 300 $',
         scope:
-          'Projet d’une demi-journée. Petit script, automatisation simple, formulaire qui marche.',
+          'Petit projet simple. Petit script, portfolio, automatisation, formulaire qui marche.',
         after: '0 retouches après livraison',
       },
       {
         name: 'Tier 2',
         price: '≈ 1 500 $',
-        scope:
-          'Projet de 1 à 3 semaines. Outil interne qui dure. Voir des projets de cette taille en cours.',
+        scope: 'Projet de quelques semaines. Outil interne qui dure. Projets de communauté',
         after: '1 ronde de retouches incluse',
         anchor: true,
       },
       {
         name: 'Tier 3',
         price: '≈ 3 000 $+',
-        scope:
-          'Projet plus gros. Sur devis après triage (l’étape où je lis et je décide). Toujours scopé pour livrer en moins de 6 semaines.',
+        scope: 'Projet plus gros. Sur devis après triage (l’étape où je lis et je décide).',
         after: 'devis post-triage',
       },
     ],
@@ -142,7 +160,7 @@ const FR = {
   cta: {
     eyebrow: 'prêt?',
     title: 'Décris ton problème',
-    body: 'Compte gratuit. Aucun call. Je lis chaque formulaire moi-même et je te réponds en 72 h — oui, non, ou « raconte-moi plus ».',
+    body: "Compte gratuit. Aucun call. Je lis chaque formulaire moi-même et je te réponds en 72 h. Oui, non, « j'ai plus de questions » ou « raconte-moi plus ».",
     button: 'Ouvrir le formulaire →',
     buttonLoggedIn: 'Démarrer une nouvelle proposition →',
     micro:
@@ -155,7 +173,7 @@ const FR = {
     body: 'Je suis dev senior depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible — pour toi comme pour moi.',
     body2:
       'Pas une agence. Pas une plateforme. Un humain qui décide, une machine au milieu pour gérer le reste — pour qu’on respecte tous les deux nos soirs et nos fins de semaine.',
-    portraitAlt: 'Marc Jeanson',
+    portraitAlt: 'Marc',
     githubLabel: 'GitHub',
     linkedinLabel: 'LinkedIn',
   },
@@ -164,6 +182,11 @@ const FR = {
     contact: 'Contact : via le portail uniquement (pas d’email, pas de téléphone).',
     legal: 'Hébergé au Canada · Loi 25 · OQLF',
     copyright: '© Marc 2026',
+  },
+
+  pullQuote: {
+    body: 'Pas une agence. Pas une plateforme. Un humain qui décide, une machine au milieu pour gérer le reste.',
+    attribution: 'Marc',
   },
 
   engagement: {
@@ -440,6 +463,13 @@ const EN: Copy = {
     mySessions: 'My sessions',
     viewAsUser: 'View as user',
     exitPreview: 'Exit preview',
+    sections: {
+      projects: 'Projects',
+      how: 'How it works',
+      pricing: 'Pricing',
+      vibe: "What I do / don't",
+      about: 'About',
+    },
   },
 
   brandTitle: 'Marc — dev in Quebec City',
@@ -448,7 +478,15 @@ const EN: Copy = {
 
   hero: {
     eyebrow: 'side-practice · Quebec · async',
+    folio: '№ 01 — Marc, a dev in Quebec',
     salut: "Hi, I'm Marc, a dev in Quebec City.",
+    display: {
+      pre: "Hi, I'm Marc,",
+      lead: 'a dev in Quebec',
+      emphasis: 'solving small problems',
+      tail: 'for the people around me.',
+    },
+    signature: 'Marc — Quebec',
     body1:
       'Day job during the week. Evenings and weekends, I help people solve everyday problems. Async (no calls, no meetings) — at your pace and mine.',
     body2:
@@ -499,6 +537,12 @@ const EN: Copy = {
     currentBuildLabel: 'Current build',
     noBuildYet: 'No pinned build yet',
     tierPrefix: 'Tier',
+    emptyTitle: 'The first project lands here very soon.',
+    emptyBody:
+      'No published projects yet — the gallery is new. You can still see how it works, or open the first one through the portal.',
+    emptyCta: 'Describe your problem →',
+    errorTitle: 'Can’t load the projects right now.',
+    errorBody: 'You can still open the full gallery, or write through the portal.',
   },
 
   vibe: {
@@ -587,6 +631,11 @@ const EN: Copy = {
     contact: 'Contact: through the portal only (no email, no phone).',
     legal: 'Hosted in Canada · Bill 25 · OQLF',
     copyright: '© Marc 2026',
+  },
+
+  pullQuote: {
+    body: 'Not an agency. Not a platform. A human deciding, with a machine in the middle for the rest.',
+    attribution: 'Marc',
   },
 
   engagement: {

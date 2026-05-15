@@ -15,18 +15,24 @@ export function Footer({ lang }: { lang: Lang }) {
   const privacyLabel = lang === 'fr' ? 'Confidentialité' : 'Privacy'
   return (
     <footer className="site-footer">
+      <div className="site-footer__flourish" aria-hidden="true" />
       <div className="site-footer__inner">
-        <span>{t.contact}</span>
-        <span>
+        <p className="site-footer__line">{t.contact}</p>
+        <p className="site-footer__line">
           {t.legal} · <a href={privacyHref}>{privacyLabel}</a>
-        </span>
-        <span>{t.copyright}</span>
-        <span
-          className="site-footer__build"
-          title={`commit ${__COMMIT_HASH__} · ${__COMMIT_DATE__}`}
-        >
-          build {buildDate} · {__COMMIT_HASH__}
-        </span>
+        </p>
+        <p className="site-footer__line site-footer__line--meta">
+          <span>{t.copyright}</span>
+          <span className="site-footer__dot" aria-hidden="true">
+            ·
+          </span>
+          <span
+            className="site-footer__build"
+            title={`commit ${__COMMIT_HASH__} · ${__COMMIT_DATE__}`}
+          >
+            build {buildDate} · {__COMMIT_HASH__}
+          </span>
+        </p>
       </div>
     </footer>
   )

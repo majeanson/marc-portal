@@ -9,6 +9,8 @@ const FEATURED_LIMIT = 3
 export function FeaturedProjects({ lang }: { lang: Lang }) {
   const t = DICT[lang].featured
   const langPrefix = lang === 'en' ? '/en' : ''
+  const intakeHref = `${langPrefix}/intake`
+  const galleryHref = `${langPrefix}/projects`
   const [projects, setProjects] = useState<PublicProject[] | null>(null)
   const [errored, setErrored] = useState(false)
 
@@ -27,34 +29,58 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
     }
   }, [])
 
-  // Hide the section entirely on error or empty — the home page is a point of
-  // sale; an empty/broken "featured" strip undermines trust more than its
-  // absence does.
-  if (errored) return null
-  if (projects && projects.length === 0) return null
+  const hasProjects = projects !== null && projects.length > 0
+  const isLoading = projects === null && !errored
+  const isEmpty = projects !== null && projects.length === 0
 
   return (
-    <section className="section featured-projects" id="featured">
+    <section className="section featured-projects section--editorial" id="featured">
       <div className="section__inner">
-        <div className="section__eyebrow">{t.eyebrow}</div>
-        <h2>{t.title}</h2>
-        <p className="featured-projects__sub">{t.sub}</p>
+        <header className="section__head">
+          <div className="section__folio mono" aria-hidden="true">
+            III
+          </div>
+          <div className="section__eyebrow">{t.eyebrow}</div>
+          <h2 className="section__display">{t.title}</h2>
+          <p className="featured-projects__sub section__lead">{t.sub}</p>
+        </header>
 
-        {projects === null ? (
-          <p className="mono featured-projects__loading">{t.loading}</p>
-        ) : (
-          <ul className="projects__grid featured-projects__grid">
-            {projects.map((p) => (
-              <FeaturedCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} />
-            ))}
-          </ul>
+        {isLoading && <p className="mono featured-projects__loading">{t.loading}</p>}
+
+        {hasProjects && projects && (
+          <>
+            <ul className="projects__grid featured-projects__grid">
+              {projects.map((p) => (
+                <FeaturedCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} />
+              ))}
+            </ul>
+            <div className="featured-projects__more">
+              <a className="featured-projects__see-all" href={galleryHref}>
+                {t.seeAll}
+              </a>
+            </div>
+          </>
         )}
 
-        <div className="featured-projects__more">
-          <a className="featured-projects__see-all" href={`${langPrefix}/projects`}>
-            {t.seeAll}
-          </a>
-        </div>
+        {isEmpty && (
+          <div className="featured-projects__empty">
+            <p className="featured-projects__empty-title">{t.emptyTitle}</p>
+            <p className="featured-projects__empty-body">{t.emptyBody}</p>
+            <a className="featured-projects__empty-cta" href={intakeHref}>
+              {t.emptyCta}
+            </a>
+          </div>
+        )}
+
+        {errored && (
+          <div className="featured-projects__empty">
+            <p className="featured-projects__empty-title">{t.errorTitle}</p>
+            <p className="featured-projects__empty-body">{t.errorBody}</p>
+            <a className="featured-projects__empty-cta" href={galleryHref}>
+              {t.seeAll}
+            </a>
+          </div>
+        )}
       </div>
     </section>
   )

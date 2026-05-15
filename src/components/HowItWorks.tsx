@@ -4,16 +4,25 @@ import { DICT } from '../i18n'
 export function HowItWorks({ lang }: { lang: Lang }) {
   const t = DICT[lang].how
   return (
-    <section className="section section--alt" id="how">
+    <section className="section section--alt section--editorial" id="how">
       <div className="section__inner">
-        <div className="section__eyebrow">{t.eyebrow}</div>
-        <h2>{t.title}</h2>
-        <ol className="steps">
+        <header className="section__head">
+          <div className="section__folio mono" aria-hidden="true">
+            II
+          </div>
+          <div className="section__eyebrow">{t.eyebrow}</div>
+          <h2 className="section__display">{t.title}</h2>
+        </header>
+        <ol className="steps steps--editorial">
           {t.steps.map((s) => (
-            <li key={s.num} className="step">
-              <div className="step__num">{s.num}</div>
-              <h3>{s.title}</h3>
-              <p>{s.body}</p>
+            <li key={s.num} className="step step--editorial">
+              <div className="step__numeral" aria-hidden="true">
+                {s.num}
+              </div>
+              <div className="step__body">
+                <h3 className="step__title">{s.title}</h3>
+                <p>{s.body}</p>
+              </div>
             </li>
           ))}
         </ol>

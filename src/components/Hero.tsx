@@ -15,7 +15,7 @@ const ANCHORS: Record<Lang, Array<[string, string]>> = {
     ['#featured', 'Projets'],
     ['#how', 'Comment ça marche'],
     ['#pricing', 'Prix'],
-    ['#vibe', 'On fait / on fait pas'],
+    ['#vibe', 'je fais / je ne fais pas'],
     ['#about', 'À propos'],
   ],
   en: [
@@ -34,10 +34,6 @@ export function Hero({ lang }: { lang: Lang }) {
   const intakeHref = `${langPrefix}/intake`
   const sessionsHref = `${langPrefix}${isAdmin ? '/admin/inbox' : '/me'}`
 
-  // Hero CTA flips to "join the waitlist" when at cap. We render the standard
-  // CTA on first paint (no static fixture to fall back on) and swap once the
-  // live count arrives — better than forcing a layout shift on the bedrock
-  // value-prop element.
   const [atCap, setAtCap] = useState<boolean>(false)
   useEffect(() => {
     let cancelled = false
@@ -45,9 +41,7 @@ export function Hero({ lang }: { lang: Lang }) {
       .then((c) => {
         if (!cancelled) setAtCap(c.atCap)
       })
-      .catch(() => {
-        // No paint change on failure.
-      })
+      .catch(() => {})
     return () => {
       cancelled = true
     }
@@ -55,56 +49,65 @@ export function Hero({ lang }: { lang: Lang }) {
   const ctaLabel = email ? t.ctaLoggedIn : atCap ? t.ctaWaitlist : t.cta
 
   return (
-    <section className="section hero" aria-labelledby="hero-title">
-      <div className="section__inner">
-        <div className="section__eyebrow">{t.eyebrow}</div>
-        <h1 id="hero-title">{t.salut}</h1>
+    <section className="section hero hero--editorial" aria-labelledby="hero-title">
+      <div className="hero__folio mono" aria-hidden="true">
+        {t.folio}
+      </div>
 
-        {/* Lead — the offer, foregrounded */}
+      <div className="section__inner hero__inner">
+        <h1 id="hero-title" className="hero__display">
+          <span className="hero__display-line hero__display-line--pre">{t.display.pre}</span>
+          <span className="hero__display-line hero__display-line--lead">{t.display.lead}</span>
+          <span className="hero__display-line hero__display-line--emph">{t.display.emphasis}</span>
+          <span className="hero__display-line hero__display-line--tail">{t.display.tail}</span>
+        </h1>
+
         <p className="hero__lead hero__lead--primary">
           <strong>{t.body2}</strong>
         </p>
 
-        {/* Supporting line — smaller, single sentence */}
         <p className="hero__lead hero__lead--meta">
           {t.body1} {t.body3}
         </p>
 
-        {/* Primary CTA */}
-        <a className="hero__cta" href={intakeHref}>
-          {ctaLabel}
-        </a>
+        <div className="hero__actions">
+          <a className="hero__cta" href={intakeHref}>
+            {ctaLabel}
+          </a>
+          {email && (
+            <a className="hero__sessions-link mono" href={sessionsHref}>
+              {t.mySessionsLink}
+            </a>
+          )}
+        </div>
 
-        {email && (
-          <div className="hero__logged-in">
-            <a href={sessionsHref}>{t.mySessionsLink}</a>
-          </div>
-        )}
-
-        {/* Quick-glance fact strip */}
         <ul className="hero__facts" aria-label={lang === 'fr' ? 'Faits en bref' : 'Quick facts'}>
           {FACTS[lang].map((f) => (
             <li key={f}>{f}</li>
           ))}
         </ul>
 
-        {/* Bilingual notice — quieter */}
-        <div className="hero__bilingual">{t.bilingual}</div>
+        <div className="hero__bilingual mono">{t.bilingual}</div>
 
         <CapacityCounter lang={lang} />
-
-        {/* In-page anchor nav for skim-readers + screen readers */}
-        <nav
-          className="hero__anchors"
-          aria-label={lang === 'fr' ? 'Sections de la page' : 'Page sections'}
-        >
-          {ANCHORS[lang].map(([href, label]) => (
-            <a key={href} href={href} className="hero__anchor">
-              {label}
-            </a>
-          ))}
-        </nav>
       </div>
+
+      <nav
+        className="hero__toc"
+        aria-label={lang === 'fr' ? 'Sections de la page' : 'Page sections'}
+      >
+        <span className="hero__toc-label mono">{lang === 'fr' ? 'Lire' : 'Read'}</span>
+        <ol className="hero__toc-list">
+          {ANCHORS[lang].map(([href, label], i) => (
+            <li key={href}>
+              <a href={href} className="hero__toc-link">
+                <span className="hero__toc-num mono">{String(i + 1).padStart(2, '0')}</span>
+                <span className="hero__toc-text">{label}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
     </section>
   )
 }

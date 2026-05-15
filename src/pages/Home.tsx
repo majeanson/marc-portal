@@ -10,6 +10,9 @@ import { Pricing } from '../components/Pricing'
 import { CTA } from '../components/CTA'
 import { About } from '../components/About'
 import { Footer } from '../components/Footer'
+import { SectionRail } from '../components/SectionRail'
+import { ScrollProgress } from '../components/ScrollProgress'
+import { PullQuote } from '../components/PullQuote'
 
 export function Home({ lang }: { lang: Lang }) {
   const t = DICT[lang]
@@ -42,8 +45,10 @@ export function Home({ lang }: { lang: Lang }) {
 
   return (
     <div className="app">
+      <ScrollProgress />
       <Header lang={lang} />
-      <main id="main-content">
+      <SectionRail lang={lang} />
+      <main id="main-content" className="home">
         {/* 1 — Hero: the offer + primary CTA, above the fold */}
         <Hero lang={lang} />
         {/* 2 — Featured projects: real /projects feed, top 3, foregrounded as
@@ -57,6 +62,8 @@ export function Home({ lang }: { lang: Lang }) {
         <Pricing lang={lang} />
         {/* 5 — Vibe filter: do/don't lists — final self-qualification gate */}
         <VibeFilter lang={lang} />
+        {/* 5b — Pull-quote: a short voice break before About lands */}
+        <PullQuote lang={lang} />
         {/* 6 — About: short bio near the end (visitors who care, scroll) */}
         <About lang={lang} />
         {/* 7 — Final CTA: one last push before the footer */}
