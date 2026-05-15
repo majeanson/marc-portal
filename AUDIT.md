@@ -193,21 +193,24 @@
 ## P3 — Polish, cleanup, future-friendly
 
 ### Time-travel scrubber
-- ⬜ **P3.1** — Add scrubber help text for AT users. `role="application"` with
-  no instructions means screen readers don't tell the user "arrow keys step."
-  Add a `t.scrubberHelp` line visible in-view (or `aria-describedby`).
-- ⬜ **P3.2** — Replace inline `eslint-disable jsx-a11y/...` in
-  `TimeTravelScrubber.tsx:101` with proper semantics (wrap interactive parts in
-  buttons rather than slap role=application on the whole section).
-- ⬜ **P3.3** — Deep-link a scrub index. `?step=3` in the URL → open scrubber at
-  step 3. Visitors can share specific revisions.
+- ✅ **P3.1** — Visible mono-pill keyboard hint ("Arrows ← / → to step, Space
+  to play/pause"). `aria-describedby` ties it to the section root for AT.
+- ✅ **P3.2** — Dropped `role="application"` and the inline eslint-disables.
+  Keyboard handler now lives at the window level and only acts when focus is
+  inside the scrubber root. Buttons are real `<button>`s so Tab + Enter +
+  Space all work naturally; Space-toggle-play only fires when focus is on a
+  non-button element.
+- ✅ **P3.3** — `?step=N` URL param. Reads on mount (1-indexed for humans;
+  matches the visible "Step 3 of 5" label), pushes back via replaceState on
+  every idx change. Shareable links land at the right scrub position.
 
 ### Napkin
 - ⬜ **P3.4** — Excalidraw scene autosave. Refresh mid-sketch = work lost. Hook
   `onChange` and store the serialized scene in localStorage (not the PNG —
   scene JSON is small).
-- ⬜ **P3.5** — Server-side cap on `napkin.png` size — refuse data URLs over
-  ~600 KB in `POST /api/sessions`. (Less critical once P1.8 is done.)
+- ✅ **P3.5** — Server-side cap on intake payload (1 MB) in `POST /api/sessions`.
+  Refuses oversized data-URL napkins with 400. Less critical once P1.8 lands
+  but defends against misbehaving clients in the meantime.
 
 ### SEO / i18n
 - ✅ **P3.6** — Hreflang now injected by `functions/_middleware.ts` via
@@ -288,3 +291,8 @@
   - 160 tests pass (+6 for the new CSRF verifier). Typecheck + lint + build
     clean. `attachmentsApi.uploadAttachment` now routes through the shared
     `api()` wrapper for CSRF header attachment.
+- 2026-05-15 — Fourth batch shipped: P3.1 (scrubber keyboard hint),
+  P3.2 (scrubber a11y semantics — dropped role=application, window-level
+  keydown), P3.3 (scrubber ?step=N deep-link), P3.5 (1 MB intake payload
+  cap as defense-in-depth before P1.8).
+  - 160 tests pass. Typecheck + lint + build clean.

@@ -5,6 +5,19 @@ import { formatDate } from '../lib/format'
 import type { PublicAdvancementRow } from '../lib/advancementsApi'
 
 const PLAY_INTERVAL_MS = 3500
+/** URL param used for deep-linking a specific step (1-indexed for humans). */
+const STEP_PARAM = 'step'
+
+/** Read the deep-link step from `location.search`, clamped to [0, max]. */
+function readStepFromUrl(max: number): number {
+  if (typeof window === 'undefined') return max
+  const raw = new URLSearchParams(window.location.search).get(STEP_PARAM)
+  if (!raw) return max
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed)) return max
+  // 1-indexed in the URL (matches the visible stepLabel "Step 3 of 5").
+  return Math.min(max, Math.max(0, parsed - 1))
+}
 
 /**
  * "Time machine" scrubber for /share/:id. Given the advancements that have a
@@ -37,10 +50,13 @@ export function TimeTravelScrubber({
     }))
   }, [advancements])
 
-  const [idx, setIdx] = useState(() => Math.max(0, steps.length - 1))
+  // Initial index honors the ?step=N URL param when present, else latest.
+  // Read once at construction; subsequent changes (from clicks/keys) push
+  // back to the URL via replaceState (no scroll jump, no history pollution).
+  const [idx, setIdx] = useState(() => readStepFromUrl(Math.max(0, steps.length - 1)))
   const [playing, setPlaying] = useState(false)
   const reducedMotion = useReducedMotion()
-  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const rootRef = useRef<HTMLElement>(null)
 
   // Reset to the latest step whenever the underlying list grows or shrinks.
   // The lint rule flags setState-in-effect — accepted here because the
@@ -48,9 +64,19 @@ export function TimeTravelScrubber({
   // and we want the visible index to snap back to "latest" when it does.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIdx(Math.max(0, steps.length - 1))
+    setIdx(readStepFromUrl(Math.max(0, steps.length - 1)))
     setPlaying(false)
   }, [steps.length])
+
+  // Sync the current idx back to the URL on every change. Skip when there's
+  // nothing meaningful to share (idx 0, single-step lists).
+  useEffect(() => {
+    if (typeof window === 'undefined' || steps.length < 2) return
+    const params = new URLSearchParams(window.location.search)
+    params.set(STEP_PARAM, String(idx + 1))
+    const next = `${window.location.pathname}?${params.toString()}${window.location.hash}`
+    window.history.replaceState(null, '', next)
+  }, [idx, steps.length])
 
   // Auto-advance when playing. Stops at the end (doesn't loop — visitors
   // who want to rewind hit Prev or click an earlier notch).
@@ -68,23 +94,35 @@ export function TimeTravelScrubber({
     return () => window.clearInterval(id)
   }, [playing, steps.length])
 
-  // Keyboard nav — left/right step, space toggles play. Active only when
-  // the scrubber root has focus (focus delegation via tabIndex on the
-  // container so the visitor can opt in).
-  function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      setIdx((i) => Math.max(0, i - 1))
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      setIdx((i) => Math.min(steps.length - 1, i + 1))
-    } else if (e.key === ' ') {
-      if (!reducedMotion) {
+  // Keyboard nav — left/right to step, space to toggle play. Listen at the
+  // window level but only act when focus is inside the scrubber root. This
+  // avoids the a11y antipattern of `role="application"` (which suppresses
+  // screen-reader read-aloud) while still giving the visitor full keyboard
+  // control. Buttons are real <button>s so Tab + Enter works regardless.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    function onKey(e: KeyboardEvent) {
+      const root = rootRef.current
+      if (!root) return
+      const active = document.activeElement
+      if (!active || !(active instanceof Node) || !root.contains(active)) return
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        setIdx((i) => Math.max(0, i - 1))
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        setIdx((i) => Math.min(steps.length - 1, i + 1))
+      } else if (e.key === ' ' && !reducedMotion) {
+        // Don't steal Space from buttons (they should still activate on Space)
+        // — only intercept when focus is on a non-button element inside us.
+        if (active instanceof HTMLButtonElement) return
         e.preventDefault()
         setPlaying((p) => !p)
       }
     }
-  }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [reducedMotion, steps.length])
 
   if (steps.length < 2) return null
   const current = steps[idx]
@@ -92,20 +130,11 @@ export function TimeTravelScrubber({
   const isLast = idx === steps.length - 1
 
   return (
-    // role="application" so AT users understand arrow keys steer the
-    // scrubber instead of moving the reading cursor. tabIndex=0 makes the
-    // whole component focusable, which is the entry point for the
-    // keyboard handler below. Both are intentional; the a11y/lint rules
-    // assume the element should not capture key events, but this is a
-    // first-class interactive widget — opting out of those rules here.
-    /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-    /* eslint-disable jsx-a11y/no-noninteractive-tabindex */
     <section
+      ref={rootRef}
       className="time-travel"
       aria-labelledby="time-travel-title"
-      role="application"
-      tabIndex={0}
-      onKeyDown={onKeyDown}
+      aria-describedby="time-travel-keyhint"
     >
       <header className="time-travel__head">
         <div className="section__eyebrow">{t.eyebrow}</div>
@@ -113,12 +142,14 @@ export function TimeTravelScrubber({
           {t.title}
         </h2>
         <p className="time-travel__sub">{t.sub}</p>
+        <p id="time-travel-keyhint" className="time-travel__keyhint mono">
+          {t.keyboardHint}
+        </p>
       </header>
 
       <div className="time-travel__viewer">
         <iframe
           key={current.id}
-          ref={iframeRef}
           className="time-travel__iframe"
           src={current.href}
           title={`${current.label} — ${formatDate(current.date, lang)}`}

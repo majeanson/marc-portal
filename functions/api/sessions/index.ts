@@ -88,6 +88,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       typeof body.intakeJson === 'string' ? body.intakeJson : JSON.stringify(body.intakeJson)
   }
 
+  // Defensive size cap on the serialized intake. The napkin sketch is the
+  // only field that can grow large (data-URL PNG); a misbehaving client
+  // could blow up a DB row otherwise. 1 MB is generous for a normal intake
+  // (text only is ~5 KB) and tight enough to refuse abusive PNGs. Once
+  // napkin moves to R2 (P1.8) this ceiling becomes purely belt-and-suspenders.
+  const MAX_INTAKE_BYTES = 1024 * 1024
+  if (intakeJson && intakeJson.length > MAX_INTAKE_BYTES) {
+    return badRequest('intake payload too large')
+  }
+
   const id = randomTokenB64url(12)
   const now = Math.floor(Date.now() / 1000)
 

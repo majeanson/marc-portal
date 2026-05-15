@@ -520,6 +520,7 @@ const FR = {
       pause: 'Pause',
       stepLabel: (i: number, total: number) => `Étape ${i} sur ${total}`,
       ariaTrack: 'Frise des étapes',
+      keyboardHint: 'Flèches ← / → pour naviguer, Espace pour lecture/pause.',
     },
   },
 
@@ -1123,6 +1124,7 @@ const EN: Copy = {
       pause: 'Pause',
       stepLabel: (i: number, total: number) => `Step ${i} of ${total}`,
       ariaTrack: 'Step timeline',
+      keyboardHint: 'Arrows ← / → to step, Space to play/pause.',
     },
   },
 

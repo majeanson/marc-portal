@@ -6836,6 +6836,16 @@ button.intake__progress-step:disabled {
   max-width: 52ch;
   margin: 0 auto;
 }
+.time-travel__keyhint {
+  display: inline-block;
+  margin: 8px 0 0;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-soft);
+  background: var(--bg-card);
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+}
 .time-travel__viewer {
   position: relative;
   width: 100%;
