@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { Link, useViewTransitionState } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
+import { ProjectCardPreview } from './ProjectCardPreview'
 
 const FEATURED_LIMIT = 3
 
@@ -101,9 +103,12 @@ function FeaturedCard({
     ? `${project.currentBuild.buildUrl}${project.currentBuild.iframePath ?? ''}`
     : null
   const title = project.title || t.untitled
+  const isTransitioning = useViewTransitionState(shareHref)
+  const cardStyle = isTransitioning ? { viewTransitionName: 'project-detail' } : undefined
   return (
-    <li className="project-card">
-      <a href={shareHref} className="project-card__link" aria-label={title}>
+    <li className="project-card" style={cardStyle}>
+      <Link to={shareHref} className="project-card__link" viewTransition aria-label={title}>
+        <ProjectCardPreview buildHref={buildHref} title={title} />
         <div className="project-card__head">
           <span className="project-card__date mono">{formatDate(project.showcasedAt, lang)}</span>
           <span className="project-card__head-right">
@@ -129,7 +134,7 @@ function FeaturedCard({
             <span className="mono project-card__build-eyebrow">{t.noBuildYet}</span>
           </div>
         )}
-      </a>
+      </Link>
       {buildHref && (
         <a
           className="project-card__build-link mono"

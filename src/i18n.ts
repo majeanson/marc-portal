@@ -167,6 +167,76 @@ const FR = {
       'Si je suis plein, tu peux quand même créer un compte et te mettre sur la liste d’attente.',
   },
 
+  stickyCta: {
+    label: 'Démarrer une session',
+    short: 'Démarrer →',
+    ariaLabel: 'Démarrer une session — ouvrir le formulaire',
+  },
+
+  themeToggle: {
+    switchToDay: 'Mode jour',
+    switchToNight: 'Mode nuit',
+  },
+
+  projectsFilter: {
+    tierLabel: 'Tier',
+    statusLabel: 'État',
+    all: 'Tout',
+    clear: 'Réinitialiser',
+    emptyAfterFilter: 'Aucun projet ne correspond. Essaie un autre filtre.',
+    statusLabels: {
+      draft: 'brouillon',
+      triage: 'triage',
+      active: 'en cours',
+      shipped: 'livré',
+      rejected: 'refusé',
+    },
+  },
+
+  inlineTeaser: {
+    eyebrow: 'commence ici',
+    title: "Choisis ton type de problème — je m'occupe du reste",
+    sub: 'Un clic et tu sautes l’étape « type de problème » dans le formulaire. Tu peux changer d’idée plus tard.',
+    types: {
+      paperasse: 'Paperasse à automatiser',
+      suivi: 'Suivi (clients, inventaire, projets)',
+      coordination: 'Coordination (équipe, bénévoles, voisinage)',
+      autre: 'Autre — décris-moi ça librement',
+    },
+    cta: 'Continuer →',
+  },
+
+  faq: {
+    eyebrow: 'questions fréquentes',
+    title: 'Ça revient souvent',
+    items: [
+      {
+        q: 'Le prix annoncé, c’est vraiment ça?',
+        a: 'Oui. Tier 0 est à 0 $ et sert à se voir si on est compatibles. Les tiers 1 à 3 ont un prix forfaitaire avant de commencer — on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise.',
+      },
+      {
+        q: 'Et si ça prend plus de temps que prévu?',
+        a: 'Si je dépasse, c’est mon problème — le prix reste celui du devis. Si la portée change en cours de route (tu ajoutes des choses), on s’arrête, on regarde, et on décide ensemble : ajuster le devis ou couper.',
+      },
+      {
+        q: 'Et si je n’aime pas le résultat?',
+        a: 'Tu vois une démo testable à chaque étape — pas juste à la fin. Si à mi-chemin tu réalises que ça ne convient pas, on arrête. Je facture le travail fait à ce jour, pas un cent de plus. Aucun engagement à finir.',
+      },
+      {
+        q: 'Je ne sais pas exactement ce que je veux. C’est ok?',
+        a: 'C’est même attendu. Décris le problème comme il te vient, en français/anglais, dans tes mots. Mon job c’est de poser les bonnes questions et de te montrer une version concrète sur laquelle tu peux réagir.',
+      },
+      {
+        q: 'À qui appartient le code à la fin?',
+        a: 'À toi. Le repo Git, les comptes, le domaine — tout. Si un jour tu veux migrer à quelqu’un d’autre ou tout reprendre toi-même, il n’y a rien à dénouer.',
+      },
+      {
+        q: 'Je peux apporter mes propres designs ou maquettes?',
+        a: 'Avec plaisir. Figma, Sketch, dessin sur napperon — tout est bienvenu. Sinon, je propose une direction visuelle simple et on l’ajuste ensemble.',
+      },
+    ],
+  },
+
   about: {
     eyebrow: 'qui je suis',
     title: 'À propos',
@@ -484,19 +554,20 @@ const EN: Copy = {
   hero: {
     eyebrow: 'side-practice · Quebec · async',
     folio: '№ 01 — Marc, a dev in Quebec',
-    salut: "Hi, I'm Marc, a dev in Quebec City.",
+    salut: 'Marc-Antoine, here to solve important problems for my community',
     display: {
-      pre: "Hi, I'm Marc,",
-      lead: 'a dev in Quebec',
-      emphasis: 'solving small problems',
-      tail: 'for the people around me.',
+      pre: 'Marc-Antoine,',
+      lead: 'here to solve',
+      emphasis: 'important problems',
+      tail: 'for my community.',
     },
     signature: 'Marc — Quebec',
     body1:
-      'Day job during the week. Evenings and weekends, I help people solve everyday problems. Async (no calls, no meetings) — at your pace and mine.',
+      'As a side-gig, I help people solve everyday problems. Asynchronous (no calls, no meetings). All through my portal, at your pace and mine.',
     body2:
-      'Got a recurring problem — paperwork, tracking, coordination? Tell me about it through the portal.',
-    body3: 'Free account. You can test the demo at every step. First draft in a few days.',
+      "Got a recurring problem — paperwork, tracking, coordination? It's not a national crisis, but it's still annoying? Tell me about it through the portal.",
+    body3:
+      'Free account. You test, see the demo at every step. First draft in a few days. We see it through to the end together. All transparent.',
     cta: 'Create a free account →',
     ctaWaitlist: 'Join the waitlist →',
     ctaLoggedIn: 'Start a new proposal →',
@@ -505,7 +576,7 @@ const EN: Copy = {
   },
 
   how: {
-    eyebrow: '04 steps',
+    eyebrow: 'Four steps',
     title: 'How it works',
     steps: [
       {
@@ -532,9 +603,9 @@ const EN: Copy = {
   },
 
   featured: {
-    eyebrow: 'in flight',
+    eyebrow: 'projects in progress',
     title: 'What I’m actually shipping',
-    sub: 'Each card is a living project — real code, real clients, latest build open for inspection.',
+    sub: 'Each card is a living project — real code, real problems, latest build open for inspection.',
     seeAll: 'See all projects →',
     loading: 'Loading…',
     openBuild: 'Open the build ↗',
@@ -555,23 +626,21 @@ const EN: Copy = {
     title: 'What we do, what we don’t',
     body: "Read this before filling out the form. If it matches, we'll get along. If not, no drama — there are plenty of other devs who do other things.",
     do: {
-      title: 'We do',
+      title: 'I do',
       items: [
-        'Repetitive paperwork automation',
+        'Quite simply, your idea',
+        'Automation of any kind',
         'Coordination for small teams or volunteers',
-        'Voice → document, voice → invoice',
-        'Client tracking, simple inventory',
-        'Small internal tools that need to last 2-3 years',
+        'Portfolios, discovery sites',
       ],
     },
     dont: {
-      title: "We don't",
+      title: "I don't",
       items: [
         'Calls, meetings, scheduled video',
         'Urgent bug fixes or 24/7 support',
-        'Mid-build scope changes',
-        'Long-term hosting or maintenance',
-        'Real-time apps (chat, booking, minute-by-minute dashboards)',
+        'Mid-project scope changes',
+        'Work that goes nowhere',
       ],
     },
   },
@@ -591,22 +660,20 @@ const EN: Copy = {
       {
         name: 'Tier 1',
         price: '≈ $300',
-        scope: 'Half-day project. Small script, simple automation, a form that works.',
+        scope: 'Small simple project. Small script, portfolio, automation, a form that works.',
         after: '0 post-ship tweaks',
       },
       {
         name: 'Tier 2',
         price: '≈ $1500',
-        scope:
-          'A 1-to-3-week project. An internal tool that lasts. See projects of this size in flight.',
+        scope: 'A few-week project. An internal tool that lasts. Community projects.',
         after: '1 round of tweaks included',
         anchor: true,
       },
       {
         name: 'Tier 3',
         price: '≈ $3000+',
-        scope:
-          'Bigger project. Custom-quoted after triage (the step where I read it and decide). Always scoped to ship in under 6 weeks.',
+        scope: 'Bigger project. Custom-quoted after triage (the step where I read it and decide).',
         after: 'post-triage quote',
       },
     ],
@@ -621,13 +688,83 @@ const EN: Copy = {
     micro: "If I'm full, you can still create an account and join the waitlist.",
   },
 
+  stickyCta: {
+    label: 'Start a session',
+    short: 'Start →',
+    ariaLabel: 'Start a session — open the form',
+  },
+
+  themeToggle: {
+    switchToDay: 'Day mode',
+    switchToNight: 'Night mode',
+  },
+
+  projectsFilter: {
+    tierLabel: 'Tier',
+    statusLabel: 'Status',
+    all: 'All',
+    clear: 'Reset',
+    emptyAfterFilter: 'No projects match. Try another filter.',
+    statusLabels: {
+      draft: 'draft',
+      triage: 'triage',
+      active: 'active',
+      shipped: 'shipped',
+      rejected: 'rejected',
+    },
+  },
+
+  inlineTeaser: {
+    eyebrow: 'start here',
+    title: "Pick the kind of problem — I'll take it from there",
+    sub: "One click and you'll skip the 'project type' step in the form. You can change your mind later.",
+    types: {
+      paperasse: 'Paperwork to automate',
+      suivi: 'Tracking (clients, inventory, projects)',
+      coordination: 'Coordination (team, volunteers, neighbours)',
+      autre: 'Other — describe it in your own words',
+    },
+    cta: 'Continue →',
+  },
+
+  faq: {
+    eyebrow: 'frequently asked',
+    title: 'Questions that come up',
+    items: [
+      {
+        q: 'Is the price really that price?',
+        a: "Yes. Tier 0 is $0 and exists so we can see if we're a fit. Tiers 1–3 are fixed-price quoted before we start — I won't go past the quote without a conversation first. No surprise invoice.",
+      },
+      {
+        q: 'What if it takes longer than expected?',
+        a: "If I run over, that's on me — the price stays what was quoted. If the scope changes mid-flight (you're adding new things), we pause, look at it, and decide together: adjust the quote or cut.",
+      },
+      {
+        q: "What if I don't like the result?",
+        a: "You see a testable demo at every step — not just at the end. If halfway through you realize it's not what you wanted, we stop. I bill for the work done to date, not a penny more. No obligation to finish.",
+      },
+      {
+        q: "I don't know exactly what I want. Is that ok?",
+        a: "It's expected. Describe the problem the way it comes to you, in French or English, in your own words. My job is to ask the right questions and put a concrete version in front of you to react to.",
+      },
+      {
+        q: 'Who owns the code at the end?',
+        a: "You do. The Git repo, the accounts, the domain — all yours. If you ever want to migrate to someone else or take it over yourself, there's nothing to untangle.",
+      },
+      {
+        q: 'Can I bring my own designs or mockups?',
+        a: 'Please do. Figma, Sketch, napkin sketch — all welcome. Otherwise, I propose a simple visual direction and we adjust together.',
+      },
+    ],
+  },
+
   about: {
     eyebrow: 'who I am',
     title: 'About',
     body: "I've been a senior dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible — for both of us.",
     body2:
       'Not an agency. Not a platform. A human who decides, with a bit of machine in the middle so we both keep our evenings and weekends.',
-    portraitAlt: 'Marc Jeanson',
+    portraitAlt: 'Marc',
     githubLabel: 'GitHub',
     linkedinLabel: 'LinkedIn',
   },
@@ -884,7 +1021,7 @@ const EN: Copy = {
   },
 
   showcaseAdmin: {
-    sectionHeading: 'Showcase as project',
+    sectionHeading: 'Showcased projects',
     sectionHint:
       'When you turn this on, this session appears on /projects with the title and tagline you set here.',
     enabledLabel: 'Publish as a project on /projects',
@@ -895,7 +1032,7 @@ const EN: Copy = {
     tierLabel: 'Tier',
     tierHint: 'Position the session against the public pricing tiers.',
     tierOptionNone: 'Unclassified',
-    tierOption0: 'Tier 0 · self-serve',
+    tierOption0: 'Tier 0 · self-service',
     tierOption1: 'Tier 1 · ≈ $300',
     tierOption2: 'Tier 2 · ≈ $1500',
     tierOption3: 'Tier 3 · ≈ $3000+',

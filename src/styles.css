@@ -1,5 +1,8 @@
 /* Design tokens — Bonjour: warm cream paper + sage green.
-   Values from claude.ai/design handoff (community help portal direction). */
+   Values from claude.ai/design handoff (community help portal direction).
+   The night palette below (data-theme="night") inverts the surface tones
+   to a deep ink + warm-cream type pairing while keeping the same sage
+   accent — same atelier voice, after dark. */
 :root {
   --bg: #f6f1e6; /* paper */
   --bg-section: #fbf7ec; /* paper-soft */
@@ -31,6 +34,42 @@
 
   --max-w: 880px;
   --gutter: 24px;
+}
+
+:root[data-theme='night'] {
+  --bg: #181613;
+  --bg-section: #1e1b17;
+  --bg-card: #25211c;
+  --bg-hover: #2e2924;
+  --bg-active: #2a3a30;
+  --border: #3a3530;
+  --border-soft: #2c2823;
+  --text: #f3ecd9;
+  --text-mid: #c9c0aa;
+  --text-soft: #8d8674;
+  --text-faint: #5e574d;
+  --accent: #6a9b78;
+  --accent-warm: #8cbb99;
+  --accent-soft: #2a3a30;
+  --warm: #d28358;
+  --warm-soft: #3a2820;
+  --cool: #6d92ad;
+  --cool-soft: #2c3a48;
+  --status-active: #6a9b78;
+  color-scheme: dark;
+}
+/* Sticky header glass — re-tinted in night so the blur doesn't read white. */
+:root[data-theme='night'] .site-header {
+  background: rgba(24, 22, 19, 0.86);
+}
+/* Paper grain — the cream paper grain reads wrong on dark bg; soften it. */
+:root[data-theme='night'] .home::before {
+  opacity: 0.25;
+  mix-blend-mode: lighten;
+}
+/* Portrait — soften so it doesn't jump out against the dark surface. */
+:root[data-theme='night'] .about__portrait {
+  filter: brightness(0.85) saturate(0.9);
 }
 
 *,
@@ -283,6 +322,49 @@ p {
   border-color: var(--accent-warm);
   filter: brightness(1.05);
 }
+.theme-toggle {
+  appearance: none;
+  background: var(--bg-hover);
+  border: 0;
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-soft);
+  padding: 0;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 220ms cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  background: var(--bg-active);
+  color: var(--text);
+  outline: none;
+}
+.theme-toggle[aria-pressed='true'] {
+  color: var(--accent-warm);
+}
+.theme-toggle__glyph {
+  font-size: 15px;
+  line-height: 1;
+  transform: translateY(-0.5px);
+  transition: transform 280ms cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+.theme-toggle:active .theme-toggle__glyph {
+  transform: scale(0.9) translateY(-0.5px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  .theme-toggle__glyph {
+    transition: none;
+  }
+}
+
 .lang {
   display: inline-flex;
   gap: 4px;
@@ -3362,9 +3444,74 @@ button:focus-visible,
 }
 .project-card__link {
   display: block;
-  padding: 18px 20px 16px;
   text-decoration: none;
   color: inherit;
+}
+.project-card__link > .project-card__head,
+.project-card__link > .project-card__title,
+.project-card__link > .project-card__tagline,
+.project-card__link > .project-card__build,
+.project-card__link > .project-card__cta {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.project-card__link > .project-card__head {
+  padding-top: 18px;
+}
+.project-card__link > .project-card__cta {
+  padding-bottom: 16px;
+}
+/* Live preview thumbnail — sits flush at the top of the card, masks the
+   card's top corners. Iframe renders at desktop width and is scaled with
+   CSS transform so the thumbnail *looks like* the deployed app, not a
+   responsive-narrow rendering of it. Pointer-events off — the card link
+   is the only interaction. */
+.project-card__preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--bg);
+  border-top-left-radius: calc(var(--radius-sm) - 1px);
+  border-top-right-radius: calc(var(--radius-sm) - 1px);
+  border-bottom: 1px solid var(--border-soft);
+}
+.project-card__preview--empty {
+  background: radial-gradient(
+    120% 80% at 30% 0%,
+    var(--accent-soft, var(--bg-card)) 0%,
+    var(--bg-card) 60%,
+    var(--bg) 100%
+  );
+}
+.project-card__preview-frame {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 1280px;
+  height: 800px;
+  border: 0;
+  transform: scale(0.3);
+  transform-origin: top left;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 380ms ease,
+    transform 600ms cubic-bezier(0.2, 0.6, 0.2, 1);
+  background: var(--bg-card);
+}
+.project-card__preview-frame.is-loaded {
+  opacity: 1;
+}
+.project-card:hover .project-card__preview-frame.is-loaded {
+  transform: scale(0.32);
+}
+@media (prefers-reduced-motion: reduce) {
+  .project-card__preview-frame {
+    transition: opacity 120ms ease;
+  }
+  .project-card:hover .project-card__preview-frame.is-loaded {
+    transform: scale(0.3);
+  }
 }
 .project-card__head {
   display: flex;
@@ -4172,6 +4319,56 @@ button.intake__progress-step:disabled {
 .hero__display-line--lead {
   font-weight: 800;
 }
+/* The "highlighter" mark: editorial underline that draws itself once on
+   first paint beneath the emphasis line. Sits behind the text (z-index -1
+   with isolation on the parent), at 24% opacity so it reads as ink-on-paper
+   highlight rather than a hard underline. Reduced-motion: appears statically. */
+.hero__display-emph-mark {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+.hero__display-emph-mark::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0.06em;
+  height: 0.18em;
+  width: 100%;
+  background: var(--accent);
+  opacity: 0.22;
+  border-radius: 2px;
+  z-index: -1;
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero__display-emph-mark::after {
+    animation: hero-mark-draw 1100ms cubic-bezier(0.32, 0.72, 0.24, 1) 700ms forwards;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__display-emph-mark::after {
+    transform: scaleX(1);
+  }
+}
+@keyframes hero-mark-draw {
+  0% {
+    transform: scaleX(0);
+  }
+  60% {
+    transform: scaleX(1);
+  }
+  /* Brief settle — the highlighter "lifts" a touch as it finishes, mimics
+     the wrist motion of an actual highlighter pen. */
+  80% {
+    transform: scaleX(0.97);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
 .hero__display-line--emph {
   font-family: var(--sans);
   font-style: italic;
@@ -5340,4 +5537,359 @@ button.intake__progress-step:disabled {
   border-bottom-color: var(--accent);
   text-decoration: none;
   outline: none;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PROJECTS FILTER — chip-based tier + status filter above the gallery.
+   State is mirrored to ?tier=&status= in the URL so visitors can share a
+   filtered view and the back button restores it.
+   ────────────────────────────────────────────────────────────────────── */
+.projects-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 0 24px;
+  margin: 8px 0 16px;
+  border-bottom: 1px solid var(--border-soft);
+  position: relative;
+}
+.projects-filter__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.projects-filter__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  min-width: 56px;
+}
+.projects-filter__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.projects-filter__chip {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+.projects-filter__chip:hover,
+.projects-filter__chip:focus-visible {
+  border-color: var(--text-mid);
+  color: var(--text);
+  outline: none;
+}
+.projects-filter__chip.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-warm);
+}
+.projects-filter__chip--tier-2.is-active,
+.projects-filter__chip--tier-3.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg-card);
+}
+.projects-filter__chip--status-shipped.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg-card);
+}
+.projects-filter__chip--status-rejected.is-active {
+  background: var(--warm-soft);
+  border-color: var(--warm);
+  color: var(--warm);
+}
+.projects-filter__clear {
+  align-self: flex-end;
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--text-soft);
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  padding: 4px 0;
+}
+.projects-filter__clear:hover,
+.projects-filter__clear:focus-visible {
+  color: var(--text);
+  outline: none;
+}
+@media (max-width: 560px) {
+  .projects-filter__row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .projects-filter__label {
+    min-width: 0;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   FAQ — native <details>/<summary> accordion, one row per question, with a
+   rotating "+" → "−" marker. Browsers handle open/close and screen-reader
+   semantics; we just style. FAQPage JSON-LD is injected from the component
+   so search engines can surface rich results.
+   ────────────────────────────────────────────────────────────────────── */
+.faq__list {
+  max-width: 720px;
+  margin: 24px auto 0;
+  border-top: 1px solid var(--border-soft);
+}
+.faq__item {
+  border-bottom: 1px solid var(--border-soft);
+}
+.faq__item > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 4px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.35;
+  color: var(--text);
+  transition: color 160ms ease;
+}
+.faq__item > summary::-webkit-details-marker {
+  display: none;
+}
+.faq__item:hover > summary,
+.faq__item > summary:focus-visible {
+  color: var(--accent-warm);
+  outline: none;
+}
+.faq__q-text {
+  flex: 1 1 auto;
+}
+.faq__q-marker {
+  font-family: var(--mono);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--accent-warm);
+  flex-shrink: 0;
+  transition: transform 220ms cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+.faq__item[open] .faq__q-marker {
+  transform: rotate(45deg);
+}
+.faq__a {
+  margin: 0 0 22px;
+  padding: 0 4px;
+  color: var(--text-mid);
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 60ch;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq__q-marker {
+    transition: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   INLINE INTAKE TEASER — soft on-ramp after Pricing. 4-card grid; picking a
+   type writes the intake draft and routes to /intake so the type-picker
+   step is skipped. Visual sits between Pricing and Vibe — same editorial
+   rhythm as the rest of the home page.
+   ────────────────────────────────────────────────────────────────────── */
+.inline-teaser__inner {
+  text-align: center;
+}
+.inline-teaser__title {
+  margin: 6px auto 12px;
+  font-family: var(--display);
+  font-size: clamp(26px, 3.4vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  max-width: 22ch;
+}
+.inline-teaser__sub {
+  margin: 0 auto 32px;
+  color: var(--text-mid);
+  font-size: 15px;
+  max-width: 52ch;
+}
+.inline-teaser__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: left;
+}
+@media (max-width: 560px) {
+  .inline-teaser__grid {
+    grid-template-columns: 1fr;
+  }
+}
+.inline-teaser__card {
+  appearance: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 18px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition:
+    transform 160ms cubic-bezier(0.32, 0.72, 0.24, 1),
+    border-color 160ms ease,
+    background 160ms ease,
+    opacity 160ms ease;
+}
+.inline-teaser__card:hover,
+.inline-teaser__card:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  outline: none;
+}
+.inline-teaser__card.is-picked {
+  border-color: var(--accent-warm);
+  background: var(--accent-soft, var(--bg-card));
+}
+.inline-teaser__card:disabled {
+  cursor: default;
+  opacity: 0.45;
+  transform: none;
+}
+.inline-teaser__card.is-picked:disabled {
+  opacity: 1;
+}
+.inline-teaser__card-name {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-warm);
+}
+.inline-teaser__card-title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.25;
+  color: var(--text);
+}
+.inline-teaser__card-cta {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.inline-teaser__card:hover .inline-teaser__card-cta,
+.inline-teaser__card:focus-visible .inline-teaser__card-cta,
+.inline-teaser__card.is-picked .inline-teaser__card-cta {
+  color: var(--accent-warm);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MOBILE STICKY CTA — bottom-fixed pill that appears after the hero on
+   narrow viewports. Desktop never sees it (display: none > 768px). The
+   visibility class is toggled in TSX based on scrollY; CSS animates in.
+   ────────────────────────────────────────────────────────────────────── */
+.mobile-sticky-cta {
+  display: none;
+}
+@media (max-width: 768px) {
+  .mobile-sticky-cta {
+    display: inline-flex;
+    position: fixed;
+    left: 50%;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    transform: translate(-50%, calc(100% + 24px));
+    z-index: 40;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px 14px 22px;
+    background: var(--accent-warm);
+    color: #fffaf0;
+    border-radius: 999px;
+    text-decoration: none;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    box-shadow:
+      0 10px 24px rgba(31, 29, 24, 0.18),
+      0 2px 6px rgba(31, 29, 24, 0.08);
+    transition:
+      transform 280ms cubic-bezier(0.32, 0.72, 0.24, 1),
+      opacity 220ms ease;
+    opacity: 0;
+    pointer-events: none;
+    max-width: calc(100vw - 32px);
+  }
+  .mobile-sticky-cta.is-visible {
+    transform: translate(-50%, 0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .mobile-sticky-cta:hover,
+  .mobile-sticky-cta:focus-visible {
+    filter: brightness(1.05);
+    outline: none;
+  }
+  .mobile-sticky-cta__arrow {
+    font-size: 17px;
+    line-height: 1;
+    transform: translateY(-1px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-sticky-cta {
+    transition: opacity 120ms linear !important;
+  }
+  .mobile-sticky-cta:not(.is-visible) {
+    transform: translate(-50%, 0) !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   VIEW TRANSITIONS — cinematic morph from a project card on the home page
+   or /projects gallery into the /share/:id article. Only the clicked card
+   carries the `project-detail` name (set conditionally in TSX via
+   useViewTransitionState), so the destination article picks it up uniquely.
+   Browsers without View Transitions support (Firefox today) navigate
+   instantly — react-router v7's <Link viewTransition> falls back cleanly.
+   ────────────────────────────────────────────────────────────────────── */
+::view-transition-old(project-detail),
+::view-transition-new(project-detail) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+::view-transition-group(project-detail) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+/* Reduced-motion: collapse the morph to a quick crossfade so the page swap
+   still has continuity but no motion. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(project-detail),
+  ::view-transition-new(project-detail),
+  ::view-transition-group(project-detail) {
+    animation-duration: 80ms !important;
+    animation-timing-function: linear !important;
+  }
 }

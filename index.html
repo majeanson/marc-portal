@@ -25,9 +25,17 @@
       property="og:description"
       content="Soir et fin de semaine, j'aide les gens à régler des problèmes du quotidien avec des petits logiciels. Async, démos testables, pas de calls."
     />
-    <meta property="og:image" content="/og-image.svg" />
+    <!-- PNG, not SVG: Slack, iMessage, LinkedIn and Discord silently drop
+         SVG OG images. Regenerate from og-image.svg via
+         `node scripts/build-og-image.mjs` when the design changes. -->
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="marc.portal — Dev à Québec. Job de jour. Le soir, j'aide."
+    />
     <meta property="og:locale" content="fr_CA" />
     <meta property="og:locale:alternate" content="en_CA" />
 
@@ -38,9 +46,19 @@
       name="twitter:description"
       content="Soir et fin de semaine, j'aide les gens à régler des problèmes du quotidien avec des petits logiciels."
     />
-    <meta name="twitter:image" content="/og-image.svg" />
+    <meta name="twitter:image" content="/og-image.png" />
+    <meta
+      name="twitter:image:alt"
+      content="marc.portal — Dev à Québec. Job de jour. Le soir, j'aide."
+    />
 
     <title>Marc — dev à Québec, async, problèmes du quotidien</title>
+
+    <!-- Theme bootstrap — must run before React mounts so html[data-theme]
+         is set on first paint (no flash-of-cream for night-mode returners).
+         Lives as a separate file so the strict CSP `script-src 'self'`
+         doesn't need an `'unsafe-inline'` exception. -->
+    <script src="/theme-bootstrap.js"></script>
   </head>
   <body>
     <div id="root"></div>

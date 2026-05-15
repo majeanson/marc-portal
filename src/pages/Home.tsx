@@ -13,6 +13,9 @@ import { Footer } from '../components/Footer'
 import { SectionRail } from '../components/SectionRail'
 import { ScrollProgress } from '../components/ScrollProgress'
 import { PullQuote } from '../components/PullQuote'
+import { MobileStickyCta } from '../components/MobileStickyCta'
+import { InlineIntakeTeaser } from '../components/InlineIntakeTeaser'
+import { FAQ } from '../components/FAQ'
 
 export function Home({ lang }: { lang: Lang }) {
   const t = DICT[lang]
@@ -60,16 +63,23 @@ export function Home({ lang }: { lang: Lang }) {
         <HowItWorks lang={lang} />
         {/* 4 — Pricing: concrete numbers so visitors self-qualify */}
         <Pricing lang={lang} />
+        {/* 4b — Inline intake teaser: low-friction "pick a type" CTA right
+              after pricing. Skips the type-picker step inside /intake. */}
+        <InlineIntakeTeaser lang={lang} />
         {/* 5 — Vibe filter: do/don't lists — final self-qualification gate */}
         <VibeFilter lang={lang} />
         {/* 5b — Pull-quote: a short voice break before About lands */}
         <PullQuote lang={lang} />
         {/* 6 — About: short bio near the end (visitors who care, scroll) */}
         <About lang={lang} />
+        {/* 6b — FAQ: handles common objections before the final CTA. JSON-LD
+              FAQPage schema is injected for SEO rich results. */}
+        <FAQ lang={lang} />
         {/* 7 — Final CTA: one last push before the footer */}
         <CTA lang={lang} />
       </main>
       <Footer lang={lang} />
+      <MobileStickyCta lang={lang} />
     </div>
   )
 }

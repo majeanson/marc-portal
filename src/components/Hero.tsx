@@ -58,7 +58,9 @@ export function Hero({ lang }: { lang: Lang }) {
         <h1 id="hero-title" className="hero__display">
           <span className="hero__display-line hero__display-line--pre">{t.display.pre}</span>
           <span className="hero__display-line hero__display-line--lead">{t.display.lead}</span>
-          <span className="hero__display-line hero__display-line--emph">{t.display.emphasis}</span>
+          <span className="hero__display-line hero__display-line--emph">
+            <span className="hero__display-emph-mark">{t.display.emphasis}</span>
+          </span>
           <span className="hero__display-line hero__display-line--tail">{t.display.tail}</span>
         </h1>
 

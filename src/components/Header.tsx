@@ -1,6 +1,7 @@
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
+import { ThemeToggle } from './ThemeToggle'
 
 export function Header({ lang }: { lang: Lang }) {
   const t = DICT[lang]
@@ -76,6 +77,7 @@ export function Header({ lang }: { lang: Lang }) {
                 )}
               </div>
             )}
+            <ThemeToggle lang={lang} />
             <nav className="lang" aria-label={t.langNavLabel}>
               <a
                 href="/"

@@ -43,7 +43,10 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
     <div className="app">
       <Header lang={lang} />
       <main id="main-content">
-        <article className="section intake session-frame">
+        <article
+          className="section intake session-frame"
+          style={{ viewTransitionName: 'project-detail' }}
+        >
           <div className="section__inner">
             <div className="section__eyebrow">{t.heading}</div>
             <h1 className="session-frame__title">{t.heading}</h1>

@@ -1,9 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useSearchParams, useViewTransitionState } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { ProjectCardPreview } from '../components/ProjectCardPreview'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
+
+type TierFilter = '0' | '1' | '2' | '3'
+type StatusFilter = 'active' | 'shipped' | 'draft' | 'triage' | 'rejected'
+
+const TIER_VALUES: TierFilter[] = ['0', '1', '2', '3']
+const STATUS_VALUES: StatusFilter[] = ['active', 'shipped', 'draft', 'triage', 'rejected']
+
+function isTier(v: string | null): v is TierFilter {
+  return v !== null && (TIER_VALUES as readonly string[]).includes(v)
+}
+function isStatus(v: string | null): v is StatusFilter {
+  return v !== null && (STATUS_VALUES as readonly string[]).includes(v)
+}
 
 /**
  * Public projects gallery. Lists every session admin has opted into the
@@ -14,9 +29,16 @@ import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
  */
 export function Projects({ lang }: { lang: Lang }) {
   const t = DICT[lang].projects
+  const tf = DICT[lang].projectsFilter
   const [projects, setProjects] = useState<PublicProject[] | null>(null)
   const [error, setError] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
   const langPrefix = lang === 'en' ? '/en' : ''
+
+  const tier = isTier(searchParams.get('tier')) ? (searchParams.get('tier') as TierFilter) : null
+  const status = isStatus(searchParams.get('status'))
+    ? (searchParams.get('status') as StatusFilter)
+    : null
 
   useEffect(() => {
     document.title = `${t.heading} — Marc`
@@ -37,6 +59,34 @@ export function Projects({ lang }: { lang: Lang }) {
     }
   }, [])
 
+  // Filtered view — recomputed only when filters or data change. The
+  // gallery's underlying sort order (showcasedAt desc, from the server) is
+  // preserved; filters never reshuffle.
+  const filtered = useMemo(() => {
+    if (!projects) return null
+    return projects.filter((p) => {
+      if (tier !== null && String(p.tier ?? '') !== tier) return false
+      if (status !== null && p.status !== status) return false
+      return true
+    })
+  }, [projects, tier, status])
+
+  const hasFilter = tier !== null || status !== null
+
+  function setFilter(key: 'tier' | 'status', value: string | null) {
+    const next = new URLSearchParams(searchParams)
+    if (value === null) next.delete(key)
+    else next.set(key, value)
+    setSearchParams(next, { replace: false })
+  }
+
+  function clearFilters() {
+    const next = new URLSearchParams(searchParams)
+    next.delete('tier')
+    next.delete('status')
+    setSearchParams(next, { replace: false })
+  }
+
   return (
     <div className="app">
       <Header lang={lang} />
@@ -46,6 +96,17 @@ export function Projects({ lang }: { lang: Lang }) {
             <div className="section__eyebrow">{t.eyebrow}</div>
             <h1 className="projects__title">{t.heading}</h1>
             <p className="projects__intro">{t.intro}</p>
+
+            {projects && projects.length > 0 && (
+              <ProjectsFilterBar
+                lang={lang}
+                tier={tier}
+                status={status}
+                onSetFilter={setFilter}
+                onClear={clearFilters}
+                hasFilter={hasFilter}
+              />
+            )}
 
             {error && (
               <p className="thread__empty mono" role="alert">
@@ -57,9 +118,11 @@ export function Projects({ lang }: { lang: Lang }) {
               <p className="mono">{t.loading}</p>
             ) : projects && projects.length === 0 ? (
               <p className="thread__empty">{t.empty}</p>
+            ) : filtered && filtered.length === 0 ? (
+              <p className="thread__empty">{tf.emptyAfterFilter}</p>
             ) : (
               <ul className="projects__grid">
-                {(projects ?? []).map((p) => (
+                {(filtered ?? []).map((p) => (
                   <ProjectCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} />
                 ))}
               </ul>
@@ -70,6 +133,85 @@ export function Projects({ lang }: { lang: Lang }) {
         </article>
       </main>
       <Footer lang={lang} />
+    </div>
+  )
+}
+
+function ProjectsFilterBar({
+  lang,
+  tier,
+  status,
+  onSetFilter,
+  onClear,
+  hasFilter,
+}: {
+  lang: Lang
+  tier: TierFilter | null
+  status: StatusFilter | null
+  onSetFilter: (k: 'tier' | 'status', v: string | null) => void
+  onClear: () => void
+  hasFilter: boolean
+}) {
+  const tf = DICT[lang].projectsFilter
+  return (
+    <div
+      className="projects-filter"
+      role="region"
+      aria-label={`${tf.tierLabel} / ${tf.statusLabel}`}
+    >
+      <div className="projects-filter__row">
+        <span className="projects-filter__label mono">{tf.tierLabel}</span>
+        <div className="projects-filter__chips" role="group" aria-label={tf.tierLabel}>
+          <button
+            type="button"
+            className={`projects-filter__chip${tier === null ? ' is-active' : ''}`}
+            onClick={() => onSetFilter('tier', null)}
+            aria-pressed={tier === null}
+          >
+            {tf.all}
+          </button>
+          {TIER_VALUES.map((tv) => (
+            <button
+              key={tv}
+              type="button"
+              className={`projects-filter__chip projects-filter__chip--tier projects-filter__chip--tier-${tv}${tier === tv ? ' is-active' : ''}`}
+              onClick={() => onSetFilter('tier', tier === tv ? null : tv)}
+              aria-pressed={tier === tv}
+            >
+              T{tv}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="projects-filter__row">
+        <span className="projects-filter__label mono">{tf.statusLabel}</span>
+        <div className="projects-filter__chips" role="group" aria-label={tf.statusLabel}>
+          <button
+            type="button"
+            className={`projects-filter__chip${status === null ? ' is-active' : ''}`}
+            onClick={() => onSetFilter('status', null)}
+            aria-pressed={status === null}
+          >
+            {tf.all}
+          </button>
+          {STATUS_VALUES.map((sv) => (
+            <button
+              key={sv}
+              type="button"
+              className={`projects-filter__chip projects-filter__chip--status projects-filter__chip--status-${sv}${status === sv ? ' is-active' : ''}`}
+              onClick={() => onSetFilter('status', status === sv ? null : sv)}
+              aria-pressed={status === sv}
+            >
+              {tf.statusLabels[sv]}
+            </button>
+          ))}
+        </div>
+      </div>
+      {hasFilter && (
+        <button type="button" className="projects-filter__clear mono" onClick={onClear}>
+          {tf.clear} ✕
+        </button>
+      )}
     </div>
   )
 }
@@ -142,9 +284,15 @@ function ProjectCard({
     ? `${project.currentBuild.buildUrl}${project.currentBuild.iframePath ?? ''}`
     : null
   const title = project.title || t.untitled
+  // Only the *clicked* card gets the shared view-transition name — otherwise
+  // every card would morph into the destination and the browser would refuse
+  // the transition (names must be unique within a snapshot).
+  const isTransitioning = useViewTransitionState(shareHref)
+  const cardStyle = isTransitioning ? { viewTransitionName: 'project-detail' } : undefined
   return (
-    <li className="project-card">
-      <a href={shareHref} className="project-card__link">
+    <li className="project-card" style={cardStyle}>
+      <Link to={shareHref} className="project-card__link" viewTransition>
+        <ProjectCardPreview buildHref={buildHref} title={title} />
         <div className="project-card__head">
           <span className="project-card__date mono">{formatDate(project.showcasedAt, lang)}</span>
           <span className="project-card__head-right">
@@ -171,7 +319,7 @@ function ProjectCard({
           </div>
         )}
         <div className="project-card__cta mono">{t.openCta}</div>
-      </a>
+      </Link>
       {buildHref && (
         <a
           className="project-card__build-link mono"
