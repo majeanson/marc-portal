@@ -2,39 +2,46 @@
  * Sentry init for the browser SPA.
  *
  * DSN comes from `VITE_SENTRY_DSN` (Vite exposes anything prefixed VITE_*).
- * When the env var is unset (dev with no DSN, preview deploys, opt-out), we
- * silently no-op — every call to `Sentry.*` becomes a noop client, and
- * nothing reports.
+ * When the env var is unset (dev with no DSN, preview deploys, opt-out), the
+ * SDK still ships in the bundle but is disabled via `enabled: false`, so no
+ * events leave the browser.
+ *
+ * Why not early-return on missing DSN: Vite statically replaces
+ * `import.meta.env.VITE_*` at build time. Combined with Rolldown's
+ * dead-code elimination, an `if (!DSN) return` before any `Sentry.*` call
+ * makes the whole `@sentry/react` import tree-shakable when the env var is
+ * empty at build time. Setting the env var later doesn't help — the live
+ * bundle has no SDK to wake up. We learned this the hard way (commit
+ * dba587f / rebuild loop). Pattern below keeps Sentry.init() statically
+ * reachable so the SDK is always bundled; runtime decides whether it
+ * actually transmits.
  *
  * Sample rates are intentionally low — this is a low-traffic site and we
- * want the free tier to last. Errors are 100% (you want every one); traces
- * are off by default (turn on later if perf is an investigation focus).
+ * want the free tier to last. Errors are 100%; traces off by default.
  */
 
 import * as Sentry from '@sentry/react'
 
 const DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined
+const ENABLED = typeof DSN === 'string' && DSN.length > 0
+
 // Tag events with the deployment environment so prod and preview don't mix
-// in the same issue stream. CF Pages exposes the deploy URL via
-// `CF_PAGES_URL` at build time — we forward it under VITE_CF_PAGES_URL in
-// the build pipeline if needed. For now, infer from the runtime host.
-const environment =
-  typeof window !== 'undefined' && window.location.hostname.endsWith('.pages.dev')
-    ? window.location.hostname.includes('preview') ||
-      /^[a-f0-9]{8}\.marc-portal/.test(window.location.hostname)
-      ? 'preview'
-      : 'production'
-    : 'development'
+// in the same issue stream. Inferred at call time from the runtime host so
+// preview deploys (with their hashed subdomain) tag correctly without any
+// build-time CF env-var plumbing.
+function inferEnvironment(): 'production' | 'preview' | 'development' {
+  if (typeof window === 'undefined') return 'production'
+  const host = window.location.hostname
+  if (host === 'localhost' || host.startsWith('127.0.0.1')) return 'development'
+  if (host.endsWith('.pages.dev') && /^[a-f0-9]{8}\./.test(host)) return 'preview'
+  return 'production'
+}
 
 export function initSentry(): void {
-  if (!DSN) {
-    // No DSN — Sentry stays uninitialized. The exported helpers below all
-    // call into the SDK, which is a no-op when init was never called.
-    return
-  }
   Sentry.init({
-    dsn: DSN,
-    environment,
+    dsn: DSN ?? '',
+    enabled: ENABLED,
+    environment: inferEnvironment(),
     // 100% of errors. This is a 1-active-user app; volume is fine.
     sampleRate: 1.0,
     // Performance traces disabled by default. Flip on when investigating.
@@ -70,9 +77,9 @@ export function initSentry(): void {
 /**
  * Attach the signed-in user's email as a Sentry user context. Called from
  * AuthProvider on email change. Anonymize by passing null on logout.
+ * No-op when SDK is disabled (init received enabled: false).
  */
 export function setSentryUser(email: string | null): void {
-  if (!DSN) return
   if (email) {
     Sentry.setUser({ email })
   } else {
@@ -92,6 +99,5 @@ export const SentryErrorBoundary = Sentry.ErrorBoundary
  * intentional `console.error` sites we want amplified.
  */
 export function captureException(err: unknown, context?: Record<string, unknown>): void {
-  if (!DSN) return
   Sentry.captureException(err, context ? { extra: context } : undefined)
 }
