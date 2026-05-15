@@ -15,6 +15,11 @@ import { randomTokenB64url, sha256B64url } from '../../_lib/bytes'
 const TOKEN_TTL_SECONDS = 30 * 60
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60
 const RATE_LIMIT_MAX = 5
+// Separate, stricter IP-only ceiling. Catches the rotating-email-same-IP
+// attacker who would otherwise drain Resend's 100/day free-tier quota by
+// staying under the per-email limit. Tuned generously: a household behind one
+// NAT, two adults each requesting a fresh link a few times = well under 20.
+const RATE_LIMIT_IP_MAX = 20
 
 interface RequestBody {
   email?: unknown
@@ -42,20 +47,31 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown'
   const since = now - RATE_LIMIT_WINDOW_SECONDS
 
-  // Rolling-window rate limit: 5 requests per email OR ip per hour. Counted
-  // from the magic_link_tokens table (no separate rate-limit table needed).
-  const recent = await env.DB.prepare(
-    `SELECT COUNT(*) AS n FROM magic_link_tokens
-     WHERE (email = ? OR ip = ?) AND created_at > ?`,
+  // Two independent rolling-window ceilings, counted from magic_link_tokens
+  // (no separate rate-limit table). Different attack shapes need different
+  // ceilings:
+  //   - per-email (5/h) catches "spam one address" — one human shouldn't need
+  //     more than 5 fresh links in an hour
+  //   - per-ip (20/h) catches rotating-email-same-IP — would otherwise stay
+  //     under the per-email cap while draining Resend's quota. Tuned for
+  //     household NAT (a few legitimate users behind one IP).
+  const counts = await env.DB.prepare(
+    `SELECT
+       SUM(CASE WHEN email = ? THEN 1 ELSE 0 END) AS emailCount,
+       SUM(CASE WHEN ip = ? THEN 1 ELSE 0 END) AS ipCount
+     FROM magic_link_tokens
+     WHERE created_at > ?`,
   )
     .bind(email, ip, since)
-    .first<{ n: number }>()
+    .first<{ emailCount: number | null; ipCount: number | null }>()
 
-  if (recent && recent.n >= RATE_LIMIT_MAX) {
+  const emailCount = counts?.emailCount ?? 0
+  const ipCount = counts?.ipCount ?? 0
+
+  if (emailCount >= RATE_LIMIT_MAX || ipCount >= RATE_LIMIT_IP_MAX) {
     // Silent drop — return the same 200 a happy path would. Logged so we can
-    // see abuse in tail. A determined attacker rotating IPs can still drive
-    // through; Resend's free-tier ceilings cap blast radius.
-    console.warn('rate limit hit', { email, ip, n: recent.n })
+    // see abuse in tail.
+    console.warn('rate limit hit', { email, ip, emailCount, ipCount })
     return ok({ sent: true })
   }
 

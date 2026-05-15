@@ -28,6 +28,24 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
   const now = Math.floor(Date.now() / 1000)
   const cutoff = now - SLA_THRESHOLD_SECONDS
 
+  // Piggyback housekeeping: prune magic-link tokens older than 24h. Used
+  // tokens never expire on their own; the rate-limit query scans this table
+  // every request, so it must stay small. Errors here don't fail the digest —
+  // the inbox-nudge is the user-facing value, cleanup is best-effort.
+  try {
+    const tokenCutoff = now - 86_400
+    const result = await env.DB.prepare(
+      `DELETE FROM magic_link_tokens WHERE created_at < ?`,
+    )
+      .bind(tokenCutoff)
+      .run()
+    if (result.meta && typeof result.meta.changes === 'number' && result.meta.changes > 0) {
+      console.log(`digest: pruned ${result.meta.changes} expired magic-link tokens`)
+    }
+  } catch (err) {
+    console.warn('digest: token cleanup failed (continuing)', err)
+  }
+
   let rows: SessionRow[] = []
   try {
     const res = await env.DB.prepare(

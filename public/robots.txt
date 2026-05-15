@@ -1,4 +1,13 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /en/admin/
+Disallow: /api/
+Disallow: /me
+Disallow: /en/me
+Disallow: /session/
+Disallow: /en/session/
+Disallow: /login
+Disallow: /en/login
 
 Sitemap: /sitemap.xml

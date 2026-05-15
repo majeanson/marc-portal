@@ -91,6 +91,10 @@ function rewriteOgTags(response: Response, url: URL): Response {
   if (!contentType.includes('text/html')) return response
 
   const path = url.pathname
+  // Only the SPA's index.html carries the OG meta tags we want to swap.
+  // API endpoints can still return HTML (error pages), and rewriting their
+  // bodies wastes work and risks corrupting structured responses.
+  if (path.startsWith('/api/') || path.startsWith('/og/')) return response
   const isEn = path === '/en' || path.startsWith('/en/')
   const shareMatch = /^\/(?:en\/)?share\/([A-Za-z0-9_-]{6,})\/?$/.exec(path)
 

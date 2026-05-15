@@ -3,8 +3,8 @@ import { DICT } from '../i18n'
 
 const GITHUB_URL = 'https://github.com/majeanson'
 const LINKEDIN_URL = 'https://www.linkedin.com/in/marc-jeanson/'
-// Drop a real photo at /public/marc.jpg to replace this placeholder. The
-// component falls back gracefully (no image rendered) if the file is missing.
+// onError on the img hides the figure if /marc.jpg ever 404s, so a missing
+// asset degrades to text-only rather than a broken-image icon.
 const PORTRAIT_SRC = '/marc.jpg'
 
 export function About({ lang }: { lang: Lang }) {

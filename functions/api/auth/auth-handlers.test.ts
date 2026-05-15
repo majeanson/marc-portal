@@ -96,6 +96,26 @@ describe('POST /api/auth/request-link', () => {
     // 5 emails went out; the 6th was silently dropped.
     expect((email.sendMagicLink as ReturnType<typeof vi.fn>).mock.calls.length).toBe(5)
   })
+
+  it('rate-limit: 20/h per IP catches rotating-email attacker', async () => {
+    // Same IP, different email each request. Stays under the 5/h email cap
+    // but should still trip the 20/h IP ceiling on request 21.
+    const env = makeMockEnv()
+    for (let i = 0; i < 21; i++) {
+      const ctx = {
+        request: postJson('https://x.test/api/auth/request-link', {
+          email: `attacker-${i}@x.com`,
+          lang: 'fr',
+        }),
+        env,
+        params: {},
+      }
+      const res = await requestLink(ctx as never)
+      expect(res.status).toBe(200)
+    }
+    // 20 emails went out; the 21st was silently dropped by the IP ceiling.
+    expect((email.sendMagicLink as ReturnType<typeof vi.fn>).mock.calls.length).toBe(20)
+  })
 })
 
 describe('GET /api/auth/verify', () => {

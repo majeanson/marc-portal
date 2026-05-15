@@ -149,6 +149,28 @@ class MockPreparedStatement {
       return [{ n }]
     }
 
+    // SELECT SUM(CASE WHEN email = ? ...) AS emailCount,
+    //        SUM(CASE WHEN ip = ? ...) AS ipCount
+    //   FROM magic_link_tokens WHERE created_at > ?
+    // — used by request-link.ts for the dual independent ceilings.
+    if (
+      sql.includes('FROM magic_link_tokens') &&
+      sql.includes('SUM(CASE WHEN email = ?') &&
+      sql.includes('SUM(CASE WHEN ip = ?')
+    ) {
+      const email = a[0] as string
+      const ip = a[1] as string
+      const since = a[2] as number
+      let emailCount = 0
+      let ipCount = 0
+      for (const r of this.db.magic_link_tokens.values()) {
+        if (r.created_at <= since) continue
+        if (r.email === email) emailCount++
+        if (r.ip === ip) ipCount++
+      }
+      return [{ emailCount, ipCount }]
+    }
+
     // SELECT token, email, expires_at, used_at FROM magic_link_tokens WHERE token = ?
     if (
       sql.includes('FROM magic_link_tokens WHERE token = ?') &&
@@ -307,6 +329,18 @@ class MockPreparedStatement {
       for (const [k, v] of this.db.rate_limits) {
         if (v.window_start < cutoff) {
           this.db.rate_limits.delete(k)
+          n++
+        }
+      }
+      return n
+    }
+
+    if (sql.startsWith('DELETE FROM magic_link_tokens WHERE created_at <')) {
+      const cutoff = a[0] as number
+      let n = 0
+      for (const [k, v] of this.db.magic_link_tokens) {
+        if (v.created_at < cutoff) {
+          this.db.magic_link_tokens.delete(k)
           n++
         }
       }
