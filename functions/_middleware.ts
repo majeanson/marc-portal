@@ -24,7 +24,6 @@ interface Env {
   ADMIN_EMAILS?: string
   SESSION_SECRET?: string
   RESEND_API_KEY?: string
-  SENTRY_DSN?: string
 }
 
 // State-changing /api/* requests are CSRF-gated centrally (see verifyCsrf in
@@ -167,7 +166,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
         // Failure to resolve the email shouldn't block error reporting.
       }
     }
-    captureWorkerException(err, ctx.env, {
+    captureWorkerException(err, {
       request: ctx.request,
       email,
       op: url.pathname,

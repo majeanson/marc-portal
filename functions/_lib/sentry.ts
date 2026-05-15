@@ -3,11 +3,14 @@
 // 80 lines of HTTP and a regex; the full @sentry/cloudflare SDK is more
 // than that just at import time.
 //
-// When SENTRY_DSN is unset, every function here silently no-ops. The
-// caller doesn't need to gate on `if (env.SENTRY_DSN)` — just call.
+// DSN is hardcoded (see comment in src/lib/sentry.ts and wrangler.toml).
+// Public-by-design value; rotation = update this line + push.
 //
 // DSN format: https://<KEY>@<HOST>/<PROJECT>
 // Envelope endpoint: https://<HOST>/api/<PROJECT>/envelope/
+
+const SENTRY_DSN =
+  'https://27bdc4debd1f4925a9d379a6936e0786@o4510241708244992.ingest.us.sentry.io/4511395627008001'
 
 interface ParsedDsn {
   host: string
@@ -15,7 +18,7 @@ interface ParsedDsn {
   publicKey: string
 }
 
-function parseDsn(dsn: string | undefined): ParsedDsn | null {
+function parseDsn(dsn: string): ParsedDsn | null {
   if (!dsn) return null
   try {
     const u = new URL(dsn)
@@ -38,7 +41,6 @@ function parseDsn(dsn: string | undefined): ParsedDsn | null {
  */
 export function captureWorkerException(
   err: unknown,
-  env: { SENTRY_DSN?: string },
   ctx: {
     request?: Request
     email?: string | null
@@ -46,7 +48,7 @@ export function captureWorkerException(
     extra?: Record<string, unknown>
   } = {},
 ): void {
-  const parsed = parseDsn(env.SENTRY_DSN)
+  const parsed = parseDsn(SENTRY_DSN)
   if (!parsed) return
 
   const now = new Date()

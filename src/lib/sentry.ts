@@ -1,20 +1,15 @@
 /**
  * Sentry init for the browser SPA.
  *
- * DSN comes from `VITE_SENTRY_DSN` (Vite exposes anything prefixed VITE_*).
- * When the env var is unset (dev with no DSN, preview deploys, opt-out), the
- * SDK still ships in the bundle but is disabled via `enabled: false`, so no
- * events leave the browser.
- *
- * Why not early-return on missing DSN: Vite statically replaces
- * `import.meta.env.VITE_*` at build time. Combined with Rolldown's
- * dead-code elimination, an `if (!DSN) return` before any `Sentry.*` call
- * makes the whole `@sentry/react` import tree-shakable when the env var is
- * empty at build time. Setting the env var later doesn't help — the live
- * bundle has no SDK to wake up. We learned this the hard way (commit
- * dba587f / rebuild loop). Pattern below keeps Sentry.init() statically
- * reachable so the SDK is always bundled; runtime decides whether it
- * actually transmits.
+ * DSN is hardcoded below — Sentry DSNs are public-by-design (they
+ * authorize writes to one specific project, nothing else, and are
+ * shipped to every visitor inside this very bundle). Env-var plumbing
+ * was tried first (VITE_SENTRY_DSN) and broke twice: dashboard env vars
+ * for this project are locked to encrypted secrets only (wrangler-toml-
+ * managed mode), and wrangler.toml [vars] is runtime-only — Vite reads
+ * its env at build time, which happens before wrangler ever sees the
+ * file. Hardcoding collapses both surfaces into one source. Rotate via
+ * Sentry → Settings → Client Keys (DSN) → Rotate, then update this line.
  *
  * Sample rates are intentionally low — this is a low-traffic site and we
  * want the free tier to last. Errors are 100%; traces off by default.
@@ -22,8 +17,8 @@
 
 import * as Sentry from '@sentry/react'
 
-const DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined
-const ENABLED = typeof DSN === 'string' && DSN.length > 0
+const DSN = 'https://27bdc4debd1f4925a9d379a6936e0786@o4510241708244992.ingest.us.sentry.io/4511395627008001'
+const ENABLED = DSN.length > 0
 
 // Tag events with the deployment environment so prod and preview don't mix
 // in the same issue stream. Inferred at call time from the runtime host so

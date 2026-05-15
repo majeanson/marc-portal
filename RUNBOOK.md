@@ -109,27 +109,27 @@ previous version.
 
 ### Sentry
 
-Frontend + Functions both forward errors to Sentry when DSNs are set; both
-silently no-op without them. To wire up:
+DSN is hardcoded in `src/lib/sentry.ts` (browser SDK) and
+`functions/_lib/sentry.ts` (Pages Functions). Sentry DSNs are
+public-by-design — they authorize writes to one project, nothing else,
+and are already shipped to every visitor in the SPA bundle. Committing
+them in source is the documented Sentry pattern.
 
-1. Create a Sentry project (Platform: JavaScript → React for the frontend
-   project; "Other JavaScript" for the Functions side, OR reuse the same
-   project — DSNs are scoped per-project, not per-platform).
-2. From the project settings, copy each DSN.
-3. In the Cloudflare Pages dashboard → Settings → Environment variables, set:
-   - `VITE_SENTRY_DSN` → frontend DSN (build-time; rebuild after setting).
-   - `SENTRY_DSN` → Functions DSN (runtime; takes effect on next request).
-4. Locally, mirror in `.dev.vars`:
+Why hardcoded and not env-var-based: tried both env-var paths first, both
+broke. Dashboard env vars are locked to encrypted secrets in
+wrangler-toml-managed mode (Marc's setup); `wrangler.toml [vars]` is
+runtime-only, so Vite's build-time read can't see it. Hardcoding
+collapses two failure modes into zero.
 
-   ```
-   SENTRY_DSN=https://...@...ingest.sentry.io/...
-   VITE_SENTRY_DSN=https://...@...ingest.sentry.io/...
-   ```
+To rotate the DSN:
+1. Sentry → Settings → Client Keys (DSN) → Rotate.
+2. Replace the literal DSN string in `src/lib/sentry.ts` (line near top)
+   and `functions/_lib/sentry.ts` (`SENTRY_DSN` const).
+3. Commit + push. CF Pages rebuilds and the new DSN ships within 2 min.
 
 The frontend SDK is `@sentry/react`; the Functions side uses a hand-rolled
-envelope poster (see `functions/_lib/sentry.ts`) — no SDK, ~80 lines. Both
-strip the session cookie, CSRF token, and Authorization header before
-sending.
+envelope poster (~80 lines, no SDK). Both strip the session cookie, CSRF
+token, and Authorization header before sending events.
 
 ### Synthetic monitor (cron-job.org)
 

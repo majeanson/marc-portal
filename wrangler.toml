@@ -49,19 +49,13 @@ preview_bucket_name = "marc-portal-media"
 #   CF_ACCOUNT_ID         - the account UUID (visible in CF dashboard URL)
 #   CF_PAGES_PROJECT_NAME - this project's slug, e.g. "marc-portal"
 
-# Plaintext env vars. This project is wrangler-toml-managed (per CF Pages'
-# unified Workers/Pages config), which means the dashboard's "Variables and
-# Secrets" only manages encrypted secrets — non-secret vars live here.
-#
-# Sentry DSNs: designed to be public (a DSN authorizes writes to one
-# project, nothing else; it's already sent to every visitor inside the JS
-# bundle). The two names cover both surfaces:
-#   - VITE_SENTRY_DSN — read by Vite at BUILD time; baked into the SPA
-#     bundle for the browser SDK (@sentry/react).
-#   - SENTRY_DSN — read by Pages Functions at RUNTIME; powers the
-#     hand-rolled envelope poster in functions/_lib/sentry.ts.
-# If the DSN is ever abused, rotate it in Sentry's UI (Settings → Client
-# Keys (DSN) → Rotate) and update both lines below.
-[vars]
-VITE_SENTRY_DSN = "https://27bdc4debd1f4925a9d379a6936e0786@o4510241708244992.ingest.us.sentry.io/4511395627008001"
-SENTRY_DSN = "https://27bdc4debd1f4925a9d379a6936e0786@o4510241708244992.ingest.us.sentry.io/4511395627008001"
+# Note on Sentry: the DSN is hardcoded in src/lib/sentry.ts (browser SDK)
+# and functions/_lib/sentry.ts (Pages Functions). DSNs are public-by-design
+# — they authorize writes to one Sentry project and are already shipped to
+# every visitor inside the SPA bundle. Committing them in source is the
+# documented Sentry pattern, and keeps env-var plumbing out of the
+# build-vs-runtime split: Vite reads process.env at BUILD time (would need
+# GitHub Actions env vars), wrangler.toml [vars] is RUNTIME-only. Two
+# surfaces, two failure modes — hardcoding collapses both. Rotation:
+# Sentry → Settings → Client Keys (DSN) → Rotate, update the two source
+# files, push.
