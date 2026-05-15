@@ -37,11 +37,12 @@
 - [x] Committed (hash: pending)
 
 ## Phase 5 — ProjectCardPreview hardening
-- [ ] 3-state machine (idle/loading/loaded/errored)
-- [ ] Skeleton shimmer
-- [ ] 5s timeout → errored fallback
-- [ ] `onError` wired
-- [ ] Committed (hash: __)
+- [x] 4-state machine (idle/loading/loaded/errored)
+- [x] Shimmer skeleton overlay during loading
+- [x] 5s timeout → errored fallback (gradient placeholder)
+- [x] `onError` wired
+- [x] No layout shift between states (skeleton & fallback are absolute-positioned within fixed aspect-ratio box)
+- [x] Committed (hash: pending)
 
 ## Phase 6 — MobileStickyCta on /projects
 - [ ] Mounted on `Projects.tsx`

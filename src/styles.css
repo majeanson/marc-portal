@@ -3513,6 +3513,51 @@ button:focus-visible,
     transform: scale(0.3);
   }
 }
+/* Loading skeleton — sits over the iframe while it boots, fades when state
+   flips to "loaded" (iframe overlays it via z-stack). */
+.project-card__preview-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    var(--bg-card) 0%,
+    var(--bg-section) 35%,
+    var(--bg-card) 70%
+  );
+  background-size: 200% 100%;
+  animation: card-skeleton-shimmer 1.6s ease-in-out infinite;
+  z-index: 1;
+}
+.project-card__preview--loaded .project-card__preview-skeleton {
+  opacity: 0;
+  animation: none;
+  transition: opacity 200ms ease;
+}
+@keyframes card-skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .project-card__preview-skeleton {
+    animation: none;
+  }
+}
+/* Errored / timeout fallback — same gradient as --empty so the card height
+   stays predictable and the visual reads "build pending" instead of broken. */
+.project-card__preview-fallback {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 80% at 30% 0%,
+    var(--accent-soft, var(--bg-card)) 0%,
+    var(--bg-card) 60%,
+    var(--bg) 100%
+  );
+}
 .project-card__head {
   display: flex;
   align-items: center;
