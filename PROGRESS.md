@@ -14,11 +14,11 @@
 - [x] Committed (hash: pending)
 
 ## Phase 2 — Theme polish + view-transition
-- [ ] `ThemeToggle` wraps swap in `startViewTransition`
-- [ ] `matchMedia` change listener wired
-- [ ] `meta[name=theme-color]` swap on toggle + bootstrap
-- [ ] CSS: 220ms root crossfade
-- [ ] Committed (hash: __)
+- [x] `ThemeToggle` wraps swap in `startViewTransition` (feature-detected; Firefox snaps)
+- [x] `matchMedia` change listener wired (only acts when user hasn't toggled)
+- [x] `meta[name=theme-color]` swap on toggle + bootstrap (cream / ink)
+- [x] CSS: 280ms root crossfade (reduced-motion already collapses to 80ms)
+- [x] Committed (hash: pending)
 
 ## Phase 3 — EN OG image
 - [ ] `public/og-image-en.svg` authored

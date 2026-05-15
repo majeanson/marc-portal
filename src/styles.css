@@ -5893,3 +5893,16 @@ button.intake__progress-step:disabled {
     animation-timing-function: linear !important;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   THEME + LANGUAGE SWAP — when the toggle in the header fires
+   document.startViewTransition(), the browser snapshots the page and
+   crossfades. We tune the timing here. The root pseudo-element covers the
+   entire surface (paper grain, type, accents) so the cream→ink (or FR↔EN)
+   swap reads as a single coordinated dissolve.
+   ────────────────────────────────────────────────────────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0.24, 1);
+}
