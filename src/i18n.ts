@@ -269,7 +269,6 @@ const FR = {
       'Pas une agence. Pas une plateforme. Un humain qui décide, une machine au milieu pour gérer le reste — pour qu’on respecte tous les deux nos soirs et nos fins de semaine.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
-    linkedinLabel: 'LinkedIn',
   },
 
   footer: {
@@ -506,7 +505,7 @@ const FR = {
     shareCtaHint: 'Voir l’aperçu qui s’affichera dans Slack, iMessage, etc.',
     shareModalTitle: 'Partage ce projet',
     shareModalSub:
-      'Voici l’aperçu qui s’affichera quand tu colleras ce lien dans Slack, iMessage, LinkedIn, etc.',
+      'Voici l’aperçu qui s’affichera quand tu colleras ce lien dans Slack, iMessage, etc.',
     sharePreviewAlt: 'Aperçu du carton de partage',
     shareClose: 'Fermer',
     shareNative: 'Partager…',
@@ -568,7 +567,7 @@ const FR = {
     galleryLink: 'Voir la galerie →',
     previewHeading: 'Aperçu du carton de partage',
     previewHint:
-      'Voici ce qu’afficheront Slack, iMessage, LinkedIn, etc. quand quelqu’un colle le lien de cette session. L’aperçu reflète la version *publiée* — enregistre pour le voir bouger.',
+      'Voici ce qu’afficheront Slack, iMessage, etc. quand quelqu’un colle le lien de cette session. L’aperçu reflète la version *publiée* — enregistre pour le voir bouger.',
     previewDisabledHint:
       'Active la vitrine et enregistre — l’aperçu apparaîtra ici une fois la session publiée.',
     previewOpenInTab: 'Ouvrir le PNG',
@@ -875,7 +874,6 @@ const EN: Copy = {
       'Not an agency. Not a platform. A human who decides, with a bit of machine in the middle so we both keep our evenings and weekends.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
-    linkedinLabel: 'LinkedIn',
   },
 
   footer: {

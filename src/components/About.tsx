@@ -2,7 +2,6 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 
 const GITHUB_URL = 'https://github.com/majeanson'
-const LINKEDIN_URL = 'https://www.linkedin.com/in/marc-jeanson/'
 // onError on the img hides the figure if /marc.jpg ever 404s, so a missing
 // asset degrades to text-only rather than a broken-image icon.
 const PORTRAIT_SRC = '/marc.jpg'
@@ -41,12 +40,6 @@ export function About({ lang }: { lang: Lang }) {
               <li>
                 <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
                   {t.githubLabel}
-                  <span aria-hidden="true"> ↗</span>
-                </a>
-              </li>
-              <li>
-                <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer">
-                  {t.linkedinLabel}
                   <span aria-hidden="true"> ↗</span>
                 </a>
               </li>

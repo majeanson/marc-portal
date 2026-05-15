@@ -5630,23 +5630,53 @@ button.intake__progress-step:disabled {
 }
 
 @media (max-width: 640px) {
-  /* Header on phones: the right cluster (auth + theme + lang) was clipping the
-     right edge because brand and right group both had flex-shrink: 0. Tighten
-     gaps + horizontal padding, shrink the admin preview toggle to a compact
-     pill (keep it reachable on mobile — admins still need viewer-mode), and
-     let the auth area shrink before the lang pill does. */
+  /* Header on phones: too many controls to fit on one row when signed in as
+     admin (Mes sessions · Déconnexion · VOIR COMME VISITEUR · theme · FR/EN).
+     Instead of dropping a hamburger menu — which adds a stateful component
+     and an extra tap — we make the right cluster horizontally swipable.
+     iOS/Android bounce-scroll discovers it naturally; a soft mask on the
+     right edge hints "more there". Brand stays anchored on the left.
+     Single row, never wraps. */
   .site-header__inner {
     gap: 8px;
     padding: 12px 14px;
+    flex-wrap: nowrap;
+  }
+  .brand {
+    flex-shrink: 0;
   }
   .site-header__right {
     gap: 8px;
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: flex-end;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Hide the scrollbar — visual chrome the visitor doesn't need. The
+       fade on the right (mask-image below) does the affordance work. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    /* Fade only on the right (where overflow happens). Left edge stays
+       flush against the brand. 28px is wide enough to read as soft fade,
+       narrow enough to not eat content on first paint. */
+    mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+  }
+  .site-header__right::-webkit-scrollbar {
+    display: none;
+  }
+  /* Items inside the scroll container don't shrink — each pill stays
+     whole so labels read cleanly while you swipe. */
+  .site-header__auth,
+  .theme-toggle,
+  .lang,
+  .site-header__preview-toggle {
+    flex-shrink: 0;
   }
   .site-header__auth {
     gap: 8px;
     font-size: 12.5px;
-    min-width: 0;
-    flex-shrink: 1;
   }
   .site-header__auth-link {
     white-space: nowrap;
