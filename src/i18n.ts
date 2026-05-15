@@ -505,7 +505,8 @@ const FR = {
     shareCta: 'Partager',
     shareCtaHint: 'Voir l’aperçu qui s’affichera dans Slack, iMessage, etc.',
     shareModalTitle: 'Partage ce projet',
-    shareModalSub: 'Voici l’aperçu qui s’affichera quand tu colleras ce lien dans Slack, iMessage, LinkedIn, etc.',
+    shareModalSub:
+      'Voici l’aperçu qui s’affichera quand tu colleras ce lien dans Slack, iMessage, LinkedIn, etc.',
     sharePreviewAlt: 'Aperçu du carton de partage',
     shareClose: 'Fermer',
     shareNative: 'Partager…',
@@ -570,6 +571,27 @@ const FR = {
     previewDisabledHint:
       'Active la vitrine et enregistre — l’aperçu apparaîtra ici une fois la session publiée.',
     previewOpenInTab: 'Ouvrir le PNG',
+  },
+
+  adminShowcaseOverview: {
+    eyebrow: 'vitrine — vue d’ensemble',
+    title: 'Toutes les vitrines, d’un coup d’œil',
+    sub: 'Vérifie la cohérence visuelle des cartes sociales avant qu’elles ne sortent. Titre trop long, sous-titre manquant, tier non assigné — tout est repéré ici.',
+    loading: 'Chargement…',
+    empty:
+      'Aucune session en vitrine pour l’instant. Active la vitrine sur une session pour la voir apparaître ici.',
+    error: 'Impossible de charger les vitrines.',
+    editLink: 'Éditer →',
+    openShare: 'Voir la page partage ↗',
+    countSingular: '1 vitrine',
+    countPlural: (n: number) => `${n} vitrines`,
+    countWarnings: (n: number) => (n === 1 ? '1 alerte' : `${n} alertes`),
+    warnings: {
+      noTitle: 'Pas de titre',
+      noTagline: 'Pas de sous-titre',
+      noTier: 'Pas de tier',
+      titleLong: 'Titre long (>60 car.)',
+    },
   },
 }
 
@@ -1138,6 +1160,26 @@ const EN: Copy = {
     previewDisabledHint:
       'Turn on the showcase and save — the preview will appear here once the session is published.',
     previewOpenInTab: 'Open PNG',
+  },
+
+  adminShowcaseOverview: {
+    eyebrow: 'showcase — overview',
+    title: 'Every showcase, at a glance',
+    sub: 'Brand-consistency check before cards go out into the world. Too-long titles, missing taglines, un-tiered sessions — all flagged here.',
+    loading: 'Loading…',
+    empty: "No showcased sessions yet. Turn on a session's showcase to see it appear here.",
+    error: "Couldn't load the showcases.",
+    editLink: 'Edit →',
+    openShare: 'Open share page ↗',
+    countSingular: '1 showcase',
+    countPlural: (n: number) => `${n} showcases`,
+    countWarnings: (n: number) => (n === 1 ? '1 warning' : `${n} warnings`),
+    warnings: {
+      noTitle: 'No title',
+      noTagline: 'No tagline',
+      noTier: 'No tier',
+      titleLong: 'Title long (>60 chars)',
+    },
   },
 }
 

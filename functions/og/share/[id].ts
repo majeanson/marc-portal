@@ -82,8 +82,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   }
 
   if (!fields) {
-    if (debug)
-      return debugResponse({ ok: false, reason: 'not-showcased-or-missing', id })
+    if (debug) return debugResponse({ ok: false, reason: 'not-showcased-or-missing', id })
     return fallbackRedirect(request, 'not-showcased-or-missing')
   }
 

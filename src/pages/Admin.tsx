@@ -21,6 +21,7 @@ const COPY = {
     billing: 'Facturation',
     fleet: 'Flotte',
     audit: 'Journal',
+    showcase: 'Vitrine',
     backToApp: '← Retour à l’app',
     operator: 'Opérateur',
     owner: 'Propriétaire',
@@ -33,6 +34,7 @@ const COPY = {
     billing: 'Billing',
     fleet: 'Fleet',
     audit: 'Audit log',
+    showcase: 'Showcase',
     backToApp: '← Back to app',
     operator: 'Operator',
     owner: 'Owner',
@@ -85,9 +87,14 @@ export function Admin({ lang }: { lang: Lang }) {
             architecture for per-engagement isolation; this is not a marketplace." */}
         <nav className="admin__links">
           {isOperator && (
-            <NavLink to={`${langPrefix}/admin/audit`} className="admin__link">
-              <span className="admin__link-dot admin__link-dot--operator" /> {t.audit}
-            </NavLink>
+            <>
+              <NavLink to={`${langPrefix}/admin/showcase`} className="admin__link">
+                <span className="admin__link-dot admin__link-dot--operator" /> {t.showcase}
+              </NavLink>
+              <NavLink to={`${langPrefix}/admin/audit`} className="admin__link">
+                <span className="admin__link-dot admin__link-dot--operator" /> {t.audit}
+              </NavLink>
+            </>
           )}
         </nav>
 

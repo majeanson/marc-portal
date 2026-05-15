@@ -42,6 +42,9 @@ const AdminFleetNew = lazy(() =>
   import('./pages/AdminFleetNew').then((m) => ({ default: m.AdminFleetNew })),
 )
 const AdminAudit = lazy(() => import('./pages/AdminAudit').then((m) => ({ default: m.AdminAudit })))
+const AdminShowcase = lazy(() =>
+  import('./pages/AdminShowcase').then((m) => ({ default: m.AdminShowcase })),
+)
 const PublicAdvancements = lazy(() =>
   import('./pages/PublicAdvancements').then((m) => ({ default: m.PublicAdvancements })),
 )
@@ -287,6 +290,14 @@ export const router = createBrowserRouter(
             </L>
           }
         />
+        <Route
+          path="showcase"
+          element={
+            <L>
+              <AdminShowcase lang="fr" />
+            </L>
+          }
+        />
       </Route>
       <Route
         path="/en/admin"
@@ -342,6 +353,14 @@ export const router = createBrowserRouter(
           element={
             <L>
               <AdminAudit lang="en" />
+            </L>
+          }
+        />
+        <Route
+          path="showcase"
+          element={
+            <L>
+              <AdminShowcase lang="en" />
             </L>
           }
         />

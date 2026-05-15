@@ -42,9 +42,7 @@ export function ProjectCardPreview({
   // OG image lives on the same origin and is heavily edge-cached, so we
   // eager-load it on every card — small, predictable, no extra round trips
   // once the worker is warm.
-  const ogSrc = sessionId
-    ? `/og/share/${sessionId}${lang === 'en' ? '?lang=en' : ''}`
-    : null
+  const ogSrc = sessionId ? `/og/share/${sessionId}${lang === 'en' ? '?lang=en' : ''}` : null
 
   useEffect(() => {
     if (!buildHref || !hasIO) return
@@ -78,21 +76,13 @@ export function ProjectCardPreview({
   // home/projects grids should always have a sessionId (we pass one
   // through now), so this is just a defensive fallback.
   if (!buildHref && !ogSrc) {
-    return (
-      <div className="project-card__preview project-card__preview--empty" aria-hidden="true" />
-    )
+    return <div className="project-card__preview project-card__preview--empty" aria-hidden="true" />
   }
 
   const isLoading = visible && !!buildHref && outcome === null
   const isLoaded = outcome === 'loaded'
   const isErrored = outcome === 'errored' || !buildHref
-  const state = isErrored
-    ? 'errored'
-    : isLoaded
-      ? 'loaded'
-      : isLoading
-        ? 'loading'
-        : 'idle'
+  const state = isErrored ? 'errored' : isLoaded ? 'loaded' : isLoading ? 'loading' : 'idle'
 
   return (
     <div
