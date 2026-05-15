@@ -218,7 +218,7 @@ function rewriteOgTags(response: Response, url: URL): Response {
     `<link rel="alternate" hreflang="en-CA" href="${enPath}">` +
     `<link rel="alternate" hreflang="x-default" href="${frPath}">`
 
-  // og:url — absolute URL of the current page. Some scrapers (LinkedIn, Slack)
+  // og:url — absolute URL of the current page. Some scrapers (Slack, etc.)
   // disambiguate cache entries by this field; without a per-route value every
   // share collides on the home URL.
   const ogUrl = `${url.origin}${path}`

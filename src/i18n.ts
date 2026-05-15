@@ -1108,7 +1108,7 @@ const EN: Copy = {
     shareCtaHint: 'See the preview that will show up in Slack, iMessage, etc.',
     shareModalTitle: 'Share this project',
     shareModalSub:
-      "Here's the preview people will see when this link is pasted into Slack, iMessage, LinkedIn, etc.",
+      "Here's the preview people will see when this link is pasted into Slack, iMessage, etc.",
     sharePreviewAlt: 'Share card preview',
     shareClose: 'Close',
     shareNative: 'Share…',
@@ -1170,7 +1170,7 @@ const EN: Copy = {
     galleryLink: 'See the gallery →',
     previewHeading: 'Share-card preview',
     previewHint:
-      "Here's what Slack, iMessage, LinkedIn, etc. will show when someone pastes this session's link. The preview reflects the *published* version — hit save to refresh it.",
+      "Here's what Slack, iMessage, etc. will show when someone pastes this session's link. The preview reflects the *published* version — hit save to refresh it.",
     previewDisabledHint:
       'Turn on the showcase and save — the preview will appear here once the session is published.',
     previewOpenInTab: 'Open PNG',

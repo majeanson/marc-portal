@@ -84,6 +84,21 @@ body,
   background: var(--bg);
   color: var(--text);
 }
+/* Clamp horizontal overflow at the document level so a too-wide child
+   (long URL in a code block, an iframe stretched past viewport, a
+   transformed element peeking past its container) can't create a page-
+   wide horizontal scroll on mobile. `clip` is the modern recommendation
+   — it does NOT create a scroll container, so `position: sticky` on the
+   header keeps working. `hidden` is the fallback for older browsers (it
+   does create a scroll container, but sticky still works in practice in
+   every browser we support). The header's own swipable cluster
+   (`.site-header__right`) has its own `overflow-x: auto` and is
+   unaffected by this clamp. */
+html,
+body {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
@@ -1047,7 +1062,7 @@ button.intake__progress-step:focus-visible {
   background: var(--accent-soft);
 }
 .intake__progress-step--current {
-  color: #fff;
+  color: var(--bg);
   border-color: var(--text);
   background: var(--text);
   font-weight: 600;

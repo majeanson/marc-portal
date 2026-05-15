@@ -1,7 +1,7 @@
 // GET /og/share/:id — dynamic 1200×630 PNG for a session's share link.
 //
 // Generated at edge-request time via workers-og (satori + resvg WASM).
-// Slack/iMessage/LinkedIn refuse SVG OG images, so we return PNG. Cached
+// Slack/iMessage refuse SVG OG images, so we return PNG. Cached
 // aggressively at the edge; the underlying showcase title rarely changes.
 //
 // Falls back to the static /og-image.png if the session is missing, not
