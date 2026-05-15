@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { DICT, type Lang } from '../i18n'
-import { loadDraft, saveDraft } from '../lib/draft'
+import { saveDraft } from '../lib/draft'
 
 // Excalidraw is heavy (~600 KB before assets). Lazy-import the named export
 // inside the route so the home/intake critical path doesn't pay for it.
@@ -23,7 +23,6 @@ type ExcalidrawAPI = {
 }
 
 const NAPKIN_KEY = 'napkin-sketch'
-const INTAKE_DRAFT_KEY = 'intake-draft'
 
 interface NapkinSketch {
   png: string
@@ -86,15 +85,6 @@ export function Napkin({ lang }: { lang: Lang }) {
         savedAt: new Date().toISOString(),
       }
       saveDraft(NAPKIN_KEY, sketch)
-      // Mark the intake draft so Intake.tsx can show a "sketch attached"
-      // affordance. We don't stomp existing fields, only add the flag.
-      const existing = loadDraft<{ formData: Record<string, unknown> }>(INTAKE_DRAFT_KEY) ?? {
-        formData: {} as Record<string, unknown>,
-      }
-      saveDraft(INTAKE_DRAFT_KEY, {
-        ...existing,
-        formData: { ...existing.formData, __hasNapkinSketch: true },
-      })
       navigate(`${langPrefix}/intake?from=napkin`)
     } catch (e) {
       console.error('napkin export failed', e)

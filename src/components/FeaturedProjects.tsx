@@ -45,6 +45,9 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 className="section__display">{t.title}</h2>
           <p className="featured-projects__sub section__lead">{t.sub}</p>
+          <a className="featured-projects__deeper" href={galleryHref}>
+            {t.deeperLook}
+          </a>
         </header>
 
         {isLoading && <p className="mono featured-projects__loading">{t.loading}</p>}

@@ -268,6 +268,7 @@ p {
   align-items: center;
   gap: 14px;
   flex-shrink: 0;
+  min-width: 0;
 }
 .site-header__auth {
   display: inline-flex;
@@ -786,10 +787,30 @@ p {
    page; the overrides here just tighten spacing for the cornerstone slot
    and add the centered "see all →" footer link. */
 .featured-projects__sub {
-  margin: 0 0 24px;
+  margin: 0 0 14px;
   color: var(--text-mid);
   max-width: 60ch;
   font-size: 17px;
+}
+.featured-projects__deeper {
+  display: inline-block;
+  margin: 0 0 24px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-warm);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.featured-projects__deeper:hover,
+.featured-projects__deeper:focus-visible {
+  border-bottom-color: var(--accent-warm);
+  text-decoration: none;
+  outline: none;
 }
 .featured-projects__grid {
   /* Three cards on desktop, gracefully collapsing — but a touch tighter than
@@ -5387,6 +5408,42 @@ button.intake__progress-step:disabled {
   }
 }
 
+@media (max-width: 640px) {
+  /* Header on phones: the right cluster (auth + theme + lang) was clipping the
+     right edge because brand and right group both had flex-shrink: 0. Tighten
+     gaps + horizontal padding, drop the admin preview toggle (power feature,
+     desktop only), and let the auth area shrink before the lang pill does. */
+  .site-header__inner {
+    gap: 8px;
+    padding: 12px 14px;
+  }
+  .site-header__right {
+    gap: 8px;
+  }
+  .site-header__auth {
+    gap: 8px;
+    font-size: 12.5px;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  .site-header__auth-link {
+    white-space: nowrap;
+  }
+  .site-header__preview-toggle {
+    display: none;
+  }
+  .lang {
+    font-size: 12px;
+    padding: 2px;
+  }
+  .lang a {
+    padding: 4px 8px;
+  }
+  .theme-toggle {
+    width: 30px;
+    height: 30px;
+  }
+}
 @media (max-width: 480px) {
   .hero__display {
     font-size: clamp(34px, 9.4vw, 48px);
@@ -5405,18 +5462,17 @@ button.intake__progress-step:disabled {
     top: -2px;
     font-size: 32px;
   }
-  /* Section nav in header is already hidden ≤900; tighten the auth chips. */
+  /* Further tighten the header at very narrow widths. */
   .site-header__inner {
-    gap: 10px;
-    padding: 12px var(--gutter);
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .site-header__right {
+    gap: 6px;
   }
   .site-header__auth {
-    gap: 8px;
-    font-size: 12.5px;
-  }
-  .site-header__preview-toggle {
-    font-size: 10px;
-    padding: 3px 8px;
+    gap: 6px;
+    font-size: 12px;
   }
   /* Paper grain off on very small viewports — perf + clarity */
   .home::before {

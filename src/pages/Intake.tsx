@@ -334,9 +334,11 @@ export function Intake({ lang }: { lang: Lang }) {
   const onStartOver = () => {
     clearDraft(DRAFT_KEY)
     clearDraft(PENDING_INTAKE_KEY)
+    clearDraft(NAPKIN_KEY)
     flagWrite(VIBE_FLAG, false)
     const fresh = emptyDraft()
     setDraft(fresh)
+    setNapkin(null)
     setStep('vibe')
   }
 
