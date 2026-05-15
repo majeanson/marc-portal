@@ -45,6 +45,11 @@ export function Header({ lang }: { lang: Lang }) {
     // Let cmd/ctrl/middle-click open in a new tab unhampered.
     if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
     e.preventDefault()
+    // Remember the explicit choice for future visits — read by the locale
+    // redirect in functions/_middleware.ts on `/` hits. 1-year horizon is
+    // long enough that nobody re-toggles weekly; cleared on logout via the
+    // browser if needed (not session-tied).
+    document.cookie = `mp_lang=${to}; Path=/; Max-Age=31536000; SameSite=Lax`
     const href = to === 'en' ? enHref : frHref
     const doc = document as DocumentWithViewTransition
     if (typeof doc.startViewTransition === 'function') {

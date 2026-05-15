@@ -45,9 +45,58 @@ declare global {
   }
 }
 
+/**
+ * Cookie name carrying the visitor's chosen language. Read by the locale
+ * redirect (below) to honor a previous explicit choice; cleared if absent.
+ */
+const LANG_COOKIE_NAME = 'mp_lang'
+
+function parseLangCookie(request: Request): 'fr' | 'en' | null {
+  const header = request.headers.get('Cookie')
+  if (!header) return null
+  for (const part of header.split(';')) {
+    const [k, ...rest] = part.trim().split('=')
+    if (k === LANG_COOKIE_NAME) {
+      const v = rest.join('=')
+      if (v === 'fr' || v === 'en') return v
+    }
+  }
+  return null
+}
+
+function preferredLangFromHeader(request: Request): 'fr' | 'en' | null {
+  const al = request.headers.get('Accept-Language') ?? ''
+  // Walk language tags in order; first FR/EN match wins. We don't honor
+  // q-weights — the simple greedy walk is correct 99% of the time and
+  // cheaper than parsing the full RFC 4647.
+  for (const raw of al.split(',')) {
+    const tag = raw.split(';')[0]!.trim().toLowerCase()
+    if (tag.startsWith('en')) return 'en'
+    if (tag.startsWith('fr')) return 'fr'
+  }
+  return null
+}
+
 export const onRequest: PagesFunction<Env> = async (ctx) => {
   const url = new URL(ctx.request.url)
   const host = url.host.toLowerCase()
+
+  // First-visit locale redirect. Only fires on the bare root (`/`) so we
+  // don't surprise users who deep-link into an FR page. Honors the explicit
+  // cookie if set; otherwise checks Accept-Language. EN preference → 302 to
+  // `/en`. FR (or no preference) stays. Idempotent — `/en` is exempt because
+  // the URL already encodes the choice.
+  if (url.pathname === '/' && ctx.request.method === 'GET') {
+    const cookieLang = parseLangCookie(ctx.request)
+    const headerLang = preferredLangFromHeader(ctx.request)
+    const pick = cookieLang ?? headerLang
+    if (pick === 'en') {
+      return new Response(null, {
+        status: 302,
+        headers: { Location: `/en${url.search}${url.hash}` },
+      })
+    }
+  }
 
   // The middleware fires on every Functions invocation, including /api/*.
   // We always resolve the tenant — handlers that don't care can ignore it.

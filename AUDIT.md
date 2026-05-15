@@ -116,14 +116,15 @@
   filename encoding, `cache-control: private, no-store`.
 
 ### OG / sharing
-- ⬜ **P2.7** — `workers-og` PNG render uses inline HTML with `font-family:system-ui`.
-  CF's V8 isolate doesn't bundle system-ui consistently — local preview vs prod
-  often diverge (serif fallback). Either bundle a webfont (Inter or Geist via
-  TTF), or document the divergence as known.
-- ⬜ **P2.8** — `/og/share/:id` falls back to 302 redirect to `/og-image.png` on
-  any error. Slack/Discord cache 302s aggressively (~24h). Fix the bad card →
-  bad card still shows up everywhere. Cache the fallback as `200 + the static
-  PNG bytes` with a short `s-maxage` so a fresh fix propagates faster.
+- ⏭ **P2.7** — workers-og font divergence. **Deferred** until a real-world
+  divergence shows up — committing a TTF + plumbing it through satori adds
+  ~150 KB of static asset and a fetch on every render for cosmetic gain.
+  Document the known fallback (system serif on cold V8 isolates) in the OG
+  function's comment when it bites.
+- ⏭ **P2.8** — OG fallback caching. **Deferred — already mitigated.** The
+  fallback redirect already sets `Cache-Control: public, max-age=60` (60s,
+  not 24h), so a fix propagates in a minute. Inlining the static PNG bytes
+  from inside the function would add latency for marginal gain.
 - ✅ **P2.9** — HTMLRewriter skips `/api/*` and `/og/*` paths (cheap pathname
   check at the top of `rewriteOgTags`). Other HTML responses still get
   rewritten — handlers that return HTML errors won't be touched.
@@ -143,17 +144,21 @@
   the 404 copy for ErrorResponse-style 404s so the experience is consistent.
 - ✅ **P2.13** — `RouteFallback` component (in `router.tsx`) renders three
   shimmer bars during lazy chunk fetch. Reduced-motion stops the animation.
-- ⬜ **P2.14** — Collapse the duplicated FR+EN route subtrees in `src/router.tsx`
-  (~350 lines, 2× maintenance). Either parametrize with `:lang(en)?` or build
-  the route list programmatically from a path table. Comment calls the
-  duplication "deliberate" — but it's only deliberate because nobody made the
-  param-route version work.
+- ⏭ **P2.14** — Route dedup. **Deferred.** Touching every route entry to
+  parametrize `lang` is non-trivial (the `lang` prop is consumed inside
+  components and the FR↔EN swap logic in Header depends on the exact path
+  shape). The current duplication is real cost, but a partial refactor risks
+  breaking the view-transition language swap. Worth doing when the next
+  route surface is added (forcing the question fresh), not as drive-by work.
 
 ### Attachments
-- ⬜ **P2.15** — No virus / malware scan on uploaded files. 10 MB cap + broad
-  allow-list (zip, Office docs, PDFs). At minimum: refuse files whose magic
-  bytes don't match `content_type`. Better: integrate a CF Workers AV (or
-  defer-but-flag the file as "unscanned" until a human approves).
+- ✅ **P2.15** — Magic-byte validation in `functions/_lib/attachments.ts`:
+  before streaming to R2, the first ~12 bytes are checked against a known
+  signature table for the declared content-type (JPEG, PNG, GIF, WebP, PDF,
+  Office, zip). Mismatch returns 415. text/* and JSON pass through (no
+  reliable signature). The stream is re-emitted so the upload path keeps
+  working — no buffering the whole file. Full AV scan still requires an
+  external CF Workers AV integration; that's a future-when-needed.
 - ✅ **P2.16** — Orphan attachment GC piggybacks the digest cron. Deletes
   R2 object first (so we don't lose track of the key) then the DB row, for
   rows where `message_id IS NULL AND created_at < now - 7d`. Errors per-row
@@ -164,17 +169,18 @@
   be exceeded.
 
 ### CSP / headers
-- ⬜ **P2.18** — `frame-src` hardcodes specific demo origins (`snd-demo.pages.dev`,
-  `jaffre.vercel.app`, `retrodio.vercel.app`) in `public/_headers`. Every new
-  showcase needs a CSP edit + redeploy. Move to a `_headers` builder script
-  that reads showcased build URLs from D1, OR loosen to `*.pages.dev` /
-  `*.vercel.app` (with the security trade-off documented).
+- ⏭ **P2.18** — CSP `frame-src` hardcoded origins. **Deferred.** New
+  showcases land at the rate of one every few months; an editing-redeploy
+  cost there is fine. Loosening to wildcard origins reduces the protection
+  for marginal convenience. Revisit if showcase cadence picks up.
 - ✅ **P2.19** — `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
   added to `public/_headers`.
-- ⬜ **P2.20** — `style-src 'unsafe-inline'` allowed (needed for Google Fonts +
-  Excalidraw). If we replace Google Fonts with self-hosted `.woff2` files, we
-  can drop `unsafe-inline`. Excalidraw also injects inline styles — verify if
-  it still works under nonces.
+- ⏭ **P2.20** — CSP nonces. **Deferred.** Nonces in `_headers` require a
+  build-time placeholder + Functions runtime substitution; Excalidraw injects
+  inline styles into the document at runtime which would still need an
+  `'unsafe-inline'` exception, defeating the point. Worth revisiting once
+  Excalidraw is moved off `/napkin` (or replaced) and Google Fonts is
+  self-hosted (P2.7-ish work).
 - ✅ **P2.21** — `public/robots.txt` now disallows `/admin/`, `/en/admin/`,
   `/api/`, `/me`, `/en/me`, `/session/`, `/en/session/`, `/login`, `/en/login`.
   Anything that requires auth or shows per-user content is now off the crawl
@@ -205,9 +211,10 @@
   every idx change. Shareable links land at the right scrub position.
 
 ### Napkin
-- ⬜ **P3.4** — Excalidraw scene autosave. Refresh mid-sketch = work lost. Hook
-  `onChange` and store the serialized scene in localStorage (not the PNG —
-  scene JSON is small).
+- ✅ **P3.4** — Excalidraw scene autosave. Scene JSON (small) is written to
+  `marc-portal:napkin-scene` every 800ms when shapes exist; restored via
+  `updateScene` once the dynamic Excalidraw chunk's API is wired. Cleared
+  on successful submit so a fresh visit starts clean.
 - ✅ **P3.5** — Server-side cap on intake payload (1 MB) in `POST /api/sessions`.
   Refuses oversized data-URL napkins with 400. Less critical once P1.8 lands
   but defends against misbehaving clients in the meantime.
@@ -218,8 +225,10 @@
   without running JS. Per-page mapping — `/projects` shows `/en/projects` as
   its EN alternate, not just `/en`. Tried index.html first; bare-path hrefs
   trip Vite's asset resolution, hence the middleware approach.
-- ⬜ **P3.7** — Locale detection on first visit. `Accept-Language: en` → redirect
-  to `/en` from `/`. Honor a preference cookie afterward.
+- ✅ **P3.7** — Locale detection in middleware. On `GET /`, an Accept-Language
+  preferring EN gets 302'd to `/en`. Explicit choice via the FR/EN header
+  toggle writes `mp_lang` cookie (1-year horizon, SameSite=Lax) which wins
+  over Accept-Language on subsequent visits.
 - ⬜ **P3.8** — Type-safe i18n. Hand-rolled `DICT[lang]` (~1100 lines). Adding
   an FR key and forgetting EN is silent. Either a TS `satisfies` check across
   shapes, or migrate to a typed library (i18next is overkill here; a `Record<Lang,
@@ -241,13 +250,15 @@
   Playwright is heavy; vitest-based browser-mode might be enough.
 
 ### Admin
-- ⬜ **P3.16** — Decide what to do with the hidden-but-routed admin surfaces
-  (Apparence, Équipe, Facturation, Fleet, Fleet/New). The sidebar comment says
-  "vision is solo practice, not SaaS" — pick: (a) keep them as direct-URL
-  rescue routes (current state, document why), (b) delete the components
-  entirely. Right now they're 2× the surface area to maintain for no UX visible.
-- ⬜ **P3.17** — Audit log UI filters (actor, action type, date range). Today
-  `/admin/audit` is just a list (88 lines).
+- ⏭ **P3.16** — Hidden admin surfaces. **Deferred — keep as direct-URL
+  routes.** The components compile cleanly, nothing breaks, and they cover
+  the buyer-admin scenario IF Marc ever sells the platform to a buyer who
+  needs them. Deleting them now means re-writing later. Cost of carrying:
+  ~0 (lazy chunks, never loaded by default users; sidebar already hides
+  them). The Admin.tsx comment already documents the rationale.
+- ✅ **P3.17** — Audit log UI: client-side actor + action substring filters,
+  match-count badge, clear button. Server-side date range deferred (small
+  log size; client filtering is plenty).
 
 ### Misc
 - ✅ **P3.18** — Rewrote the stale comment in `src/components/About.tsx` to
@@ -256,15 +267,21 @@
 - ✅ **P3.19** — `package.json` version set to `0.0.0` to signal "not tracked"
   (this is a `private: true` app, deploys are git-SHA-tracked, no consumers
   depend on the field).
-- ⬜ **P3.20** — `scripts/build-og-image.mjs` is run manually. Add a check in
-  CI that diffs `og-image.svg` against the bundled PNG and fails if they're
-  out of sync. (Or: just regenerate in `prebuild`.)
-- ⬜ **P3.21** — Cookie consent / Loi 25 banner. Privacy page exists; explicit
-  consent for non-essential cookies may be required for the QC market.
-  Auth cookies are essential (no consent needed) — but if any analytics ever
-  lands, we need a banner. Document the boundary.
-- ⬜ **P3.22** — `feat-*` feature.json dirs live as siblings of `src/` (~22
-  dirs). Noise in file pickers, glob patterns. Consider `features/*/feature.json`.
+- ✅ **P3.20** — OG image drift check. `build-og-image.mjs` now writes
+  `public/og-image.hash.json` (SHA-256 of each SVG); `check-og-image.mjs`
+  re-hashes and fails on mismatch. Wired into `prebuild` so CI catches the
+  "edited SVG, forgot to regenerate PNG" case before deploy.
+- ⏭ **P3.21** — Cookie consent banner. **Deferred.** All current cookies are
+  strictly functional: `mp_session` (auth), `mp_csrf` (auth), `mp_lang`
+  (UX preference, no tracking). Loi 25 doesn't require consent for strictly
+  functional cookies. No analytics, no third-party trackers. If/when any
+  analytics lands, revisit. The Privacy page (`/confidentialite`) already
+  documents what's stored. Adding a banner now would be cosmetic compliance,
+  not real protection.
+- ⏭ **P3.22** — `feat-*` dirs at workspace root. **Deferred.** Moving them
+  under `features/` would touch `lac.config.json` plus possibly hardcoded
+  paths in `lac-mcp` tools that read these. The noise is real but contained;
+  most ignore globs (.eslintignore, glob includes) can be tuned cheaper.
 
 ---
 
@@ -295,4 +312,10 @@
   P3.2 (scrubber a11y semantics — dropped role=application, window-level
   keydown), P3.3 (scrubber ?step=N deep-link), P3.5 (1 MB intake payload
   cap as defense-in-depth before P1.8).
+  - 160 tests pass. Typecheck + lint + build clean.
+- 2026-05-15 — Fifth batch shipped: P2.15 (magic-byte upload validation),
+  P3.4 (Excalidraw scene autosave), P3.7 (locale detect on / + mp_lang
+  cookie), P3.17 (audit log filters), P3.20 (OG SVG↔PNG drift check in
+  prebuild). Plus a sweep of defer-with-rationale: P2.7, P2.8, P2.14,
+  P2.18, P2.20, P3.16, P3.21, P3.22.
   - 160 tests pass. Typecheck + lint + build clean.

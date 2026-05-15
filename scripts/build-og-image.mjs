@@ -10,6 +10,7 @@
 // Pages build fast and deterministic.
 
 import { readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
@@ -22,6 +23,7 @@ const variants = [
   { svg: 'og-image-en.svg', png: 'og-image-en.png', label: 'en' },
 ]
 
+const hashes = {}
 for (const v of variants) {
   const svgPath = join(portalRoot, 'public', v.svg)
   const pngPath = join(portalRoot, 'public', v.png)
@@ -33,5 +35,14 @@ for (const v of variants) {
     .png({ compressionLevel: 9, adaptiveFiltering: true })
     .toBuffer()
   writeFileSync(pngPath, png)
+  // Record the SVG hash at the time we rasterised. check-og-image.mjs uses
+  // it as a stale-detector at build time.
+  hashes[v.label] = createHash('sha256').update(svg).digest('hex')
   console.log(`${v.png} (${v.label}) — ${(png.length / 1024).toFixed(1)} KB`)
 }
+
+writeFileSync(
+  join(portalRoot, 'public', 'og-image.hash.json'),
+  JSON.stringify(hashes, null, 2) + '\n',
+)
+console.log('og-image.hash.json updated')

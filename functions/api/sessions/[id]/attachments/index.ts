@@ -30,6 +30,7 @@ import {
   r2KeyFor,
   safeFilename,
   totalAttachmentBytesForSession,
+  verifyMagicBytes,
   type AttachmentRow,
 } from '../../../../_lib/attachments'
 
@@ -90,6 +91,17 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     return payloadTooLarge('session storage budget reached — delete an older file first')
   }
 
+  // Magic-byte check: refuse a file whose first bytes don't match the
+  // declared Content-Type for the high-value image/PDF/Office classes. The
+  // client-supplied MIME isn't trusted; this is a defensive layer that
+  // catches the "rename evil.exe to thing.png" case. Returns a fresh stream
+  // (the original was consumed during inspection) — we MUST use it to write
+  // to R2 below; the original is now empty.
+  const magic = await verifyMagicBytes(file)
+  if (!magic.ok || !magic.stream) {
+    return unsupportedMediaType('file contents do not match declared type')
+  }
+
   const attachmentId = newAttachmentId()
   const r2Key = r2KeyFor(id, attachmentId)
   const filename = safeFilename(file.name)
@@ -97,7 +109,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
 
   // Stream to R2. The .body is a ReadableStream — putting it directly avoids
   // pulling the whole file into the worker's memory.
-  await env.MEDIA.put(r2Key, file.stream(), {
+  await env.MEDIA.put(r2Key, magic.stream, {
     httpMetadata: { contentType: file.type },
   })
 
