@@ -87,8 +87,10 @@
 - ~~Per-project OG image generation (C.8)~~ — **shipped Phase 10**. `/og/share/:id` returns 1200×630 PNG rendered via workers-og from the session's showcase title + tagline + tier. Cached 24h at the edge.
 - ~~Per-language OG via SSR/middleware~~ — **shipped Phase 10**. `functions/_middleware.ts` uses HTMLRewriter to swap `og:image` / `twitter:image` / `og:locale` based on URL: `/en/*` → `og-image-en.png`; `/share/:id` → `/og/share/:id`. Bots get the right card without running JS.
 - ~~Server-side upload of napkin PNG~~ — **shipped Phase 11**. Intake reads `marc-portal:napkin-sketch` on mount, shows a thumbnail-badge with caption + Remove, ships the napkin inside `intake_json.napkin` on createSession, clears on success. SessionPage renders a "session-napkin" panel that shows the sketch + caption + "Open PNG" download link.
-- `npm audit` reports 15 vulnerabilities (14 moderate, 1 high) brought in by Excalidraw's deep dep tree (nanoid via @excalidraw/mermaid-to-excalidraw → @mermaid-js/parser → langium). Non-breaking `npm audit fix` cannot resolve any of them — they require `npm audit fix --force`, which bumps @excalidraw/excalidraw to a new major (breaking). Deferred pending an explicit version-bump pass.
-- All findings are in **build-time / dev** paths the runtime client doesn't execute as a server (nanoid issues affect non-integer inputs we don't pass; mermaid-to-excalidraw is a feature we don't import). Confirmed not currently exploitable in our usage.
+- ~~`npm audit` 15 findings~~ — **shipped Phase 12**. All cleared via:
+  1. `package.json` `overrides` for the Excalidraw-tree transitives (nanoid 5.1.11, esbuild 0.28.0, lodash-es 4.18.1, langium 4.2.4). Kept Excalidraw at 0.18.1; no downgrade.
+  2. `vitest` + `@vitest/ui` bumped 2.1.9 → 4.1.6 (cleared the vite-chain findings).
+- Result: `npm audit` reports **0 vulnerabilities**. All 153 tests still pass; build, typecheck, lint, prettier all green.
 
 ## Phase 10 — Per-project + per-lang OG (added after first run)
 - [x] `workers-og` installed (satori + resvg WASM under the hood)
@@ -96,6 +98,13 @@
 - [x] `functions/_middleware.ts` extended — HTMLRewriter swaps `og:image` / `twitter:image` / `og:locale` per URL: `/en/*` → EN flavor; `/share/:id` → dynamic endpoint.
 - [x] 24h edge caching (`Cache-Control: public, max-age=86400, s-maxage=86400`)
 - [x] Typecheck, lint, build, tests all green
+
+## Phase 12 — npm audit fix (no Excalidraw downgrade)
+- [x] Added `overrides` in package.json: nanoid ^5.1.11, esbuild ^0.28.0, lodash-es ^4.18.1, langium ^4.2.4 — clears the Excalidraw-tree findings (nanoid via mermaid-to-excalidraw, langium via @mermaid-js/parser, etc.) without downgrading Excalidraw.
+- [x] Bumped vitest + @vitest/ui from 2.1.9 → 4.1.6 — clears the vite/vite-node/vitest chain findings.
+- [x] `npm audit`: 0 vulnerabilities.
+- [x] Tests: 153/153 still pass on vitest 4. Build clean. Typecheck/lint/prettier green.
+- [x] Note: vitest 4 prints an informational warning ("Both esbuild and oxc options were set") because it switched to the oxc transformer. Tests run; harmless. Can clean up by removing esbuild jsx config from vitest.config.ts later.
 
 ## Phase 11 — Napkin server-side upload (added after first run)
 - [x] Intake.tsx loads `marc-portal:napkin-sketch` on mount; renders a `NapkinAttachedBadge` (thumbnail + caption + Remove)
