@@ -76,5 +76,52 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
   }
 
   ;(ctx.data as PagesContextData).tenant = tenant
-  return ctx.next()
+
+  const response = await ctx.next()
+  // Crawler-correct OG injection: SPA ships a single index.html with the FR
+  // OG image hardcoded; for /en/* requests we swap to og-image-en.png, and
+  // for /share/:id (or /en/share/:id) we point at the dynamic /og/share/:id
+  // endpoint so the social card reflects the specific project. Bot scrapers
+  // never run JS, so this rewrite is the only way they see the right card.
+  return rewriteOgTags(response, url)
+}
+
+function rewriteOgTags(response: Response, url: URL): Response {
+  const contentType = response.headers.get('content-type') ?? ''
+  if (!contentType.includes('text/html')) return response
+
+  const path = url.pathname
+  const isEn = path === '/en' || path.startsWith('/en/')
+  const shareMatch = /^\/(?:en\/)?share\/([A-Za-z0-9_-]{6,})\/?$/.exec(path)
+
+  // Default OG image (FR or EN flavor) — same as Home.tsx's runtime swap, but
+  // applied server-side so first-render bots see the right card.
+  let ogImage = isEn ? '/og-image-en.png' : '/og-image.png'
+  const ogLocale = isEn ? 'en_CA' : 'fr_CA'
+
+  if (shareMatch) {
+    const sessionId = shareMatch[1]
+    // Point at the dynamic per-project OG endpoint. The function below
+    // renders on demand. ?lang= lets the renderer localize its footer.
+    ogImage = `/og/share/${sessionId}${isEn ? '?lang=en' : ''}`
+  }
+
+  const rewriter = new HTMLRewriter()
+    .on('meta[property="og:image"]', {
+      element(el) {
+        el.setAttribute('content', ogImage)
+      },
+    })
+    .on('meta[name="twitter:image"]', {
+      element(el) {
+        el.setAttribute('content', ogImage)
+      },
+    })
+    .on('meta[property="og:locale"]', {
+      element(el) {
+        el.setAttribute('content', ogLocale)
+      },
+    })
+
+  return rewriter.transform(response)
 }

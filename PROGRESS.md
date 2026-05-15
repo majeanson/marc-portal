@@ -84,12 +84,19 @@
 - [x] Committed (hash: pending)
 
 ## Known gaps to follow up
-- Per-project OG image generation (C.8): deferred. Static index.html ships FR OG; crawlers on `/en` see FR.
-- Per-language OG via SSR/middleware: deferred. Runtime swap covers human re-share but not initial crawl on `/en`.
+- ~~Per-project OG image generation (C.8)~~ — **shipped Phase 10**. `/og/share/:id` returns 1200×630 PNG rendered via workers-og from the session's showcase title + tagline + tier. Cached 24h at the edge.
+- ~~Per-language OG via SSR/middleware~~ — **shipped Phase 10**. `functions/_middleware.ts` uses HTMLRewriter to swap `og:image` / `twitter:image` / `og:locale` based on URL: `/en/*` → `og-image-en.png`; `/share/:id` → `/og/share/:id`. Bots get the right card without running JS.
 - Server-side upload of napkin PNG: not wired. PNG lives only in localStorage; `/intake` doesn't yet pick it up and attach. Follow-up:
   1. Detect `formData.__hasNapkinSketch` in Intake.tsx → show "sketch attached ✓" pill.
   2. On `createSession`, base64 upload the PNG as an attachment (new endpoint).
 - `npm audit` reports 15 vulnerabilities (14 moderate, 1 high) brought in by Excalidraw's deep dep tree. Worth a `npm audit fix` pass with user approval next session.
+
+## Phase 10 — Per-project + per-lang OG (added after first run)
+- [x] `workers-og` installed (satori + resvg WASM under the hood)
+- [x] `functions/og/share/[id].ts` — renders a 1200×630 PNG from session showcase fields (title, tagline, tier, status). Falls back to static `/og-image.png` on missing/errored.
+- [x] `functions/_middleware.ts` extended — HTMLRewriter swaps `og:image` / `twitter:image` / `og:locale` per URL: `/en/*` → EN flavor; `/share/:id` → dynamic endpoint.
+- [x] 24h edge caching (`Cache-Control: public, max-age=86400, s-maxage=86400`)
+- [x] Typecheck, lint, build, tests all green
 
 ## Final — `npm run check`
 - [x] typecheck: clean
