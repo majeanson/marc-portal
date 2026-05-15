@@ -113,10 +113,12 @@ the share URL itself — which the visitor was free to send to anyone.
 
 | Action | Owner | Status |
 |---|---|---|
-| Sign Sentry's Data Processing Agreement (sentry.io/legal/dpa/) | Marc | TODO — click-to-accept |
-| Set project retention to 30 days (Settings → General → Data Retention) | Marc | TODO |
-| Enable "Prevent Storing of IP Addresses" (Settings → Security & Privacy) | Marc | TODO |
-| Verify data scrubbing rules are on (defaults are: credit cards, common secrets) | Marc | TODO |
+| Sign Sentry's Data Processing Agreement (sentry.io/legal/dpa/) | Marc | ✅ 2026-05-15 — signed copy at `docs/compliance/sentry-dpa-signed-2026-05-15.pdf` |
+| Project retention = 30 days | Marc | ✅ 2026-05-15 — plan-default on Sentry's free/Developer plan; not user-configurable. If org ever upgrades to a paid plan, must explicitly re-set to 30 days (paid plans default higher). |
+| Enable "Prevent Storing of IP Addresses" (Settings → Security & Privacy) | Marc | ✅ 2026-05-15 |
+| Require Data Scrubber + Require Default Scrubbers (Settings → Security & Privacy) | Marc | ✅ 2026-05-15 |
+| Enhanced Privacy toggle (Settings → Security & Privacy) | Marc | ✅ 2026-05-15 — strips PII from notifications + suppresses source snippets |
+| Global Sensitive Fields supplement (session, session_cookie, csrf, csrf_token, authorization, cookie) | Marc | ✅ 2026-05-15 — defense-in-depth on top of code-side `beforeSend` |
 | Document this PIA exists in `RUNBOOK.md` | Done | ✅ |
 
 ### 6.4 Visitor-facing notice (Loi 25 art. 8)
