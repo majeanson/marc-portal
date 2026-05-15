@@ -39,6 +39,12 @@
     <meta property="og:locale" content="fr_CA" />
     <meta property="og:locale:alternate" content="en_CA" />
 
+    <!-- Hreflang — injected by functions/_middleware.ts at edge so crawlers
+         see them without JS. We can't put bare-path href values directly in
+         this file because Vite resolves them as asset references. The
+         middleware writes per-page mappings (FR <-> EN of the current path)
+         using HTMLRewriter. -->
+
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Marc — dev québécois, async" />

@@ -593,6 +593,20 @@ const FR = {
       titleLong: 'Titre long (>60 car.)',
     },
   },
+
+  notFound: {
+    title: 'Cette page n’existe pas',
+    body: 'Le lien que tu as suivi pointe sur quelque chose qu’on n’a pas. Probablement une vieille URL.',
+    homeCta: '← Retour à l’accueil',
+    intakeCta: 'Démarrer une demande →',
+  },
+
+  errorBoundary: {
+    title: 'Quelque chose a planté',
+    body: 'On a essayé d’ouvrir cette page et ça n’a pas marché. C’est probablement un changement déployé pendant que tu naviguais. Rafraîchis ; si ça persiste, écris-moi.',
+    refreshCta: 'Rafraîchir',
+    homeCta: '← Retour à l’accueil',
+  },
 }
 
 const EN: Copy = {
@@ -1180,6 +1194,20 @@ const EN: Copy = {
       noTier: 'No tier',
       titleLong: 'Title long (>60 chars)',
     },
+  },
+
+  notFound: {
+    title: "This page doesn't exist",
+    body: "The link you followed points at something we don't have. Probably an old URL.",
+    homeCta: '← Back home',
+    intakeCta: 'Start a request →',
+  },
+
+  errorBoundary: {
+    title: 'Something went sideways',
+    body: "We tried to open this page and it didn't load. Most likely a deploy raced your navigation. Refresh; if it sticks, write to me.",
+    refreshCta: 'Refresh',
+    homeCta: '← Back home',
   },
 }
 

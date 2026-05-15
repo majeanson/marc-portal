@@ -15,9 +15,6 @@ import { badRequest, conflict, forbidden, notFound, ok, unauthorized } from '../
 import {
   appendStatusHistory,
   canAccessSession,
-  countActiveAndTriage,
-  isActiveAtCap,
-  isTriageAtCap,
   isValidStatus,
   loadSession,
   primaryAdminEmail,
@@ -102,20 +99,12 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     if (!admin) return forbidden('only admin can change status')
     if (!isValidStatus(body.status)) return badRequest('invalid status')
     if (body.status !== session.status) {
-      // Bedrock cap enforcement: transitions *into* `triage` or `active` are
-      // checked against the live counts (excluding this row, since it may
-      // already be in the bucket we're checking against). 409 is the structural
-      // signal — admin sees a clear "at cap" message and can ship/reject the
-      // current occupant first.
-      if (body.status === 'triage' || body.status === 'active') {
-        const counts = await countActiveAndTriage(env.DB, id)
-        if (body.status === 'triage' && isTriageAtCap(counts)) {
-          return conflict('triage at capacity — ship or reject the current entry first')
-        }
-        if (body.status === 'active' && isActiveAtCap(counts)) {
-          return conflict('active at capacity — ship or reject the current build first')
-        }
-      }
+      // Bedrock cap enforcement, atomic: for transitions *into* `triage` or
+      // `active`, the cap check is folded into the UPDATE's WHERE clause via a
+      // subselect. If the count is already at cap, the UPDATE affects 0 rows
+      // and we return 409. This closes the read-then-write race that the prior
+      // two-step pattern had — two admins promoting two drafts to triage at
+      // the same time can no longer both succeed.
       const entry: StatusHistoryEntry = {
         from: session.status,
         to: body.status,
@@ -123,11 +112,32 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
         at: now,
       }
       const nextHistory = appendStatusHistory(session.status_history, entry)
-      await env.DB.prepare(
-        `UPDATE sessions SET status = ?, status_history = ?, updated_at = ? WHERE id = ?`,
-      )
-        .bind(body.status, nextHistory, now, id)
-        .run()
+
+      if (body.status === 'triage' || body.status === 'active') {
+        const cap = body.status === 'triage' ? 1 : 1 // TRIAGE_CAP / ACTIVE_CAP — both are 1 today
+        const result = await env.DB.prepare(
+          `UPDATE sessions SET status = ?, status_history = ?, updated_at = ?
+           WHERE id = ?
+             AND (
+               SELECT COUNT(*) FROM sessions
+               WHERE status = ? AND deleted_at IS NULL AND id != ?
+             ) < ?`,
+        )
+          .bind(body.status, nextHistory, now, id, body.status, id, cap)
+          .run()
+        const changed = result.meta?.changes ?? 0
+        if (changed === 0) {
+          return body.status === 'triage'
+            ? conflict('triage at capacity — ship or reject the current entry first')
+            : conflict('active at capacity — ship or reject the current build first')
+        }
+      } else {
+        await env.DB.prepare(
+          `UPDATE sessions SET status = ?, status_history = ?, updated_at = ? WHERE id = ?`,
+        )
+          .bind(body.status, nextHistory, now, id)
+          .run()
+      }
       statusChanged = { from: session.status, to: body.status }
     }
   }

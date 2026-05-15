@@ -35,28 +35,9 @@ export function Home({ lang }: { lang: Lang }) {
     if (ogImageEl) ogImageEl.setAttribute('content', ogImage)
     const twImageEl = document.querySelector('meta[name="twitter:image"]')
     if (twImageEl) twImageEl.setAttribute('content', ogImage)
-    // og:locale + Twitter card title/description follow the language too.
+    // og:locale follows the language too.
     const ogLocale = document.querySelector('meta[property="og:locale"]')
     if (ogLocale) ogLocale.setAttribute('content', lang === 'en' ? 'en_CA' : 'fr_CA')
-
-    // hreflang links — kept out of index.html because Vite tries to inline href="/"
-    // as an asset; injecting at runtime is safe and updates per-language.
-    const head = document.head
-    const ids = ['hreflang-fr', 'hreflang-en', 'hreflang-default']
-    ids.forEach((id) => document.getElementById(id)?.remove())
-    const links: Array<[string, string, string]> = [
-      ['hreflang-fr', 'fr-CA', '/'],
-      ['hreflang-en', 'en-CA', '/en'],
-      ['hreflang-default', 'x-default', '/'],
-    ]
-    for (const [id, hreflang, href] of links) {
-      const link = document.createElement('link')
-      link.id = id
-      link.rel = 'alternate'
-      link.hreflang = hreflang
-      link.href = href
-      head.appendChild(link)
-    }
   }, [lang, t])
 
   return (

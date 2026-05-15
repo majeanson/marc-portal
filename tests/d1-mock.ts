@@ -385,6 +385,36 @@ class MockPreparedStatement {
       return 1
     }
 
+    // Atomic cap-checked status transition (triage/active):
+    //   UPDATE sessions SET status = ?, status_history = ?, updated_at = ?
+    //   WHERE id = ?
+    //     AND (SELECT COUNT(*) FROM sessions
+    //          WHERE status = ? AND deleted_at IS NULL AND id != ?) < ?
+    if (
+      sql.startsWith('UPDATE sessions SET status = ?, status_history = ?, updated_at = ?') &&
+      sql.includes('SELECT COUNT(*) FROM sessions')
+    ) {
+      const newStatus = a[0] as string
+      const nextHistory = a[1] as string | null
+      const updatedAt = a[2] as number
+      const id = a[3] as string
+      const capStatus = a[4] as string
+      const excludeId = a[5] as string
+      const cap = a[6] as number
+      let count = 0
+      for (const s of this.db.sessions.values()) {
+        if (s.status === capStatus && s.deleted_at === null && s.id !== excludeId) count++
+      }
+      if (count >= cap) return 0
+      const row = this.db.sessions.get(id)
+      if (row) {
+        row.status = newStatus
+        row.status_history = nextHistory
+        row.updated_at = updatedAt
+      }
+      return row ? 1 : 0
+    }
+
     if (sql.startsWith('UPDATE sessions SET status = ?, status_history = ?, updated_at = ?')) {
       const id = a[3] as string
       const row = this.db.sessions.get(id)

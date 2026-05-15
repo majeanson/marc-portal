@@ -20,6 +20,8 @@ import { Login } from './pages/Login'
 import { MagicLinkSent } from './pages/MagicLinkSent'
 import { MePortal } from './pages/MePortal'
 import { SessionPage } from './pages/SessionPage'
+import { NotFound } from './pages/NotFound'
+import { RouteError } from './pages/RouteError'
 
 // Cold-path pages — lazy. Cuts the initial bundle (demos, all admin
 // surfaces) at the cost of one network round-trip when first visited.
@@ -51,8 +53,23 @@ const PublicAdvancements = lazy(() =>
 const Projects = lazy(() => import('./pages/Projects').then((m) => ({ default: m.Projects })))
 const Napkin = lazy(() => import('./pages/Napkin').then((m) => ({ default: m.Napkin })))
 
+// Minimal skeleton shown while a lazy() chunk is in flight. Visually quiet,
+// avoids the "is this broken?" feel of an empty aria-busy main. Header is
+// not rendered (it depends on auth context that's mid-load on first paint);
+// the rail + a couple of soft bars give the page enough shape to read as
+// "loading" instead of "broken."
+function RouteFallback() {
+  return (
+    <main className="page route-fallback" aria-busy="true" aria-label="Loading">
+      <div className="route-fallback__bar" />
+      <div className="route-fallback__bar route-fallback__bar--narrow" />
+      <div className="route-fallback__bar route-fallback__bar--wide" />
+    </main>
+  )
+}
+
 function L({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<main className="page" aria-busy="true" />}>{children}</Suspense>
+  return <Suspense fallback={<RouteFallback />}>{children}</Suspense>
 }
 
 // Root layout — hosts the lazy <Outlet/> under a single Suspense boundary.
@@ -60,7 +77,7 @@ function L({ children }: { children: ReactNode }) {
 // useTenant work in every route component.
 function RootLayout() {
   return (
-    <Suspense fallback={<main className="page" aria-busy="true" />}>
+    <Suspense fallback={<RouteFallback />}>
       <Outlet />
     </Suspense>
   )
@@ -68,7 +85,7 @@ function RootLayout() {
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route element={<RootLayout />}>
+    <Route element={<RootLayout />} errorElement={<RouteError />}>
       <Route path="/" element={<RootByTemplate lang="fr" />} />
       <Route path="/en" element={<RootByTemplate lang="en" />} />
       <Route path="/intake" element={<Intake lang="fr" />} />
@@ -366,7 +383,7 @@ export const router = createBrowserRouter(
         />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Route>,
   ),
 )

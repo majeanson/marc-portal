@@ -43,12 +43,13 @@
 - ✅ **P1.6** — Magic-link token cleanup piggybacks the daily digest cron
   (`POST /api/admin/digest`): rows older than 24h are pruned before the
   inbox-nudge logic runs. Errors don't fail the digest (best-effort).
-- ⬜ **P1.7** — Capacity-cap race condition. `POST /api/sessions` is
-  read-counts-then-INSERT with no transaction. Two simultaneous submissions can
-  both pass the cap check. D1 has no `BEGIN/COMMIT` in Pages Functions; fix with
-  a `INSERT ... WHERE NOT EXISTS (SELECT 1 FROM sessions WHERE ...)` pattern,
-  OR accept the 1-second race window (it's a 1-active+1-triage cap, and triage
-  bursts are rare). Decide which.
+- ✅ **P1.7** — Capacity-cap race closed. The dangerous race was in
+  `PATCH /api/sessions/:id { status }` — not the POST. POST creates `draft`
+  rows that don't count against the cap; the real cap violation could only
+  happen when two simultaneous PATCHes promoted two rows into `triage` or
+  `active`. Fix folds the count check into the UPDATE's WHERE clause as a
+  subselect, so the UPDATE affects 0 rows when at cap and we return 409 from
+  `result.meta.changes === 0`. Atomic in SQLite. Mock updated, tests pass.
 
 ### Napkin PNG schema bomb
 - ⬜ **P1.8** — Move napkin PNG out of `intake_json` (data-URL inside JSON column)
@@ -83,11 +84,11 @@
 ## P2 — Meaningful gaps
 
 ### Auth
-- ⬜ **P2.1** — Centralize `isAdmin` email-lowercase normalization. Today the
-  comma-split in `functions/_lib/env.ts:27` only trims+lowercases on read; if
-  any code path inserts a raw `ADMIN_EMAILS` mid-flight (env reload), trailing
-  whitespace or case differences could mismatch. Wrap as a single source of
-  truth and assert at boot.
+- ⏭ **P2.1** — Centralize `isAdmin` email-lowercase normalization. **Deferred.**
+  The current implementation in `functions/_lib/env.ts:27` already
+  `.trim().toLowerCase()`s both the haystack and the needle, and CF Pages env
+  vars don't reload mid-process. The concern I raised was speculative; no
+  actual bug exists. Revisit if a second normalization site appears.
 - ⬜ **P2.2** — Logout doesn't invalidate the cookie server-side (HMAC is
   stateless). For real revocation, add a `revoked_sessions` table or a
   `min_issued_at` per-user column and check it in `verifySessionCookie`. Today
@@ -126,16 +127,14 @@
   useEffect like we already do for `og:image`.
 
 ### Routing / SPA
-- ⬜ **P2.11** — Real 404 page. Today `<Route path="*">` redirects to home —
-  the user can't tell what went wrong, and the URL silently changes. Add a
-  proper `<NotFound>` route with "this link doesn't exist; here's home, here's
-  the intake."
-- ⬜ **P2.12** — Route-level error boundaries. A failed `lazy()` chunk fetch
-  (deploy raced with a visit) just shows `aria-busy` empty main forever. Add
-  `errorElement` on the root layout that surfaces "we updated the app, please
-  refresh" with a button.
-- ⬜ **P2.13** — Suspense fallback is `aria-busy` empty main. Looks broken on
-  slow connections. Add a minimal skeleton (header + a few placeholder bars).
+- ✅ **P2.11** — `src/pages/NotFound.tsx` renders a proper 404 with the path
+  the visitor hit, links to home + intake. Wired as `<Route path="*">`
+  replacing the previous silent home-redirect.
+- ✅ **P2.12** — `src/pages/RouteError.tsx` is the root `errorElement` on the
+  layout route. Surfaces "something went sideways" + Refresh button. Reuses
+  the 404 copy for ErrorResponse-style 404s so the experience is consistent.
+- ✅ **P2.13** — `RouteFallback` component (in `router.tsx`) renders three
+  shimmer bars during lazy chunk fetch. Reduced-motion stops the animation.
 - ⬜ **P2.14** — Collapse the duplicated FR+EN route subtrees in `src/router.tsx`
   (~350 lines, 2× maintenance). Either parametrize with `:lang(en)?` or build
   the route list programmatically from a path table. Comment calls the
@@ -161,8 +160,8 @@
   showcase needs a CSP edit + redeploy. Move to a `_headers` builder script
   that reads showcased build URLs from D1, OR loosen to `*.pages.dev` /
   `*.vercel.app` (with the security trade-off documented).
-- ⬜ **P2.19** — Add `Strict-Transport-Security: max-age=31536000; includeSubDomains`
-  to `public/_headers`. Belt-and-suspenders over CF's default HTTPS-only.
+- ✅ **P2.19** — `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
+  added to `public/_headers`.
 - ⬜ **P2.20** — `style-src 'unsafe-inline'` allowed (needed for Google Fonts +
   Excalidraw). If we replace Google Fonts with self-hosted `.woff2` files, we
   can drop `unsafe-inline`. Excalidraw also injects inline styles — verify if
@@ -202,9 +201,11 @@
   ~600 KB in `POST /api/sessions`. (Less critical once P1.8 is done.)
 
 ### SEO / i18n
-- ⬜ **P3.6** — Hreflang `<link>` tags currently injected via `useEffect` in
-  `Home.tsx:46`. Bots that don't run JS don't see them. Move to `index.html`
-  (use absolute URLs so Vite doesn't inline them as assets).
+- ✅ **P3.6** — Hreflang now injected by `functions/_middleware.ts` via
+  HTMLRewriter (`head` element append). Crawlers see them on first byte
+  without running JS. Per-page mapping — `/projects` shows `/en/projects` as
+  its EN alternate, not just `/en`. Tried index.html first; bare-path hrefs
+  trip Vite's asset resolution, hence the middleware approach.
 - ⬜ **P3.7** — Locale detection on first visit. `Accept-Language: en` → redirect
   to `/en` from `/`. Honor a preference cookie afterward.
 - ⬜ **P3.8** — Type-safe i18n. Hand-rolled `DICT[lang]` (~1100 lines). Adding
@@ -240,8 +241,9 @@
 - ✅ **P3.18** — Rewrote the stale comment in `src/components/About.tsx` to
   document the actual purpose of the `onError` fallback instead of the
   no-longer-relevant "placeholder" framing.
-- ⬜ **P3.19** — Bump `package.json` from `"version": "0.0.1"` to something
-  real, OR document that we don't track app versions and remove the field.
+- ✅ **P3.19** — `package.json` version set to `0.0.0` to signal "not tracked"
+  (this is a `private: true` app, deploys are git-SHA-tracked, no consumers
+  depend on the field).
 - ⬜ **P3.20** — `scripts/build-og-image.mjs` is run manually. Add a check in
   CI that diffs `og-image.svg` against the bundled PNG and fails if they're
   out of sync. (Or: just regenerate in `prebuild`.)
@@ -264,3 +266,9 @@
   with cross-origin rationale.
   - 154 tests pass (was 153 — added IP-ceiling test).
   - Typecheck + lint clean.
+- 2026-05-15 — Second batch shipped: P1.7 (capacity-cap race closed via
+  atomic UPDATE with cap-folded subselect), P2.11 (real 404 page), P2.12
+  (route error boundary), P2.13 (Suspense skeleton), P2.19 (HSTS header),
+  P3.6 (hreflang via middleware), P3.19 (version 0.0.0 to signal untracked).
+  P2.1 deferred (was speculative; no real bug).
+  - 154 tests pass. Typecheck + lint + build clean.

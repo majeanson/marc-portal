@@ -95,6 +95,7 @@ function rewriteOgTags(response: Response, url: URL): Response {
   // API endpoints can still return HTML (error pages), and rewriting their
   // bodies wastes work and risks corrupting structured responses.
   if (path.startsWith('/api/') || path.startsWith('/og/')) return response
+
   const isEn = path === '/en' || path.startsWith('/en/')
   const shareMatch = /^\/(?:en\/)?share\/([A-Za-z0-9_-]{6,})\/?$/.exec(path)
 
@@ -109,6 +110,16 @@ function rewriteOgTags(response: Response, url: URL): Response {
     // renders on demand. ?lang= lets the renderer localize its footer.
     ogImage = `/og/share/${sessionId}${isEn ? '?lang=en' : ''}`
   }
+
+  // Per-page hreflang. We map the current path to its FR/EN counterpart so
+  // bots see a precise alternate (not just root). Bare paths are fine here
+  // because they come out the wire as HTML, not through Vite's asset pipeline.
+  const frPath = stripEnPrefix(path)
+  const enPath = frPath === '/' ? '/en' : `/en${frPath}`
+  const hreflangLinks =
+    `<link rel="alternate" hreflang="fr-CA" href="${frPath}">` +
+    `<link rel="alternate" hreflang="en-CA" href="${enPath}">` +
+    `<link rel="alternate" hreflang="x-default" href="${frPath}">`
 
   const rewriter = new HTMLRewriter()
     .on('meta[property="og:image"]', {
@@ -126,6 +137,17 @@ function rewriteOgTags(response: Response, url: URL): Response {
         el.setAttribute('content', ogLocale)
       },
     })
+    .on('head', {
+      element(el) {
+        el.append(hreflangLinks, { html: true })
+      },
+    })
 
   return rewriter.transform(response)
+}
+
+function stripEnPrefix(path: string): string {
+  if (path === '/en') return '/'
+  if (path.startsWith('/en/')) return path.slice(3) || '/'
+  return path
 }
