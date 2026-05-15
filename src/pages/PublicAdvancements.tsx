@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { TimeTravelScrubber } from '../components/TimeTravelScrubber'
+import { ShareModal } from '../components/ShareModal'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicAdvancements, type PublicAdvancementRow } from '../lib/advancementsApi'
@@ -19,6 +20,7 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
   const [items, setItems] = useState<PublicAdvancementRow[] | null>(null)
   const [error, setError] = useState<boolean>(false)
   const [openBuild, setOpenBuild] = useState<string | null>(null)
+  const [shareOpen, setShareOpen] = useState(false)
 
   useEffect(() => {
     document.title = `${t.heading} — Marc`
@@ -49,9 +51,23 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
           style={{ viewTransitionName: 'project-detail' }}
         >
           <div className="section__inner">
-            <div className="section__eyebrow">{t.heading}</div>
-            <h1 className="session-frame__title">{t.heading}</h1>
-            <p className="field__hint">{t.subtitle}</p>
+            <div className="session-frame__head-row">
+              <div>
+                <div className="section__eyebrow">{t.heading}</div>
+                <h1 className="session-frame__title">{t.heading}</h1>
+                <p className="field__hint">{t.subtitle}</p>
+              </div>
+              {id && (
+                <button
+                  type="button"
+                  className="share-cta mono"
+                  onClick={() => setShareOpen(true)}
+                  aria-haspopup="dialog"
+                >
+                  <span aria-hidden="true">↗</span> {t.shareCta}
+                </button>
+              )}
+            </div>
 
             {error && (
               <p className="thread__empty mono" role="alert">
@@ -128,6 +144,14 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
         </article>
       </main>
       <Footer lang={lang} />
+      {id && (
+        <ShareModal
+          lang={lang}
+          sessionId={id}
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
     </div>
   )
 }

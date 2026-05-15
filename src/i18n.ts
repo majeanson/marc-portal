@@ -24,13 +24,13 @@ const FR = {
     },
   },
 
-  brandTitle: 'Marc — dev à Québec',
+  brandTitle: 'Marc — dev québécois',
   metaDescription:
-    "Marc, dev à Québec. Le soir et la fin de semaine, j'aide les gens à régler des problèmes du quotidien avec du code. Async — pas de meetings, à ton rythme.",
+    "Marc, dev québécois. Le soir et la fin de semaine, j'aide les gens à régler des problèmes du quotidien avec du code. Async — pas de meetings, à ton rythme.",
 
   hero: {
     eyebrow: 'side-pratique · Québec · async',
-    folio: '№ 01 — Marc, dev à Québec',
+    folio: '№ 01 — Marc, dev québécois',
     salut: 'Marc-Antoine, là pour résoudre des problèmes importants pour ma communauté',
     display: {
       pre: 'Marc-Antoine,',
@@ -502,6 +502,13 @@ const FR = {
     shareHeading: 'Lien public partageable',
     shareCopy: 'Copier le lien',
     shareCopied: 'Copié ✓',
+    shareCta: 'Partager',
+    shareCtaHint: 'Voir l’aperçu qui s’affichera dans Slack, iMessage, etc.',
+    shareModalTitle: 'Partage ce projet',
+    shareModalSub: 'Voici l’aperçu qui s’affichera quand tu colleras ce lien dans Slack, iMessage, LinkedIn, etc.',
+    sharePreviewAlt: 'Aperçu du carton de partage',
+    shareClose: 'Fermer',
+    shareNative: 'Partager…',
     scrubber: {
       title: 'Remonter le projet',
       eyebrow: 'machine à remonter',
@@ -1056,6 +1063,14 @@ const EN: Copy = {
     shareHeading: 'Public share link',
     shareCopy: 'Copy link',
     shareCopied: 'Copied ✓',
+    shareCta: 'Share',
+    shareCtaHint: 'See the preview that will show up in Slack, iMessage, etc.',
+    shareModalTitle: 'Share this project',
+    shareModalSub:
+      "Here's the preview people will see when this link is pasted into Slack, iMessage, LinkedIn, etc.",
+    sharePreviewAlt: 'Share card preview',
+    shareClose: 'Close',
+    shareNative: 'Share…',
     scrubber: {
       title: 'Rewind the project',
       eyebrow: 'time machine',
