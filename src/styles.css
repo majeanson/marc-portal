@@ -3773,6 +3773,52 @@ button:focus-visible,
   margin-top: 10px;
 }
 
+/* OG preview pane — shows the live /og/share/:id PNG below the showcase
+   editor. Cache-busted via `?v=updated_at` on save so admin sees the
+   social card update without leaving the page. */
+.session-showcase__preview {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--border);
+}
+.session-showcase__preview-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.session-showcase__preview-open {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--accent-warm);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 140ms ease;
+}
+.session-showcase__preview-open:hover,
+.session-showcase__preview-open:focus-visible {
+  border-bottom-color: var(--accent-warm);
+  outline: none;
+}
+.session-showcase__preview-frame {
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.session-showcase__preview-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.session-showcase__preview-hint {
+  margin-top: 10px;
+}
+
 /* Filter chips on showcase wall */
 .filters {
   display: flex;

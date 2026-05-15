@@ -564,6 +564,12 @@ const FR = {
     saveError: 'Échec — réessaie.',
     saved: 'Enregistré ✓',
     galleryLink: 'Voir la galerie →',
+    previewHeading: 'Aperçu du carton de partage',
+    previewHint:
+      'Voici ce qu’afficheront Slack, iMessage, LinkedIn, etc. quand quelqu’un colle le lien de cette session. L’aperçu reflète la version *publiée* — enregistre pour le voir bouger.',
+    previewDisabledHint:
+      'Active la vitrine et enregistre — l’aperçu apparaîtra ici une fois la session publiée.',
+    previewOpenInTab: 'Ouvrir le PNG',
   },
 }
 
@@ -1126,6 +1132,12 @@ const EN: Copy = {
     saveError: 'Failed — try again.',
     saved: 'Saved ✓',
     galleryLink: 'See the gallery →',
+    previewHeading: 'Share-card preview',
+    previewHint:
+      "Here's what Slack, iMessage, LinkedIn, etc. will show when someone pastes this session's link. The preview reflects the *published* version — hit save to refresh it.",
+    previewDisabledHint:
+      'Turn on the showcase and save — the preview will appear here once the session is published.',
+    previewOpenInTab: 'Open PNG',
   },
 }
 

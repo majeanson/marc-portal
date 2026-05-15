@@ -31,6 +31,15 @@ export function SessionShowcase({
   const [saving, setSaving] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
   const [error, setError] = useState(false)
+  // Cache-buster for the OG preview image. Bumped after every successful
+  // save so the <img> below refetches /og/share/:id with a fresh edge-cache
+  // entry. Initialised to the row's updated_at so a fresh mount also
+  // doesn't paint a stale day-cached card.
+  const [ogVersion, setOgVersion] = useState<number>(session.updated_at)
+  const isPublished = session.showcased_at !== null
+  const ogPreviewSrc = isPublished
+    ? `/og/share/${session.id}?${lang === 'en' ? 'lang=en&' : ''}v=${ogVersion}`
+    : null
 
   const dirty =
     enabled !== (session.showcased_at !== null) ||
@@ -54,6 +63,7 @@ export function SessionShowcase({
       })
       onPatched(r.session)
       setSavedFlash(true)
+      setOgVersion(r.session.updated_at)
       setTimeout(() => setSavedFlash(false), 2000)
     } catch {
       setError(true)
@@ -133,6 +143,40 @@ export function SessionShowcase({
           <span className="mono session-page__save-error" role="alert">
             {t.saveError}
           </span>
+        )}
+      </div>
+
+      <div className="session-showcase__preview">
+        <div className="session-showcase__preview-head">
+          <span className="section__eyebrow">{t.previewHeading}</span>
+          {ogPreviewSrc && (
+            <a
+              className="mono session-showcase__preview-open"
+              href={ogPreviewSrc}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t.previewOpenInTab} ↗
+            </a>
+          )}
+        </div>
+        {ogPreviewSrc ? (
+          <>
+            <div className="session-showcase__preview-frame">
+              <img
+                key={ogVersion}
+                src={ogPreviewSrc}
+                alt={t.previewHeading}
+                width={1200}
+                height={630}
+                loading="lazy"
+                className="session-showcase__preview-img"
+              />
+            </div>
+            <p className="field__hint session-showcase__preview-hint">{t.previewHint}</p>
+          </>
+        ) : (
+          <p className="field__hint session-showcase__preview-hint">{t.previewDisabledHint}</p>
         )}
       </div>
     </section>
