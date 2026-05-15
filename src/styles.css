@@ -5968,6 +5968,175 @@ button.intake__progress-step:disabled {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
+   TIME-TRAVEL SCRUBBER — public share view rewind component. Notches on a
+   horizontal track, each one a buildable advancement. Active notch lights
+   sage; past notches sit hollow; future notches sit dashed. Play button
+   auto-advances every 3.5s until the end.
+   ────────────────────────────────────────────────────────────────────── */
+.time-travel {
+  margin-top: 56px;
+  padding-top: 36px;
+  border-top: 1px solid var(--border-soft);
+  position: relative;
+  outline: none;
+}
+.time-travel:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+.time-travel__head {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.time-travel__title {
+  font-family: var(--display);
+  font-size: clamp(24px, 3.4vw, 32px);
+  letter-spacing: -0.01em;
+  margin: 6px 0 10px;
+  color: var(--text);
+}
+.time-travel__sub {
+  color: var(--text-mid);
+  font-size: 15px;
+  max-width: 52ch;
+  margin: 0 auto;
+}
+.time-travel__viewer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.time-travel__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--bg);
+}
+.time-travel__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 14px 0 6px;
+  font-size: 14px;
+  color: var(--text-mid);
+  flex-wrap: wrap;
+}
+.time-travel__step {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+}
+.time-travel__label {
+  font-family: var(--display);
+  font-weight: 600;
+  color: var(--text);
+  flex: 1 1 auto;
+}
+.time-travel__date {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.time-travel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px 0 20px;
+  flex-wrap: wrap;
+}
+.time-travel__btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+.time-travel__btn:hover:not(:disabled),
+.time-travel__btn:focus-visible:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-warm);
+  outline: none;
+}
+.time-travel__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.time-travel__btn--play.is-playing {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg-card);
+}
+.time-travel__track {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 4px;
+  position: relative;
+}
+.time-travel__track::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: 1px;
+  background: var(--border);
+  pointer-events: none;
+}
+.time-travel__notch {
+  appearance: none;
+  flex: 1 1 0;
+  min-width: 10px;
+  height: 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.time-travel__notch:hover,
+.time-travel__notch:focus-visible {
+  border-color: var(--accent);
+  transform: scaleY(1.15);
+  outline: none;
+}
+.time-travel__notch.is-past {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+}
+.time-travel__notch.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scaleY(1.4);
+}
+@media (prefers-reduced-motion: reduce) {
+  .time-travel__notch,
+  .time-travel__btn {
+    transition: none;
+  }
+  .time-travel__notch.is-active,
+  .time-travel__notch:hover {
+    transform: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
    THEME + LANGUAGE SWAP — when the toggle in the header fires
    document.startViewTransition(), the browser snapshots the page and
    crossfades. We tune the timing here. The root pseudo-element covers the

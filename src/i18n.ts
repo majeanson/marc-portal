@@ -483,6 +483,17 @@ const FR = {
     shareHeading: 'Lien public partageable',
     shareCopy: 'Copier le lien',
     shareCopied: 'Copié ✓',
+    scrubber: {
+      title: 'Remonter le projet',
+      eyebrow: 'machine à remonter',
+      sub: 'Chaque étape rouvre le build de cette époque. Glisse, ou laisse jouer.',
+      prev: 'Précédent',
+      next: 'Suivant',
+      play: 'Lecture',
+      pause: 'Pause',
+      stepLabel: (i: number, total: number) => `Étape ${i} sur ${total}`,
+      ariaTrack: 'Frise des étapes',
+    },
   },
 
   projects: {
@@ -1007,6 +1018,17 @@ const EN: Copy = {
     shareHeading: 'Public share link',
     shareCopy: 'Copy link',
     shareCopied: 'Copied ✓',
+    scrubber: {
+      title: 'Rewind the project',
+      eyebrow: 'time machine',
+      sub: 'Each step reopens the build from that moment. Drag, or hit play.',
+      prev: 'Previous',
+      next: 'Next',
+      play: 'Play',
+      pause: 'Pause',
+      stepLabel: (i: number, total: number) => `Step ${i} of ${total}`,
+      ariaTrack: 'Step timeline',
+    },
   },
 
   projects: {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { TimeTravelScrubber } from '../components/TimeTravelScrubber'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicAdvancements, type PublicAdvancementRow } from '../lib/advancementsApi'
@@ -121,6 +122,9 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
                   )
                 })}
               </ol>
+            )}
+            {items && items.length > 0 && (
+              <TimeTravelScrubber advancements={items} lang={lang} />
             )}
           </div>
         </article>

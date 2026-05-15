@@ -62,12 +62,15 @@
 - [x] Committed (hash: pending)
 
 ## Phase 8 — Time-travel scrubber on /share/:id
-- [ ] `TimeTravelScrubber.tsx` written
-- [ ] Mounted on `PublicAdvancements.tsx`
-- [ ] Empty/1-build state handled (component returns null)
-- [ ] Play/pause + keyboard nav
-- [ ] i18n strings added
-- [ ] Committed (hash: __)
+- [x] `TimeTravelScrubber.tsx` written — iframe + meta row + Prev/Play/Pause/Next + notched track
+- [x] Mounted at the bottom of the article on `PublicAdvancements.tsx`
+- [x] Returns null when fewer than 2 buildable advancements
+- [x] Play auto-advances every 3.5s, stops at the last step (doesn't loop)
+- [x] Keyboard nav: ←/→ step, Space toggles play (when reduced-motion is off)
+- [x] Reduced-motion hides the Play button; arrows still work
+- [x] i18n strings added under `sessionAdvancements.scrubber` (FR + EN)
+- [x] Active notch sage-filled; past notches sage-soft; future hollow
+- [x] Committed (hash: pending)
 
 ## Phase 9 — /napkin whiteboard intake
 - [ ] `@excalidraw/excalidraw` installed
