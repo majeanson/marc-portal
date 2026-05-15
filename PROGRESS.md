@@ -54,9 +54,12 @@
 - [x] Committed (hash: pending)
 
 ## Phase 7 — Language switch view-transition
-- [ ] FR/EN links use `Link` + `startViewTransition`
-- [ ] Reduced-motion respected
-- [ ] Committed (hash: __)
+- [x] FR/EN clicks intercepted with `startViewTransition` → router `navigate`
+- [x] Same-path swap: `/projects` ↔ `/en/projects`, not `/projects` → `/en`
+- [x] cmd/ctrl/middle-click preserved (open-in-new-tab still works)
+- [x] Same-language click no-ops (no needless navigate)
+- [x] Reduced-motion handled by existing CSS root crossfade rule
+- [x] Committed (hash: pending)
 
 ## Phase 8 — Time-travel scrubber on /share/:id
 - [ ] `TimeTravelScrubber.tsx` written
