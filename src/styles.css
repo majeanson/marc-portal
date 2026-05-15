@@ -182,6 +182,7 @@ p {
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.01em;
+  flex-shrink: 0;
 }
 .brand .dot {
   color: var(--accent);
@@ -189,7 +190,7 @@ p {
 .site-header__sections {
   display: inline-flex;
   align-items: center;
-  gap: 22px;
+  gap: 18px;
   font-family: var(--display);
   font-size: 13.5px;
   min-width: 0;
@@ -215,8 +216,10 @@ p {
   text-decoration: none;
 }
 /* Hide the secondary nav on narrow viewports — the right-side auth controls
-   keep priority. The page is still navigable by scroll. */
-@media (max-width: 900px) {
+   keep priority. The page is still navigable by scroll. The 1180px ceiling
+   accounts for admin chrome (Mes sessions · Déconnexion · VOIR COMME
+   VISITEUR pill), which otherwise pushes the centered nav into the brand. */
+@media (max-width: 1180px) {
   .site-header__sections {
     display: none;
   }
@@ -3153,6 +3156,33 @@ button:focus-visible,
 }
 .session-advancements__frame {
   margin-top: 12px;
+}
+/* Build preview frame — iframes have no intrinsic dimensions, so without
+   these rules the browser falls back to 300×150. Used on session detail,
+   the public share page, and the admin advancements list. */
+.rev-log__build-frame > .rev-log__build-hint {
+  margin: 0 0 10px;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+.rev-log__build-frame > iframe {
+  display: block;
+  width: 100%;
+  height: min(720px, calc(100vh - 200px));
+  min-height: 480px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+/* Let the open build break out of the 760px text column on wide viewports
+   so visitors actually see the deployed app, not a postage stamp of it. */
+@media (min-width: 1080px) {
+  .rev-log__build-frame {
+    position: relative;
+    width: min(1100px, calc(100vw - 48px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
 }
 .session-advancements__admin-row {
   display: flex;
