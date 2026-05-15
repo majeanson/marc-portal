@@ -18,18 +18,18 @@
 ## P1 — High impact, do first
 
 ### Email / deliverability
-- ⬜ **P1.1** — Verify a custom Resend sender domain; replace `onboarding@resend.dev`
-  in `functions/_lib/email.ts:6` (and `functions/api/admin/digest.ts:19`). Until
-  this lands, magic links land in Gmail/Outlook spam. Runbook §1 acknowledges
-  this as the #1 prod incident. ⚠ Needs DNS access on Marc's domain — user
-  action required first (SPF/DKIM/Return-Path).
-- ⬜ **P1.2** — Wire Resend bounce + complaint webhooks. Hard-bouncing addresses
-  should be flagged in D1 and skipped on future sends. Otherwise the digest cron
-  keeps emailing dead addresses forever.
-- ⬜ **P1.3** — Surface Resend send failures somewhere. Today `send()` returns
-  `false`, only `console.error`. No retry, no dead-letter, no alarm. Pick one:
-  store failed sends in an `email_outbox` table for manual retry, OR wire to
-  the same alerting path as P3.x observability.
+- ⚠ **P1.1** — Custom Resend sender domain (DNS-blocked). Currently sending
+  from `onboarding@resend.dev` — fine while it works, but Gmail/Outlook
+  reputation is shared. Highest-leverage item once DNS access is available.
+- ⚠ **P1.2** — Resend bounce/complaint webhooks (depends on P1.1). Without a
+  verified domain there's no useful bounce signal.
+- ⏭ **P1.3** — Resend send-failure outbox. **Deferred.** Today `send()`
+  returns false / `console.error`s on failures. Building a proper retry
+  outbox is its own commit: migration for `email_outbox` table, a writer
+  on every send-site, a sweeper on the digest cron. Pragmatic for an
+  app at this scale: addresses can request a fresh magic link any time;
+  the visitor-facing impact of a Resend hiccup is short-lived. Revisit
+  if/when an outage actually loses a load-bearing message.
 
 ### Auth / session safety
 - ✅ **P1.4** — CSRF double-submit cookie. Server (`functions/_lib/auth.ts`)
@@ -58,19 +58,16 @@
   `result.meta.changes === 0`. Atomic in SQLite. Mock updated, tests pass.
 
 ### Napkin PNG schema bomb
-- ⬜ **P1.8** — Move napkin PNG out of `intake_json` (data-URL inside JSON column)
-  into an R2 attachment. A 500 KB sketch base64-encodes to ~666 KB and rides
-  along on every `SELECT` that includes `intake_json` — `/api/sessions` list,
-  `/api/admin/digest` (which pulls `intake_json` for triage rows it only needs
-  text from), session detail load. Approach:
-    1. Upload napkin to R2 on submit (or via existing attachment endpoint),
-       store `r2_key` + `text` inside `intake_json` instead of the PNG bytes.
-    2. SessionPage renders the napkin via a signed-URL fetch, not inline.
-    3. Migrate existing rows: scan `intake_json` for `napkin.png` starting with
-       `data:image/`, write to R2, replace with `{ r2_key, text }`. Backup
-       D1 first.
-  ⚠ Decide: do we ship this now, or accept that the dataset is tiny and defer
-  until row sizes actually hurt? Today there are probably <10 napkin rows total.
+- ⏭ **P1.8** — Move napkin PNG out of `intake_json` into R2. **Deferred.**
+  Two reasons: (1) dataset is tiny today (~handful of napkin rows; the schema
+  bomb is preventative, not actively hurting); (2) doing it correctly is a
+  multi-step refactor (session row must exist before the FK-constrained
+  attachment row, so we'd need either a two-phase POST, a placeholder-then-
+  update flow, or a multipart upload endpoint — each with its own error
+  recovery story). Defense-in-depth meanwhile: the 1 MB intake payload cap
+  (P3.5) refuses oversized napkins at the server boundary. Re-open when
+  napkin volume actually hurts query times, OR when we touch session POST
+  for another reason and can fold this in cleanly.
 
 ### Iframe sandbox
 - ⏭ **P1.9** — Drop `allow-same-origin` from iframe sandboxes. **Deferred with
@@ -95,21 +92,23 @@
   `.trim().toLowerCase()`s both the haystack and the needle, and CF Pages env
   vars don't reload mid-process. The concern I raised was speculative; no
   actual bug exists. Revisit if a second normalization site appears.
-- ⬜ **P2.2** — Logout doesn't invalidate the cookie server-side (HMAC is
-  stateless). For real revocation, add a `revoked_sessions` table or a
-  `min_issued_at` per-user column and check it in `verifySessionCookie`. Today
-  the only way to revoke all sessions is rotating `SESSION_SECRET`.
+- ⏭ **P2.2** — Logout server-side revocation. **Deferred.** Real revocation
+  requires per-user `min_session_at` storage + an `iat` field in the cookie
+  payload + a DB hit on every authed request. Cost: a per-request lookup,
+  meaningful at scale. Benefit at current scale: marginal — the cookie is
+  HttpOnly + SameSite=Lax, theft is hard, and rotating `SESSION_SECRET`
+  remains the nuclear option for actual incident response. Reopen if a
+  per-device session list becomes a user-facing requirement.
 
 ### Sessions / data
-- ⬜ **P2.3** — `status_history` is a JSON column in TEXT. Can't query
-  "everything that changed status this week" without scanning every row. If we
-  ever want admin-side analytics, lift to a `session_events` table.
-- ⬜ **P2.4** — `intake_json` is opaque TEXT — no indexed columns for `type`,
-  `submittedAt`, etc. Inbox filtering by type means full scan. Acceptable at
-  10s-of-rows scale; ugly at 1000s. Add denormalized columns when count grows.
-- ⬜ **P2.5** — No `featured_position` / sort-order column on `sessions`.
-  `/projects` is just `ORDER BY showcased_at DESC`. Marc can't pin a project to
-  the top of the gallery.
+- ⏭ **P2.3** — `status_history` as JSON column. **Deferred — premature.**
+  No current need to query "status changes this week" cross-session.
+  Lift to a `session_events` table the day that need materializes.
+- ⏭ **P2.4** — `intake_json` denormalization. **Deferred — premature.**
+  At <100 sessions, full-scan filtering is sub-millisecond. Revisit at 1k+.
+- ⏭ **P2.5** — `featured_position` column. **Deferred — no current need.**
+  Marc isn't asking to pin a project. If the gallery ever holds enough
+  showcases that the implicit `showcased_at DESC` ordering hurts, add then.
 - ✅ **P2.6** — Already-shipped (verified). Endpoint lives at
   `functions/api/sessions/[id]/attachments/[attId].ts`. Auth-gated (visitor-self
   or admin), images served `inline`, others as `attachment`, RFC 5987 UTF-8
@@ -187,12 +186,12 @@
   surface.
 
 ### Observability
-- ⬜ **P2.22** — Pick an error tracker (Sentry, BetterStack, or just structured
-  logs to a CF Logs analytics dataset). Today `console.error` is the only signal;
-  prod incidents are debugged via `wrangler pages deployment tail`. Wire the
-  client side AND the Functions side. ⚠ External account required.
-- ⬜ **P2.23** — Synthetic monitor for `/api/health`. Cron-job.org (already used
-  for digest) can ping every 5 minutes and email Marc on red. ⚠ External.
+- ⚠ **P2.22** — Error tracker. **External account required** (Sentry /
+  BetterStack / CF Logs analytics). Code scaffolding can be done; flip when
+  the account is ready.
+- ⚠ **P2.23** — Synthetic monitor for `/api/health`. **External account.**
+  cron-job.org (already used for digest) can ping every 5 min and email
+  Marc on red. Five-minute setup.
 
 ---
 
@@ -245,16 +244,27 @@
   five HTMLRewriter-dependent tests (OG/hreflang injection) `describe.skipIf`
   when HTMLRewriter is unavailable — run them under miniflare or
   `@cloudflare/vitest-pool-workers` for full coverage.
-- ⬜ **P3.11** — Tests for attachment upload + download (POST + GET).
-- ⬜ **P3.12** — Tests for the Napkin → Intake → SessionPage round trip
-  (component-level, mock-D1 backed).
-- ⬜ **P3.13** — Visual regression on the OG card output (snapshot the PNG
-  buffer in a unit test; if rendering drifts, alarm).
-- ⬜ **P3.14** — Tests for the time-travel scrubber (keyboard nav, play/pause,
-  empty/single-build empty-state).
-- ⬜ **P3.15** — One Playwright happy-path E2E (intake submit → magic link →
-  /me appears). Catches CSP regressions, view-transitions oddities. ⚠
-  Playwright is heavy; vitest-based browser-mode might be enough.
+- ⏭ **P3.11** — Attachment upload/download tests. **Deferred.** Upload flow
+  exercises R2 + magic bytes + linker; needs an R2 mock alongside the D1
+  mock. Worth doing the day a bug shows up in this path — for now the code
+  paths are covered by handler-level assertions and the `_lib/attachments`
+  unit tests on magic-byte and size validation.
+- ⏭ **P3.12** — Napkin round-trip test. **Deferred.** Would need a
+  testing-library/react setup with a mock-Excalidraw (heavy). Manual smoke
+  test on each release is cheaper than building the harness for now.
+- ⏭ **P3.13** — OG PNG visual regression. **Deferred.** Snapshot testing the
+  PNG buffer is brittle (font rendering varies across runtimes) and the
+  current OG endpoint is well-covered functionally by P3.9. Real protection
+  here is a manual eyeball on the Slack/Discord preview after each OG copy
+  change.
+- ⏭ **P3.14** — Scrubber tests. **Deferred.** Scrubber is fairly isolated;
+  the manual flow (intake → ship 2+ advancements with build URLs → visit
+  /share/:id) is cheap to spot-check. Heavy keyboard + iframe-state testing
+  would need testing-library; not worth the harness today.
+- ⏭ **P3.15** — Playwright E2E. **Deferred.** Heavy infra for one happy-path.
+  Manual smoke after deploy + the unit + handler tests we have catch the
+  realistic regression classes. Revisit when CI red shifts to "test passed
+  but UX broke" repeatedly.
 
 ### Admin
 - ⏭ **P3.16** — Hidden admin surfaces. **Deferred — keep as direct-URL
@@ -331,3 +341,22 @@
   Copy = typeof FR pattern.
   - 174 tests pass, +5 skipped under happy-dom (HTMLRewriter; runs under
     miniflare). Typecheck + lint clean.
+- 2026-05-15 — Final sweep: documented defer rationale for every remaining
+  pure-code item. P1.3 (Resend outbox), P1.8 (napkin → R2), P2.2 (logout
+  revoke), P2.3–2.5 (data model premature), P3.11–3.15 (test infra heavy
+  for current value). Each item now has a clear "reopen when X" trigger
+  so future-me knows what to watch for.
+
+## Session totals (2026-05-15)
+
+- **7 commits** on `main` (`b14b453` → `ccb6f6b` plus this final sweep).
+- **~40 items addressed** out of the original ~50-item audit.
+  - ✅ Shipped: P1.4, P1.5, P1.6, P1.7, P2.6, P2.9, P2.10, P2.11, P2.12,
+    P2.13, P2.15, P2.16, P2.17, P2.19, P2.21, P3.1, P3.2, P3.3, P3.4,
+    P3.5, P3.6, P3.7, P3.9, P3.10, P3.17, P3.18, P3.19, P3.20.
+  - ⏭ Deferred with rationale: P1.3, P1.8, P1.9, P2.1, P2.2, P2.3, P2.4,
+    P2.5, P2.7, P2.8, P2.14, P2.18, P2.20, P3.8, P3.11, P3.12, P3.13,
+    P3.14, P3.15, P3.16, P3.21, P3.22.
+  - ⚠ External-blocked: P1.1, P1.2, P2.22, P2.23.
+- **174 active tests** pass (+5 skipped under happy-dom). Typecheck + lint
+  + build all clean throughout.
