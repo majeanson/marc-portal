@@ -191,6 +191,9 @@ const FR = {
     blankErr: 'Trace au moins une chose ou écris une phrase avant d’envoyer.',
     loadingCanvas: 'Chargement du tableau blanc…',
     homeTeaser: 'Préfères dessiner? Essaie le napperon →',
+    pillAttached: 'Napperon attaché',
+    pillRemove: 'Retirer',
+    pillView: 'Voir le dessin',
   },
 
   projectsFilter: {
@@ -743,6 +746,9 @@ const EN: Copy = {
     blankErr: 'Draw at least one thing or write a sentence before sending.',
     loadingCanvas: 'Loading the whiteboard…',
     homeTeaser: 'Prefer to draw? Try the napkin →',
+    pillAttached: 'Napkin attached',
+    pillRemove: 'Remove',
+    pillView: 'View sketch',
   },
 
   projectsFilter: {

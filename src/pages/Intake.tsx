@@ -44,6 +44,16 @@ const VIBE_FLAG = 'intake-vibe-accepted'
 const DRAFT_KEY = 'intake-draft'
 /** Stash key picked up by /me on first mount after magic-link login. */
 export const PENDING_INTAKE_KEY = 'pending-intake'
+/** Stash key written by /napkin (Excalidraw page) when the visitor sends a
+ * sketch to the intake. Picked up here on mount; cleared on successful
+ * submit so the next intake start doesn't accidentally carry stale art. */
+const NAPKIN_KEY = 'napkin-sketch'
+
+interface NapkinSketch {
+  png: string
+  text: string
+  savedAt: string
+}
 
 export interface PendingIntake {
   intake: unknown
@@ -78,6 +88,11 @@ export function Intake({ lang }: { lang: Lang }) {
   )
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  // Napkin: lazily read once on mount. The /napkin page writes it; we ship
+  // it as part of intakeJson on submit and clear it on success.
+  const [napkin, setNapkin] = useState<NapkinSketch | null>(() =>
+    loadDraft<NapkinSketch>(NAPKIN_KEY),
+  )
 
   // Effective account email — auth wins when the draft hasn't captured one yet.
   // Derived in render so we don't mutate state from inside an effect.
@@ -215,6 +230,10 @@ export function Intake({ lang }: { lang: Lang }) {
       submittedAt,
       waitlist,
       lang,
+      // If the visitor came in via /napkin, ship the sketch + caption with the
+      // intake. Stored inline in session.intake_json — Marc can render it in
+      // the session detail view. Cleared from localStorage on success below.
+      napkin: napkin ? { png: napkin.png, text: napkin.text, savedAt: napkin.savedAt } : undefined,
     }
 
     // If the visitor is signed in (and is the same email), create the session
@@ -226,8 +245,13 @@ export function Intake({ lang }: { lang: Lang }) {
     if (isSameLoggedInUser) {
       try {
         const { session } = await createSession(intakePayload)
-        // Successful submit — drop the server-side draft (best-effort).
+        // Successful submit — drop the server-side draft (best-effort), and
+        // discard the napkin: it's in the session now.
         clearIntakeDraft().catch(() => {})
+        if (napkin) {
+          clearDraft(NAPKIN_KEY)
+          setNapkin(null)
+        }
         const next: IntakeDraft = {
           ...draft,
           account,
@@ -266,7 +290,9 @@ export function Intake({ lang }: { lang: Lang }) {
       return
     }
 
-    // Anonymous (or different-email) path: stash + magic link.
+    // Anonymous (or different-email) path: stash + magic link. The napkin
+    // travels inside intakePayload, so it persists across the magic-link
+    // round-trip alongside the rest of the intake.
     try {
       const pending: PendingIntake = {
         intake: intakePayload,
@@ -326,6 +352,17 @@ export function Intake({ lang }: { lang: Lang }) {
 
             <CapacityNotice lang={lang} atCap={atCap} />
 
+            {napkin && step !== 'confirmation' && (
+              <NapkinAttachedBadge
+                lang={lang}
+                napkin={napkin}
+                onRemove={() => {
+                  clearDraft(NAPKIN_KEY)
+                  setNapkin(null)
+                }}
+              />
+            )}
+
             <ProgressDots step={step} lang={lang} onJump={onJumpStep} />
 
             {step === 'vibe' && <VibeGate lang={lang} onAccept={onAcceptVibe} />}
@@ -383,6 +420,49 @@ function CapacityNotice({ lang, atCap }: { lang: Lang; atCap: boolean }) {
   const t = DICT[lang].intake.capacity
   if (!atCap) return null
   return <div className="intake__notice">{t.atCap}</div>
+}
+
+/**
+ * Banner shown across the intake when a napkin sketch has been attached
+ * (visitor came in via /napkin). Renders a thumbnail of the PNG so the
+ * visitor sees "yes, your drawing is here"; the Remove button clears the
+ * stash if they change their mind.
+ */
+function NapkinAttachedBadge({
+  lang,
+  napkin,
+  onRemove,
+}: {
+  lang: Lang
+  napkin: NapkinSketch
+  onRemove: () => void
+}) {
+  const t = DICT[lang].napkin
+  return (
+    <div className="napkin-badge" role="status">
+      {napkin.png ? (
+        // Display the PNG inline. Data URLs are ~50-500 KB; the browser
+        // decodes once and the layout doesn't shift.
+        <img src={napkin.png} alt="" className="napkin-badge__thumb" />
+      ) : (
+        <div className="napkin-badge__thumb napkin-badge__thumb--empty" aria-hidden="true">
+          ✎
+        </div>
+      )}
+      <div className="napkin-badge__body">
+        <span className="napkin-badge__title">{t.pillAttached}</span>
+        {napkin.text && <span className="napkin-badge__text">{napkin.text}</span>}
+      </div>
+      <button
+        type="button"
+        className="napkin-badge__remove mono"
+        onClick={onRemove}
+        aria-label={t.pillRemove}
+      >
+        {t.pillRemove} ✕
+      </button>
+    </div>
+  )
 }
 
 const STEPS: Step[] = ['vibe', 'account', 'type', 'form', 'confirmation']

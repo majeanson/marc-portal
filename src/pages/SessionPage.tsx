@@ -35,6 +35,12 @@ import {
   type AttachmentRow,
 } from '../lib/attachmentsApi'
 
+interface ParsedNapkin {
+  png: string
+  text: string
+  savedAt: string
+}
+
 interface ParsedIntake {
   type: ProblemType
   account: Account
@@ -42,6 +48,10 @@ interface ParsedIntake {
   submittedAt: string
   waitlist?: boolean
   lang?: Lang
+  /** Optional Excalidraw sketch attached at intake time via /napkin. PNG is
+   * stored inline as a data URL — small enough for typical drawings; the
+   * SessionPage just renders it. */
+  napkin?: ParsedNapkin
 }
 
 function tryParseIntake(raw: string | null): ParsedIntake | null {
@@ -56,6 +66,20 @@ function tryParseIntake(raw: string | null): ParsedIntake | null {
       typeof obj.account.email === 'string' &&
       typeof obj.submittedAt === 'string'
     ) {
+      let napkin: ParsedNapkin | undefined
+      const n = (obj as { napkin?: unknown }).napkin
+      if (
+        n &&
+        typeof n === 'object' &&
+        typeof (n as ParsedNapkin).png === 'string' &&
+        typeof (n as ParsedNapkin).text === 'string'
+      ) {
+        napkin = {
+          png: (n as ParsedNapkin).png,
+          text: (n as ParsedNapkin).text,
+          savedAt: (n as ParsedNapkin).savedAt ?? '',
+        }
+      }
       return {
         type: obj.type as ProblemType,
         account: obj.account,
@@ -63,6 +87,7 @@ function tryParseIntake(raw: string | null): ParsedIntake | null {
         submittedAt: obj.submittedAt,
         waitlist: obj.waitlist,
         lang: obj.lang,
+        napkin,
       }
     }
   } catch {
@@ -706,6 +731,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     requiredEmptyConfirm={t.requiredEmptyConfirm}
                     onChange={onIntakeChange}
                   />
+                  {parsed.napkin && <NapkinSection lang={lang} napkin={parsed.napkin} />}
                 </>
               ) : intakePretty ? (
                 <pre className="mono session-page__intake">{intakePretty}</pre>
@@ -1006,5 +1032,39 @@ function AttachmentTile({
         <span className="mono thread__attach-open">{openLabel} →</span>
       </a>
     </li>
+  )
+}
+
+/**
+ * Renders the visitor's napkin sketch (if attached at intake time) inside the
+ * SessionPage intake panel. The PNG sits at full width — Marc reviews it the
+ * same way he'd read the prose. Click "Open PNG" to view full-size in a new
+ * tab; right-click → "Save image as…" to download.
+ */
+function NapkinSection({ lang, napkin }: { lang: Lang; napkin: ParsedNapkin }) {
+  const t = DICT[lang].napkin
+  return (
+    <div className="session-napkin">
+      <div className="session-napkin__head">
+        <span className="section__eyebrow">{t.eyebrow}</span>
+        <a
+          className="mono session-napkin__open"
+          href={napkin.png}
+          target="_blank"
+          rel="noreferrer"
+          download={`napkin-${napkin.savedAt.slice(0, 10) || 'sketch'}.png`}
+        >
+          {t.pillView} ↗
+        </a>
+      </div>
+      {napkin.text && <p className="session-napkin__caption">{napkin.text}</p>}
+      <div className="session-napkin__frame">
+        <img
+          src={napkin.png}
+          alt={napkin.text || 'Napkin sketch'}
+          className="session-napkin__img"
+        />
+      </div>
+    </div>
   )
 }

@@ -86,9 +86,7 @@
 ## Known gaps to follow up
 - ~~Per-project OG image generation (C.8)~~ — **shipped Phase 10**. `/og/share/:id` returns 1200×630 PNG rendered via workers-og from the session's showcase title + tagline + tier. Cached 24h at the edge.
 - ~~Per-language OG via SSR/middleware~~ — **shipped Phase 10**. `functions/_middleware.ts` uses HTMLRewriter to swap `og:image` / `twitter:image` / `og:locale` based on URL: `/en/*` → `og-image-en.png`; `/share/:id` → `/og/share/:id`. Bots get the right card without running JS.
-- Server-side upload of napkin PNG: not wired. PNG lives only in localStorage; `/intake` doesn't yet pick it up and attach. Follow-up:
-  1. Detect `formData.__hasNapkinSketch` in Intake.tsx → show "sketch attached ✓" pill.
-  2. On `createSession`, base64 upload the PNG as an attachment (new endpoint).
+- ~~Server-side upload of napkin PNG~~ — **shipped Phase 11**. Intake reads `marc-portal:napkin-sketch` on mount, shows a thumbnail-badge with caption + Remove, ships the napkin inside `intake_json.napkin` on createSession, clears on success. SessionPage renders a "session-napkin" panel that shows the sketch + caption + "Open PNG" download link.
 - `npm audit` reports 15 vulnerabilities (14 moderate, 1 high) brought in by Excalidraw's deep dep tree. Worth a `npm audit fix` pass with user approval next session.
 
 ## Phase 10 — Per-project + per-lang OG (added after first run)
@@ -97,6 +95,15 @@
 - [x] `functions/_middleware.ts` extended — HTMLRewriter swaps `og:image` / `twitter:image` / `og:locale` per URL: `/en/*` → EN flavor; `/share/:id` → dynamic endpoint.
 - [x] 24h edge caching (`Cache-Control: public, max-age=86400, s-maxage=86400`)
 - [x] Typecheck, lint, build, tests all green
+
+## Phase 11 — Napkin server-side upload (added after first run)
+- [x] Intake.tsx loads `marc-portal:napkin-sketch` on mount; renders a `NapkinAttachedBadge` (thumbnail + caption + Remove)
+- [x] Napkin travels inside `intakePayload.napkin = { png, text, savedAt }` to `/api/sessions`. No new endpoint; the existing `intake_json` text column carries it.
+- [x] On success: napkin cleared from localStorage so the next visitor starts clean.
+- [x] Magic-link path: napkin stays in PENDING_INTAKE_KEY and travels through the resume after sign-in (no special handling needed — it's part of the stashed payload).
+- [x] SessionPage.tsx parses `intake.napkin`, renders a `NapkinSection` panel below the IntakeSummary: full-width inline PNG + "Open PNG" download link.
+- [x] i18n: napkin block extended with `pillAttached`, `pillRemove`, `pillView` (FR + EN).
+- [x] Typecheck, lint, tests green.
 
 ## Final — `npm run check`
 - [x] typecheck: clean

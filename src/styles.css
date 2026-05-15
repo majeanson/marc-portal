@@ -5984,6 +5984,126 @@ button.intake__progress-step:disabled {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
+   NAPKIN BADGE — shown across the intake when the visitor arrived via
+   /napkin. Tiny PNG thumbnail + "Napkin attached" + the caption + a Remove
+   button. Sits between CapacityNotice and ProgressDots.
+   ────────────────────────────────────────────────────────────────────── */
+.napkin-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 0 8px;
+  padding: 10px 12px 10px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.napkin-badge__thumb {
+  width: 56px;
+  height: 40px;
+  object-fit: cover;
+  background: #fbf7ec;
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.napkin-badge__thumb--empty {
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  color: var(--accent);
+  font-size: 22px;
+}
+.napkin-badge__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.napkin-badge__title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--accent-warm);
+}
+.napkin-badge__text {
+  font-size: 13px;
+  color: var(--text-mid);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.napkin-badge__remove {
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--text-soft);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 140ms ease;
+}
+.napkin-badge__remove:hover,
+.napkin-badge__remove:focus-visible {
+  color: var(--warm);
+  outline: none;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SESSION NAPKIN — admin/visitor view inside SessionPage. Renders the
+   napkin sketch attached at intake time (parsed.napkin in intake_json).
+   ────────────────────────────────────────────────────────────────────── */
+.session-napkin {
+  margin-top: 32px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.session-napkin__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.session-napkin__open {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--accent-warm);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 140ms ease;
+}
+.session-napkin__open:hover,
+.session-napkin__open:focus-visible {
+  border-bottom-color: var(--accent-warm);
+  outline: none;
+}
+.session-napkin__caption {
+  margin: 0 0 12px;
+  color: var(--text);
+  font-style: italic;
+  font-size: 15px;
+}
+.session-napkin__frame {
+  background: #fbf7ec;
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.session-napkin__img {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
    NAPKIN — /napkin whiteboard intake. Excalidraw renders inside
    .napkin__canvas-wrap; we tame its chrome with --color-* tokens that match
    the atelier palette so it doesn't look like a stray app embedded in the
