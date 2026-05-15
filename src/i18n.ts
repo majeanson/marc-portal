@@ -209,6 +209,11 @@ const FR = {
   faq: {
     eyebrow: 'questions fréquentes',
     title: 'Ça revient souvent',
+    expandAll: 'Tout ouvrir',
+    collapseAll: 'Tout fermer',
+    // Stable slugs shared across FR + EN so /share/?#faq-price works in
+    // either language. Order must match `items` below.
+    slugs: ['price', 'timeline', 'result', 'unclear', 'ownership', 'bring-own'] as const,
     items: [
       {
         q: 'Le prix annoncé, c’est vraiment ça?',
@@ -730,6 +735,11 @@ const EN: Copy = {
   faq: {
     eyebrow: 'frequently asked',
     title: 'Questions that come up',
+    expandAll: 'Expand all',
+    collapseAll: 'Collapse all',
+    // Stable slugs shared with FR so /#faq-price works in either language.
+    // Order must match `items` below.
+    slugs: ['price', 'timeline', 'result', 'unclear', 'ownership', 'bring-own'] as const,
     items: [
       {
         q: 'Is the price really that price?',

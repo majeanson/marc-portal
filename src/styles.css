@@ -5704,6 +5704,34 @@ button.intake__progress-step:disabled {
     transition: none;
   }
 }
+.faq__toggle-all {
+  display: inline-block;
+  margin: 14px auto 0;
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--text-soft);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+  transition: color 140ms ease, border-color 140ms ease;
+}
+.faq__toggle-all:hover,
+.faq__toggle-all:focus-visible {
+  color: var(--accent-warm);
+  border-bottom-color: var(--accent-warm);
+  outline: none;
+}
+.faq .section__inner {
+  text-align: center;
+}
+.faq .section__head,
+.faq__list {
+  text-align: left;
+}
 
 /* ──────────────────────────────────────────────────────────────────────────
    INLINE INTAKE TEASER — soft on-ramp after Pricing. 4-card grid; picking a

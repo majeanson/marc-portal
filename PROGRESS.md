@@ -29,11 +29,12 @@
 - [x] Committed (hash: pending)
 
 ## Phase 4 — FAQ deep-link
-- [ ] Slugged ids on each `<details>`
-- [ ] Hash-on-mount + scroll-into-view
-- [ ] Hash-on-toggle via `replaceState`
-- [ ] Expand-all / collapse-all link
-- [ ] Committed (hash: __)
+- [x] Stable slugs shared FR/EN (price, timeline, result, unclear, ownership, bring-own)
+- [x] `id="faq-<slug>"` on each `<details>`
+- [x] Hash-on-mount opens + scrolls into view
+- [x] Hash-on-toggle via `replaceState` (no jump)
+- [x] Expand-all / collapse-all toggle, dashed-underline mono button
+- [x] Committed (hash: pending)
 
 ## Phase 5 — ProjectCardPreview hardening
 - [ ] 3-state machine (idle/loading/loaded/errored)
