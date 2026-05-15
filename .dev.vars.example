@@ -1,3 +1,8 @@
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ADMIN_EMAILS=marc.jeanson92@gmail.com
 SESSION_SECRET=replace_me_with_openssl_rand_hex_32
+# Optional. Both DSNs default to "silent no-op" when unset.
+# VITE_SENTRY_DSN is read at Vite build time (frontend); SENTRY_DSN is read
+# at runtime (Functions). See RUNBOOK § Observability setup.
+# VITE_SENTRY_DSN=https://...@...ingest.sentry.io/...
+# SENTRY_DSN=https://...@...ingest.sentry.io/...

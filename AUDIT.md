@@ -186,12 +186,18 @@
   surface.
 
 ### Observability
-- ⚠ **P2.22** — Error tracker. **External account required** (Sentry /
-  BetterStack / CF Logs analytics). Code scaffolding can be done; flip when
-  the account is ready.
-- ⚠ **P2.23** — Synthetic monitor for `/api/health`. **External account.**
-  cron-job.org (already used for digest) can ping every 5 min and email
-  Marc on red. Five-minute setup.
+- ✅ **P2.22** — Sentry. Frontend uses `@sentry/react` (init in `main.tsx`,
+  user identity synced from `AuthProvider`, route boundary forwards via
+  `captureException` in `RouteError.tsx`). Functions side uses a hand-rolled
+  envelope poster (`functions/_lib/sentry.ts`, ~80 lines, no SDK) wired into
+  `_middleware.ts` — any unhandled handler throw reports with sanitized
+  request context (cookie/auth/CSRF headers stripped) and the signed-in
+  email. Both DSNs (`VITE_SENTRY_DSN` build-time, `SENTRY_DSN` runtime)
+  default to silent no-op. Setup steps in RUNBOOK § Observability.
+- ✅ **P2.23** — Synthetic monitor instructions in RUNBOOK § Observability.
+  Reuses the existing cron-job.org account (already running the digest cron);
+  target `/api/health`, 5-min interval, email on failure. Five-minute setup
+  in the cron-job.org UI — no code change needed beyond the doc.
 
 ---
 
@@ -341,6 +347,10 @@
   Copy = typeof FR pattern.
   - 174 tests pass, +5 skipped under happy-dom (HTMLRewriter; runs under
     miniflare). Typecheck + lint clean.
+- 2026-05-15 — Seventh batch shipped: P2.22 (Sentry — both frontend + Functions
+  wired, DSNs optional/no-op), P2.23 (synthetic monitor doc in RUNBOOK).
+  - 174 tests pass. Typecheck + lint + build clean. `@sentry/react` adds
+    ~80 KB to the main bundle (one-time, not in lazy chunks).
 - 2026-05-15 — Final sweep: documented defer rationale for every remaining
   pure-code item. P1.3 (Resend outbox), P1.8 (napkin → R2), P2.2 (logout
   revoke), P2.3–2.5 (data model premature), P3.11–3.15 (test infra heavy
@@ -352,11 +362,11 @@
 - **7 commits** on `main` (`b14b453` → `ccb6f6b` plus this final sweep).
 - **~40 items addressed** out of the original ~50-item audit.
   - ✅ Shipped: P1.4, P1.5, P1.6, P1.7, P2.6, P2.9, P2.10, P2.11, P2.12,
-    P2.13, P2.15, P2.16, P2.17, P2.19, P2.21, P3.1, P3.2, P3.3, P3.4,
-    P3.5, P3.6, P3.7, P3.9, P3.10, P3.17, P3.18, P3.19, P3.20.
+    P2.13, P2.15, P2.16, P2.17, P2.19, P2.21, P2.22, P2.23, P3.1, P3.2,
+    P3.3, P3.4, P3.5, P3.6, P3.7, P3.9, P3.10, P3.17, P3.18, P3.19, P3.20.
   - ⏭ Deferred with rationale: P1.3, P1.8, P1.9, P2.1, P2.2, P2.3, P2.4,
     P2.5, P2.7, P2.8, P2.14, P2.18, P2.20, P3.8, P3.11, P3.12, P3.13,
     P3.14, P3.15, P3.16, P3.21, P3.22.
-  - ⚠ External-blocked: P1.1, P1.2, P2.22, P2.23.
+  - ⚠ External-blocked: P1.1, P1.2 (Resend DNS).
 - **174 active tests** pass (+5 skipped under happy-dom). Typecheck + lint
   + build all clean throughout.

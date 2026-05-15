@@ -98,6 +98,50 @@ previous version.
   curl -X POST -H "X-Digest-Token: $DIGEST_TOKEN" https://marc-portal.pages.dev/api/admin/digest
   ```
 
+## Observability setup (one-time)
+
+### Sentry
+
+Frontend + Functions both forward errors to Sentry when DSNs are set; both
+silently no-op without them. To wire up:
+
+1. Create a Sentry project (Platform: JavaScript → React for the frontend
+   project; "Other JavaScript" for the Functions side, OR reuse the same
+   project — DSNs are scoped per-project, not per-platform).
+2. From the project settings, copy each DSN.
+3. In the Cloudflare Pages dashboard → Settings → Environment variables, set:
+   - `VITE_SENTRY_DSN` → frontend DSN (build-time; rebuild after setting).
+   - `SENTRY_DSN` → Functions DSN (runtime; takes effect on next request).
+4. Locally, mirror in `.dev.vars`:
+
+   ```
+   SENTRY_DSN=https://...@...ingest.sentry.io/...
+   VITE_SENTRY_DSN=https://...@...ingest.sentry.io/...
+   ```
+
+The frontend SDK is `@sentry/react`; the Functions side uses a hand-rolled
+envelope poster (see `functions/_lib/sentry.ts`) — no SDK, ~80 lines. Both
+strip the session cookie, CSRF token, and Authorization header before
+sending.
+
+### Synthetic monitor (cron-job.org)
+
+The digest cron already runs through cron-job.org (Marc's free account); add a
+second cron there for health monitoring:
+
+1. cron-job.org → "Create cronjob".
+2. **Title:** `marc-portal /api/health`
+3. **URL:** `https://marc-portal.pages.dev/api/health`
+4. **Schedule:** Every 5 minutes.
+5. **Notifications:** "Notify on failure" — email to Marc.
+6. **Treat as failed:** HTTP status ≥ 400 (default), OR response body doesn't
+   contain `"ok":true` (set under "Advanced" → "Response notifications").
+
+Health endpoint returns `200 { ok: true, db: 'ok', ts }` when D1 is reachable,
+`500 { ok: false, db: 'fail', ts }` otherwise. The 5-min cadence + free-tier
+ceiling (one cronjob already used by digest) is fine on cron-job.org's free
+plan.
+
 ## 8. Health check failing
 
 **Symptoms:** `curl /api/health` returns 500.

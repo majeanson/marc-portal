@@ -22,6 +22,11 @@ export interface Env {
   // etc.) at the endpoint with the X-Digest-Token header. Unset = endpoint is
   // unreachable (the rare case Marc opens it manually).
   DIGEST_TOKEN?: string
+  // Optional: Sentry DSN for the Functions side. When set, the middleware
+  // forwards any unhandled handler throw to Sentry with request context
+  // (URL, method, sanitized headers, signed-in email). Frontend Sentry uses
+  // a separate VITE_SENTRY_DSN at build time. Unset = silent no-op.
+  SENTRY_DSN?: string
 }
 
 export function isAdmin(env: Env, email: string): boolean {

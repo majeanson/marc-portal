@@ -3,6 +3,7 @@ import { useLocation, useRouteError, isRouteErrorResponse } from 'react-router-d
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { DICT, type Lang } from '../i18n'
+import { captureException } from '../lib/sentry'
 
 /**
  * Root-level error boundary. Wired as `errorElement` on the layout route in
@@ -25,8 +26,11 @@ export function RouteError() {
     document.title = `${t.title} — Marc`
     if (!isNotFound) {
       console.error('route error boundary caught:', err)
+      // Forward to Sentry. 404s aren't reported (expected user behavior); a
+      // genuine throw from a route or its lazy() loader is.
+      captureException(err, { path: loc.pathname })
     }
-  }, [t, isNotFound, err])
+  }, [t, isNotFound, err, loc.pathname])
 
   return (
     <div className="app">

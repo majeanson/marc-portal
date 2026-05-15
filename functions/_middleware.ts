@@ -15,7 +15,8 @@
 // assets and proxies /api to the Functions runtime. The middleware is exercised
 // in `wrangler pages dev` and in production.
 
-import { requireCsrf } from './_lib/auth'
+import { currentEmail, requireCsrf } from './_lib/auth'
+import { captureWorkerException } from './_lib/sentry'
 import { resolveTenant, type Tenant } from './_lib/tenant'
 
 interface Env {
@@ -23,6 +24,7 @@ interface Env {
   ADMIN_EMAILS?: string
   SESSION_SECRET?: string
   RESEND_API_KEY?: string
+  SENTRY_DSN?: string
 }
 
 // State-changing /api/* requests are CSRF-gated centrally (see verifyCsrf in
@@ -149,7 +151,30 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     if (csrfBlock) return csrfBlock
   }
 
-  const response = await ctx.next()
+  // Run the downstream handler, but wrap it so any throw (D1 outage, JSON
+  // parse explosion, unhandled exception in a handler) reports to Sentry
+  // with the request context before we rethrow it. Catching here is the
+  // single chokepoint — handlers don't each need to remember to wrap.
+  let response: Response
+  try {
+    response = await ctx.next()
+  } catch (err) {
+    let email: string | null = null
+    if (ctx.env.SESSION_SECRET) {
+      try {
+        email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
+      } catch {
+        // Failure to resolve the email shouldn't block error reporting.
+      }
+    }
+    captureWorkerException(err, ctx.env, {
+      request: ctx.request,
+      email,
+      op: url.pathname,
+    })
+    throw err
+  }
+
   // Crawler-correct OG injection: SPA ships a single index.html with the FR
   // OG image hardcoded; for /en/* requests we swap to og-image-en.png, and
   // for /share/:id (or /en/share/:id) we point at the dynamic /og/share/:id

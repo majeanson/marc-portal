@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { api } from './api'
 import { AuthContext, type AuthState } from './authContext'
 import { clearDraft } from './draft'
+import { setSentryUser } from './sentry'
 
 interface MeResponse {
   email: string | null
@@ -69,6 +70,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true
     }
   }, [])
+
+  // Keep Sentry's user context in sync with the signed-in identity, so any
+  // error that fires after login is attributable to the right person.
+  // Cleared on logout via the same hook.
+  useEffect(() => {
+    setSentryUser(email)
+  }, [email])
 
   const setPreviewAsUser = useCallback((v: boolean) => {
     setPreviewAsUserState(v)
