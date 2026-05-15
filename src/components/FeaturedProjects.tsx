@@ -111,7 +111,12 @@ function FeaturedCard({
   return (
     <li className="project-card" style={cardStyle}>
       <Link to={shareHref} className="project-card__link" viewTransition aria-label={title}>
-        <ProjectCardPreview buildHref={buildHref} title={title} />
+        <ProjectCardPreview
+          buildHref={buildHref}
+          title={title}
+          sessionId={project.id}
+          lang={lang}
+        />
         <div className="project-card__head">
           <span className="project-card__date mono">{formatDate(project.showcasedAt, lang)}</span>
           <span className="project-card__head-right">

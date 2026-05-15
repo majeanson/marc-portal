@@ -1,45 +1,50 @@
 import { useEffect, useRef, useState } from 'react'
+import type { Lang } from '../i18n'
 
 type Outcome = 'loaded' | 'errored' | null
 
 // Hard timeout: if the iframe never fires `load` (slow build, CSP block,
-// 504, hung deploy), we surrender after this and show the gradient
-// placeholder. 5s matches the visitor's patience budget for a thumbnail.
+// 504, hung deploy), we surrender and let the OG image stay as the
+// thumbnail. 5s matches the visitor's patience budget for an idle card.
 const LOAD_TIMEOUT_MS = 5000
 
 /**
- * Tiny live thumbnail of a deployed build, rendered inside a project card.
+ * Project-card thumbnail. Two-layer composition:
  *
- * State machine — driven by two values:
- * - `visible`: IntersectionObserver gate. Stays false until the card is
- *   ~200px from the viewport, then flips true once and never back.
- * - `outcome`: null while loading, then `loaded` (onLoad) or `errored`
- *   (onError, or 5s without onLoad). Once set, sticky.
- *
- * Rendering follows directly:
- * - !visible → empty box (skeleton shimmer optional, but the IO gate keeps
- *   us off-screen so it's not visible anyway).
- * - visible && outcome === null → iframe in DOM (loading), shimmer overlay.
- * - visible && outcome === 'loaded' → iframe fades in, shimmer gone.
- * - visible && outcome === 'errored' → iframe unmounted, gradient fallback.
+ *  1. **Bottom layer** — the per-project OG card (PNG served from
+ *     /og/share/:id). Loads instantly from the edge cache; gives every
+ *     card a meaningful first paint regardless of build state.
+ *  2. **Top layer** — the live deployed build, in an iframe scaled via CSS
+ *     transform. Mounted only once the card scrolls within ~200px of the
+ *     viewport (IntersectionObserver), and only when a build URL exists.
+ *     Fades in on `load`; on error or 5s timeout, the bottom layer stays.
  *
  * The iframe renders at its natural desktop width (1280×800) and is scaled
- * down via CSS transform. That's deliberate: we want the card to *look*
- * like the deployed app, not a mobile-narrow rendering of it.
+ * down via CSS — we want the card to *look* like the deployed app, not a
+ * mobile-narrow rendering of it.
  */
 export function ProjectCardPreview({
   buildHref,
   title,
+  sessionId,
+  lang,
 }: {
   buildHref: string | null
   title: string
+  sessionId?: string
+  lang?: Lang
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  // Browsers without IntersectionObserver skip the lazy gate and mount the
-  // iframe right away — they're old enough that "perf" isn't the priority.
   const hasIO = typeof IntersectionObserver !== 'undefined'
   const [visible, setVisible] = useState(!hasIO)
   const [outcome, setOutcome] = useState<Outcome>(null)
+
+  // OG image lives on the same origin and is heavily edge-cached, so we
+  // eager-load it on every card — small, predictable, no extra round trips
+  // once the worker is warm.
+  const ogSrc = sessionId
+    ? `/og/share/${sessionId}${lang === 'en' ? '?lang=en' : ''}`
+    : null
 
   useEffect(() => {
     if (!buildHref || !hasIO) return
@@ -61,9 +66,6 @@ export function ProjectCardPreview({
     return () => io.disconnect()
   }, [buildHref, hasIO])
 
-  // Once the iframe is in the DOM, arm a timeout. If `onLoad` doesn't fire
-  // within 5s, we declare it errored. onLoad / onError clear the timeout
-  // by setting outcome, which short-circuits the setter inside.
   useEffect(() => {
     if (!visible || !buildHref) return
     const tid = window.setTimeout(() => {
@@ -72,14 +74,25 @@ export function ProjectCardPreview({
     return () => window.clearTimeout(tid)
   }, [visible, buildHref])
 
-  if (!buildHref) {
-    return <div className="project-card__preview project-card__preview--empty" aria-hidden="true" />
+  // No build *and* no sessionId: the legacy empty state. Cards in the
+  // home/projects grids should always have a sessionId (we pass one
+  // through now), so this is just a defensive fallback.
+  if (!buildHref && !ogSrc) {
+    return (
+      <div className="project-card__preview project-card__preview--empty" aria-hidden="true" />
+    )
   }
 
-  const isLoading = visible && outcome === null
+  const isLoading = visible && !!buildHref && outcome === null
   const isLoaded = outcome === 'loaded'
-  const isErrored = outcome === 'errored'
-  const state = isErrored ? 'errored' : isLoaded ? 'loaded' : isLoading ? 'loading' : 'idle'
+  const isErrored = outcome === 'errored' || !buildHref
+  const state = isErrored
+    ? 'errored'
+    : isLoaded
+      ? 'loaded'
+      : isLoading
+        ? 'loading'
+        : 'idle'
 
   return (
     <div
@@ -87,7 +100,18 @@ export function ProjectCardPreview({
       className={`project-card__preview project-card__preview--${state}`}
       aria-hidden="true"
     >
-      {visible && !isErrored && (
+      {ogSrc && (
+        <img
+          className="project-card__preview-og"
+          src={ogSrc}
+          alt=""
+          width={1200}
+          height={630}
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+      {visible && buildHref && !isErrored && (
         <iframe
           className={`project-card__preview-frame${isLoaded ? ' is-loaded' : ''}`}
           src={buildHref}
@@ -99,8 +123,6 @@ export function ProjectCardPreview({
           onError={() => setOutcome('errored')}
         />
       )}
-      {isLoading && <div className="project-card__preview-skeleton" aria-hidden="true" />}
-      {isErrored && <div className="project-card__preview-fallback" aria-hidden="true" />}
     </div>
   )
 }
