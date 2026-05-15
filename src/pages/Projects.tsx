@@ -120,7 +120,16 @@ export function Projects({ lang }: { lang: Lang }) {
             ) : projects && projects.length === 0 ? (
               <p className="thread__empty">{t.empty}</p>
             ) : filtered && filtered.length === 0 ? (
-              <p className="thread__empty">{tf.emptyAfterFilter}</p>
+              <div className="projects__empty">
+                <p className="thread__empty">{tf.emptyAfterFilter}</p>
+                <button
+                  type="button"
+                  className="projects-filter__clear projects-filter__clear--inline mono"
+                  onClick={clearFilters}
+                >
+                  {tf.clear} ✕
+                </button>
+              </div>
             ) : (
               <ul className="projects__grid">
                 {(filtered ?? []).map((p) => (

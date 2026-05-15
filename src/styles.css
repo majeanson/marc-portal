@@ -370,13 +370,23 @@ p {
   color: var(--accent-warm);
 }
 .theme-toggle__glyph {
+  /* Per-glyph optical centering. The sun is roughly balanced by the
+     flex parent; the crescent ☾ renders low + right of geometric center
+     in serif fonts, so we shift it up and left when it's the active
+     glyph (aria-pressed='true' = night mode). */
+  --glyph-x: 0px;
+  --glyph-y: -0.5px;
   font-size: 15px;
   line-height: 1;
-  transform: translateY(-0.5px);
+  transform: translate(var(--glyph-x), var(--glyph-y));
   transition: transform 280ms cubic-bezier(0.32, 0.72, 0.24, 1);
 }
+.theme-toggle[aria-pressed='true'] .theme-toggle__glyph {
+  --glyph-x: -2px;
+  --glyph-y: -3px;
+}
 .theme-toggle:active .theme-toggle__glyph {
-  transform: scale(0.9) translateY(-0.5px);
+  transform: translate(var(--glyph-x), var(--glyph-y)) scale(0.9);
 }
 @media (prefers-reduced-motion: reduce) {
   .theme-toggle,
@@ -4971,6 +4981,13 @@ button.intake__progress-step:disabled {
   background: linear-gradient(to right, rgba(255, 249, 236, 0.6), transparent 60%);
   text-decoration: none;
 }
+/* In night mode the hardcoded cream rgba composites into a washed gray-green
+   over the dark bg that swallows .tier__after (--text-soft) and the anchor's
+   .tier__price (--accent-warm). Re-tint with low-opacity accent so the same
+   "live, breathing" wash works against ink instead of paper. */
+:root[data-theme='night'] .home .tier--link.tier--menu:hover {
+  background: linear-gradient(to right, rgba(243, 236, 217, 0.06), transparent 60%);
+}
 .home .tier--anchor.tier--menu {
   background: linear-gradient(
     to right,
@@ -4981,6 +4998,14 @@ button.intake__progress-step:disabled {
   padding-left: 18px;
   margin-left: -18px;
   border-left: 3px solid var(--accent);
+}
+:root[data-theme='night'] .home .tier--anchor.tier--menu {
+  background: linear-gradient(
+    to right,
+    rgba(106, 155, 120, 0.18),
+    rgba(106, 155, 120, 0.06) 80%,
+    transparent
+  );
 }
 .tier__head {
   display: flex;
@@ -5993,6 +6018,34 @@ button.intake__progress-step:disabled {
 .projects-filter__clear:focus-visible {
   color: var(--text);
   outline: none;
+}
+/* Inline variant — rendered with the empty-after-filter message; chip-shaped
+   so visitors register it as a reset action, not a passing label. */
+.projects__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 8px 0 24px;
+}
+.projects-filter__clear--inline {
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text-mid);
+  letter-spacing: 0.04em;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    background 140ms ease;
+}
+.projects-filter__clear--inline:hover,
+.projects-filter__clear--inline:focus-visible {
+  border-color: var(--text-mid);
+  color: var(--text);
+  background: var(--bg-hover);
 }
 @media (max-width: 560px) {
   .projects-filter__row {
