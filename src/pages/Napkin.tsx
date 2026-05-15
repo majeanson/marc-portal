@@ -88,9 +88,9 @@ export function Napkin({ lang }: { lang: Lang }) {
       saveDraft(NAPKIN_KEY, sketch)
       // Mark the intake draft so Intake.tsx can show a "sketch attached"
       // affordance. We don't stomp existing fields, only add the flag.
-      const existing =
-        loadDraft<{ formData: Record<string, unknown> }>(INTAKE_DRAFT_KEY) ??
-        { formData: {} as Record<string, unknown> }
+      const existing = loadDraft<{ formData: Record<string, unknown> }>(INTAKE_DRAFT_KEY) ?? {
+        formData: {} as Record<string, unknown>,
+      }
       saveDraft(INTAKE_DRAFT_KEY, {
         ...existing,
         formData: { ...existing.formData, __hasNapkinSketch: true },
@@ -114,9 +114,7 @@ export function Napkin({ lang }: { lang: Lang }) {
             <p className="napkin__sub">{t.sub}</p>
 
             <div className="napkin__canvas-wrap">
-              <Suspense
-                fallback={<div className="napkin__loading mono">{t.loadingCanvas}</div>}
-              >
+              <Suspense fallback={<div className="napkin__loading mono">{t.loadingCanvas}</div>}>
                 <Excalidraw
                   excalidrawAPI={(api) => {
                     apiRef.current = api as unknown as ExcalidrawAPI
@@ -157,12 +155,7 @@ export function Napkin({ lang }: { lang: Lang }) {
               </p>
             )}
 
-            <button
-              type="button"
-              className="napkin__submit"
-              onClick={onSubmit}
-              disabled={saving}
-            >
+            <button type="button" className="napkin__submit" onClick={onSubmit} disabled={saving}>
               {saving ? t.saving : t.submit}
             </button>
           </div>

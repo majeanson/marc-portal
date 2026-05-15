@@ -92,9 +92,14 @@
 - `npm audit` reports 15 vulnerabilities (14 moderate, 1 high) brought in by Excalidraw's deep dep tree. Worth a `npm audit fix` pass with user approval next session.
 
 ## Final — `npm run check`
-- [ ] Full check green
-- [ ] All commits pushed (or NOT pushed — see policy)
-- [ ] Final state hash: __
+- [x] typecheck: clean
+- [x] eslint: clean (0 errors, 0 warnings)
+- [x] prettier: clean (re-formatted 6 files; committed below)
+- [x] lac-lint: skipped (no global lac CLI installed) — same as before
+- [x] vitest: 153/153 pass
+- [x] Production build (`npm run build`): clean. Excalidraw splits into its own chunk set, main bundle unaffected.
+- [x] All 9 phases shipped as separate commits on `main`. NOT pushed (per policy — user pushes).
+- [x] Final state hash: (this commit)
 
 ---
 

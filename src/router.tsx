@@ -24,9 +24,7 @@ import { SessionPage } from './pages/SessionPage'
 // Cold-path pages — lazy. Cuts the initial bundle (demos, all admin
 // surfaces) at the cost of one network round-trip when first visited.
 const SndDemo = lazy(() => import('./pages/SndDemo').then((m) => ({ default: m.SndDemo })))
-const Engagement = lazy(() =>
-  import('./pages/Engagement').then((m) => ({ default: m.Engagement })),
-)
+const Engagement = lazy(() => import('./pages/Engagement').then((m) => ({ default: m.Engagement })))
 const Tier0 = lazy(() => import('./pages/Tier0').then((m) => ({ default: m.Tier0 })))
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
 const AdminInbox = lazy(() => import('./pages/AdminInbox').then((m) => ({ default: m.AdminInbox })))

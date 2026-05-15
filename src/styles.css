@@ -3518,12 +3518,7 @@ button:focus-visible,
 .project-card__preview-skeleton {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    100deg,
-    var(--bg-card) 0%,
-    var(--bg-section) 35%,
-    var(--bg-card) 70%
-  );
+  background: linear-gradient(100deg, var(--bg-card) 0%, var(--bg-section) 35%, var(--bg-card) 70%);
   background-size: 200% 100%;
   animation: card-skeleton-shimmer 1.6s ease-in-out infinite;
   z-index: 1;
@@ -5762,7 +5757,9 @@ button.intake__progress-step:disabled {
   cursor: pointer;
   padding: 6px 0;
   border-bottom: 1px dashed var(--border);
-  transition: color 140ms ease, border-color 140ms ease;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease;
 }
 .faq__toggle-all:hover,
 .faq__toggle-all:focus-visible {
@@ -5883,7 +5880,9 @@ button.intake__progress-step:disabled {
   text-decoration: none;
   border-bottom: 1px dashed var(--border);
   padding-bottom: 2px;
-  transition: color 160ms ease, border-color 160ms ease;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
 }
 .inline-teaser__napkin-link:hover,
 .inline-teaser__napkin-link:focus-visible {
@@ -6078,7 +6077,9 @@ button.intake__progress-step:disabled {
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
-  transition: background 160ms ease, transform 160ms ease;
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
 }
 .napkin__submit:hover:not(:disabled),
 .napkin__submit:focus-visible:not(:disabled) {
@@ -6190,7 +6191,10 @@ button.intake__progress-step:disabled {
   font-size: 12.5px;
   color: var(--text-mid);
   cursor: pointer;
-  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
 }
 .time-travel__btn:hover:not(:disabled),
 .time-travel__btn:focus-visible:not(:disabled) {
@@ -6235,7 +6239,10 @@ button.intake__progress-step:disabled {
   cursor: pointer;
   position: relative;
   z-index: 1;
-  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
 }
 .time-travel__notch:hover,
 .time-travel__notch:focus-visible {

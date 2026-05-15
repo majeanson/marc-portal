@@ -6,8 +6,7 @@
 ;(function () {
   try {
     var saved = localStorage.getItem('marc-portal:theme')
-    var prefersDark =
-      window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
     var theme = saved === 'day' || saved === 'night' ? saved : prefersDark ? 'night' : 'day'
     if (theme === 'night') document.documentElement.setAttribute('data-theme', 'night')
     var meta = document.querySelector('meta[name="theme-color"]')

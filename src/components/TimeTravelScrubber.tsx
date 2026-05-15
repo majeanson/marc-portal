@@ -166,11 +166,7 @@ export function TimeTravelScrubber({
         </button>
       </div>
 
-      <div
-        className="time-travel__track"
-        role="group"
-        aria-label={t.ariaTrack}
-      >
+      <div className="time-travel__track" role="group" aria-label={t.ariaTrack}>
         {steps.map((s, i) => (
           <button
             key={s.id}

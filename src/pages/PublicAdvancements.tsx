@@ -123,9 +123,7 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
                 })}
               </ol>
             )}
-            {items && items.length > 0 && (
-              <TimeTravelScrubber advancements={items} lang={lang} />
-            )}
+            {items && items.length > 0 && <TimeTravelScrubber advancements={items} lang={lang} />}
           </div>
         </article>
       </main>
