@@ -71,12 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Keep Sentry's user context in sync with the signed-in identity, so any
-  // error that fires after login is attributable to the right person.
-  // Cleared on logout via the same hook.
+  // Keep Sentry's user context in sync with the signed-in identity. Loi 25
+  // posture: only the operator's email is attached (his own data going to
+  // his own Sentry org). Regular visitors stay anonymous in Sentry — their
+  // session/share IDs in the URL are stripped by beforeSend so events
+  // can't be tied back to a specific Quebec resident. See docs/loi-25-pia.md.
   useEffect(() => {
-    setSentryUser(email)
-  }, [email])
+    setSentryUser({ email, isAdmin: realIsAdmin })
+  }, [email, realIsAdmin])
 
   const setPreviewAsUser = useCallback((v: boolean) => {
     setPreviewAsUserState(v)

@@ -1,15 +1,21 @@
 /**
  * Sentry init for the browser SPA.
  *
- * DSN is hardcoded below — Sentry DSNs are public-by-design (they
- * authorize writes to one specific project, nothing else, and are
- * shipped to every visitor inside this very bundle). Env-var plumbing
- * was tried first (VITE_SENTRY_DSN) and broke twice: dashboard env vars
- * for this project are locked to encrypted secrets only (wrangler-toml-
- * managed mode), and wrangler.toml [vars] is runtime-only — Vite reads
- * its env at build time, which happens before wrangler ever sees the
- * file. Hardcoding collapses both surfaces into one source. Rotate via
- * Sentry → Settings → Client Keys (DSN) → Rotate, then update this line.
+ * Loi 25 posture (see docs/loi-25-pia.md for the full PIA):
+ *   - DSN is hardcoded; the DSN is public-by-design (authorizes writes to
+ *     one Sentry project, nothing else, and is already shipped to every
+ *     visitor in this very bundle). Rotation: Sentry UI → Settings →
+ *     Client Keys (DSN) → Rotate, then update the literal below.
+ *   - We send the absolute minimum: error, stack, browser/OS, environment,
+ *     path-only URL (query strings stripped — magic-link tokens, session
+ *     ids must never leak to a US processor).
+ *   - We DO NOT attach the visitor's email to events. Only the operator's
+ *     own email (Marc — same person, same Sentry org) gets attached; for
+ *     everyone else, Sentry events are anonymous and cannot be tied back
+ *     to a specific Quebec resident. This collapses our Loi 25 "right of
+ *     access on Sentry events" exposure to ~zero.
+ *   - No session replay, no perf traces (each would carry richer PI).
+ *   - 30-day retention configured in Sentry's dashboard (Marc's action).
  *
  * Sample rates are intentionally low — this is a low-traffic site and we
  * want the free tier to last. Errors are 100%; traces off by default.
@@ -32,6 +38,16 @@ function inferEnvironment(): 'production' | 'preview' | 'development' {
   return 'production'
 }
 
+/** Strip the query string from a URL. Magic-link verify URLs carry the
+ * single-use token in `?token=...`; share/session URLs may carry capability
+ * IDs; the lang param itself isn't PI but it's noise we don't need either.
+ * Path-only is always enough for "where did this error happen". */
+function stripQueryString(url: string | undefined): string | undefined {
+  if (!url || typeof url !== 'string') return url
+  const i = url.indexOf('?')
+  return i === -1 ? url : url.slice(0, i)
+}
+
 export function initSentry(): void {
   Sentry.init({
     dsn: DSN ?? '',
@@ -44,6 +60,10 @@ export function initSentry(): void {
     // Don't capture session replays by default — privacy + bytes.
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0,
+    // Disable auto-IP collection at the SDK level. Sentry server-side
+    // also has a "Prevent Storing of IP Addresses" toggle (Marc's action;
+    // see docs/loi-25-pia.md).
+    sendDefaultPii: false,
     // Common noise we don't care about.
     ignoreErrors: [
       // Browser extensions / content-blockers
@@ -57,12 +77,37 @@ export function initSentry(): void {
       'AbortError: The user aborted a request.',
     ],
     beforeSend(event) {
-      // Strip cookies and auth headers from any captured request frames.
+      // 1. Strip auth-bearing headers from any captured request frame.
+      //    `X-CSRF-Token` isn't a secret (the cookie can also be read by
+      //    the SPA) but it's not useful to Sentry and removing it shrinks
+      //    the surface.
       if (event.request?.headers) {
         delete event.request.headers.Cookie
         delete event.request.headers.cookie
         delete event.request.headers.Authorization
         delete event.request.headers['X-CSRF-Token']
+      }
+      // 2. Strip query string from event.request.url. Magic-link tokens
+      //    in /api/auth/verify?token=... must never reach a third party.
+      if (event.request?.url) {
+        event.request.url = stripQueryString(event.request.url) ?? event.request.url
+        // Also drop query_string explicitly if Sentry parsed it out.
+        if ('query_string' in event.request) delete event.request.query_string
+      }
+      // 3. Defensively nullify IP (sendDefaultPii: false should already
+      //    prevent this; belt-and-suspenders for Loi 25 minimization).
+      if (event.user) {
+        event.user.ip_address = undefined
+      }
+      // 4. Strip query strings from breadcrumb URLs (fetch breadcrumbs
+      //    auto-capture full URLs — same /api/auth/verify?token risk).
+      if (event.breadcrumbs) {
+        for (const b of event.breadcrumbs) {
+          const d = b.data as { url?: string; to?: string; from?: string } | undefined
+          if (d?.url) d.url = stripQueryString(d.url) ?? d.url
+          if (d?.to) d.to = stripQueryString(d.to) ?? d.to
+          if (d?.from) d.from = stripQueryString(d.from) ?? d.from
+        }
       }
       return event
     },
@@ -70,13 +115,19 @@ export function initSentry(): void {
 }
 
 /**
- * Attach the signed-in user's email as a Sentry user context. Called from
- * AuthProvider on email change. Anonymize by passing null on logout.
- * No-op when SDK is disabled (init received enabled: false).
+ * Attach the signed-in user's email as a Sentry user context. Loi 25:
+ * only the operator (Marc himself) is exposed. For regular visitors we
+ * call setUser(null) so Sentry events stay anonymous and cannot be tied
+ * back to a specific Quebec resident.
+ *
+ * Admin events are tagged with the operator's email so Marc can filter
+ * "errors I hit while QA'ing" in Sentry's UI. Marc's email going to
+ * Marc's own Sentry account is not a third-party transfer of someone
+ * else's PI.
  */
-export function setSentryUser(email: string | null): void {
-  if (email) {
-    Sentry.setUser({ email })
+export function setSentryUser(opts: { email: string | null; isAdmin: boolean }): void {
+  if (opts.isAdmin && opts.email) {
+    Sentry.setUser({ email: opts.email })
   } else {
     Sentry.setUser(null)
   }

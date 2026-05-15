@@ -294,13 +294,22 @@
   `public/og-image.hash.json` (SHA-256 of each SVG); `check-og-image.mjs`
   re-hashes and fails on mismatch. Wired into `prebuild` so CI catches the
   "edited SVG, forgot to regenerate PNG" case before deploy.
-- ⏭ **P3.21** — Cookie consent banner. **Deferred.** All current cookies are
-  strictly functional: `mp_session` (auth), `mp_csrf` (auth), `mp_lang`
-  (UX preference, no tracking). Loi 25 doesn't require consent for strictly
-  functional cookies. No analytics, no third-party trackers. If/when any
-  analytics lands, revisit. The Privacy page (`/confidentialite`) already
-  documents what's stored. Adding a banner now would be cosmetic compliance,
-  not real protection.
+- ✅ **P3.21** — Loi 25 compliance for Sentry. Now real because Sentry is
+  the first third-party processor receiving anything beyond plain
+  functional state. Shipped:
+  1. **PIA** authored at `docs/loi-25-pia.md` — covers art. 3.3 and art. 17
+     requirements (cross-border, US recipient, mitigations).
+  2. **Notice** added to `/confidentialite` (FR) + `/en/privacy` (EN) —
+     new section 6 (Sentry-specific) plus updates to §2 and §5. Anchor IDs
+     on each section so cross-references resolve.
+  3. **Code minimization**: `setSentryUser` admin-gated (visitor email
+     never reaches Sentry); `beforeSend` strips URL query strings,
+     breadcrumb URLs, `user.ip_address`. Server side mirrors.
+  4. **RUNBOOK** has the operator's one-time Sentry dashboard checklist
+     (DPA, retention 30d, IP-disable, scrubber) + access-request playbook
+     + breach-response playbook.
+  5. Cookies (`mp_session`, `mp_csrf`, `mp_lang`) remain strictly functional
+     — no consent banner required for those.
 - ⏭ **P3.22** — `feat-*` dirs at workspace root. **Deferred.** Moving them
   under `features/` would touch `lac.config.json` plus possibly hardcoded
   paths in `lac-mcp` tools that read these. The noise is real but contained;
@@ -352,7 +361,11 @@
   - 174 tests pass. Typecheck + lint + build clean. `@sentry/react` adds
     ~80 KB to the main bundle (one-time, not in lazy chunks).
 - 2026-05-15 — Final sweep: documented defer rationale for every remaining
-  pure-code item. P1.3 (Resend outbox), P1.8 (napkin → R2), P2.2 (logout
+  pure-code item.
+- 2026-05-15 — Loi 25 compliance pass for the Sentry integration. P3.21
+  flipped from ⏭ deferred to ✅ shipped: PIA, privacy-page notice, code
+  minimization, RUNBOOK procedures. Memory entry added so future sessions
+  know the established pattern when adding new third-party processors. P1.3 (Resend outbox), P1.8 (napkin → R2), P2.2 (logout
   revoke), P2.3–2.5 (data model premature), P3.11–3.15 (test infra heavy
   for current value). Each item now has a clear "reopen when X" trigger
   so future-me knows what to watch for.

@@ -131,6 +131,58 @@ The frontend SDK is `@sentry/react`; the Functions side uses a hand-rolled
 envelope poster (~80 lines, no SDK). Both strip the session cookie, CSRF
 token, and Authorization header before sending events.
 
+### Sentry — Loi 25 compliance + operational checklist
+
+Reference: `docs/loi-25-pia.md` (Privacy Impact Assessment, internal
+record). Compliance posture: visitor events are anonymized at SDK time
+(no `user.email`, no query strings, no IP), so Sentry holds no PII for
+Quebec residents under Loi 25.
+
+**One-time setup actions for the operator** (Sentry web UI):
+
+| # | Action | Where |
+|---|---|---|
+| 1 | Sign Sentry's Data Processing Agreement | <https://sentry.io/legal/dpa/> — click-to-accept |
+| 2 | Set project retention to **30 days** | Settings → General Settings → Data Retention |
+| 3 | Enable "Prevent Storing of IP Addresses" | Settings → Security & Privacy → toggle ON |
+| 4 | Verify data scrubbing rules are ON | Settings → Security & Privacy → "Data Scrubber" (defaults: credit cards, common secrets) |
+
+If any of (1)–(4) is not done, the technical mitigations in code are
+weaker than what the PIA claims. Re-read `docs/loi-25-pia.md` §6.3
+before assuming the cross-border transfer is compliant.
+
+**Handling a Loi 25 access request that mentions Sentry**
+
+When a visitor sends a request under Loi 25 art. 27 ("send me
+everything you have on me") and Sentry is on their radar:
+
+1. The portal-side data lives in D1 — handle that via the existing
+   `/me` page export.
+2. For Sentry specifically, the canonical answer is:
+
+   > Sentry events about your usage are anonymized at SDK time —
+   > no email, no IP, no URL parameters carry your identity. There is
+   > therefore no individual record to extract for you. The relevant
+   > technical mitigation list is in our PIA (`docs/loi-25-pia.md`),
+   > available on request.
+
+3. If the visitor pushes back: confirm `setSentryUser` is admin-gated
+   in current `src/lib/AuthProvider.tsx`, and `beforeSend` strips
+   query strings in current `src/lib/sentry.ts`. If both true, the
+   answer in step 2 is honest.
+
+**Handling a Sentry breach notification**
+
+If Sentry notifies you of an incident affecting your events:
+
+1. Read their incident report; identify the time window + event count.
+2. Because we don't tag visitor events with identity, the affected
+   events are anonymous (per PIA §3.1). No notification to CAI or
+   individuals is required (no risk of serious harm — no identifying
+   info to leak).
+3. The exception is the operator's own events: notify yourself.
+4. Log the incident in this RUNBOOK with date + Sentry's incident ID.
+
 ### Synthetic monitor (cron-job.org)
 
 The digest cron already runs through cron-job.org (Marc's free account); add a

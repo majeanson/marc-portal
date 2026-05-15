@@ -16,6 +16,7 @@
 // in `wrangler pages dev` and in production.
 
 import { currentEmail, requireCsrf } from './_lib/auth'
+import { isAdmin } from './_lib/env'
 import { captureWorkerException } from './_lib/sentry'
 import { resolveTenant, type Tenant } from './_lib/tenant'
 
@@ -159,9 +160,19 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     response = await ctx.next()
   } catch (err) {
     let email: string | null = null
+    let admin = false
     if (ctx.env.SESSION_SECRET) {
       try {
         email = await currentEmail(ctx.request, ctx.env.SESSION_SECRET)
+        // Loi 25: only attach the email when the visitor IS the operator
+        // (Marc). For everyone else, captureWorkerException drops the
+        // email and Sentry events stay anonymous. See docs/loi-25-pia.md.
+        if (email && ctx.env.ADMIN_EMAILS) {
+          admin = isAdmin(
+            { ADMIN_EMAILS: ctx.env.ADMIN_EMAILS } as Parameters<typeof isAdmin>[0],
+            email,
+          )
+        }
       } catch {
         // Failure to resolve the email shouldn't block error reporting.
       }
@@ -169,6 +180,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     captureWorkerException(err, {
       request: ctx.request,
       email,
+      isAdmin: admin,
       op: url.pathname,
     })
     throw err

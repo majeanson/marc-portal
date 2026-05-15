@@ -35,15 +35,22 @@ function parseDsn(dsn: string): ParsedDsn | null {
  * response on the upload, and any failure to send is swallowed (we're not
  * going to recursively report Sentry-outage-to-Sentry).
  *
- * Context is optional but recommended: `{ request, email, op }`. The
- * request is mined for URL, method, headers (sanitized — no Cookie /
- * Authorization), and trace ids.
+ * Context is optional but recommended: `{ request, email, isAdmin, op }`.
+ * Loi 25 posture: the visitor's email is attached to events ONLY when the
+ * visitor is the operator (Marc — same person sending his own data to his
+ * own Sentry org). For everyone else we omit `user` so events are
+ * anonymous and unreachable to a Loi 25 access request that mentions a
+ * specific Quebec resident. See docs/loi-25-pia.md.
+ *
+ * The request URL is path-only; query strings (which carry magic-link
+ * tokens, share-capability IDs) are stripped before the event ships.
  */
 export function captureWorkerException(
   err: unknown,
   ctx: {
     request?: Request
     email?: string | null
+    isAdmin?: boolean
     op?: string
     extra?: Record<string, unknown>
   } = {},
@@ -76,7 +83,9 @@ export function captureWorkerException(
       ],
     },
     request: ctx.request ? requestSummary(ctx.request) : undefined,
-    user: ctx.email ? { email: ctx.email } : undefined,
+    // Only attach the visitor's email when they ARE the operator (Marc).
+    // Everyone else stays anonymous — Loi 25 minimization. See PIA.
+    user: ctx.isAdmin && ctx.email ? { email: ctx.email } : undefined,
     extra: ctx.extra,
   }
 
@@ -123,11 +132,17 @@ function requestSummary(request: Request): Record<string, unknown> {
     if (lk === 'cookie' || lk === 'authorization' || lk === 'x-csrf-token') continue
     headers[k] = v
   }
+  // PATH ONLY — strip the query string. Magic-link verify endpoints carry
+  // single-use tokens in `?token=...`; share endpoints carry capability
+  // IDs in the URL path. The path tells Sentry "which handler threw"
+  // without leaking the per-request capability material. Loi 25
+  // minimization; mirror of stripQueryString() in src/lib/sentry.ts.
   return {
-    url: url.toString(),
+    url: `${url.origin}${url.pathname}`,
     method: request.method,
     headers,
-    query_string: url.search.replace(/^\?/, ''),
+    // Intentionally omit query_string entirely. Sentry doesn't need it
+    // to group / display events, and shipping it would defeat the strip.
   }
 }
 
