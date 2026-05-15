@@ -8,6 +8,7 @@
   },
   "packageManager": "npm@10.9.0",
   "scripts": {
+    "prepare": "node scripts/install-hooks.mjs",
     "dev": "vite",
     "dev:cf": "wrangler pages dev --proxy 5180 --port 8788",
     "prebuild": "node scripts/build-sitemap.mjs && node scripts/check-og-image.mjs",

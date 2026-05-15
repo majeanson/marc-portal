@@ -52,14 +52,21 @@ order. Check them top-down — most-likely first, cheapest-to-rule-out first.
 
 - This is the Windows-vs-Linux optionalDeps thing — npm prunes the wrong
   set of native binaries when the lockfile is generated on Windows.
-- Fix:
+- **Should rarely reach CI now** — the `.githooks/pre-push` hook runs
+  `scripts/check-lockfile.mjs` and blocks the push when the entries are
+  missing. Hook auto-installs via the `prepare` lifecycle on `npm install`.
+- Fix (when caught by the gate, or when bypassed via `--no-verify`):
 
   ```bash
-  npm install --include=optional --package-lock-only
+  node scripts/fix-lockfile.mjs       # auto-fetches origin/main
   git add package-lock.json
-  git commit -m "chore: regenerate lockfile with optional deps"
+  git commit -m "chore: restore @emnapi lockfile entries"
   git push
   ```
+
+  `npm install --include=optional --package-lock-only` does NOT work — npm
+  11.x ignores the flag for cross-platform optional native deps. The script
+  is the only path that actually adds the entries.
 
 ## 5. Deploy succeeded but pages serve old code
 

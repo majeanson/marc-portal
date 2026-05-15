@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Pre-push gate: refuse to push a package-lock.json that's missing the
+# Linux-only optional @emnapi/* entries. CI runs `npm ci` on a Linux
+# runner; a Windows-generated lockfile without those entries makes CI
+# fail with EUSAGE before anything else runs. This hook catches that
+# locally so we don't burn a CI cycle (or a deploy) on it.
+#
+# Bypass (rare): `git push --no-verify`. Use only when you know the
+# remote already has the fix queued.
+
+set -e
+
+# Locate the repo root so the hook works from any subdir.
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT"
+
+# Run the read-only check. node script handles the messaging.
+node scripts/check-lockfile.mjs

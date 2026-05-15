@@ -1,0 +1,6 @@
+# Git hooks must run under bash (incl. Git Bash on Windows). CRLF line
+# endings break the shebang and make hooks silently no-op. Force LF.
+.githooks/* text eol=lf
+
+# Same for any other executable shell scripts we might add later.
+*.sh text eol=lf
