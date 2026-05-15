@@ -34,9 +34,7 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
   // the inbox-nudge is the user-facing value, cleanup is best-effort.
   try {
     const tokenCutoff = now - 86_400
-    const result = await env.DB.prepare(
-      `DELETE FROM magic_link_tokens WHERE created_at < ?`,
-    )
+    const result = await env.DB.prepare(`DELETE FROM magic_link_tokens WHERE created_at < ?`)
       .bind(tokenCutoff)
       .run()
     if (result.meta && typeof result.meta.changes === 'number' && result.meta.changes > 0) {
@@ -44,6 +42,44 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     }
   } catch (err) {
     console.warn('digest: token cleanup failed (continuing)', err)
+  }
+
+  // Piggyback housekeeping #2: prune orphan attachment uploads (message_id
+  // IS NULL) older than 7 days. Visitors who upload but never send a message
+  // leave R2 + DB rows behind; this sweep reclaims them. R2 objects are
+  // deleted alongside the DB row so we don't leak storage.
+  try {
+    const orphanCutoff = now - 7 * 86_400
+    interface OrphanRow {
+      id: string
+      r2_key: string
+    }
+    const orphans = await env.DB.prepare(
+      `SELECT id, r2_key FROM attachments
+       WHERE message_id IS NULL AND created_at < ?`,
+    )
+      .bind(orphanCutoff)
+      .all<OrphanRow>()
+    const rows = orphans.results ?? []
+    let pruned = 0
+    for (const o of rows) {
+      // R2 first — if we drop the DB row but fail to delete the R2 object,
+      // we can no longer find the orphan. Inverse failure (R2 OK, DB fail)
+      // is recoverable by the next sweep.
+      try {
+        if (env.MEDIA) await env.MEDIA.delete(o.r2_key)
+      } catch (err) {
+        console.warn('digest: r2 delete failed for', o.r2_key, err)
+        continue
+      }
+      await env.DB.prepare(`DELETE FROM attachments WHERE id = ?`).bind(o.id).run()
+      pruned++
+    }
+    if (pruned > 0) {
+      console.log(`digest: pruned ${pruned} orphan attachment(s)`)
+    }
+  } catch (err) {
+    console.warn('digest: attachment cleanup failed (continuing)', err)
   }
 
   let rows: SessionRow[] = []

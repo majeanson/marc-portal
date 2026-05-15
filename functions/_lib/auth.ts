@@ -8,6 +8,12 @@ import { b64urlToBytes, bytesToB64url, bytesToUtf8, utf8ToBytes } from './bytes'
 const COOKIE_NAME = 'mp_session'
 const COOKIE_MAX_AGE_SECONDS = 30 * 24 * 60 * 60
 
+/** Companion cookie carrying the CSRF token. NOT HttpOnly — the SPA reads it
+ * via document.cookie to echo into X-CSRF-Token on state-changing requests
+ * (double-submit pattern). Lives as long as the session. */
+const CSRF_COOKIE_NAME = 'mp_csrf'
+const CSRF_HEADER_NAME = 'x-csrf-token'
+
 export interface SessionPayload {
   e: string
   x: number
@@ -119,6 +125,71 @@ export function setSessionCookieHeader(value: string): string {
 
 export function clearSessionCookieHeader(): string {
   return [`${COOKIE_NAME}=`, 'Path=/', 'HttpOnly', 'Secure', 'SameSite=Lax', 'Max-Age=0'].join('; ')
+}
+
+/** Generate a fresh CSRF token. Base64url-encoded random bytes. */
+export function newCsrfToken(): string {
+  const bytes = new Uint8Array(24)
+  crypto.getRandomValues(bytes)
+  return bytesToB64url(bytes)
+}
+
+/** Cookie header for the CSRF token. NOT HttpOnly — the SPA needs to read it. */
+export function setCsrfCookieHeader(token: string): string {
+  return [
+    `${CSRF_COOKIE_NAME}=${token}`,
+    'Path=/',
+    'Secure',
+    'SameSite=Lax',
+    `Max-Age=${COOKIE_MAX_AGE_SECONDS}`,
+  ].join('; ')
+}
+
+export function clearCsrfCookieHeader(): string {
+  return [`${CSRF_COOKIE_NAME}=`, 'Path=/', 'Secure', 'SameSite=Lax', 'Max-Age=0'].join('; ')
+}
+
+function readCsrfCookie(request: Request): string | null {
+  const header = request.headers.get('Cookie')
+  if (!header) return null
+  for (const part of header.split(';')) {
+    const [k, ...rest] = part.trim().split('=')
+    if (k === CSRF_COOKIE_NAME) return rest.join('=')
+  }
+  return null
+}
+
+/**
+ * Constant-time-ish CSRF check (double-submit cookie). Reads the token from
+ * the request cookie + the X-CSRF-Token header; both must be present and
+ * equal. Returns true when the check passes. Safe-method requests (GET,
+ * HEAD, OPTIONS) skip the check at the caller.
+ *
+ * A foreign origin can drive the browser to send the cookie (that's the CSRF
+ * attack), but can't read it cross-origin to put it in the header. The
+ * matching requirement closes the loop.
+ */
+export function verifyCsrf(request: Request): boolean {
+  const cookieToken = readCsrfCookie(request)
+  const headerToken = request.headers.get(CSRF_HEADER_NAME)
+  if (!cookieToken || !headerToken) return false
+  if (cookieToken.length !== headerToken.length) return false
+  // Length-leak resistant compare. Workers WebCrypto doesn't expose a
+  // timing-safe compare, but the inputs are short and same-length here.
+  let mismatch = 0
+  for (let i = 0; i < cookieToken.length; i++) {
+    mismatch |= cookieToken.charCodeAt(i) ^ headerToken.charCodeAt(i)
+  }
+  return mismatch === 0
+}
+
+/** Convenience: 403 when CSRF fails on a state-changing request. */
+export function requireCsrf(request: Request): Response | null {
+  if (verifyCsrf(request)) return null
+  return new Response(JSON.stringify({ error: 'csrf check failed' }), {
+    status: 403,
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+  })
 }
 
 export function readSessionCookie(request: Request): string | null {

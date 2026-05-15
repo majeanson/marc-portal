@@ -8,7 +8,12 @@
 // FK), magic-link tokens for their email, and best-effort R2 attachment
 // objects. The session cookie is cleared on response.
 
-import { clearSessionCookieHeader, currentEmail } from '../_lib/auth'
+import {
+  clearSessionCookieHeader,
+  currentEmail,
+  newCsrfToken,
+  setCsrfCookieHeader,
+} from '../_lib/auth'
 import type { Env } from '../_lib/env'
 import { isAdmin } from '../_lib/env'
 import { ok, unauthorized } from '../_lib/json'
@@ -16,7 +21,19 @@ import { ok, unauthorized } from '../_lib/json'
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return ok({ email: null, isAdmin: false })
-  return ok({ email, isAdmin: isAdmin(env, email) })
+
+  // Self-heal the CSRF cookie. Sessions issued before the CSRF rollout (or
+  // anyone whose browser drops a cookie) get a fresh token on their next
+  // bootstrap call. Side-effect-free for callers that already have one.
+  const hasCsrf = (request.headers.get('Cookie') ?? '').includes('mp_csrf=')
+  const headers = new Headers({ 'content-type': 'application/json; charset=utf-8' })
+  if (!hasCsrf) {
+    headers.append('Set-Cookie', setCsrfCookieHeader(newCsrfToken()))
+  }
+  return new Response(JSON.stringify({ email, isAdmin: isAdmin(env, email) }), {
+    status: 200,
+    headers,
+  })
 }
 
 interface AttachmentR2Row {

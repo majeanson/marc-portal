@@ -1,10 +1,10 @@
 /**
- * Attachment uploads use multipart/form-data, so they bypass the JSON-only
- * `api()` wrapper. Otherwise the contract is the same: same-origin, cookies
- * included, ApiError on non-2xx.
+ * Attachment uploads are multipart/form-data; everything else is JSON. Both
+ * go through the shared `api()` wrapper now so the CSRF header attachment
+ * stays in one place (the wrapper reads the mp_csrf cookie and echoes it).
  */
 
-import { api, ApiError } from './api'
+import { api } from './api'
 import type { AttachmentRow } from './sessionsApi'
 
 export type { AttachmentRow }
@@ -19,25 +19,10 @@ export async function uploadAttachment(
 ): Promise<{ attachment: AttachmentRow }> {
   const form = new FormData()
   form.append('file', file)
-  const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/attachments`, {
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/attachments`, {
     method: 'POST',
-    credentials: 'same-origin',
-    body: form,
+    formData: form,
   })
-  let data: unknown = null
-  try {
-    data = await res.json()
-  } catch {
-    // empty/non-JSON body
-  }
-  if (!res.ok) {
-    const message =
-      data && typeof data === 'object' && 'error' in data && typeof data.error === 'string'
-        ? data.error
-        : `upload failed: ${res.status}`
-    throw new ApiError(res.status, message)
-  }
-  return data as { attachment: AttachmentRow }
 }
 
 /** Pre-message uploads I made on this session, that haven't been linked yet. */

@@ -24,10 +24,12 @@ import { rateLimitCheck, rateLimitSweep } from '../../../../_lib/ratelimit'
 import { canAccessSession, loadSession } from '../../../../_lib/sessions'
 import {
   isAllowedContentType,
+  MAX_ATTACHMENT_BYTES_PER_SESSION,
   MAX_ATTACHMENT_SIZE,
   newAttachmentId,
   r2KeyFor,
   safeFilename,
+  totalAttachmentBytesForSession,
   type AttachmentRow,
 } from '../../../../_lib/attachments'
 
@@ -78,6 +80,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   if (file.size > MAX_ATTACHMENT_SIZE) return payloadTooLarge('file exceeds 10 MB limit')
   if (!isAllowedContentType(file.type)) {
     return unsupportedMediaType(`content type not allowed: ${file.type || 'unknown'}`)
+  }
+
+  // Per-session storage ceiling. Sum of all existing attachment sizes on
+  // this session + the new file mustn't exceed the budget. Cheap COALESCE
+  // SUM query — cheaper than scanning R2.
+  const existingBytes = await totalAttachmentBytesForSession(env.DB, id)
+  if (existingBytes + file.size > MAX_ATTACHMENT_BYTES_PER_SESSION) {
+    return payloadTooLarge('session storage budget reached — delete an older file first')
   }
 
   const attachmentId = newAttachmentId()

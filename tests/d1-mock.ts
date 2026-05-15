@@ -300,6 +300,32 @@ class MockPreparedStatement {
       return out.map((at) => ({ ...at }))
     }
 
+    // SELECT COALESCE(SUM(size), 0) AS total FROM attachments WHERE session_id = ?
+    if (
+      sql.includes('FROM attachments') &&
+      sql.includes('SUM(size)') &&
+      sql.includes('WHERE session_id = ?')
+    ) {
+      let total = 0
+      for (const at of this.db.attachments.values()) {
+        if (at.session_id === a[0]) total += at.size
+      }
+      return [{ total }]
+    }
+
+    // SELECT id, r2_key FROM attachments WHERE message_id IS NULL AND created_at < ?
+    if (
+      sql.includes('FROM attachments') &&
+      sql.includes('WHERE message_id IS NULL') &&
+      sql.includes('created_at <')
+    ) {
+      const cutoff = a[0] as number
+      const out = [...this.db.attachments.values()]
+        .filter((at) => at.message_id === null && at.created_at < cutoff)
+        .map((at) => ({ id: at.id, r2_key: at.r2_key }))
+      return out
+    }
+
     return []
   }
 

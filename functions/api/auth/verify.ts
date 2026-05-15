@@ -6,7 +6,12 @@
 // The plaintext token in the URL is hashed with SHA-256 before lookup; D1
 // stores only the hash (see request-link.ts).
 
-import { setSessionCookieHeader, signSessionCookie } from '../../_lib/auth'
+import {
+  newCsrfToken,
+  setCsrfCookieHeader,
+  setSessionCookieHeader,
+  signSessionCookie,
+} from '../../_lib/auth'
 import { sha256B64url } from '../../_lib/bytes'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
@@ -18,9 +23,11 @@ interface TokenRow {
   used_at: number | null
 }
 
-function redirect(url: string, cookie?: string): Response {
-  const headers: Record<string, string> = { Location: url }
-  if (cookie) headers['Set-Cookie'] = cookie
+function redirect(url: string, cookies?: string[]): Response {
+  // Workers Headers supports multiple Set-Cookie via append(). One Set-Cookie
+  // per call so the runtime serializes them separately on the wire.
+  const headers = new Headers({ Location: url })
+  for (const c of cookies ?? []) headers.append('Set-Cookie', c)
   return new Response(null, { status: 302, headers })
 }
 
@@ -59,8 +66,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     .run()
 
   const sessionCookie = await signSessionCookie(env.SESSION_SECRET, row.email)
-  const cookieHeader = setSessionCookieHeader(sessionCookie)
+  const csrf = newCsrfToken()
+  const cookies = [setSessionCookieHeader(sessionCookie), setCsrfCookieHeader(csrf)]
 
   const dest = isAdmin(env, row.email) ? `${langPrefix}/admin/inbox` : `${langPrefix}/me`
-  return redirect(dest, cookieHeader)
+  return redirect(dest, cookies)
 }

@@ -13,8 +13,10 @@ import { describe, expect, it } from 'vitest'
 import {
   SessionSecretMisconfiguredError,
   isPlausibleEmail,
+  newCsrfToken,
   requireSessionSecret,
   signSessionCookie,
+  verifyCsrf,
   verifySessionCookie,
 } from './auth'
 
@@ -82,6 +84,54 @@ describe('requireSessionSecret (boot guard)', () => {
 
   it('signSessionCookie refuses a missing secret', async () => {
     await expect(signSessionCookie('', 'a@b.com')).rejects.toThrow(SessionSecretMisconfiguredError)
+  })
+})
+
+describe('verifyCsrf (double-submit cookie)', () => {
+  // happy-dom strips the `Cookie` header from Request init (forbidden header
+  // for fetch in browsers). Stub the .headers.get() surface verifyCsrf reads
+  // so the test stays portable across runtimes.
+  function reqWith(cookie: string | null, header: string | null): Request {
+    return {
+      headers: {
+        get(name: string) {
+          const norm = name.toLowerCase()
+          if (norm === 'cookie') return cookie
+          if (norm === 'x-csrf-token') return header
+          return null
+        },
+      },
+    } as unknown as Request
+  }
+
+  it('passes when cookie and header are present and equal', () => {
+    const token = newCsrfToken()
+    expect(verifyCsrf(reqWith(`mp_csrf=${token}`, token))).toBe(true)
+  })
+
+  it('fails on missing header', () => {
+    const token = newCsrfToken()
+    expect(verifyCsrf(reqWith(`mp_csrf=${token}`, null))).toBe(false)
+  })
+
+  it('fails on missing cookie', () => {
+    const token = newCsrfToken()
+    expect(verifyCsrf(reqWith(null, token))).toBe(false)
+  })
+
+  it('fails on mismatched values', () => {
+    const a = newCsrfToken()
+    const b = newCsrfToken()
+    expect(verifyCsrf(reqWith(`mp_csrf=${a}`, b))).toBe(false)
+  })
+
+  it('fails on length mismatch (early-exit)', () => {
+    expect(verifyCsrf(reqWith('mp_csrf=abc', 'abcd'))).toBe(false)
+  })
+
+  it('ignores other cookies', () => {
+    const token = newCsrfToken()
+    expect(verifyCsrf(reqWith(`mp_session=foo; mp_csrf=${token}; other=x`, token))).toBe(true)
   })
 })
 

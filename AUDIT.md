@@ -32,10 +32,16 @@
   the same alerting path as P3.x observability.
 
 ### Auth / session safety
-- ⬜ **P1.4** — Add CSRF token to state-changing endpoints (POST / PATCH / DELETE).
-  Today `SameSite=Lax` is the only protection; works for most browsers but
-  isn't belt-and-suspenders. Pattern: double-submit cookie OR per-session token
-  in a header the SPA reads from a meta tag.
+- ✅ **P1.4** — CSRF double-submit cookie. Server (`functions/_lib/auth.ts`)
+  mints `mp_csrf` (non-HttpOnly) alongside the session cookie at magic-link
+  verify; self-heals on `GET /api/me` for sessions issued before the rollout.
+  Middleware (`functions/_middleware.ts`) gates every state-changing /api/*
+  request with `requireCsrf` — header must match cookie. Exempt:
+  `/api/auth/logout` (forced-logout is a nuisance, not a compromise),
+  `/api/auth/request-link` (no cookie yet on first visit), `/api/admin/digest`
+  (out-of-band auth via X-Digest-Token). SPA `api()` wrapper reads the cookie
+  and echoes it as `X-CSRF-Token`; `attachmentsApi` now routes through the
+  wrapper. 6 new tests cover the verifier.
 - ✅ **P1.5** — Per-IP rate limit on `/api/auth/request-link`. Split the old
   "5/h per email OR ip" into two independent ceilings: 5/h per email +
   20/h per IP. Catches the rotating-email-same-IP attack. New test
@@ -104,10 +110,10 @@
 - ⬜ **P2.5** — No `featured_position` / sort-order column on `sessions`.
   `/projects` is just `ORDER BY showcased_at DESC`. Marc can't pin a project to
   the top of the gallery.
-- ⬜ **P2.6** — No download endpoint visible for attachments. Files live in R2
-  but I didn't find `GET /api/attachments/:id`. Verify: can a visitor actually
-  retrieve their own uploaded file? If not, add the endpoint with signed URL
-  + Content-Disposition. If yes, point me at it and check this off.
+- ✅ **P2.6** — Already-shipped (verified). Endpoint lives at
+  `functions/api/sessions/[id]/attachments/[attId].ts`. Auth-gated (visitor-self
+  or admin), images served `inline`, others as `attachment`, RFC 5987 UTF-8
+  filename encoding, `cache-control: private, no-store`.
 
 ### OG / sharing
 - ⬜ **P2.7** — `workers-og` PNG render uses inline HTML with `font-family:system-ui`.
@@ -121,10 +127,12 @@
 - ✅ **P2.9** — HTMLRewriter skips `/api/*` and `/og/*` paths (cheap pathname
   check at the top of `rewriteOgTags`). Other HTML responses still get
   rewritten — handlers that return HTML errors won't be touched.
-- ⬜ **P2.10** — `og:url` isn't rewritten per-route. Sharing `/share/:id` shows
-  the home title in the card. Either pass `og:title` / `og:description` through
-  the rewriter too, OR render those in `Home.tsx` / `PublicAdvancements.tsx`
-  useEffect like we already do for `og:image`.
+- ✅ **P2.10** — `og:url` is now rewritten by the middleware to the absolute
+  URL of the current page (helps Slack/LinkedIn cache disambiguate). Added
+  `<meta property="og:url">` placeholder to `index.html` so the rewriter has
+  something to attach to. Note: `og:title` / `og:description` per-route is
+  still client-side via `useEffect` (lower-stakes — bots already get a
+  reasonable card with home title + per-page image).
 
 ### Routing / SPA
 - ✅ **P2.11** — `src/pages/NotFound.tsx` renders a proper 404 with the path
@@ -146,13 +154,14 @@
   allow-list (zip, Office docs, PDFs). At minimum: refuse files whose magic
   bytes don't match `content_type`. Better: integrate a CF Workers AV (or
   defer-but-flag the file as "unscanned" until a human approves).
-- ⬜ **P2.16** — Orphan attachment GC. Pre-message uploads (`message_id IS NULL`)
-  that never get linked to a message are never cleaned up. Sweep on the daily
-  digest cron: delete `attachments` rows + R2 objects where `message_id IS NULL
-  AND created_at < now - 7d`.
-- ⬜ **P2.17** — No per-session storage quota. A visitor could upload 30 files ×
-  10 MB / hour = 300 MB/hour. Add a per-session sum-of-sizes ceiling (50 MB?)
-  to the upload handler.
+- ✅ **P2.16** — Orphan attachment GC piggybacks the digest cron. Deletes
+  R2 object first (so we don't lose track of the key) then the DB row, for
+  rows where `message_id IS NULL AND created_at < now - 7d`. Errors per-row
+  don't kill the whole sweep.
+- ✅ **P2.17** — Per-session storage quota added: `MAX_ATTACHMENT_BYTES_PER_SESSION`
+  is 100 MB. Upload handler checks `SUM(size)` for the session before
+  accepting a new file, returns `413 payload too large` if the budget would
+  be exceeded.
 
 ### CSP / headers
 - ⬜ **P2.18** — `frame-src` hardcodes specific demo origins (`snd-demo.pages.dev`,
@@ -272,3 +281,10 @@
   P3.6 (hreflang via middleware), P3.19 (version 0.0.0 to signal untracked).
   P2.1 deferred (was speculative; no real bug).
   - 154 tests pass. Typecheck + lint + build clean.
+- 2026-05-15 — Third batch shipped: P1.4 (CSRF double-submit cookie + central
+  middleware gate), P2.6 (attachment download verified already-shipped),
+  P2.10 (og:url per-route via middleware), P2.16 (orphan attachment GC on
+  digest cron), P2.17 (per-session storage quota at 100 MB).
+  - 160 tests pass (+6 for the new CSRF verifier). Typecheck + lint + build
+    clean. `attachmentsApi.uploadAttachment` now routes through the shared
+    `api()` wrapper for CSRF header attachment.

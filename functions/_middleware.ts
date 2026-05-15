@@ -15,6 +15,7 @@
 // assets and proxies /api to the Functions runtime. The middleware is exercised
 // in `wrangler pages dev` and in production.
 
+import { requireCsrf } from './_lib/auth'
 import { resolveTenant, type Tenant } from './_lib/tenant'
 
 interface Env {
@@ -23,6 +24,18 @@ interface Env {
   SESSION_SECRET?: string
   RESEND_API_KEY?: string
 }
+
+// State-changing /api/* requests are CSRF-gated centrally (see verifyCsrf in
+// functions/_lib/auth.ts). These paths are exempt because they either don't
+// have a user cookie to forge (logout / request-link / digest) or carry their
+// own out-of-band auth (digest uses X-Digest-Token).
+const CSRF_EXEMPT_PATHS: ReadonlySet<string> = new Set([
+  '/api/auth/logout',
+  '/api/auth/request-link',
+  '/api/admin/digest',
+])
+
+const SAFE_METHODS: ReadonlySet<string> = new Set(['GET', 'HEAD', 'OPTIONS'])
 
 // Augment the Pages Functions context with our tenant data so handlers can
 // `const tenant = ctx.data.tenant` with full typing.
@@ -77,6 +90,16 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
 
   ;(ctx.data as PagesContextData).tenant = tenant
 
+  // CSRF gate. State-changing /api/* requests must carry a token that matches
+  // their mp_csrf cookie. Browsers don't let foreign origins read the cookie,
+  // so an attacker can drive the browser to send it but can't echo it in a
+  // header. Skip on safe methods, the explicit exempt list, and non-API paths.
+  const isApi = url.pathname.startsWith('/api/')
+  if (isApi && !SAFE_METHODS.has(ctx.request.method) && !CSRF_EXEMPT_PATHS.has(url.pathname)) {
+    const csrfBlock = requireCsrf(ctx.request)
+    if (csrfBlock) return csrfBlock
+  }
+
   const response = await ctx.next()
   // Crawler-correct OG injection: SPA ships a single index.html with the FR
   // OG image hardcoded; for /en/* requests we swap to og-image-en.png, and
@@ -121,6 +144,11 @@ function rewriteOgTags(response: Response, url: URL): Response {
     `<link rel="alternate" hreflang="en-CA" href="${enPath}">` +
     `<link rel="alternate" hreflang="x-default" href="${frPath}">`
 
+  // og:url — absolute URL of the current page. Some scrapers (LinkedIn, Slack)
+  // disambiguate cache entries by this field; without a per-route value every
+  // share collides on the home URL.
+  const ogUrl = `${url.origin}${path}`
+
   const rewriter = new HTMLRewriter()
     .on('meta[property="og:image"]', {
       element(el) {
@@ -135,6 +163,11 @@ function rewriteOgTags(response: Response, url: URL): Response {
     .on('meta[property="og:locale"]', {
       element(el) {
         el.setAttribute('content', ogLocale)
+      },
+    })
+    .on('meta[property="og:url"]', {
+      element(el) {
+        el.setAttribute('content', ogUrl)
       },
     })
     .on('head', {
