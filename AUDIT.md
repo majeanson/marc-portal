@@ -229,15 +229,22 @@
   preferring EN gets 302'd to `/en`. Explicit choice via the FR/EN header
   toggle writes `mp_lang` cookie (1-year horizon, SameSite=Lax) which wins
   over Accept-Language on subsequent visits.
-- ⬜ **P3.8** — Type-safe i18n. Hand-rolled `DICT[lang]` (~1100 lines). Adding
-  an FR key and forgetting EN is silent. Either a TS `satisfies` check across
-  shapes, or migrate to a typed library (i18next is overkill here; a `Record<Lang,
-  Dict>` with shared shape constraint would do).
+- ⏭ **P3.8** — i18n type safety. **Already covered.** `i18n.ts` has
+  `type Copy = typeof FR` + `const EN: Copy = {...}`. Adding a key to FR
+  and forgetting EN is a hard compile error (Copy demands the field exists
+  in both). The audit point was a false alarm — verified by reading the
+  type chain.
 
 ### Tests
-- ⬜ **P3.9** — Tests for `/og/share/:id`: rendering, fallback redirect, debug
-  mode. Today it's the most fragile prod-only path.
-- ⬜ **P3.10** — Tests for `_middleware.ts` HTMLRewriter rewrites.
+- ✅ **P3.9** — Tests in `functions/og/share/[id].test.ts`. Covers: missing
+  id, session not found, soft-deleted, non-showcased, and the debug-mode
+  JSON branch (happy + sad). workers-og is vi.mocked so the satori/resvg
+  WASM isn't bootstrapped in tests.
+- ✅ **P3.10** — Tests in `functions/_middleware.test.ts`. CSRF gate
+  behaviour (block/allow/exempt) + locale redirect run in happy-dom. The
+  five HTMLRewriter-dependent tests (OG/hreflang injection) `describe.skipIf`
+  when HTMLRewriter is unavailable — run them under miniflare or
+  `@cloudflare/vitest-pool-workers` for full coverage.
 - ⬜ **P3.11** — Tests for attachment upload + download (POST + GET).
 - ⬜ **P3.12** — Tests for the Napkin → Intake → SessionPage round trip
   (component-level, mock-D1 backed).
@@ -319,3 +326,8 @@
   prebuild). Plus a sweep of defer-with-rationale: P2.7, P2.8, P2.14,
   P2.18, P2.20, P3.16, P3.21, P3.22.
   - 160 tests pass. Typecheck + lint + build clean.
+- 2026-05-15 — Sixth batch shipped: P3.9 (OG endpoint tests), P3.10
+  (middleware tests). P3.8 closed as already-handled by the existing
+  Copy = typeof FR pattern.
+  - 174 tests pass, +5 skipped under happy-dom (HTMLRewriter; runs under
+    miniflare). Typecheck + lint clean.
