@@ -87,7 +87,8 @@
 - ~~Per-project OG image generation (C.8)~~ — **shipped Phase 10**. `/og/share/:id` returns 1200×630 PNG rendered via workers-og from the session's showcase title + tagline + tier. Cached 24h at the edge.
 - ~~Per-language OG via SSR/middleware~~ — **shipped Phase 10**. `functions/_middleware.ts` uses HTMLRewriter to swap `og:image` / `twitter:image` / `og:locale` based on URL: `/en/*` → `og-image-en.png`; `/share/:id` → `/og/share/:id`. Bots get the right card without running JS.
 - ~~Server-side upload of napkin PNG~~ — **shipped Phase 11**. Intake reads `marc-portal:napkin-sketch` on mount, shows a thumbnail-badge with caption + Remove, ships the napkin inside `intake_json.napkin` on createSession, clears on success. SessionPage renders a "session-napkin" panel that shows the sketch + caption + "Open PNG" download link.
-- `npm audit` reports 15 vulnerabilities (14 moderate, 1 high) brought in by Excalidraw's deep dep tree. Worth a `npm audit fix` pass with user approval next session.
+- `npm audit` reports 15 vulnerabilities (14 moderate, 1 high) brought in by Excalidraw's deep dep tree (nanoid via @excalidraw/mermaid-to-excalidraw → @mermaid-js/parser → langium). Non-breaking `npm audit fix` cannot resolve any of them — they require `npm audit fix --force`, which bumps @excalidraw/excalidraw to a new major (breaking). Deferred pending an explicit version-bump pass.
+- All findings are in **build-time / dev** paths the runtime client doesn't execute as a server (nanoid issues affect non-integer inputs we don't pass; mermaid-to-excalidraw is a feature we don't import). Confirmed not currently exploitable in our usage.
 
 ## Phase 10 — Per-project + per-lang OG (added after first run)
 - [x] `workers-og` installed (satori + resvg WASM under the hood)
