@@ -3457,6 +3457,55 @@ button:focus-visible,
   background: var(--accent-soft, var(--bg-card));
 }
 
+/* Per-tier "your project here" strip — rendered under the live gallery on
+   /projects. Reuses .project-card so the four placeholders sit in visual
+   lockstep with the live cards, but with a dashed treatment so visitors
+   read them as available slots rather than shipped work. */
+.projects-placeholders {
+  margin-top: 56px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-soft);
+}
+.projects-placeholders__head {
+  margin-bottom: 20px;
+}
+.projects-placeholders__title {
+  margin: 6px 0 4px;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+}
+.projects-placeholders__intro {
+  margin: 0 0 8px;
+  color: var(--text-mid);
+  max-width: 60ch;
+  font-size: 15px;
+}
+.projects-placeholders__grid {
+  /* Four narrower slots — give visitors a quick scan across the tier range. */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.project-card--placeholder {
+  border-style: dashed;
+  background: transparent;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+.project-card--placeholder:hover {
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--bg-card);
+  transform: translateY(-2px);
+}
+.project-card--placeholder .project-card__title {
+  font-size: 18px;
+}
+.project-card--placeholder .project-card__tagline {
+  margin-bottom: 18px;
+}
+
 /* Admin "Showcase as project" panel on SessionPage. */
 .session-showcase {
   background: var(--bg-card);

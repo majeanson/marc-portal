@@ -424,6 +424,11 @@ const FR = {
     openCta: 'Voir les avancées →',
     openBuild: 'Ouvrir le build ↗',
     tierPrefix: 'Tier',
+    placeholderEyebrow: 'votre projet ici',
+    placeholderHeading: 'Une place vous attend',
+    placeholderIntro: 'Peu importe le tier — un point de départ.',
+    placeholderT0Cta: 'Voir Tier 0 →',
+    placeholderIntakeCta: "Démarrer l'intake →",
   },
 
   showcaseAdmin: {
@@ -871,6 +876,11 @@ const EN: Copy = {
     openCta: 'See the advancements →',
     openBuild: 'Open the build ↗',
     tierPrefix: 'Tier',
+    placeholderEyebrow: 'your project here',
+    placeholderHeading: 'A slot is waiting',
+    placeholderIntro: 'At any tier — a starting line.',
+    placeholderT0Cta: 'Browse Tier 0 →',
+    placeholderIntakeCta: 'Start the intake →',
   },
 
   showcaseAdmin: {
