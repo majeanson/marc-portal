@@ -21,11 +21,12 @@
 - [x] Committed (hash: pending)
 
 ## Phase 3 — EN OG image
-- [ ] `public/og-image-en.svg` authored
-- [ ] `scripts/build-og-image.mjs` extended (both langs)
-- [ ] Runtime `og:image` + `twitter:image` swap on lang change
-- [ ] Decided: Pages middleware HTMLRewriter for crawlers? (yes/no/deferred)
-- [ ] Committed (hash: __)
+- [x] `public/og-image-en.svg` authored
+- [x] `public/og-image-en.png` generated (53.9 KB)
+- [x] `scripts/build-og-image.mjs` extended (loops over variants)
+- [x] Runtime `og:image` + `twitter:image` + `og:locale` swap on lang change in `Home.tsx`
+- [x] Pages middleware HTMLRewriter: **deferred**. Static index.html ships FR OG; bots hitting `/en` see FR OG until SSR/middleware is added. Documented as a known gap.
+- [x] Committed (hash: pending)
 
 ## Phase 4 — FAQ deep-link
 - [ ] Slugged ids on each `<details>`

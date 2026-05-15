@@ -26,6 +26,19 @@ export function Home({ lang }: { lang: Lang }) {
     const meta = document.querySelector('meta[name="description"]')
     if (meta) meta.setAttribute('content', t.metaDescription)
 
+    // Per-language OG image. Static index.html ships the FR variant for
+    // crawlers that don't run JS; for clients that re-resolve OG on copy-
+    // link (some chat apps do, Slack notably does not), the swap below
+    // ensures the EN page also offers the EN card. Same for twitter:image.
+    const ogImage = lang === 'en' ? '/og-image-en.png' : '/og-image.png'
+    const ogImageEl = document.querySelector('meta[property="og:image"]')
+    if (ogImageEl) ogImageEl.setAttribute('content', ogImage)
+    const twImageEl = document.querySelector('meta[name="twitter:image"]')
+    if (twImageEl) twImageEl.setAttribute('content', ogImage)
+    // og:locale + Twitter card title/description follow the language too.
+    const ogLocale = document.querySelector('meta[property="og:locale"]')
+    if (ogLocale) ogLocale.setAttribute('content', lang === 'en' ? 'en_CA' : 'fr_CA')
+
     // hreflang links — kept out of index.html because Vite tries to inline href="/"
     // as an asset; injecting at runtime is safe and updates per-language.
     const head = document.head
@@ -44,7 +57,7 @@ export function Home({ lang }: { lang: Lang }) {
       link.href = href
       head.appendChild(link)
     }
-  }, [t])
+  }, [lang, t])
 
   return (
     <div className="app">
