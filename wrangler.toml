@@ -1,5 +1,10 @@
 name = "marc-portal"
 compatibility_date = "2026-01-15"
+# nodejs_compat enables Node-style globals (Buffer, process) inside Pages
+# Functions. Needed by workers-og (which uses satori → resvg WASM) and by
+# any future Function that pulls in a Node-shaped dep. Cheap to enable; no
+# runtime cost when unused.
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
 # D1 — Cloudflare's serverless SQLite. Backs sessions, messages, magic-link tokens.
