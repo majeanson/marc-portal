@@ -2910,13 +2910,103 @@ button.intake__progress-step:focus-visible {
   flex-shrink: 0;
 }
 .me-portal__open {
+  /* Always visible — hover-only affordances are invisible on touch
+     devices, so the cards looked half-built on mobile. Quiet color
+     in steady state, accent on hover/focus. */
   font-size: 12px;
-  color: var(--accent-warm);
-  opacity: 0;
-  transition: opacity 120ms ease;
+  color: var(--text-soft);
+  letter-spacing: 0.04em;
+  transition: color 120ms ease;
 }
-.me-portal__card:hover .me-portal__open {
-  opacity: 1;
+.me-portal__card:hover .me-portal__open,
+.me-portal__card:focus-within .me-portal__open {
+  color: var(--accent-warm);
+}
+
+/* Toolbar above the session list — search input + status filter pills.
+   These classes were referenced by MePortal but had no CSS, so the
+   pills rendered as bare browser buttons (no gap between label and
+   count, no shape). Fixing here. */
+.me-portal__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 4px 0 16px;
+}
+.me-portal__search {
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 320px;
+}
+.me-portal__filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.me-portal__filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 11px 5px 11px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--text-mid);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  transition:
+    border-color 120ms ease,
+    color 120ms ease,
+    background 120ms ease;
+}
+.me-portal__filter-pill:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.me-portal__filter-pill--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-warm);
+  font-weight: 600;
+}
+.me-portal__filter-pill-n {
+  font-size: 11px;
+  color: var(--text-soft);
+  padding-left: 6px;
+  border-left: 1px solid var(--border-soft);
+  letter-spacing: 0.02em;
+}
+.me-portal__filter-pill--active .me-portal__filter-pill-n {
+  color: var(--accent-warm);
+  border-left-color: var(--accent);
+}
+/* Status tone variants — borrow the same hues the status pills use, so
+   filtering for "shipped" reads as the same colour as the chips on the
+   cards themselves. */
+.me-portal__filter-pill--triage.me-portal__filter-pill--active,
+.me-portal__filter-pill--active.me-portal__filter-pill--triage {
+  border-color: var(--warm);
+  background: var(--warm-soft);
+  color: var(--warm);
+}
+.me-portal__filter-pill--shipped.me-portal__filter-pill--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-warm);
+}
+
+.me-portal__no-matches {
+  margin: 24px 0;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-size: 14px;
+  text-align: center;
 }
 
 /* Status pill — `me-portal__pill--*` was unified into
