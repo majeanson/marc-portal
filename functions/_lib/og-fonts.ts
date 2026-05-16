@@ -11,14 +11,16 @@
 //      cache stores the asset for a day; cold isolates pay only an
 //      intra-DC fetch, not a cross-region one.
 //
-// The font is variable (Inter[opsz,wght].ttf, ~875 KB). satori reads
-// the `wght` axis at render time, so we register the same buffer twice
-// with different `weight` values — one logical font per visual weight.
+// We use Fira Sans (static TTFs, ~450 KB each) rather than Inter,
+// because satori 0.15's OpenType parser crashes on variable fonts and
+// modern Inter only ships in variable form. Fira Sans is a Mozilla
+// open-source sans-serif visually close to Inter.
 //
-// See scripts/download-fonts.mjs for how the file got into public/.
+// See scripts/download-fonts.mjs for how the files got into public/.
 
 const FONT_FILES = {
-  inter: '/fonts/Inter.ttf',
+  'firasans-regular': '/fonts/FiraSans-Regular.ttf',
+  'firasans-bold': '/fonts/FiraSans-Bold.ttf',
 } as const
 
 type FontKey = keyof typeof FONT_FILES
@@ -75,10 +77,13 @@ async function loadOne(request: Request, key: FontKey): Promise<ArrayBuffer> {
  * fall back to the static OG image.
  */
 export async function loadOgFonts(request: Request): Promise<OgFont[]> {
-  const inter = await loadOne(request, 'inter')
+  const [regular, bold] = await Promise.all([
+    loadOne(request, 'firasans-regular'),
+    loadOne(request, 'firasans-bold'),
+  ])
   return [
-    { name: 'Inter', data: inter, weight: 400, style: 'normal' },
-    { name: 'Inter', data: inter, weight: 700, style: 'normal' },
+    { name: 'FiraSans', data: regular, weight: 400, style: 'normal' },
+    { name: 'FiraSans', data: bold, weight: 700, style: 'normal' },
   ]
 }
 

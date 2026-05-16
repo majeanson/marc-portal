@@ -108,7 +108,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   const footerLabel = lang === 'en' ? 'SHARED FROM MARC.PORTAL' : 'PARTAGÉ DEPUIS MARC.PORTAL'
 
   const html = `
-    <div style="display:flex;flex-direction:column;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:Inter;">
+    <div style="display:flex;flex-direction:column;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">
       <div style="display:flex;align-items:center;gap:18px;color:#7a7568;font-size:22px;letter-spacing:3px;font-weight:400;">
         <span>${tierLabel}</span>
         <span>·</span>
