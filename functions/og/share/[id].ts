@@ -14,6 +14,8 @@
 import { ImageResponse } from 'workers-og'
 import type { Env } from '../../_lib/env'
 import { loadSession } from '../../_lib/sessions'
+import { loadOgFonts } from '../../_lib/og-fonts'
+import { captureWorkerException } from '../../_lib/sentry'
 
 interface OgFields {
   title: string
@@ -93,6 +95,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   // workers-og takes JSX-like HTML strings; satori renders them to SVG, resvg
   // converts to PNG. The shape mirrors public/og-image.svg: cream paper,
   // mono eyebrow, big serif headline, sage accent line.
+  //
+  // Font-family must reference a name we register via the `fonts` option
+  // below — Cloudflare Workers have no system fonts, so satori would
+  // produce an empty/garbled SVG (that resvg then turns into a 200-byte
+  // corrupt PNG) if asked for system-ui / Consolas / etc.
   const tierLabel = fields.tier !== null ? `TIER ${fields.tier}` : 'PROJET'
   const safeTitle = fields.title.length > 64 ? fields.title.slice(0, 61) + '…' : fields.title
   const safeTagline =
@@ -101,8 +108,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   const footerLabel = lang === 'en' ? 'SHARED FROM MARC.PORTAL' : 'PARTAGÉ DEPUIS MARC.PORTAL'
 
   const html = `
-    <div style="display:flex;flex-direction:column;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
-      <div style="display:flex;align-items:center;gap:18px;color:#7a7568;font-size:22px;letter-spacing:3px;font-family:Consolas,monospace;">
+    <div style="display:flex;flex-direction:column;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:Inter;">
+      <div style="display:flex;align-items:center;gap:18px;color:#7a7568;font-size:22px;letter-spacing:3px;font-weight:400;">
         <span>${tierLabel}</span>
         <span>·</span>
         <span>${escapeHtml(fields.status.toUpperCase())}</span>
@@ -114,27 +121,46 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
       </div>
       ${
         safeTagline
-          ? `<div style="margin-top:28px;font-size:28px;color:#3f3c34;line-height:1.35;max-width:1040px;">${escapeHtml(safeTagline)}</div>`
+          ? `<div style="margin-top:28px;font-size:28px;color:#3f3c34;line-height:1.35;max-width:1040px;font-weight:400;">${escapeHtml(safeTagline)}</div>`
           : ''
       }
       <div style="margin-top:auto;display:flex;align-items:center;gap:16px;">
         <div style="width:140px;height:4px;background:#3d6e4e;"></div>
-        <div style="color:#7a7568;font-size:20px;letter-spacing:2px;font-family:Consolas,monospace;">${escapeHtml(footerLabel)}</div>
+        <div style="color:#7a7568;font-size:20px;letter-spacing:2px;font-weight:400;">${escapeHtml(footerLabel)}</div>
       </div>
     </div>
   `
 
+  // Render path. Two failure modes wrapped here:
+  //   1. Font fetch — synchronous error before satori runs (caught easily).
+  //   2. satori/resvg streaming — `new ImageResponse(...)` returns sync,
+  //      but the actual render happens lazily as the body streams. We
+  //      `await imgResp.arrayBuffer()` inside the try so streaming
+  //      errors land in the catch instead of slipping out as a 200 with
+  //      a few bytes of garbage (the bug this whole change exists to fix).
   try {
-    return new ImageResponse(html, {
+    const fonts = await loadOgFonts(request)
+    const imgResp = new ImageResponse(html, {
       width: 1200,
       height: 630,
-      // Cache for a day at the edge; the showcase title rarely changes.
+      fonts,
+    })
+    const png = await imgResp.arrayBuffer()
+    return new Response(png, {
+      status: 200,
       headers: {
-        'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+        'content-type': 'image/png',
+        // Cache for a day at the edge; the showcase title rarely changes.
+        'cache-control': 'public, max-age=86400, s-maxage=86400',
       },
     })
   } catch (err) {
     console.warn('og: render failed', err)
+    captureWorkerException(err, {
+      request,
+      op: 'og.share.render',
+      extra: { id, lang },
+    })
     return fallbackRedirect(request, 'render-error')
   }
 }
