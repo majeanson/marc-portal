@@ -4,12 +4,18 @@
 //
 // Sender: noreply@marcportal.com. PREREQUISITE before deploying this constant:
 //   1. Add marcportal.com on Resend Dashboard → Domains → Add.
-//   2. Paste the SPF + DKIM CNAMEs Resend gives into Cloudflare DNS.
-//      SPF must MERGE with CF Email Routing's SPF — exactly one TXT record
-//      with both includes:
-//        v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all
-//   3. Wait for Resend to flip the domain status to "verified" (a few minutes
-//      to ~24h depending on DNS propagation).
+//   2. Add the 4 records Resend lists into Cloudflare DNS:
+//        TXT  resend._domainkey   p=MIGfMA…QIDAQAB
+//        MX   send                feedback-smtp.us-east-1.amazonses.com (pri 10)
+//        TXT  send                v=spf1 include:amazonses.com ~all
+//        TXT  _dmarc              v=DMARC1; p=none;
+//      Resend uses the `send` subdomain pattern for bounce handling, so the
+//      SPF and MX records do NOT collide with CF Email Routing's records at
+//      the apex (different names = no merge required). DKIM selector
+//      `resend._domainkey` similarly doesn't collide with CF's
+//      `cf2024-1._domainkey`.
+//   3. Wait for Resend to flip the domain status to "verified" (typically
+//      2–10 min on Cloudflare's nameservers).
 // Until verified, every send via this FROM fails with 403. If you need to
 // deploy code BEFORE Resend verification finishes, temporarily revert to
 // 'Marc Portal <onboarding@resend.dev>' (Resend's shared domain, no DNS
