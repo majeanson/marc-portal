@@ -161,6 +161,19 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
       op: 'og.share.render',
       extra: { id, lang },
     })
+    // ?debug=render surfaces the real error message instead of redirecting
+    // to the static fallback. Useful when investigating why a particular
+    // showcase produces a render-error in prod.
+    if (url.searchParams.get('debug') === 'render') {
+      return debugResponse({
+        ok: false,
+        reason: 'render-error',
+        error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+        id,
+        lang,
+      })
+    }
     return fallbackRedirect(request, 'render-error')
   }
 }
