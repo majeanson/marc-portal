@@ -81,14 +81,86 @@ export function AdminShowcase({ lang }: { lang: Lang }) {
         <p className="admin-showcase__empty">{t.empty}</p>
       )}
 
-      {projects && projects.length > 0 && (
-        <ul className="admin-showcase__grid">
-          {projects.map((p) => (
-            <ShowcaseCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} t={t} />
-          ))}
-        </ul>
-      )}
+      {/* The home OG card is always present (live, /og/home), pinned at
+          the top of the grid so brand-checking the homepage card sits in
+          the same workflow as project cards. Doesn't depend on having
+          showcased projects. */}
+      <ul className="admin-showcase__grid">
+        <HomeShowcaseCard lang={lang} langPrefix={langPrefix} />
+        {projects?.map((p) => (
+          <ShowcaseCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} t={t} />
+        ))}
+      </ul>
     </article>
+  )
+}
+
+const HOME_COPY = {
+  fr: {
+    title: 'Page d’accueil',
+    tagline: 'Carte sociale dynamique — stats en direct depuis D1.',
+    openLabel: 'Ouvrir l’accueil',
+  },
+  en: {
+    title: 'Home page',
+    tagline: 'Dynamic social card — live stats from D1.',
+    openLabel: 'Open home',
+  },
+} as const
+
+function HomeShowcaseCard({ lang, langPrefix }: { lang: Lang; langPrefix: string }) {
+  const c = HOME_COPY[lang]
+  const ogSrc = `/og/home${lang === 'en' ? '?lang=en' : ''}`
+  // Tile target: the public home page in the matching language. There's
+  // no "edit this card" surface for /og/home — its content is computed,
+  // not stored — so the tile acts as a preview + open-the-page link.
+  const homeHref = lang === 'en' ? '/en' : '/'
+  const debugHref = `/og/home?debug=1${lang === 'en' ? '&lang=en' : ''}`
+  return (
+    <li className="admin-showcase__card admin-showcase__card--home">
+      <a href={homeHref} target="_blank" rel="noreferrer" className="admin-showcase__card-link">
+        <div className="admin-showcase__card-frame">
+          <img
+            src={ogSrc}
+            alt={c.title}
+            width={1200}
+            height={630}
+            loading="lazy"
+            className="admin-showcase__card-img"
+          />
+        </div>
+        <div className="admin-showcase__card-meta">
+          <div className="admin-showcase__card-row">
+            <span className="mono admin-showcase__card-date">/{langPrefix === '/en' ? 'en' : ''}</span>
+            <span className="admin-showcase__card-pills">
+              <span className="project-card__status mono">live</span>
+            </span>
+          </div>
+          <h2 className="admin-showcase__card-title">{c.title}</h2>
+          <p className="admin-showcase__card-tagline">{c.tagline}</p>
+        </div>
+      </a>
+      <div className="admin-showcase__card-actions">
+        <a
+          className="mono admin-showcase__card-share"
+          href={debugHref}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          debug=1
+        </a>
+        <a
+          className="mono admin-showcase__card-share"
+          href={homeHref}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {c.openLabel}
+        </a>
+      </div>
+    </li>
   )
 }
 

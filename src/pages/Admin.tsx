@@ -22,6 +22,7 @@ const COPY = {
     fleet: 'Flotte',
     audit: 'Journal',
     showcase: 'Vitrine',
+    hub: 'Console',
     backToApp: '← Retour à l’app',
     operator: 'Opérateur',
     owner: 'Propriétaire',
@@ -35,6 +36,7 @@ const COPY = {
     fleet: 'Fleet',
     audit: 'Audit log',
     showcase: 'Showcase',
+    hub: 'Console',
     backToApp: '← Back to app',
     operator: 'Operator',
     owner: 'Owner',
@@ -74,10 +76,10 @@ export function Admin({ lang }: { lang: Lang }) {
   return (
     <div className="admin">
       <aside className="admin__nav" aria-label="Admin navigation">
-        <div className="admin__brand">
+        <Link to={`${langPrefix}/admin`} className="admin__brand admin__brand--link">
           <div className="admin__brand-name">{tenant?.displayName ?? 'Marc'}</div>
           <div className="admin__brand-role">{isOperator ? t.operator : t.owner}</div>
-        </div>
+        </Link>
 
         {/* Marketplace-shaped surfaces (Apparence, Équipe, Facturation, Flotte)
             are no longer in the sidebar — vision is solo practice, not SaaS.
@@ -88,6 +90,9 @@ export function Admin({ lang }: { lang: Lang }) {
         <nav className="admin__links">
           {isOperator && (
             <>
+              <NavLink to={`${langPrefix}/admin`} end className="admin__link">
+                <span className="admin__link-dot admin__link-dot--operator" /> {t.hub}
+              </NavLink>
               <NavLink to={`${langPrefix}/admin/showcase`} className="admin__link">
                 <span className="admin__link-dot admin__link-dot--operator" /> {t.showcase}
               </NavLink>

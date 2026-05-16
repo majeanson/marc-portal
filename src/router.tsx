@@ -5,7 +5,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Suspense, lazy, type ReactNode } from 'react'
 import {
-  Navigate,
   Outlet,
   Route,
   createBrowserRouter,
@@ -47,6 +46,7 @@ const AdminAudit = lazy(() => import('./pages/AdminAudit').then((m) => ({ defaul
 const AdminShowcase = lazy(() =>
   import('./pages/AdminShowcase').then((m) => ({ default: m.AdminShowcase })),
 )
+const AdminHub = lazy(() => import('./pages/AdminHub').then((m) => ({ default: m.AdminHub })))
 const PublicAdvancements = lazy(() =>
   import('./pages/PublicAdvancements').then((m) => ({ default: m.PublicAdvancements })),
 )
@@ -258,7 +258,14 @@ export const router = createBrowserRouter(
           </L>
         }
       >
-        <Route index element={<Navigate to="/admin/apparence" replace />} />
+        <Route
+          index
+          element={
+            <L>
+              <AdminHub lang="fr" />
+            </L>
+          }
+        />
         <Route
           path="apparence"
           element={
@@ -324,7 +331,14 @@ export const router = createBrowserRouter(
           </L>
         }
       >
-        <Route index element={<Navigate to="/en/admin/apparence" replace />} />
+        <Route
+          index
+          element={
+            <L>
+              <AdminHub lang="en" />
+            </L>
+          }
+        />
         <Route
           path="apparence"
           element={

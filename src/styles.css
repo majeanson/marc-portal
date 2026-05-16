@@ -1360,6 +1360,18 @@ button.intake__progress-step:focus-visible {
   border-bottom: 1px solid var(--border-soft);
   padding-bottom: 16px;
 }
+.admin__brand--link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  transition: opacity 140ms ease;
+}
+.admin__brand--link:hover,
+.admin__brand--link:focus-visible {
+  opacity: 0.85;
+  outline: none;
+}
 .admin__brand-name {
   font-family: var(--display);
   font-weight: 700;
@@ -6806,6 +6818,108 @@ button.intake__progress-step:disabled {
   color: var(--accent-warm);
   border-bottom-color: var(--accent-warm);
   outline: none;
+}
+/* Home pseudo-card: subtly distinguish it from project cards so the
+   eye groups it as "the special one" without being shouty. */
+.admin-showcase__card--home {
+  border-style: dashed;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   ADMIN HUB — operator console at /admin index. Section list of grouped
+   tiles (Working / Brand / Diagnostics / External). One-page index of
+   every admin surface and external dashboard.
+   ────────────────────────────────────────────────────────────────────── */
+.admin-hub {
+  padding: 32px 0 80px;
+  max-width: 1280px;
+}
+.admin-hub__head {
+  margin-bottom: 28px;
+}
+.admin-hub__title {
+  font-family: var(--display);
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.015em;
+  margin: 8px 0 10px;
+  color: var(--text);
+}
+.admin-hub__sub {
+  color: var(--text-mid);
+  font-size: 16px;
+  max-width: 64ch;
+  margin: 0;
+}
+.admin-hub__section {
+  margin-top: 32px;
+}
+.admin-hub__section-title {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin: 0 0 14px;
+}
+.admin-hub__grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.admin-hub__tile {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+.admin-hub__tile:hover,
+.admin-hub__tile:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 12px 24px -16px rgba(31, 29, 24, 0.18);
+  transform: translateY(-1px);
+}
+.admin-hub__tile-link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+.admin-hub__tile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.admin-hub__tile-title {
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--text);
+}
+.admin-hub__tile-badge {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+.admin-hub__tile-desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-mid);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

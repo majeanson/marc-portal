@@ -206,9 +206,11 @@ function rewriteOgTags(response: Response, url: URL): Response {
 
   const isEn = path === '/en' || path.startsWith('/en/')
   const shareMatch = /^\/(?:en\/)?share\/([A-Za-z0-9_-]{6,})\/?$/.exec(path)
+  // Home matches "/" and "/en" exactly — not /intake, /projects, etc.
+  const isHome = path === '/' || path === '/en'
 
-  // Default OG image (FR or EN flavor) — same as Home.tsx's runtime swap, but
-  // applied server-side so first-render bots see the right card.
+  // Default OG image (FR or EN flavor). The static PNGs are the fallback
+  // for any page that doesn't have a dedicated dynamic card.
   let ogImage = isEn ? '/og-image-en.png' : '/og-image.png'
   const ogLocale = isEn ? 'en_CA' : 'fr_CA'
 
@@ -217,6 +219,12 @@ function rewriteOgTags(response: Response, url: URL): Response {
     // Point at the dynamic per-project OG endpoint. The function below
     // renders on demand. ?lang= lets the renderer localize its footer.
     ogImage = `/og/share/${sessionId}${isEn ? '?lang=en' : ''}`
+  } else if (isHome) {
+    // Dynamic home card — pulls live shipped count + active project from
+    // D1 so the social unfurl always reflects the current state of the
+    // practice (projects shipped, what's in progress). Falls back to the
+    // static PNG inside the function on any error.
+    ogImage = `/og/home${isEn ? '?lang=en' : ''}`
   }
 
   // Per-page hreflang. We map the current path to its FR/EN counterpart so
