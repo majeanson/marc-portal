@@ -108,9 +108,25 @@ const HOME_COPY = {
   },
 } as const
 
+function useMountedAt(): number {
+  // Stable per-mount timestamp. Used as a cache-bust seed so re-renders
+  // during the same page-load don't refetch the OG image, but a fresh
+  // navigation does. useState's lazy initializer runs once per mount —
+  // the canonical pattern for "stable computed-once value" in React 19
+  // (refs can't be written during render under the new purity rules).
+  const [t] = useState(() => Date.now())
+  return t
+}
+
 function HomeShowcaseCard({ lang, langPrefix }: { lang: Lang; langPrefix: string }) {
   const c = HOME_COPY[lang]
-  const ogSrc = `/og/home${lang === 'en' ? '?lang=en' : ''}`
+  // Same cache-bust rationale as ShowcaseCard. Home OG cache is only
+  // 1h on the edge but admin loads this view to verify just-published
+  // changes, so we want the freshest possible byte-for-byte preview.
+  // The mountedAt timestamp is stable across re-renders within one
+  // page-load but changes between visits — exactly what we want.
+  const mountedAt = useMountedAt()
+  const ogSrc = `/og/home?${lang === 'en' ? 'lang=en&' : ''}v=${mountedAt}`
   // Tile target: the public home page in the matching language. There's
   // no "edit this card" surface for /og/home — its content is computed,
   // not stored — so the tile acts as a preview + open-the-page link.
@@ -176,7 +192,14 @@ function ShowcaseCard({
   t: (typeof DICT)[Lang]['adminShowcaseOverview']
 }) {
   const warnings = warningsFor(project, t)
-  const ogSrc = `/og/share/${project.id}${lang === 'en' ? '?lang=en' : ''}`
+  // Cache-bust on showcasedAt so the admin grid always reflects the
+  // current showcase content. Without this, admin tweaks to the
+  // title/tagline don't surface in the brand-check view until the
+  // 24h edge cache on /og/share expires. Also self-heals stale-cache
+  // pollution from prior renderer regressions (the URL changes →
+  // browser cache miss → fresh fetch).
+  const cacheKey = `v=${project.showcasedAt}`
+  const ogSrc = `/og/share/${project.id}?${lang === 'en' ? 'lang=en&' : ''}${cacheKey}`
   const editHref = `${langPrefix}/admin/inbox/${project.id}`
   const shareHref = `${langPrefix}/share/${project.id}`
   return (
