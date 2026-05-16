@@ -32,6 +32,7 @@ export function Header({ lang }: { lang: Lang }) {
   const location = useLocation()
   const langPrefix = lang === 'en' ? '/en' : ''
   const sessionsHref = `${langPrefix}${isAdmin ? '/admin/inbox' : '/me'}`
+  const adminHref = `${langPrefix}/admin`
   const loginHref = `${langPrefix}/login`
 
   const frHref = swapLangPath(location.pathname, location.search, location.hash, false)
@@ -95,6 +96,11 @@ export function Header({ lang }: { lang: Lang }) {
               <div className="site-header__auth">
                 {email ? (
                   <>
+                    {isAdmin && (
+                      <a href={adminHref} className="site-header__auth-link">
+                        {t.nav.adminConsole}
+                      </a>
+                    )}
                     <a href={sessionsHref} className="site-header__auth-link">
                       {t.nav.mySessions}
                     </a>

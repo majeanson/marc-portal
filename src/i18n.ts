@@ -13,6 +13,7 @@ const FR = {
     signIn: 'Connexion',
     signOut: 'Déconnexion',
     mySessions: 'Mes sessions',
+    adminConsole: 'Console',
     viewAsUser: 'Voir comme visiteur',
     exitPreview: 'Quitter aperçu',
     sections: {
@@ -620,6 +621,7 @@ const EN: Copy = {
     signIn: 'Sign in',
     signOut: 'Sign out',
     mySessions: 'My sessions',
+    adminConsole: 'Console',
     viewAsUser: 'View as user',
     exitPreview: 'Exit preview',
     sections: {
