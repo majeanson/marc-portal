@@ -16,6 +16,7 @@ import {
   type MessageRow,
   type SessionRow,
   type SessionStatus,
+  type SessionTier,
 } from '../lib/sessionsApi'
 import { listAdvancements, type AdvancementRow } from '../lib/advancementsApi'
 import { ApiError } from '../lib/api'
@@ -23,6 +24,7 @@ import type { Account } from '../components/intake/AccountStep'
 import type { FormData } from '../components/intake/TypeForm'
 import { IntakeSummary } from '../components/intake/IntakeSummary'
 import { SessionStatusStrip } from '../components/intake/SessionStatusStrip'
+import { SessionTierStrip } from '../components/intake/SessionTierStrip'
 import { SessionHeader } from '../components/intake/SessionHeader'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDateTime, formatRelativeWindow } from '../lib/format'
@@ -114,6 +116,8 @@ const COPY = {
     statusLabel: 'Statut',
     changeStatus: 'Changer le statut',
     statusHint: 'Clique une étape pour changer le statut de la session.',
+    tierHint:
+      'Tier de la session — détermine le bouton « Payer » côté visiteur. T0 = gratuit, pas de bouton.',
     statusConfirmReject: (id: string) =>
       `Marquer la session ${id} comme refusée ? Le visiteur le verra. Continue ?`,
     statusConfirmShip: (id: string) =>
@@ -171,6 +175,7 @@ const COPY = {
     statusLabel: 'Status',
     changeStatus: 'Change status',
     statusHint: 'Click a stage to change the session status.',
+    tierHint: 'Session tier — drives the visitor-side "Pay" button. T0 = free, no button.',
     statusConfirmReject: (id: string) =>
       `Mark session ${id} as rejected? The visitor will see this. Continue?`,
     statusConfirmShip: (id: string) =>
@@ -423,6 +428,24 @@ export function SessionPage({ lang }: { lang: Lang }) {
     }
   }
 
+  // Admin-only tier setter. Server gates this; no client-side confirm needed
+  // since tier changes are non-destructive (visitor sees a different Pay
+  // button, not a state-of-the-work signal like status).
+  const onTierChange = async (next: SessionTier | null) => {
+    if (!id || !session) return
+    try {
+      const r = await patchSession(id, { tier: next, ifUpdatedAt: session.updated_at })
+      setSession(r.session)
+      setStaleConflict(false)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setStaleConflict(true)
+        await refresh()
+      }
+      // Other errors: server-side check refuses non-admins anyway, ignore.
+    }
+  }
+
   // Optimistic intake save. IntakeSummary updates its visible value
   // optimistically via local input state; here we mirror that by writing
   // intake_json before the request. On 409 (concurrent edit) we refresh
@@ -631,6 +654,12 @@ export function SessionPage({ lang }: { lang: Lang }) {
               onPick={isAdmin ? onStatusChange : undefined}
             />
             {isAdmin && <p className="field__hint session-frame__strip-hint">{t.statusHint}</p>}
+            {isAdmin && (
+              <>
+                <SessionTierStrip lang={lang} tier={session.tier} onPick={onTierChange} />
+                <p className="field__hint session-frame__strip-hint">{t.tierHint}</p>
+              </>
+            )}
 
             <SessionHeader
               eyebrow={

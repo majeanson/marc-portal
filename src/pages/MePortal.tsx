@@ -100,6 +100,7 @@ const COPY = {
     payTier3: 'Payer (sur devis) →',
     paid: 'Payé ✓',
     paidAmount: (amount: string) => `Payé · ${amount}`,
+    paySubscribe: 'Devenir dépositaire (200 $/an) →',
     manageSub: 'Gérer l’abonnement ↗',
     custodianActive: 'Mode dépositaire · actif',
     custodianPastDue: 'Renouvellement échoué — voir l’abonnement',
@@ -209,6 +210,7 @@ const COPY = {
     payTier3: 'Pay (quoted amount) →',
     paid: 'Paid ✓',
     paidAmount: (amount: string) => `Paid · ${amount}`,
+    paySubscribe: 'Become custodian ($200/yr) →',
     manageSub: 'Manage subscription ↗',
     custodianActive: 'Custodian mode · active',
     custodianPastDue: 'Renewal failed — open subscription',
@@ -725,9 +727,7 @@ function SessionCard({
           <span className="me-portal__open mono">{copy.openBtn}</span>
         </div>
       </a>
-      {session.status === 'active' && (
-        <PaymentActions session={session} lang={lang} copy={copy} />
-      )}
+      {session.status === 'active' && <PaymentActions session={session} lang={lang} copy={copy} />}
     </li>
   )
 }
@@ -793,23 +793,47 @@ function PaymentActions({
   }
 
   // One-time payment button. Mapping: tier1 → one charge; tier2 → deposit
-  // first, final later; tier3 → quoted (admin uses amount override). The
-  // tier-2-final transition isn't surfaced here yet — Marc sends a fresh
-  // checkout link by email when it's time. (Productize that flow if it
-  // becomes common.)
+  // first, final later (separate row, separate Checkout); tier3 → quoted
+  // (admin uses amount override via the API).
   let payButton: { label: string; kind: PaymentKind } | null = null
-  if (!summary.hasPaidDeposit && session.tier !== null) {
-    if (session.tier === 1) payButton = { label: copy.payTier1, kind: 'tier1' }
-    else if (session.tier === 2) payButton = { label: copy.payTier2Deposit, kind: 'tier2-deposit' }
-    else if (session.tier === 3) payButton = { label: copy.payTier3, kind: 'tier3' }
+  if (session.tier === 1 && !summary.hasPaidDeposit) {
+    payButton = { label: copy.payTier1, kind: 'tier1' }
+  } else if (session.tier === 2) {
+    const hasPaidDepositRow = summary.rows.some(
+      (r) => r.kind === 'tier2-deposit' && r.status === 'paid',
+    )
+    const hasPaidFinalRow = summary.rows.some(
+      (r) => r.kind === 'tier2-final' && r.status === 'paid',
+    )
+    if (!hasPaidDepositRow) {
+      payButton = { label: copy.payTier2Deposit, kind: 'tier2-deposit' }
+    } else if (!hasPaidFinalRow) {
+      payButton = { label: copy.payTier2Final, kind: 'tier2-final' }
+    }
+  } else if (session.tier === 3 && !summary.hasPaidDeposit) {
+    payButton = { label: copy.payTier3, kind: 'tier3' }
   }
 
   const showCustodianLink =
     summary.custodianStatus === 'active' || summary.custodianStatus === 'past_due'
   const showSwitchedNote = summary.custodianStatus === 'switched_to_tout_a_toi'
+  // "Start subscription" surfaces when there's no live sub on the session.
+  // 'switched_to_tout_a_toi' means a prior sub ended (visitor can re-subscribe);
+  // 'canceled' is a historical state (no webhook writes it today but the type
+  // allows it). Both flow back into a fresh Checkout via the same button.
+  const showCustodianStartButton =
+    summary.custodianStatus === 'none' ||
+    summary.custodianStatus === 'switched_to_tout_a_toi' ||
+    summary.custodianStatus === 'canceled'
 
-  if (!payButton && !summary.hasPaidDeposit && !showCustodianLink && !showSwitchedNote) {
-    // Tier not set OR no relevant state to surface. Card stays clean.
+  if (
+    !payButton &&
+    !summary.hasPaidDeposit &&
+    !showCustodianLink &&
+    !showSwitchedNote &&
+    !showCustodianStartButton
+  ) {
+    // Tier not set AND no custodian state to surface. Card stays clean.
     return null
   }
 
@@ -843,7 +867,19 @@ function PaymentActions({
           {summary.custodianStatus === 'past_due' ? copy.custodianPastDue : copy.manageSub}
         </button>
       )}
-      {showSwitchedNote && <span className="me-portal__pay-switched">{copy.custodianSwitched}</span>}
+      {showSwitchedNote && (
+        <span className="me-portal__pay-switched">{copy.custodianSwitched}</span>
+      )}
+      {showCustodianStartButton && (
+        <button
+          type="button"
+          className="me-portal__pay-portal link-btn"
+          onClick={() => onPay('custodian-sub')}
+          disabled={pending !== 'idle'}
+        >
+          {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribe}
+        </button>
+      )}
     </div>
   )
 }

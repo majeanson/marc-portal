@@ -56,7 +56,7 @@ export async function startCheckout(args: {
 }): Promise<CheckoutResponse> {
   return api<CheckoutResponse>('/api/payments/checkout', {
     method: 'POST',
-    body: JSON.stringify(args),
+    body: args,
   })
 }
 
@@ -71,6 +71,6 @@ export async function openCustomerPortal(args: {
 }): Promise<{ url: string }> {
   return api<{ url: string }>('/api/payments/portal', {
     method: 'POST',
-    body: JSON.stringify(args),
+    body: args,
   })
 }
