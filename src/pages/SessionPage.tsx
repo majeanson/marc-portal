@@ -25,6 +25,7 @@ import type { FormData } from '../components/intake/TypeForm'
 import { IntakeSummary } from '../components/intake/IntakeSummary'
 import { SessionStatusStrip } from '../components/intake/SessionStatusStrip'
 import { SessionTierStrip } from '../components/intake/SessionTierStrip'
+import { PaymentActions } from '../components/PaymentActions'
 import { SessionHeader } from '../components/intake/SessionHeader'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDateTime, formatRelativeWindow } from '../lib/format'
@@ -660,6 +661,8 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 <p className="field__hint session-frame__strip-hint">{t.tierHint}</p>
               </>
             )}
+
+            {session.status === 'active' && <PaymentActions session={session} lang={lang} />}
 
             <SessionHeader
               eyebrow={

@@ -27,10 +27,16 @@ export interface PaymentRow {
   refunded_at: number | null
 }
 
+export type StripeMode = 'test' | 'live' | 'unset'
+
 export interface PaymentSummary {
   rows: PaymentRow[]
   hasPaidDeposit: boolean
   custodianStatus: CustodianStatus
+  /** Which Stripe environment the server is configured against. Visible in the
+   * UI as a "TEST MODE" pill so visitors don't mistake sandbox charges for
+   * real ones. 'unset' when STRIPE_SECRET_KEY isn't configured (Checkout 503s). */
+  stripeMode: StripeMode
 }
 
 export function getPaymentSummary(sessionId: string): Promise<PaymentSummary> {

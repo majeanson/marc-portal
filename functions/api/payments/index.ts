@@ -1,10 +1,17 @@
 // GET /api/payments?sessionId=X — payment summary for one session. Visitor
 // sees their own; admin sees anyone's. Returns:
-//   { rows: PaymentRow[], hasPaidDeposit: boolean, custodianStatus: CustodianStatus }
+//   { rows: PaymentRow[], hasPaidDeposit: boolean, custodianStatus: CustodianStatus,
+//     stripeMode: 'test' | 'live' | 'unset' }
 //
 // hasPaidDeposit is a derived convenience: true when there's at least one paid
 // row of a one-time kind (tier1 / tier2-deposit / tier3). The /me UI flips
 // "Pay now" → "Paid ✓" off this flag.
+//
+// stripeMode lets the UI render a visible "TEST MODE" pill so visitors don't
+// mistake a $300 sandbox charge for a real one. Derived from the secret key
+// prefix (sk_test_*, sk_live_*). 'unset' when STRIPE_SECRET_KEY isn't
+// configured — in that case Checkout itself 503s, so the UI shouldn't show
+// Pay buttons; we still report the mode for transparency.
 
 import { currentEmail } from '../../_lib/auth'
 import type { Env } from '../../_lib/env'
@@ -79,9 +86,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   const hasPaidDeposit = rows.some((r) => r.status === 'paid' && ONE_TIME_KINDS.has(r.kind))
 
+  const stripeMode: 'test' | 'live' | 'unset' = env.STRIPE_SECRET_KEY
+    ? env.STRIPE_SECRET_KEY.startsWith('sk_live_')
+      ? 'live'
+      : 'test'
+    : 'unset'
+
   return ok({
     rows,
     hasPaidDeposit,
     custodianStatus: (session.custodian_status ?? 'none') as CustodianStatus,
+    stripeMode,
   })
 }

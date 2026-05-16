@@ -2965,6 +2965,20 @@ button.intake__progress-step:focus-visible {
   color: var(--text-soft);
   font-style: italic;
 }
+/* "TEST MODE" pill. Visible only when STRIPE_SECRET_KEY is sk_test_*. Sits
+   in the same flex row as the buttons; intentionally loud (red border) so
+   visitors don't mistake a sandbox $300 charge for a real one. */
+.me-portal__pay-test-pill {
+  border: 1px solid #c33;
+  color: #c33;
+  background: #fff5f5;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font: 700 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: help;
+}
 
 /* Toolbar above the session list — search input + status filter pills.
    These classes were referenced by MePortal but had no CSS, so the
