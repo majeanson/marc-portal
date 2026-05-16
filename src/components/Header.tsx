@@ -96,14 +96,19 @@ export function Header({ lang }: { lang: Lang }) {
               <div className="site-header__auth">
                 {email ? (
                   <>
-                    {isAdmin && (
+                    {isAdmin ? (
+                      // Admin: Console link replaces "Mes sessions". The hub
+                      // surfaces Inbox as its first tile, so the shortcut
+                      // isn't lost.
                       <a href={adminHref} className="site-header__auth-link">
                         {t.nav.adminConsole}
                       </a>
+                    ) : (
+                      // Regular visitor: keep the entry to their /me page.
+                      <a href={sessionsHref} className="site-header__auth-link">
+                        {t.nav.mySessions}
+                      </a>
                     )}
-                    <a href={sessionsHref} className="site-header__auth-link">
-                      {t.nav.mySessions}
-                    </a>
                     <button
                       type="button"
                       className="site-header__auth-link site-header__auth-link--btn"

@@ -1330,16 +1330,25 @@ button.intake__progress-step:focus-visible {
 
 /* Admin shell (feat-2026-016) — sidebar + main content
    Used by both buyer admin (theme/team/billing) and operator admin (fleet/audit).
-   Same layout, different links visible based on tenant + role. */
+   Same layout, different links visible based on tenant + role.
+
+   Viewport-locked: the shell fills the visible viewport and any overflow
+   scrolls *inside* the panes (sidebar nav or main area), not the document.
+   100dvh is the dynamic viewport unit — accounts for mobile chrome
+   (Safari address bar) collapsing, falls back to 100vh on older browsers
+   via the `min-height: 100vh` declaration order. */
 .admin {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: 260px 1fr;
   background: var(--bg);
+  overflow: hidden;
 }
 @media (max-width: 800px) {
   .admin {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
   }
 }
 .admin__nav {
@@ -1349,11 +1358,14 @@ button.intake__progress-step:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 28px;
+  overflow-y: auto;
+  min-height: 0;
 }
 @media (max-width: 800px) {
   .admin__nav {
     border-right: none;
     border-bottom: 1px solid var(--border);
+    overflow-y: visible;
   }
 }
 .admin__brand {
@@ -1456,12 +1468,23 @@ button.intake__progress-step:focus-visible {
   word-break: break-all;
 }
 .admin__main {
-  padding: 56px 48px 80px;
-  max-width: 880px;
+  padding: 40px 48px 56px;
+  /* Internal scroll: when console content (Showcase grid, Audit log,
+     etc.) overflows, the main area scrolls instead of the document. */
+  overflow-y: auto;
+  min-height: 0;
+}
+.admin__main > * {
+  /* Constrain inner content width without forcing the scrollbar to live
+     in a narrow column. The pane stays full-width, the article inside
+     centers up to a comfortable reading width. */
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
 }
 @media (max-width: 800px) {
   .admin__main {
-    padding: 32px 24px 56px;
+    padding: 24px 20px 40px;
   }
 }
 
@@ -6831,34 +6854,34 @@ button.intake__progress-step:disabled {
    every admin surface and external dashboard.
    ────────────────────────────────────────────────────────────────────── */
 .admin-hub {
-  padding: 32px 0 80px;
+  padding: 0 0 24px;
   max-width: 1280px;
 }
 .admin-hub__head {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 .admin-hub__title {
   font-family: var(--display);
-  font-size: clamp(28px, 4vw, 40px);
+  font-size: clamp(24px, 3vw, 32px);
   letter-spacing: -0.015em;
-  margin: 8px 0 10px;
+  margin: 6px 0 6px;
   color: var(--text);
 }
 .admin-hub__sub {
   color: var(--text-mid);
-  font-size: 16px;
+  font-size: 14.5px;
   max-width: 64ch;
   margin: 0;
 }
 .admin-hub__section {
-  margin-top: 32px;
+  margin-top: 22px;
 }
 .admin-hub__section-title {
-  font-size: 11.5px;
+  font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-soft);
-  margin: 0 0 14px;
+  margin: 0 0 10px;
 }
 .admin-hub__grid {
   list-style: none;
