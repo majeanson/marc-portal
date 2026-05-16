@@ -26,7 +26,8 @@ const COPY = {
     copied: 'Lien copié ✓',
     previewBtn: 'Voir la carte ↗',
     previewAlt: 'Aperçu de la carte sociale dynamique de marc.portal',
-    nativeText: 'Marc — dev québécois. Le soir, j’aide à régler des petits problèmes du quotidien avec du code.',
+    nativeText:
+      'Marc — dev québécois. Le soir, j’aide à régler des petits problèmes du quotidien avec du code.',
   },
   en: {
     eyebrow: 'share',
@@ -91,8 +92,7 @@ export function ShareSite({ lang }: { lang: Lang }) {
     }
   }
 
-  const buttonLabel =
-    state === 'sharing' ? t.sharing : state === 'copied' ? t.copied : t.shareBtn
+  const buttonLabel = state === 'sharing' ? t.sharing : state === 'copied' ? t.copied : t.shareBtn
 
   return (
     <section className="section section--editorial section--share" id="share">

@@ -34,7 +34,8 @@ const COPY = {
     tileNewBody: 'Démarre un intake pour un nouveau projet.',
     tileNewAction: 'Commencer →',
     tileDataTitle: 'Mes données',
-    tileDataBody: 'Loi 25 — droit d’accès. Télécharge un export JSON de toutes tes sessions et messages.',
+    tileDataBody:
+      'Loi 25 — droit d’accès. Télécharge un export JSON de toutes tes sessions et messages.',
     tileDataAction: 'Télécharger',
     tilePrivacyTitle: 'Confidentialité',
     tilePrivacyBody: 'Politique de confidentialité, hébergement, mes droits.',
@@ -128,7 +129,8 @@ const COPY = {
     tileNewBody: 'Start an intake for a new project.',
     tileNewAction: 'Start →',
     tileDataTitle: 'My data',
-    tileDataBody: 'Bill 25 — right of access. Download a JSON export of all your sessions and messages.',
+    tileDataBody:
+      'Bill 25 — right of access. Download a JSON export of all your sessions and messages.',
     tileDataAction: 'Download',
     tilePrivacyTitle: 'Privacy',
     tilePrivacyBody: 'Privacy policy, hosting, your rights.',
@@ -401,9 +403,7 @@ export function MePortal({ lang }: { lang: Lang }) {
                 )}
               </div>
               <p className="me-portal__tile-body">
-                {sessions === null
-                  ? t.loading
-                  : t.tileSessionsBody(total, counts.active)}
+                {sessions === null ? t.loading : t.tileSessionsBody(total, counts.active)}
               </p>
               <span className="mono me-portal__tile-action">{t.tileSessionsAction}</span>
             </a>
@@ -437,12 +437,7 @@ export function MePortal({ lang }: { lang: Lang }) {
           </li>
 
           <li className="me-portal__tile">
-            <a
-              href={privacyHref}
-              target="_blank"
-              rel="noreferrer"
-              className="me-portal__tile-link"
-            >
+            <a href={privacyHref} target="_blank" rel="noreferrer" className="me-portal__tile-link">
               <div className="me-portal__tile-head">
                 <h2 className="me-portal__tile-title">{t.tilePrivacyTitle}</h2>
               </div>

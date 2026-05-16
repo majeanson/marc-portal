@@ -20,7 +20,8 @@ import { describe, expect, it, vi } from 'vitest'
 // are conditionally skipped when HTMLRewriter is undefined. Run these
 // under wrangler/miniflare or `@cloudflare/vitest-pool-workers` for full
 // coverage.
-const HAS_HTML_REWRITER = typeof (globalThis as { HTMLRewriter?: unknown }).HTMLRewriter !== 'undefined'
+const HAS_HTML_REWRITER =
+  typeof (globalThis as { HTMLRewriter?: unknown }).HTMLRewriter !== 'undefined'
 
 // Stub the tenant lookup so the middleware doesn't 404 on the test host.
 // (The d1-mock has no matcher for the tenants/tenant_domains JOIN; rather
@@ -86,8 +87,7 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
   it('rewrites og:image to /og-image-en.png on /en paths', async () => {
     const ctx = makeCtx({
       url: 'https://x.test/en/projects',
-      next: async () =>
-        new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
+      next: async () => new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
     })
     const res = await onRequest(ctx)
     const body = await res.text()
@@ -98,8 +98,7 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
   it('rewrites og:image to /og/share/:id on /share/:id paths', async () => {
     const ctx = makeCtx({
       url: 'https://x.test/share/abcdef1234',
-      next: async () =>
-        new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
+      next: async () => new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
     })
     const res = await onRequest(ctx)
     const body = await res.text()
@@ -109,8 +108,7 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
   it('appends per-page hreflang link tags into <head>', async () => {
     const ctx = makeCtx({
       url: 'https://x.test/projects',
-      next: async () =>
-        new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
+      next: async () => new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
     })
     const res = await onRequest(ctx)
     const body = await res.text()
@@ -122,8 +120,7 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
   it('rewrites og:url to the absolute current page URL', async () => {
     const ctx = makeCtx({
       url: 'https://x.test/projects',
-      next: async () =>
-        new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
+      next: async () => new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
     })
     const res = await onRequest(ctx)
     const body = await res.text()
@@ -134,9 +131,12 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
     const ctx = makeCtx({
       url: 'https://x.test/api/health',
       next: async () =>
-        new Response('<html><head><meta property="og:image" content="/og-image.png"></head></html>', {
-          headers: { 'content-type': 'text/html' },
-        }),
+        new Response(
+          '<html><head><meta property="og:image" content="/og-image.png"></head></html>',
+          {
+            headers: { 'content-type': 'text/html' },
+          },
+        ),
     })
     const res = await onRequest(ctx)
     const body = await res.text()

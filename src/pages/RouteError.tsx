@@ -42,11 +42,7 @@ export function RouteError() {
           <p>{t.body}</p>
           <div className="not-found__actions">
             {!isNotFound && (
-              <button
-                type="button"
-                className="hero__cta"
-                onClick={() => window.location.reload()}
-              >
+              <button type="button" className="hero__cta" onClick={() => window.location.reload()}>
                 {DICT[lang].errorBoundary.refreshCta}
               </button>
             )}

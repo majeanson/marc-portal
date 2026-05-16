@@ -54,7 +54,10 @@ function debugResponse(payload: Record<string, unknown>): Response {
 }
 
 function fallbackRedirect(request: Request, lang: 'fr' | 'en', reason: string): Response {
-  const target = new URL(lang === 'en' ? '/og-image-en.png' : '/og-image.png', request.url).toString()
+  const target = new URL(
+    lang === 'en' ? '/og-image-en.png' : '/og-image.png',
+    request.url,
+  ).toString()
   return new Response(null, {
     status: 302,
     headers: {
@@ -78,7 +81,7 @@ interface Copy {
 
 const COPY: Record<'fr' | 'en', Copy> = {
   fr: {
-    eyebrow: 'SIDE-PRATIQUE · QUÉBEC · ASYNC',
+    eyebrow: 'SIDE-GIG · QUÉBEC · ASYNC',
     brand: 'marc.portal',
     headline: ['Dev québécois.', 'Job de jour.', 'Le soir, j’aide.'],
     shippedLabel: (n) => (n === 1 ? '1 PROJET EXPÉDIÉ' : `${n} PROJETS EXPÉDIÉS`),

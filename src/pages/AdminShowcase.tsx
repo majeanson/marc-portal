@@ -147,7 +147,9 @@ function HomeShowcaseCard({ lang, langPrefix }: { lang: Lang; langPrefix: string
         </div>
         <div className="admin-showcase__card-meta">
           <div className="admin-showcase__card-row">
-            <span className="mono admin-showcase__card-date">/{langPrefix === '/en' ? 'en' : ''}</span>
+            <span className="mono admin-showcase__card-date">
+              /{langPrefix === '/en' ? 'en' : ''}
+            </span>
             <span className="admin-showcase__card-pills">
               <span className="project-card__status mono">live</span>
             </span>

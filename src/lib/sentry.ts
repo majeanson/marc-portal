@@ -23,7 +23,8 @@
 
 import * as Sentry from '@sentry/react'
 
-const DSN = 'https://27bdc4debd1f4925a9d379a6936e0786@o4510241708244992.ingest.us.sentry.io/4511395627008001'
+const DSN =
+  'https://27bdc4debd1f4925a9d379a6936e0786@o4510241708244992.ingest.us.sentry.io/4511395627008001'
 const ENABLED = DSN.length > 0
 
 // Tag events with the deployment environment so prod and preview don't mix

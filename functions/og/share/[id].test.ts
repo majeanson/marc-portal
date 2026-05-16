@@ -20,7 +20,10 @@ import { makeMockEnv } from '../../../tests/d1-mock'
 // out completely so the test runtime never tries to bootstrap them.
 vi.mock('workers-og', () => ({
   ImageResponse: class {
-    constructor(public html: string, public init: { width: number; height: number }) {}
+    constructor(
+      public html: string,
+      public init: { width: number; height: number },
+    ) {}
   },
 }))
 
