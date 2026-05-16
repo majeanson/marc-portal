@@ -376,6 +376,13 @@ const FR = {
     metaDescription:
       "Formulaire d'intake (demande de projet) pour Marc. Async, à ton rythme. Sauvegarde automatique. Réponse en 72 h.",
     backHome: "← Retour à l'accueil",
+    draftPrompt: {
+      title: 'Un brouillon est sauvegardé',
+      body: 'Tu as commencé un intake sur cet appareil. Tu peux reprendre où tu étais ou repartir de zéro.',
+      continueBtn: 'Reprendre le brouillon',
+      freshBtn: 'Recommencer à zéro',
+      summary: (savedAt: string) => `Dernière modification : ${savedAt}.`,
+    },
     capacity: {
       atCap:
         "Je suis plein en ce moment. Tu peux quand même soumettre — je te mets sur la liste d'attente et je te réponds quand un slot ouvre.",
@@ -982,6 +989,13 @@ const EN: Copy = {
     metaDescription:
       "Intake (project request) form for Marc's side-practice. Async, at your pace. Auto-save. Reply within 72h.",
     backHome: '← Back home',
+    draftPrompt: {
+      title: 'A draft is saved',
+      body: 'You started an intake on this device. Pick up where you left off, or start over.',
+      continueBtn: 'Continue draft',
+      freshBtn: 'Start fresh',
+      summary: (savedAt: string) => `Last edited: ${savedAt}.`,
+    },
     capacity: {
       atCap:
         "I'm full right now. You can still submit — I'll put you on the waitlist and reply when a slot opens.",

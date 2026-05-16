@@ -77,6 +77,24 @@ function pickStep(draft: IntakeDraft, vibeAccepted: boolean): Step {
   return 'form'
 }
 
+/** Tab-scoped flag — once the visitor has made an explicit choice
+ * (continue vs fresh) for the current draft, we don't re-prompt on
+ * every back-and-forth nav within the same browser session. Cleared on
+ * tab close, which is the right moment to re-ask: a brand-new visit
+ * shouldn't silently auto-load a months-old draft. */
+const DRAFT_PROMPT_DISMISS_KEY = 'marc-portal:intake-draft-prompt-dismissed'
+
+function draftIsMeaningful(d: IntakeDraft | null | undefined): boolean {
+  if (!d) return false
+  // Already-submitted drafts aren't candidates: the form will jump
+  // straight to confirmation regardless of the prompt.
+  if (d.submittedAt) return false
+  if (d.type) return true
+  if (d.account?.email) return true
+  if (d.formData && Object.keys(d.formData).length > 0) return true
+  return false
+}
+
 export function Intake({ lang }: { lang: Lang }) {
   const t = DICT[lang]
   const auth = useAuth()
@@ -86,6 +104,14 @@ export function Intake({ lang }: { lang: Lang }) {
   const [step, setStep] = useState<Step>(() =>
     pickStep(loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft(), flagSet(VIBE_FLAG)),
   )
+  const [draftPromptOpen, setDraftPromptOpen] = useState<boolean>(() => {
+    try {
+      if (sessionStorage.getItem(DRAFT_PROMPT_DISMISS_KEY) === '1') return false
+    } catch {
+      // sessionStorage unavailable — fall through, we'll just prompt.
+    }
+    return draftIsMeaningful(loadDraft<IntakeDraft>(DRAFT_KEY))
+  })
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   // Napkin: lazily read once on mount. The /napkin page writes it; we ship
@@ -342,6 +368,47 @@ export function Intake({ lang }: { lang: Lang }) {
     setStep('vibe')
   }
 
+  function dismissDraftPrompt() {
+    setDraftPromptOpen(false)
+    try {
+      sessionStorage.setItem(DRAFT_PROMPT_DISMISS_KEY, '1')
+    } catch {
+      // sessionStorage may be blocked — the prompt would re-fire on
+      // next mount in that case, which is acceptable.
+    }
+  }
+
+  const onContinueDraft = () => {
+    // Nothing to restore — the draft is already loaded into state.
+    // Just close the prompt and let the form render.
+    dismissDraftPrompt()
+  }
+
+  const onStartFreshDraft = () => {
+    // Like onStartOver but keeps the vibe flag — no need to re-gate
+    // someone who already accepted; they're just dropping in-progress
+    // form data on the same device.
+    clearDraft(DRAFT_KEY)
+    clearDraft(NAPKIN_KEY)
+    const fresh = emptyDraft()
+    setDraft(fresh)
+    setNapkin(null)
+    setStep(flagSet(VIBE_FLAG) ? 'account' : 'vibe')
+    dismissDraftPrompt()
+  }
+
+  function formatDraftSavedAt(): string | null {
+    // Best-effort timestamp surfaced in the prompt so the visitor can
+    // gauge whether the draft is recent or stale.
+    const raw = draft.submittedAt ?? null
+    // The autosaved draft doesn't carry its own savedAt — we only have
+    // submittedAt (set on submit) which is empty mid-flow. Fall back to
+    // a rough "earlier today" via napkin.savedAt if present, else null.
+    if (raw) return raw
+    if (napkin?.savedAt) return napkin.savedAt
+    return null
+  }
+
   return (
     <div className="app">
       <Header lang={lang} />
@@ -353,6 +420,34 @@ export function Intake({ lang }: { lang: Lang }) {
             </a>
 
             <CapacityNotice lang={lang} atCap={atCap} />
+
+            {draftPromptOpen && (
+              <aside className="intake__draft-prompt" role="dialog" aria-live="polite">
+                <h2 className="intake__draft-prompt-title">{t.intake.draftPrompt.title}</h2>
+                <p className="intake__draft-prompt-body">{t.intake.draftPrompt.body}</p>
+                {formatDraftSavedAt() && (
+                  <p className="intake__draft-prompt-meta mono">
+                    {t.intake.draftPrompt.summary(formatDraftSavedAt() as string)}
+                  </p>
+                )}
+                <div className="intake__draft-prompt-actions">
+                  <button
+                    type="button"
+                    className="hero__cta intake__draft-prompt-continue"
+                    onClick={onContinueDraft}
+                  >
+                    {t.intake.draftPrompt.continueBtn}
+                  </button>
+                  <button
+                    type="button"
+                    className="link-btn mono intake__draft-prompt-fresh"
+                    onClick={onStartFreshDraft}
+                  >
+                    {t.intake.draftPrompt.freshBtn}
+                  </button>
+                </div>
+              </aside>
+            )}
 
             {napkin && step !== 'confirmation' && (
               <NapkinAttachedBadge

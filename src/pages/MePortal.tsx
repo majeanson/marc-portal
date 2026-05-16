@@ -20,9 +20,31 @@ import { isUnread, seedIfMissing } from '../lib/unread'
 
 const COPY = {
   fr: {
-    eyebrow: 'portail',
-    title: 'Mes sessions',
+    eyebrow: 'console',
+    title: 'Mon espace',
+    sub: 'Tes sessions, tes données, ton compte. Tout au même endroit.',
     intro: (e: string) => `Connecté en tant que ${e}.`,
+    tileSessionsTitle: 'Mes sessions',
+    tileSessionsBody: (n: number, active: number) =>
+      n === 0
+        ? 'Aucune pour l’instant.'
+        : `${n} session${n > 1 ? 's' : ''}${active > 0 ? ` · ${active} active${active > 1 ? 's' : ''}` : ''}.`,
+    tileSessionsAction: 'Voir la liste ↓',
+    tileNewTitle: 'Nouvelle proposition',
+    tileNewBody: 'Démarre un intake pour un nouveau projet.',
+    tileNewAction: 'Commencer →',
+    tileDataTitle: 'Mes données',
+    tileDataBody: 'Loi 25 — droit d’accès. Télécharge un export JSON de toutes tes sessions et messages.',
+    tileDataAction: 'Télécharger',
+    tilePrivacyTitle: 'Confidentialité',
+    tilePrivacyBody: 'Politique de confidentialité, hébergement, mes droits.',
+    tilePrivacyAction: 'Lire la politique ↗',
+    tileAccountTitle: 'Mon compte',
+    tileAccountBody: 'Déconnexion ou suppression complète (Loi 25 — droit à l’effacement).',
+    tileAccountSignout: 'Se déconnecter',
+    tileAccountDelete: 'Supprimer mon compte',
+    sectionSessionsTitle: 'Sessions',
+    sectionAccountTitle: 'Compte & données',
     none: 'Aucune session pour l’instant.',
     noneCta: 'Démarre une nouvelle proposition de projet.',
     newBtn: 'Nouvelle proposition',
@@ -92,9 +114,31 @@ const COPY = {
     ],
   },
   en: {
-    eyebrow: 'portal',
-    title: 'My sessions',
+    eyebrow: 'console',
+    title: 'My space',
+    sub: 'Your sessions, your data, your account. All in one place.',
     intro: (e: string) => `Signed in as ${e}.`,
+    tileSessionsTitle: 'My sessions',
+    tileSessionsBody: (n: number, active: number) =>
+      n === 0
+        ? 'None yet.'
+        : `${n} session${n > 1 ? 's' : ''}${active > 0 ? ` · ${active} active` : ''}.`,
+    tileSessionsAction: 'See the list ↓',
+    tileNewTitle: 'New proposal',
+    tileNewBody: 'Start an intake for a new project.',
+    tileNewAction: 'Start →',
+    tileDataTitle: 'My data',
+    tileDataBody: 'Bill 25 — right of access. Download a JSON export of all your sessions and messages.',
+    tileDataAction: 'Download',
+    tilePrivacyTitle: 'Privacy',
+    tilePrivacyBody: 'Privacy policy, hosting, your rights.',
+    tilePrivacyAction: 'Read the policy ↗',
+    tileAccountTitle: 'My account',
+    tileAccountBody: 'Sign out or delete entirely (Bill 25 — right to erasure).',
+    tileAccountSignout: 'Sign out',
+    tileAccountDelete: 'Delete my account',
+    sectionSessionsTitle: 'Sessions',
+    sectionAccountTitle: 'Account & data',
     none: 'No sessions yet.',
     noneCta: 'Start a new project proposal.',
     newBtn: 'New proposal',
@@ -331,54 +375,85 @@ export function MePortal({ lang }: { lang: Lang }) {
   const total = sessions?.length ?? 0
   const filtered = filterSessions(sessions ?? [], query, statusFilter, lang)
 
+  const privacyHref = lang === 'fr' ? '/confidentialite' : '/en/privacy'
+
   return (
     <>
       <Header lang={lang} />
-      <main className="me-portal">
-        <section className="me-portal__hero">
-          <div className="me-portal__hero-inner">
-            <div className="section__eyebrow">{t.eyebrow}</div>
-            <h1 className="me-portal__title">{t.title}</h1>
-            <p className="me-portal__intro mono">{t.intro(email)}</p>
-
-            {sessions !== null && sessions.length > 0 && (
-              <div className="me-portal__stats">
-                <Stat n={total} label={t.statsTotal} />
-                {counts.active > 0 && (
-                  <Stat n={counts.active} label={t.statsActive} tone="active" />
-                )}
-                {counts.triage > 0 && (
-                  <Stat n={counts.triage} label={t.statsTriage} tone="triage" />
-                )}
-                {counts.draft > 0 && <Stat n={counts.draft} label={t.statsDraft} tone="draft" />}
-                {counts.shipped > 0 && (
-                  <Stat n={counts.shipped} label={t.statsShipped} tone="shipped" />
-                )}
-              </div>
-            )}
-
-            <div className="me-portal__hero-actions">
-              <a href={`${langPrefix}/intake`} className="hero__cta">
-                {t.newBtn}
-              </a>
-              {sessions !== null && sessions.length > 0 && (
-                <button
-                  type="button"
-                  onClick={onExport}
-                  className="link-btn mono"
-                  disabled={exporting}
-                >
-                  {exporting ? t.exporting : t.exportData}
-                </button>
-              )}
-              <button onClick={logout} className="link-btn mono me-portal__logout">
-                {t.logout}
-              </button>
-            </div>
-          </div>
+      <main className="me-portal me-portal--console">
+        <section className="me-portal__head">
+          <div className="section__eyebrow">{t.eyebrow}</div>
+          <h1 className="me-portal__title">{t.title}</h1>
+          <p className="me-portal__sub">{t.sub}</p>
+          <p className="me-portal__intro mono">{t.intro(email)}</p>
         </section>
 
-        <section className="me-portal__list-section">
+        {/* Tile-grid hub — quick-access to every visitor surface. The
+            session list below is the working surface; tiles handle the
+            "what else can I do here?" question without scrolling. */}
+        <ul className="me-portal__tiles">
+          <li className="me-portal__tile">
+            <a href="#sessions" className="me-portal__tile-link">
+              <div className="me-portal__tile-head">
+                <h2 className="me-portal__tile-title">{t.tileSessionsTitle}</h2>
+                {sessions !== null && sessions.length > 0 && (
+                  <span className="mono me-portal__tile-badge">{total}</span>
+                )}
+              </div>
+              <p className="me-portal__tile-body">
+                {sessions === null
+                  ? t.loading
+                  : t.tileSessionsBody(total, counts.active)}
+              </p>
+              <span className="mono me-portal__tile-action">{t.tileSessionsAction}</span>
+            </a>
+          </li>
+
+          <li className="me-portal__tile me-portal__tile--accent">
+            <a href={`${langPrefix}/intake`} className="me-portal__tile-link">
+              <div className="me-portal__tile-head">
+                <h2 className="me-portal__tile-title">{t.tileNewTitle}</h2>
+              </div>
+              <p className="me-portal__tile-body">{t.tileNewBody}</p>
+              <span className="mono me-portal__tile-action">{t.tileNewAction}</span>
+            </a>
+          </li>
+
+          <li className="me-portal__tile">
+            <button
+              type="button"
+              className="me-portal__tile-link me-portal__tile-link--btn"
+              onClick={onExport}
+              disabled={exporting || sessions === null || sessions.length === 0}
+            >
+              <div className="me-portal__tile-head">
+                <h2 className="me-portal__tile-title">{t.tileDataTitle}</h2>
+              </div>
+              <p className="me-portal__tile-body">{t.tileDataBody}</p>
+              <span className="mono me-portal__tile-action">
+                {exporting ? t.exporting : t.tileDataAction}
+              </span>
+            </button>
+          </li>
+
+          <li className="me-portal__tile">
+            <a
+              href={privacyHref}
+              target="_blank"
+              rel="noreferrer"
+              className="me-portal__tile-link"
+            >
+              <div className="me-portal__tile-head">
+                <h2 className="me-portal__tile-title">{t.tilePrivacyTitle}</h2>
+              </div>
+              <p className="me-portal__tile-body">{t.tilePrivacyBody}</p>
+              <span className="mono me-portal__tile-action">{t.tilePrivacyAction}</span>
+            </a>
+          </li>
+        </ul>
+
+        <section className="me-portal__list-section" id="sessions">
+          <h2 className="me-portal__section-title mono">{t.sectionSessionsTitle}</h2>
           <details className="me-portal__help">
             <summary className="me-portal__help-summary mono">{t.helpToggle}</summary>
             <ul className="me-portal__help-list">
@@ -460,40 +535,52 @@ export function MePortal({ lang }: { lang: Lang }) {
           )}
         </section>
 
-        <section className="me-portal__danger-zone">
-          <h2 className="me-portal__danger-heading">{t.deleteHeading}</h2>
-          <p className="me-portal__danger-body">{t.deleteBody}</p>
-          {deleteState === 'idle' || deleteState === 'error' ? (
+        <section className="me-portal__account-section">
+          <h2 className="me-portal__section-title mono">{t.sectionAccountTitle}</h2>
+          <div className="me-portal__account-actions">
             <button
               type="button"
-              className="me-portal__danger-btn"
-              onClick={() => setDeleteState('confirming')}
+              onClick={logout}
+              className="link-btn mono me-portal__account-signout"
             >
-              {t.deleteBtn}
+              {t.tileAccountSignout}
             </button>
-          ) : (
-            <div className="me-portal__danger-actions">
+          </div>
+          <div className="me-portal__danger-zone">
+            <h3 className="me-portal__danger-heading">{t.deleteHeading}</h3>
+            <p className="me-portal__danger-body">{t.deleteBody}</p>
+            {deleteState === 'idle' || deleteState === 'error' ? (
               <button
                 type="button"
-                className="me-portal__danger-btn me-portal__danger-btn--confirm"
-                onClick={onDeleteAccount}
-                disabled={deleteState === 'deleting'}
+                className="me-portal__danger-btn"
+                onClick={() => setDeleteState('confirming')}
               >
-                {deleteState === 'deleting' ? t.deleting : t.deleteConfirm}
+                {t.deleteBtn}
               </button>
-              <button
-                type="button"
-                className="link-btn mono"
-                onClick={() => setDeleteState('idle')}
-                disabled={deleteState === 'deleting'}
-              >
-                {t.deleteCancel}
-              </button>
-            </div>
-          )}
-          {deleteState === 'error' && (
-            <p className="me-portal__danger-error mono">{t.deleteFailed}</p>
-          )}
+            ) : (
+              <div className="me-portal__danger-actions">
+                <button
+                  type="button"
+                  className="me-portal__danger-btn me-portal__danger-btn--confirm"
+                  onClick={onDeleteAccount}
+                  disabled={deleteState === 'deleting'}
+                >
+                  {deleteState === 'deleting' ? t.deleting : t.deleteConfirm}
+                </button>
+                <button
+                  type="button"
+                  className="link-btn mono"
+                  onClick={() => setDeleteState('idle')}
+                  disabled={deleteState === 'deleting'}
+                >
+                  {t.deleteCancel}
+                </button>
+              </div>
+            )}
+            {deleteState === 'error' && (
+              <p className="me-portal__danger-error mono">{t.deleteFailed}</p>
+            )}
+          </div>
         </section>
       </main>
       <Footer lang={lang} />
@@ -555,23 +642,6 @@ function FilterPill({
       <span>{label}</span>
       <span className="me-portal__filter-pill-n mono">{n}</span>
     </button>
-  )
-}
-
-function Stat({
-  n,
-  label,
-  tone,
-}: {
-  n: number
-  label: string
-  tone?: 'active' | 'triage' | 'draft' | 'shipped' | 'rejected'
-}) {
-  return (
-    <div className={`me-portal__stat${tone ? ` me-portal__stat--${tone}` : ''}`}>
-      <span className="me-portal__stat-n">{n}</span>
-      <span className="me-portal__stat-label">{label}</span>
-    </div>
   )
 }
 

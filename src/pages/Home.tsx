@@ -8,6 +8,7 @@ import { FeaturedProjects } from '../components/FeaturedProjects'
 import { VibeFilter } from '../components/VibeFilter'
 import { Pricing } from '../components/Pricing'
 import { CTA } from '../components/CTA'
+import { ShareSite } from '../components/ShareSite'
 import { About } from '../components/About'
 import { Footer } from '../components/Footer'
 import { SectionRail } from '../components/SectionRail'
@@ -71,6 +72,10 @@ export function Home({ lang }: { lang: Lang }) {
         <FAQ lang={lang} />
         {/* 7 — Final CTA: one last push before the footer */}
         <CTA lang={lang} />
+        {/* 8 — Share-this-site affordance. Web Share API (mobile native
+              sheet, desktop Chrome/Edge) with clipboard fallback.
+              Surfaces the live /og/home card as the preview. */}
+        <ShareSite lang={lang} />
       </main>
       <Footer lang={lang} />
       <MobileStickyCta lang={lang} />
