@@ -11,58 +11,100 @@ import {
 
 const COPY = {
   fr: {
+    // Project payment section
+    projectHeading: 'Paiement du projet',
     payTier1: 'Payer Tier 1 (≈ 300 $) →',
     payTier2Deposit: 'Payer le dépôt (≈ 750 $) →',
     payTier2Final: 'Payer le solde (≈ 750 $) →',
     payTier3: 'Payer (sur devis) →',
     paid: 'Payé ✓',
     paidAmount: (amount: string) => `Payé · ${amount}`,
-    paySubscribe: 'Devenir dépositaire (200 $/an) →',
-    manageSub: 'Gérer l’abonnement ↗',
-    custodianPastDue: 'Renouvellement échoué — voir l’abonnement',
-    custodianSwitched: 'Mode Tout à toi (abonnement terminé)',
     checkoutPending: 'Ouverture du paiement…',
-    testMode: 'MODE TEST',
-    testModeHint: 'Aucun vrai débit. Carte de test : 4242 4242 4242 4242.',
+
+    // Custodian section
+    custodianHeading: 'Mode dépositaire',
+    custodianOptional: 'facultatif',
+    custodianActive: 'actif',
+    custodianPastDueLabel: 'paiement en retard',
+    custodianEnded: 'terminé',
+    custodianDetailsLink: 'Voir les détails ↗',
+    custodianPitch:
+      'Je garde les clés (repo, domaine, comptes) pour 200 $/an. Petites retouches incluses (jusqu’à 2 h/mois). Annulable n’importe quand — bascule automatique vers « Tout à toi ».',
+    custodianActiveBody:
+      'Je détiens repo, domaine et comptes en mon nom. Renouvellement annuel automatique. Tu peux annuler ou modifier le mode de paiement via le portail Stripe.',
+    custodianPastDueBody:
+      'Stripe n’a pas réussi à débiter ta carte. Mets à jour le mode de paiement avant la fin de la période de grâce, sinon ton mode bascule automatiquement vers « Tout à toi ».',
+    custodianEndedBody:
+      'Ton abonnement dépositaire a pris fin. Tu es maintenant en mode « Tout à toi » — tout est à ton nom. Tu peux reprendre l’abonnement à tout moment.',
+    paySubscribe: 'Activer le mode dépositaire (200 $/an) →',
+    paySubscribeAgain: 'Reprendre l’abonnement →',
+    manageSub: 'Gérer l’abonnement ↗',
+    manageSubPastDue: 'Mettre à jour le paiement ↗',
+
+    // Test mode banner
+    testModeBadge: 'MODE TEST',
+    testModeBody:
+      'Aucun vrai débit. Pour tester un paiement : carte 4242 4242 4242 4242, n’importe quelle date future (ex. 12/30), n’importe quel CVC (ex. 123), n’importe quel code postal (ex. H1A 1A1).',
   },
   en: {
+    projectHeading: 'Project payment',
     payTier1: 'Pay Tier 1 (≈ $300) →',
     payTier2Deposit: 'Pay deposit (≈ $750) →',
     payTier2Final: 'Pay final balance (≈ $750) →',
     payTier3: 'Pay (quoted amount) →',
     paid: 'Paid ✓',
     paidAmount: (amount: string) => `Paid · ${amount}`,
-    paySubscribe: 'Become custodian ($200/yr) →',
-    manageSub: 'Manage subscription ↗',
-    custodianPastDue: 'Renewal failed — open subscription',
-    custodianSwitched: "Mode 'All yours' (subscription ended)",
     checkoutPending: 'Opening checkout…',
-    testMode: 'TEST MODE',
-    testModeHint: 'No real charge. Test card: 4242 4242 4242 4242.',
+
+    custodianHeading: 'Custodian mode',
+    custodianOptional: 'optional',
+    custodianActive: 'active',
+    custodianPastDueLabel: 'payment past due',
+    custodianEnded: 'ended',
+    custodianDetailsLink: 'See the details ↗',
+    custodianPitch:
+      'I hold the keys (repo, domain, accounts) for $200/yr. Small tweaks included (up to 2h/month). Cancel anytime — auto-switches to "All yours".',
+    custodianActiveBody:
+      'I hold repo, domain, and accounts in my name. Auto-renews annually. You can cancel or update the payment method via the Stripe portal.',
+    custodianPastDueBody:
+      'Stripe failed to charge your card. Update the payment method before the grace period ends, otherwise your mode auto-switches to "All yours".',
+    custodianEndedBody:
+      'Your custodian subscription has ended. You\'re now in "All yours" mode — everything is in your name. You can re-subscribe anytime.',
+    paySubscribe: 'Activate custodian mode ($200/yr) →',
+    paySubscribeAgain: 'Re-activate subscription →',
+    manageSub: 'Manage subscription ↗',
+    manageSubPastDue: 'Update payment method ↗',
+
+    testModeBadge: 'TEST MODE',
+    testModeBody:
+      'No real charge. To test a payment: card 4242 4242 4242 4242, any future date (e.g. 12/30), any CVC (e.g. 123), any postal/ZIP (e.g. H1A 1A1).',
   },
 } as const
 
 /**
  * Render-on-active payment surface. Lazy-fetches /api/payments?sessionId=...
- * and renders one of:
- *   - "Pay tier N →"  when the session has a tier classified and no paid deposit
- *   - "Pay final balance" after a tier-2 deposit is paid (until final lands)
- *   - "Paid · amount" when the deposit/payment is in (terminal state)
- *   - "Become custodian" when there's no live subscription
- *   - "Manage subscription" when one is active or past_due
- *   - "Mode 'All yours'" note after a sub ends
+ * and renders a structured block with up to three sections:
  *
- * Hidden entirely when nothing relevant applies (tier not set AND no
- * subscription state). Used by both /me cards and the /session/:id page so
- * visitors can pay from either surface.
+ *   1. TEST MODE banner — when Stripe is configured against a test key
+ *      (sk_test_*). Persistent, explanatory; never shown in live mode.
+ *   2. "Paiement du projet" — tier-based one-time payment buttons.
+ *      Hidden when tier isn't set yet OR when the work is fully paid.
+ *   3. "Mode dépositaire" — the post-handoff custodian decision, framed
+ *      as its own labeled section with explanation + CTA. State-driven:
+ *      none → pitch + CTA; active/past_due → status + manage; ended →
+ *      note + re-activate.
  *
- * In Stripe test mode a "TEST MODE" pill is rendered above the buttons so
- * visitors don't mistake sandbox charges for real ones. Driven by the
- * stripeMode field on the summary response (server reads STRIPE_SECRET_KEY's
- * prefix).
+ * Used on /me cards and the /session/:id page. Returns null when there's
+ * truly nothing to show (no tier AND no custodian state to surface).
+ *
+ * The custodian decision is intentionally promoted to a top-level
+ * section — it's the only ongoing financial commitment in the product
+ * and visitors should see it presented clearly, not buried as a side
+ * button. See /handoff for the full narrative this mirrors.
  */
 export function PaymentActions({ session, lang }: { session: SessionRow; lang: Lang }) {
   const copy = COPY[lang]
+  const langPrefix = lang === 'en' ? '/en' : ''
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [pending, setPending] = useState<'idle' | 'checkout' | 'portal'>('idle')
 
@@ -123,27 +165,15 @@ export function PaymentActions({ session, lang }: { session: SessionRow; lang: L
     payButton = { label: copy.payTier3, kind: 'tier3' }
   }
 
-  const showCustodianLink =
-    summary.custodianStatus === 'active' || summary.custodianStatus === 'past_due'
-  const showSwitchedNote = summary.custodianStatus === 'switched_to_tout_a_toi'
-  // "Start subscription" surfaces when there's no live sub on the session.
-  // 'switched_to_tout_a_toi' means a prior sub ended (visitor can re-subscribe);
-  // 'canceled' is a historical state (no webhook writes it today but the type
-  // allows it). Both flow back into a fresh Checkout via the same button.
-  const showCustodianStartButton =
-    summary.custodianStatus === 'none' ||
-    summary.custodianStatus === 'switched_to_tout_a_toi' ||
-    summary.custodianStatus === 'canceled'
-
-  if (
-    !payButton &&
-    !summary.hasPaidDeposit &&
-    !showCustodianLink &&
-    !showSwitchedNote &&
-    !showCustodianStartButton
-  ) {
-    return null
-  }
+  const custodianState: 'none' | 'active' | 'past_due' | 'ended' =
+    summary.custodianStatus === 'active'
+      ? 'active'
+      : summary.custodianStatus === 'past_due'
+        ? 'past_due'
+        : summary.custodianStatus === 'switched_to_tout_a_toi' ||
+            summary.custodianStatus === 'canceled'
+          ? 'ended'
+          : 'none'
 
   // Sum all paid one-time rows on this session so a Tier-2 visitor who paid
   // both deposit and final sees "Paid · $1500" rather than just the most
@@ -155,51 +185,107 @@ export function PaymentActions({ session, lang }: { session: SessionRow; lang: L
   const paidLabel =
     paidOneTimeCents > 0 ? copy.paidAmount(formatCadCents(paidOneTimeCents, lang)) : copy.paid
 
+  // Decide whether to render the project-payment section.
+  //   'pay'    — payButton is set (tier 1/2/3, work owing)
+  //   'paid'   — at least one one-time row paid (any tier)
+  //   'hidden' — tier not set (null) OR tier 0 (free engagement)
+  // The custodian section is independent and can render below regardless.
+  const projectState: 'pay' | 'paid' | 'hidden' =
+    session.tier === null || session.tier === 0 ? 'hidden' : payButton ? 'pay' : 'paid'
+
+  // Don't render the whole block when there is literally nothing to show.
+  // (Tier-0 free engagement with no custodian sub — clean card.)
+  if (projectState === 'hidden' && custodianState === 'none') {
+    return null
+  }
+
   return (
-    <div className="me-portal__card-payments mono">
+    <div className="me-portal__card-payments">
       {summary.stripeMode === 'test' && (
-        <span
-          className="me-portal__pay-test-pill"
-          title={copy.testModeHint}
-          aria-label={copy.testModeHint}
-        >
-          {copy.testMode}
-        </span>
+        <div className="me-portal__pay-test-banner" role="status">
+          <span className="me-portal__pay-test-badge mono">{copy.testModeBadge}</span>
+          <span className="me-portal__pay-test-body">{copy.testModeBody}</span>
+        </div>
       )}
-      {payButton && (
-        <button
-          type="button"
-          className="me-portal__pay-btn"
-          onClick={() => onPay(payButton!.kind)}
-          disabled={pending !== 'idle'}
-        >
-          {pending === 'checkout' ? copy.checkoutPending : payButton.label}
-        </button>
+
+      {projectState !== 'hidden' && (
+        <section className="me-portal__pay-section" aria-labelledby={`pay-proj-${session.id}`}>
+          <h3 className="me-portal__pay-section-title mono" id={`pay-proj-${session.id}`}>
+            {copy.projectHeading}
+          </h3>
+          <div className="me-portal__pay-section-body">
+            {projectState === 'pay' && payButton && (
+              <button
+                type="button"
+                className="me-portal__pay-btn"
+                onClick={() => onPay(payButton!.kind)}
+                disabled={pending !== 'idle'}
+              >
+                {pending === 'checkout' ? copy.checkoutPending : payButton.label}
+              </button>
+            )}
+            {projectState === 'paid' && <span className="me-portal__pay-paid">{paidLabel}</span>}
+          </div>
+        </section>
       )}
-      {summary.hasPaidDeposit && <span className="me-portal__pay-paid">{paidLabel}</span>}
-      {showCustodianLink && (
-        <button
-          type="button"
-          className="me-portal__pay-portal link-btn"
-          onClick={onPortal}
-          disabled={pending !== 'idle'}
-        >
-          {summary.custodianStatus === 'past_due' ? copy.custodianPastDue : copy.manageSub}
-        </button>
-      )}
-      {showSwitchedNote && (
-        <span className="me-portal__pay-switched">{copy.custodianSwitched}</span>
-      )}
-      {showCustodianStartButton && (
-        <button
-          type="button"
-          className="me-portal__pay-portal link-btn"
-          onClick={() => onPay('custodian-sub')}
-          disabled={pending !== 'idle'}
-        >
-          {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribe}
-        </button>
-      )}
+
+      <section
+        className={`me-portal__pay-section me-portal__pay-custodian me-portal__pay-custodian--${custodianState}`}
+        aria-labelledby={`pay-cust-${session.id}`}
+      >
+        <header className="me-portal__pay-section-head">
+          <h3 className="me-portal__pay-section-title mono" id={`pay-cust-${session.id}`}>
+            {copy.custodianHeading}{' '}
+            <span className="me-portal__pay-section-tag mono">
+              {custodianState === 'active' && copy.custodianActive}
+              {custodianState === 'past_due' && copy.custodianPastDueLabel}
+              {custodianState === 'ended' && copy.custodianEnded}
+              {custodianState === 'none' && copy.custodianOptional}
+            </span>
+          </h3>
+          <a className="me-portal__pay-details-link mono" href={`${langPrefix}/handoff`}>
+            {copy.custodianDetailsLink}
+          </a>
+        </header>
+        <p className="me-portal__pay-custodian-body">
+          {custodianState === 'active' && copy.custodianActiveBody}
+          {custodianState === 'past_due' && copy.custodianPastDueBody}
+          {custodianState === 'ended' && copy.custodianEndedBody}
+          {custodianState === 'none' && copy.custodianPitch}
+        </p>
+        <div className="me-portal__pay-section-body">
+          {custodianState === 'none' && (
+            <button
+              type="button"
+              className="me-portal__pay-btn"
+              onClick={() => onPay('custodian-sub')}
+              disabled={pending !== 'idle'}
+            >
+              {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribe}
+            </button>
+          )}
+          {custodianState === 'ended' && (
+            <button
+              type="button"
+              className="me-portal__pay-btn"
+              onClick={() => onPay('custodian-sub')}
+              disabled={pending !== 'idle'}
+            >
+              {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribeAgain}
+            </button>
+          )}
+          {(custodianState === 'active' || custodianState === 'past_due') && (
+            <button
+              type="button"
+              className="me-portal__pay-portal link-btn"
+              onClick={onPortal}
+              disabled={pending !== 'idle'}
+            >
+              {custodianState === 'past_due' ? copy.manageSubPastDue : copy.manageSub}
+            </button>
+          )}
+        </div>
+      </section>
     </div>
   )
 }

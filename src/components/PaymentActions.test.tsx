@@ -107,29 +107,65 @@ describe('PaymentActions tier 2 split flow', () => {
   })
 })
 
-describe('PaymentActions custodian-sub button', () => {
-  it('shows "Become custodian" when no subscription exists', async () => {
+describe('PaymentActions custodian section', () => {
+  it('shows the "Activate custodian mode" CTA when no subscription exists', async () => {
     mockSummary(mkSummary({ custodianStatus: 'none' }))
-    render(<PaymentActions session={mkSession({ tier: null })} lang="en" />)
+    // Need tier=1 so the component renders (parent guard hides everything
+    // when project section is hidden AND custodian state is 'none').
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /Become custodian/ })).toBeInTheDocument(),
+      expect(screen.getByRole('button', { name: /Activate custodian mode/ })).toBeInTheDocument(),
     )
+    expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument()
   })
 
-  it('shows "Become custodian" after a prior sub ended (re-subscribe path)', async () => {
+  it('shows "Re-activate subscription" after a prior sub ended', async () => {
     mockSummary(mkSummary({ custodianStatus: 'switched_to_tout_a_toi' }))
     render(<PaymentActions session={mkSession({ tier: null })} lang="en" />)
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /Become custodian/ })).toBeInTheDocument(),
+      expect(screen.getByRole('button', { name: /Re-activate subscription/ })).toBeInTheDocument(),
     )
+    // 'ended' tag is on the section header — scope to it so the body's
+    // "subscription has ended" doesn't double-match.
+    const sect = screen.getByRole('region', { name: /Custodian mode/ })
+    expect(sect.querySelector('.me-portal__pay-section-tag')?.textContent).toMatch(/ended/)
   })
 
-  it('shows "Manage subscription" instead when one is active', async () => {
+  it('shows "Manage subscription" when one is active', async () => {
     mockSummary(mkSummary({ custodianStatus: 'active' }))
     render(<PaymentActions session={mkSession({ tier: null })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Manage subscription/ })).toBeInTheDocument(),
     )
-    expect(screen.queryByRole('button', { name: /Become custodian/ })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /Activate custodian mode/ }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows "Update payment method" when sub is past_due', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'past_due' }))
+    render(<PaymentActions session={mkSession({ tier: null })} lang="en" />)
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Update payment method/ })).toBeInTheDocument(),
+    )
+  })
+})
+
+describe('PaymentActions project section', () => {
+  it('renders the project section when tier is set', async () => {
+    mockSummary(mkSummary())
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /Project payment/ })).toBeInTheDocument(),
+    )
+  })
+
+  it('hides project section entirely for tier-0 (free engagement)', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'active' }))
+    render(<PaymentActions session={mkSession({ tier: 0 })} lang="en" />)
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument(),
+    )
+    expect(screen.queryByRole('heading', { name: /Project payment/ })).not.toBeInTheDocument()
   })
 })

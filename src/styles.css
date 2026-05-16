@@ -2918,26 +2918,108 @@ button.intake__progress-step:focus-visible {
   color: var(--accent-warm);
 }
 
-/* Payment row — appears below the card link on active sessions when there's
-   a pay-now button or a custodian-sub status to surface. Sits inside the
-   .me-portal__card <li> as a sibling to the <a>, so the buttons aren't
-   nested in an anchor. */
+/* Payment block — appears below the /me card link on active sessions and
+   inside the /session/:id page. Stacks up to three sections: TEST MODE
+   banner, "Project payment", "Custodian mode". Sits inside the
+   .me-portal__card <li> as a sibling to the <a>, so buttons aren't nested
+   in an anchor. */
 .me-portal__card-payments {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-section);
+  font-size: 13.5px;
+}
+
+/* Section structure shared by "Project" and "Custodian". */
+.me-portal__pay-section {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.me-portal__pay-section:first-of-type {
+  border-top: none;
+}
+.me-portal__pay-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.me-portal__pay-section-title {
+  margin: 0 0 6px;
+  font: 600 11.5px/1.4 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.me-portal__pay-section-head .me-portal__pay-section-title {
+  margin-bottom: 0;
+}
+.me-portal__pay-section-tag {
+  margin-left: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  background: var(--bg-app);
+  color: var(--text-soft);
+  border: 1px solid var(--border-soft);
+}
+.me-portal__pay-details-link {
+  font-size: 12px;
+  color: var(--text-soft);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.me-portal__pay-details-link:hover,
+.me-portal__pay-details-link:focus-visible {
+  color: var(--text);
+  text-decoration: underline;
+}
+.me-portal__pay-section-body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
-  border-top: 1px solid var(--border-soft);
-  background: var(--bg-section);
-  font-size: 13px;
 }
+.me-portal__pay-muted {
+  color: var(--text-soft);
+  font-style: italic;
+}
+.me-portal__pay-custodian-body {
+  margin: 0 0 10px;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Custodian state coloring — section tag picks up the state vibe. */
+.me-portal__pay-custodian--active .me-portal__pay-section-tag {
+  background: #eaf5ec;
+  color: #2a6d3a;
+  border-color: #cfe6d4;
+}
+.me-portal__pay-custodian--past_due .me-portal__pay-section-tag {
+  background: #fff4e0;
+  color: #8a5a00;
+  border-color: #f1d8a0;
+}
+.me-portal__pay-custodian--ended .me-portal__pay-section-tag {
+  background: var(--bg-app);
+  color: var(--text-soft);
+}
+
+/* Primary CTA — used by tier payments + custodian activate. */
 .me-portal__pay-btn {
   appearance: none;
   border: 1px solid var(--accent-warm);
   background: var(--accent-warm);
   color: #fff;
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-radius: 999px;
   font: 600 12.5px/1 var(--mono);
   letter-spacing: 0.04em;
@@ -2957,27 +3039,41 @@ button.intake__progress-step:focus-visible {
 .me-portal__pay-paid {
   color: var(--accent);
   font-weight: 600;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
 }
 .me-portal__pay-portal {
   font-size: 13px;
 }
-.me-portal__pay-switched {
-  color: var(--text-soft);
-  font-style: italic;
+
+/* TEST MODE banner — full-width strip at the top of the payment block when
+   STRIPE_SECRET_KEY is sk_test_*. Loud on purpose so a $300 sandbox charge
+   can't be mistaken for a real one. */
+.me-portal__pay-test-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff4f4;
+  border-bottom: 1px solid #f1c8c8;
+  color: #7a1b1b;
+  font-size: 12.5px;
+  line-height: 1.45;
 }
-/* "TEST MODE" pill. Visible only when STRIPE_SECRET_KEY is sk_test_*. Sits
-   in the same flex row as the buttons; intentionally loud (red border) so
-   visitors don't mistake a sandbox $300 charge for a real one. */
-.me-portal__pay-test-pill {
-  border: 1px solid #c33;
-  color: #c33;
-  background: #fff5f5;
+.me-portal__pay-test-badge {
+  flex: 0 0 auto;
+  background: #c33;
+  color: #fff;
   padding: 3px 9px;
   border-radius: 999px;
-  font: 700 11px/1 var(--mono);
+  font: 700 10.5px/1 var(--mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  cursor: help;
+  white-space: nowrap;
+}
+.me-portal__pay-test-body {
+  flex: 1 1 auto;
 }
 
 /* Toolbar above the session list — search input + status filter pills.
