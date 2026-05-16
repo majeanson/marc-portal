@@ -57,7 +57,10 @@ jobs:
       - name: Commit + push stamps
         if: steps.deploy.outputs.deployment-url != ''
         run: |
-          if git diff --quiet; then
+          # Scope the guard to feature.jsons only — `npm run build` regenerates
+          # other files (e.g. public/sitemap.xml via prebuild) and we don't want
+          # that drift to make `git commit` fail with "nothing to commit".
+          if git diff --quiet -- feature.json 'feat-*/feature.json'; then
             echo "No revisions to stamp."
             exit 0
           fi

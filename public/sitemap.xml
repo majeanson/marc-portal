@@ -1,57 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://marc.example/</loc>
+    <loc>https://marcportal.com/</loc>
   </url>
   <url>
-    <loc>https://marc.example/en</loc>
+    <loc>https://marcportal.com/en</loc>
   </url>
   <url>
-    <loc>https://marc.example/projects</loc>
+    <loc>https://marcportal.com/projects</loc>
   </url>
   <url>
-    <loc>https://marc.example/en/projects</loc>
+    <loc>https://marcportal.com/en/projects</loc>
   </url>
   <url>
-    <loc>https://marc.example/intake</loc>
+    <loc>https://marcportal.com/intake</loc>
   </url>
   <url>
-    <loc>https://marc.example/en/intake</loc>
+    <loc>https://marcportal.com/en/intake</loc>
   </url>
   <url>
-    <loc>https://marc.example/napkin</loc>
+    <loc>https://marcportal.com/napkin</loc>
   </url>
   <url>
-    <loc>https://marc.example/en/napkin</loc>
+    <loc>https://marcportal.com/en/napkin</loc>
   </url>
   <url>
-    <loc>https://marc.example/tier-0</loc>
+    <loc>https://marcportal.com/tier-0</loc>
   </url>
   <url>
-    <loc>https://marc.example/en/tier-0</loc>
+    <loc>https://marcportal.com/en/tier-0</loc>
   </url>
   <url>
-    <loc>https://marc.example/demo/sunday-night-dread</loc>
+    <loc>https://marcportal.com/demo/sunday-night-dread</loc>
   </url>
   <url>
-    <loc>https://marc.example/en/demo/sunday-night-dread</loc>
+    <loc>https://marcportal.com/en/demo/sunday-night-dread</loc>
   </url>
   <url>
-    <loc>https://marc.example/confidentialite</loc>
+    <loc>https://marcportal.com/confidentialite</loc>
   </url>
   <url>
-    <loc>https://marc.example/en/privacy</loc>
+    <loc>https://marcportal.com/en/privacy</loc>
   </url>
   <url>
-    <loc>https://marc.example/handoff</loc>
+    <loc>https://marcportal.com/handoff</loc>
   </url>
   <url>
-    <loc>https://marc.example/en/handoff</loc>
+    <loc>https://marcportal.com/en/handoff</loc>
   </url>
   <url>
-    <loc>https://marc.example/handoff/checklist</loc>
+    <loc>https://marcportal.com/handoff/checklist</loc>
   </url>
   <url>
-    <loc>https://marc.example/en/handoff/checklist</loc>
+    <loc>https://marcportal.com/en/handoff/checklist</loc>
   </url>
 </urlset>
