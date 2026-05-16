@@ -837,12 +837,15 @@ function PaymentActions({
     return null
   }
 
-  const paidRow = summary.rows.find(
-    (r) => r.status === 'paid' && r.kind !== 'custodian-sub' && r.paid_at,
-  )
-  const paidLabel = paidRow
-    ? copy.paidAmount(formatCadCents(paidRow.amount_cents, lang))
-    : copy.paid
+  // Sum all paid one-time rows on this session so a Tier-2 visitor who paid
+  // both deposit and final sees "Paid · $1500" rather than just the most
+  // recent leg's $750. Custodian sub renewals are excluded (they're a
+  // separate, perpetual flow with its own Manage link).
+  const paidOneTimeCents = summary.rows
+    .filter((r) => r.status === 'paid' && r.kind !== 'custodian-sub' && r.paid_at)
+    .reduce((sum, r) => sum + r.amount_cents, 0)
+  const paidLabel =
+    paidOneTimeCents > 0 ? copy.paidAmount(formatCadCents(paidOneTimeCents, lang)) : copy.paid
 
   return (
     <div className="me-portal__card-payments mono">
