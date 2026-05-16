@@ -29,7 +29,7 @@ const COPY = {
     sections: [
       {
         h: '1. Responsable',
-        p: 'Marc est le responsable de la protection des renseignements personnels de ce portail (DPO de fait). Pour toute question, demande d’accès ou plainte : <a href="mailto:marc.jeanson92@gmail.com">marc.jeanson92@gmail.com</a>. Réponse en moins de 30 jours, comme l’exige la Loi 25.',
+        p: 'Marc est le responsable de la protection des renseignements personnels de ce portail (DPO de fait). Pour toute question, demande d’accès ou plainte : <a href="mailto:marc@marcportal.com">marc@marcportal.com</a>. Réponse en moins de 30 jours, comme l’exige la Loi 25.',
       },
       {
         h: '2. Renseignements collectés',
@@ -45,7 +45,7 @@ const COPY = {
       },
       {
         h: '5. Hébergement et résidence des données',
-        p: 'Tes données de session (intake, messages, pièces jointes, identité) vivent dans Cloudflare D1, région <code>enam</code> (Eastern North America, primaire à Toronto). Cloudflare peut répliquer en lecture vers d’autres régions pour la latence, mais l’écriture et la copie de référence restent au Canada. Deux services tiers reçoivent un sous-ensemble strictement limité : <strong>Resend</strong> (États-Unis) pour les courriels transactionnels — uniquement ton adresse courriel et le contenu strictement requis pour livrer le message ; <strong>Sentry</strong> (États-Unis) pour le monitoring d’erreurs techniques — voir section 6 pour la liste exhaustive de ce qui y transite et ce qui en est exclu.',
+        p: 'Tes données de session (intake, messages, pièces jointes, identité) vivent dans Cloudflare D1, région <code>enam</code> (Eastern North America, primaire à Toronto). Cloudflare peut répliquer en lecture vers d’autres régions pour la latence, mais l’écriture et la copie de référence restent au Canada. Trois services tiers reçoivent un sous-ensemble strictement limité : <strong>Resend</strong> (États-Unis) pour les courriels transactionnels — uniquement ton adresse courriel et le contenu strictement requis pour livrer le message ; <strong>Sentry</strong> (États-Unis) pour le monitoring d’erreurs techniques — voir <a href="#section-6">section 6</a> pour la liste exhaustive de ce qui y transite et ce qui en est exclu ; <strong>Stripe Payments Canada Ltd.</strong> (Toronto, Canada) pour le traitement des paiements — voir <a href="#section-11">section 11</a>. Le cas Stripe est matériellement différent : l’entité de traitement étant canadienne, il ne s’agit pas d’un transfert hors Canada.',
       },
       {
         h: '6. Monitoring d’erreurs (Sentry)',
@@ -68,7 +68,11 @@ const COPY = {
         p: 'TLS de bout en bout, témoin de session signé HMAC-SHA256, jetons de connexion hachés au repos (SHA-256), protection CSRF, en-têtes de sécurité stricts (CSP, HSTS). Si une fuite survient, je t’écris dans les 72 h, comme l’exige la Loi 25, à l’adresse courriel sur ton compte. Le journal d’audit interne (`/admin/audit`) trace toutes les actions admin.',
       },
       {
-        h: '11. Modifications',
+        h: '11. Paiements (Stripe Payments Canada Ltd.)',
+        p: 'Quand tu paies un tier (1, 2 ou 3) ou que tu t’abonnes au mode dépositaire, le portail crée une session de paiement chez Stripe et te redirige vers leur page hébergée. <strong>Tes informations de carte ne transitent jamais par marc-portal</strong> — elles vont directement à Stripe. Ce que je transmets à Stripe : ton adresse courriel (pour le reçu), le montant, la devise (CAD), et le nom du projet sur la ligne de facturation. Ce qui en est exclu : ton nom, ton adresse postale, ton numéro de téléphone — Stripe ne reçoit rien de tout cela de ma part. Stripe Tax n’est pas activé. <strong>Important : pour les clients québécois, Stripe Payments Canada Ltd. (Toronto) est l’entité de traitement</strong> — il ne s’agit donc pas d’un transfert hors du Québec/Canada au sens de la Loi 25 art. 17. La rétention chez Stripe suit leur politique standard (7 ans pour les obligations CRA + FINTRAC, donc plus longue que la rétention sur marc-portal). Une EFVP propre à Stripe a été produite (interne, disponible sur demande à <a href="mailto:marc@marcportal.com">marc@marcportal.com</a>). Tu peux gérer ton mode de paiement, voir tes reçus, et annuler ton abonnement via le portail client Stripe accessible depuis ta page <a href="/me">/me</a>.',
+      },
+      {
+        h: '12. Modifications',
         p: 'Toute modification matérielle de cette politique te sera notifiée par courriel à l’adresse de ton compte avant son entrée en vigueur. Les modifications mineures (clarifications, corrections grammaticales) sont datées en haut de la page sans notification individuelle.',
       },
     ],
@@ -82,7 +86,7 @@ const COPY = {
     sections: [
       {
         h: '1. Responsible person',
-        p: 'Marc is the personal-information protection officer for this portal (de facto DPO). For any question, access request, or complaint: <a href="mailto:marc.jeanson92@gmail.com">marc.jeanson92@gmail.com</a>. Reply within 30 days, as required by Quebec Bill 25.',
+        p: 'Marc is the personal-information protection officer for this portal (de facto DPO). For any question, access request, or complaint: <a href="mailto:marc@marcportal.com">marc@marcportal.com</a>. Reply within 30 days, as required by Quebec Bill 25.',
       },
       {
         h: '2. Information collected',
@@ -98,7 +102,7 @@ const COPY = {
       },
       {
         h: '5. Hosting and data residency',
-        p: 'Your session data (intake, messages, attachments, identity) lives in Cloudflare D1, region <code>enam</code> (Eastern North America, primary in Toronto). Cloudflare may replicate reads to other regions for latency, but writes and the canonical copy stay in Canada. Two third-party services receive a strictly limited subset: <strong>Resend</strong> (United States) for transactional emails — only your address and the content strictly required to deliver the message; <strong>Sentry</strong> (United States) for technical error monitoring — see section 6 for the exhaustive list of what transits there and what is excluded.',
+        p: 'Your session data (intake, messages, attachments, identity) lives in Cloudflare D1, region <code>enam</code> (Eastern North America, primary in Toronto). Cloudflare may replicate reads to other regions for latency, but writes and the canonical copy stay in Canada. Three third-party services receive a strictly limited subset: <strong>Resend</strong> (United States) for transactional emails — only your address and the content strictly required to deliver the message; <strong>Sentry</strong> (United States) for technical error monitoring — see <a href="#section-6">section 6</a> for the exhaustive list of what transits there and what is excluded; <strong>Stripe Payments Canada Ltd.</strong> (Toronto, Canada) for payment processing — see <a href="#section-11">section 11</a>. The Stripe case is materially different: the processing entity is Canadian, so it is not a transfer outside Canada.',
       },
       {
         h: '6. Error monitoring (Sentry)',
@@ -121,7 +125,11 @@ const COPY = {
         p: 'End-to-end TLS, HMAC-SHA256-signed session cookies, sign-in tokens hashed at rest (SHA-256), CSRF protection, strict security headers (CSP, HSTS). If a breach occurs, I will write to you within 72 hours, as required by Bill 25, at the email on your account. The internal audit log (`/admin/audit`) traces every admin action.',
       },
       {
-        h: '11. Changes',
+        h: '11. Payments (Stripe Payments Canada Ltd.)',
+        p: 'When you pay a tier (1, 2, or 3) or subscribe to custodian mode, the portal creates a payment session with Stripe and redirects you to their hosted page. <strong>Your card details never transit through marc-portal</strong> — they go directly to Stripe. What I transmit to Stripe: your email address (for the receipt), the amount, the currency (CAD), and the project name on the line item. What is excluded: your name, mailing address, phone number — Stripe receives none of these from me. Stripe Tax is not enabled. <strong>Important: for Quebec customers, Stripe Payments Canada Ltd. (Toronto) is the processing entity</strong> — meaning this is not a transfer outside Quebec/Canada within the meaning of Bill 25 art. 17. Stripe retention follows their standard policy (7 years for CRA + FINTRAC obligations, longer than marc-portal retention by design). A Stripe-specific PIA was produced (internal, available on request at <a href="mailto:marc@marcportal.com">marc@marcportal.com</a>). You can manage your payment method, see receipts, and cancel your subscription via the Stripe customer portal accessible from your <a href="/en/me">/me</a> page.',
+      },
+      {
+        h: '12. Changes',
         p: 'Any material change to this policy will be notified to you by email at your account address before it takes effect. Minor changes (clarifications, grammar fixes) are dated at the top of the page without individual notification.',
       },
     ],

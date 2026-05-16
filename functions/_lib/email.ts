@@ -1,9 +1,20 @@
-// Resend wrapper. Free tier: 100/day, 3000/mo, sender onboarding@resend.dev
-// works without DNS setup. Swap to a verified custom domain before first cold
-// post. Errors here are logged and swallowed so a transient Resend outage
-// doesn't 500 user-facing endpoints — the magic link still gets stored.
-
-const RESEND_FROM = 'Marc Portal <onboarding@resend.dev>'
+// Resend wrapper. Free tier: 100/day, 3000/mo. Errors here are logged and
+// swallowed so a transient Resend outage doesn't 500 user-facing endpoints
+// — the magic link still gets stored.
+//
+// Sender: noreply@marcportal.com. PREREQUISITE before deploying this constant:
+//   1. Add marcportal.com on Resend Dashboard → Domains → Add.
+//   2. Paste the SPF + DKIM CNAMEs Resend gives into Cloudflare DNS.
+//      SPF must MERGE with CF Email Routing's SPF — exactly one TXT record
+//      with both includes:
+//        v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all
+//   3. Wait for Resend to flip the domain status to "verified" (a few minutes
+//      to ~24h depending on DNS propagation).
+// Until verified, every send via this FROM fails with 403. If you need to
+// deploy code BEFORE Resend verification finishes, temporarily revert to
+// 'Marc Portal <onboarding@resend.dev>' (Resend's shared domain, no DNS
+// required — degrades deliverability but doesn't break sends).
+const RESEND_FROM = 'Marc Portal <noreply@marcportal.com>'
 const RESEND_URL = 'https://api.resend.com/emails'
 
 interface ResendPayload {

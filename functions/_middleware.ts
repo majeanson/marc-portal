@@ -35,6 +35,9 @@ const CSRF_EXEMPT_PATHS: ReadonlySet<string> = new Set([
   '/api/auth/logout',
   '/api/auth/request-link',
   '/api/admin/digest',
+  // Stripe → us. Auth is the HMAC over the raw body (Stripe-Signature header).
+  // There is no visitor cookie to forge here — Stripe is the caller.
+  '/api/payments/webhook',
 ])
 
 const SAFE_METHODS: ReadonlySet<string> = new Set(['GET', 'HEAD', 'OPTIONS'])

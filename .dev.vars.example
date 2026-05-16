@@ -2,6 +2,13 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ADMIN_EMAILS=marc.jeanson92@gmail.com
 SESSION_SECRET=replace_me_with_openssl_rand_hex_32
 
+# Stripe — test mode for local dev. Get keys from Stripe Dashboard →
+# Developers → API keys (test mode toggle ON in top-right).
+# Webhook secret comes from `stripe listen --forward-to localhost:8788/api/payments/webhook`
+# (Stripe CLI) — prints a whsec_* on first run.
+STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
 # Sentry: DSNs are hardcoded in src/lib/sentry.ts and functions/_lib/sentry.ts
 # (DSNs are public-by-design; committing them is the documented pattern).
 # No env vars needed here for Sentry — rotation is a code change + push.

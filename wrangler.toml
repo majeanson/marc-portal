@@ -40,6 +40,22 @@ binding = "MEDIA"
 bucket_name = "marc-portal-media"
 preview_bucket_name = "marc-portal-media"
 
+# Stripe — plaintext config (the Price ID for the $200/yr custodian
+# subscription). Per the wrangler-toml-managed-vars constraint of this project,
+# plaintext vars MUST live here, not in the dashboard (the dashboard's
+# "Variables and Secrets" only edits encrypted secrets when in wrangler-toml-
+# managed mode). Set this to the real price_id from Stripe Dashboard →
+# Products after creating the recurring "Custodian mode" product. Until then,
+# the custodian-sub Checkout flow returns 503 gracefully.
+#
+# The secrets (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) are set via
+# `wrangler secret put STRIPE_SECRET_KEY` etc. — never commit them.
+[vars]
+# Test-mode price for the Custodian Mode subscription (Created 2026-05-16,
+# product prod_UWnYpMm4wK7JZI). Live-mode price will be different and must be
+# swapped here at the test→live cutover (Stripe isolates the catalogs).
+STRIPE_CUSTODIAN_PRICE_ID = "price_1TXjxNGnRBlK2p4G2Jep1uLH"
+
 # Optional env vars (feat-2026-018 — automate buyer custom-domain attach).
 # When all three are set, /admin/fleet/new attaches the buyer's domain to this
 # Pages project automatically. When any is unset, the wizard falls back to

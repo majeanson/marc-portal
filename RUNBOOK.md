@@ -41,10 +41,13 @@ order. Check them top-down — most-likely first, cheapest-to-rule-out first.
 
   ```bash
   npx wrangler d1 execute marc-portal-db --remote \
-    --command "INSERT INTO tenant_domains (tenant_id, domain) VALUES ('t_marc', 'example.com')"
+    --command "INSERT INTO tenant_domains (tenant_id, domain, is_primary, added_at) VALUES ('t_marc', 'example.com', 0, unixepoch())"
   ```
 
-  See `functions/db/migrations/README.md` for the exact shape.
+  `added_at` is NOT NULL with no default — must be supplied. `is_primary=1`
+  if this is the canonical surface; `0` if it's a secondary domain pointing
+  at the same tenant. See `functions/db/migrations/0002_tenants.sql` for the
+  full schema.
 
 ## 4. Build fails in CI with `npm ci` lockfile error
 
@@ -102,7 +105,7 @@ previous version.
   48h. If the cron stopped firing, hit the endpoint manually:
 
   ```bash
-  curl -X POST -H "X-Digest-Token: $DIGEST_TOKEN" https://marc-portal.pages.dev/api/admin/digest
+  curl -X POST -H "X-Digest-Token: $DIGEST_TOKEN" https://marcportal.com/api/admin/digest
   ```
 
 ## Observability setup (one-time)
@@ -190,7 +193,7 @@ second cron there for health monitoring:
 
 1. cron-job.org → "Create cronjob".
 2. **Title:** `marc-portal /api/health`
-3. **URL:** `https://marc-portal.pages.dev/api/health`
+3. **URL:** `https://marcportal.com/api/health`
 4. **Schedule:** Every 5 minutes.
 5. **Notifications:** "Notify on failure" — email to Marc.
 6. **Treat as failed:** HTTP status ≥ 400 (default), OR response body doesn't
@@ -209,6 +212,117 @@ plan.
 - If CF is fine, suspect a wrangler.toml binding mismatch — the
   `database_id` may not match the actual database. Run `wrangler d1 list
   --remote` to confirm.
+
+## 9. Stripe — payment / webhook failures
+
+**Symptoms:** visitor hits "Payer →" on /me and nothing happens; OR you got
+the `[marc-portal] Stripe alert` email; OR a payment shows `status='pending'`
+in D1 long after the visitor told you they paid.
+
+### Path A — Checkout endpoint failing
+
+- Check `wrangler pages deployment tail`. The endpoint logs the Stripe
+  error message before throwing.
+- 503 "payments not configured" → `STRIPE_SECRET_KEY` is unset on the
+  Pages project. Set it:
+  ```bash
+  npx wrangler pages secret put STRIPE_SECRET_KEY --project-name marc-portal
+  ```
+- 503 "custodian subscription price not configured" → `STRIPE_CUSTODIAN_PRICE_ID`
+  is empty in `wrangler.toml [vars]`. Edit the value to the real
+  `price_xxx` from Stripe Dashboard → Products, commit, redeploy.
+
+### Path B — Webhook not arriving
+
+- Stripe Dashboard → Developers → Webhooks → click the endpoint → "Recent
+  events" tab. Each event row shows attempt history + response.
+- 401 "signature mismatch" → `STRIPE_WEBHOOK_SECRET` doesn't match what
+  Stripe is signing with. Reset via Dashboard ("Roll secret") then
+  `npx wrangler pages secret put STRIPE_WEBHOOK_SECRET ...`.
+- 401 "webhook secret not configured" → as above, set the secret.
+- Webhook attempts visible but our handler returns 5xx → we caught a
+  bug; the handler is designed to log + 200 on every internal failure.
+  Check Sentry; the request context is captured.
+
+### Path C — Payment row stuck in `pending`
+
+- Most likely: the visitor abandoned the Checkout page before paying.
+  The `payments` row stays `pending` forever (no auto-expiry today).
+  Safe to ignore; the visitor can click "Pay" again, mints a new row.
+- Alternatively: webhook delivery failed (see Path B). Stripe Dashboard
+  → "Resend" on the failed event after fixing the underlying issue.
+
+### Path D — Visitor reports they paid but /me still shows "Pay now"
+
+- Stripe Dashboard → Payments → search by amount + date → find the charge.
+- Verify the charge has a `client_reference_id` matching a `pay_*` row
+  in our D1.
+- If yes, the webhook didn't arrive or didn't update our row. Use
+  Dashboard's "Resend" button on the relevant event.
+- If no (charge has no `client_reference_id`), the visitor paid via a
+  link generated outside our flow (manual Payment Link in dashboard?).
+  Manually update D1:
+  ```bash
+  npx wrangler d1 execute marc-portal-db --remote --command \
+    "INSERT INTO payments (id, session_id, kind, amount_cents, currency, status, stripe_charge_id, created_at, paid_at) VALUES ('pay_manual_<id>', '<session_id>', 'tier1', 30000, 'cad', 'paid', 'ch_xxx', strftime('%s','now'), strftime('%s','now'))"
+  ```
+
+## Payments setup (one-time) — Stripe
+
+Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card
+data never touches marc-portal (Stripe-hosted Checkout); Stripe Payments
+Canada Ltd. is the QC processing entity → no cross-border transfer.
+
+**One-time setup actions for the operator** (Stripe web UI):
+
+| # | Action | Where |
+|---|---|---|
+| 1 | Create account, Country = Canada, type = Individual / Sole Proprietor | <https://stripe.com> |
+| 2 | Sign Stripe's Services Agreement + DPA (click-through at signup) | Activation flow |
+| 3 | Verify identity (ID + SIN + bank account) | Activation flow |
+| 4 | Statement descriptor = `MARCPORTAL` (≤22 chars, recognizable) | Settings → Public details |
+| 5 | Create Product "Custodian mode" — recurring, $200.00 CAD/year | Products → Add |
+| 6 | Copy the `price_xxx` from the new product → paste into `wrangler.toml [vars] STRIPE_CUSTODIAN_PRICE_ID` | Code commit + redeploy |
+| 7 | Create webhook endpoint: `https://marcportal.com/api/payments/webhook` | Developers → Webhooks → Add |
+| 8 | Select events: `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.deleted`, `customer.subscription.updated`, `charge.refunded` | Same form |
+| 9 | Copy `whsec_*` → `npx wrangler pages secret put STRIPE_WEBHOOK_SECRET` | CLI |
+| 10 | Set `STRIPE_SECRET_KEY` via the same CLI command | CLI |
+| 11 | Enable Customer Portal: Settings → Billing → Customer portal → "Activate" | Dashboard |
+| 12 | In Customer Portal config: allow update payment method, cancel subscription, view invoice history | Same screen |
+
+If any of (1)–(10) is missing, payments will silently fail at runtime —
+endpoint returns 503 or webhook returns 401. The /me UI hides the "Pay"
+button when the summary endpoint 503s, so the visitor never sees an
+inconsistent state.
+
+**Handling a Loi 25 access request that mentions Stripe**
+
+When a visitor sends a request under Loi 25 art. 27 ("send me
+everything you have on me") and Stripe is on their radar:
+
+1. Direct them to the Stripe Customer Portal (link on `/me`): they
+   self-serve receipts, payment methods, and subscription state.
+2. For full export beyond what the Portal shows, retrieve from Stripe
+   Dashboard → Customers → search by their email → export. Deliver
+   within 30 days per Loi 25.
+3. For deletion under art. 28.1: see PIA §7 — Stripe-side records are
+   retained for 7 years under CRA + FINTRAC obligations. Anonymize the
+   Stripe customer object (replace email with `deleted+<id>@marc-portal.invalid`)
+   and delete the local `payments` link rows; the immutable financial
+   record stays in Stripe per the legal-obligation exception.
+
+**Handling a Stripe breach notification**
+
+If Stripe notifies you of an incident affecting your charges:
+
+1. Read their incident report; identify the time window + affected
+   accounts.
+2. For any affected visitor: notify within 72h by email at the address
+   on the session (Loi 25 art. 3.5 if risk of serious harm — card data
+   leaks would qualify).
+3. Notify the CAI within the same 72h window (Loi 25 art. 3.6).
+4. Log the incident at the bottom of this RUNBOOK with date + Stripe's
+   incident ID.
 
 ## Useful one-liners
 

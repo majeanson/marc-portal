@@ -22,6 +22,18 @@ export interface Env {
   // etc.) at the endpoint with the X-Digest-Token header. Unset = endpoint is
   // unreachable (the rare case Marc opens it manually).
   DIGEST_TOKEN?: string
+  // Stripe — server-side key for creating Checkout sessions + Portal sessions.
+  // Secret: rotates via `wrangler secret put STRIPE_SECRET_KEY`. Unset = the
+  // payments endpoints return 503 (graceful degrade, like MEDIA above).
+  STRIPE_SECRET_KEY?: string
+  // Webhook signing secret. Different per environment (test mode vs live).
+  // Required for /api/payments/webhook signature verification; unset = the
+  // webhook handler rejects every event with 401.
+  STRIPE_WEBHOOK_SECRET?: string
+  // Plaintext (wrangler.toml [vars]): the Stripe Price ID for the $200/yr
+  // custodian subscription. Created once in the Stripe Dashboard. Unset =
+  // custodian sub Checkout returns 503 with a clear message.
+  STRIPE_CUSTODIAN_PRICE_ID?: string
   // Sentry DSN is hardcoded (see functions/_lib/sentry.ts) — no env var.
 }
 

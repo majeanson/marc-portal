@@ -17,6 +17,13 @@ import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSche
 import { computeSla, formatDate, formatRelativeWindow } from '../lib/format'
 import { downloadJson, exportMyData } from '../lib/export'
 import { isUnread, seedIfMissing } from '../lib/unread'
+import {
+  getPaymentSummary,
+  openCustomerPortal,
+  startCheckout,
+  type PaymentKind,
+  type PaymentSummary,
+} from '../lib/paymentsApi'
 
 const COPY = {
   fr: {
@@ -86,6 +93,20 @@ const COPY = {
     deleting: 'Suppression…',
     deleteFailed: 'La suppression a échoué — réessaie ou écris-moi.',
     unreadBadge: 'NOUVEAU',
+    payNow: 'Payer maintenant →',
+    payTier1: 'Payer Tier 1 (≈ 300 $) →',
+    payTier2Deposit: 'Payer le dépôt (≈ 750 $) →',
+    payTier2Final: 'Payer le solde (≈ 750 $) →',
+    payTier3: 'Payer (sur devis) →',
+    paid: 'Payé ✓',
+    paidAmount: (amount: string) => `Payé · ${amount}`,
+    manageSub: 'Gérer l’abonnement ↗',
+    custodianActive: 'Mode dépositaire · actif',
+    custodianPastDue: 'Renouvellement échoué — voir l’abonnement',
+    custodianSwitched: 'Mode Tout à toi (abonnement terminé)',
+    checkoutPending: 'Ouverture du paiement…',
+    paymentJustReceived: 'Merci — paiement reçu.',
+    paymentCanceled: 'Paiement annulé. Tu peux réessayer.',
     helpToggle: 'Comment ça marche ?',
     helpItems: [
       {
@@ -181,6 +202,20 @@ const COPY = {
     deleting: 'Deleting…',
     deleteFailed: 'Deletion failed — retry or write to me.',
     unreadBadge: 'NEW',
+    payNow: 'Pay now →',
+    payTier1: 'Pay Tier 1 (≈ $300) →',
+    payTier2Deposit: 'Pay deposit (≈ $750) →',
+    payTier2Final: 'Pay final balance (≈ $750) →',
+    payTier3: 'Pay (quoted amount) →',
+    paid: 'Paid ✓',
+    paidAmount: (amount: string) => `Paid · ${amount}`,
+    manageSub: 'Manage subscription ↗',
+    custodianActive: 'Custodian mode · active',
+    custodianPastDue: 'Renewal failed — open subscription',
+    custodianSwitched: "Mode 'All yours' (subscription ended)",
+    checkoutPending: 'Opening checkout…',
+    paymentJustReceived: 'Thanks — payment received.',
+    paymentCanceled: 'Payment canceled. You can try again.',
     helpToggle: 'How this works',
     helpItems: [
       {
@@ -690,6 +725,137 @@ function SessionCard({
           <span className="me-portal__open mono">{copy.openBtn}</span>
         </div>
       </a>
+      {session.status === 'active' && (
+        <PaymentActions session={session} lang={lang} copy={copy} />
+      )}
     </li>
   )
+}
+
+/**
+ * Render-on-active payment surface. Lazy-fetches /api/payments?sessionId=...
+ * and renders one of:
+ *   - "Pay tier N →"  when the session has a tier classified and no paid deposit
+ *   - "Paid · amount" when the deposit/payment is in (terminal state)
+ *   - custodian-sub status link/pill mirroring sessions.custodian_status
+ *
+ * Hidden entirely for sessions that aren't active or whose tier is not yet set
+ * (admin sets the tier in the showcase admin; that's the signal that pricing
+ * is locked). Failure modes are silent — if /api/payments returns 503 (Stripe
+ * not configured), the pill simply doesn't appear; visitor sees the regular
+ * session card.
+ */
+function PaymentActions({
+  session,
+  lang,
+  copy,
+}: {
+  session: SessionRow
+  lang: Lang
+  copy: (typeof COPY)[Lang]
+}) {
+  const [summary, setSummary] = useState<PaymentSummary | null>(null)
+  const [pending, setPending] = useState<'idle' | 'checkout' | 'portal'>('idle')
+
+  useEffect(() => {
+    let cancelled = false
+    getPaymentSummary(session.id)
+      .then((s) => {
+        if (!cancelled) setSummary(s)
+      })
+      .catch(() => {
+        // 503 (Stripe unconfigured) / 404 / network — render nothing.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [session.id])
+
+  if (!summary) return null
+
+  const onPay = async (kind: PaymentKind) => {
+    setPending('checkout')
+    try {
+      const r = await startCheckout({ sessionId: session.id, kind, lang })
+      window.location.assign(r.url)
+    } catch {
+      setPending('idle')
+    }
+  }
+  const onPortal = async () => {
+    setPending('portal')
+    try {
+      const r = await openCustomerPortal({ sessionId: session.id, lang })
+      window.location.assign(r.url)
+    } catch {
+      setPending('idle')
+    }
+  }
+
+  // One-time payment button. Mapping: tier1 → one charge; tier2 → deposit
+  // first, final later; tier3 → quoted (admin uses amount override). The
+  // tier-2-final transition isn't surfaced here yet — Marc sends a fresh
+  // checkout link by email when it's time. (Productize that flow if it
+  // becomes common.)
+  let payButton: { label: string; kind: PaymentKind } | null = null
+  if (!summary.hasPaidDeposit && session.tier !== null) {
+    if (session.tier === 1) payButton = { label: copy.payTier1, kind: 'tier1' }
+    else if (session.tier === 2) payButton = { label: copy.payTier2Deposit, kind: 'tier2-deposit' }
+    else if (session.tier === 3) payButton = { label: copy.payTier3, kind: 'tier3' }
+  }
+
+  const showCustodianLink =
+    summary.custodianStatus === 'active' || summary.custodianStatus === 'past_due'
+  const showSwitchedNote = summary.custodianStatus === 'switched_to_tout_a_toi'
+
+  if (!payButton && !summary.hasPaidDeposit && !showCustodianLink && !showSwitchedNote) {
+    // Tier not set OR no relevant state to surface. Card stays clean.
+    return null
+  }
+
+  const paidRow = summary.rows.find(
+    (r) => r.status === 'paid' && r.kind !== 'custodian-sub' && r.paid_at,
+  )
+  const paidLabel = paidRow
+    ? copy.paidAmount(formatCadCents(paidRow.amount_cents, lang))
+    : copy.paid
+
+  return (
+    <div className="me-portal__card-payments mono">
+      {payButton && (
+        <button
+          type="button"
+          className="me-portal__pay-btn"
+          onClick={() => onPay(payButton!.kind)}
+          disabled={pending !== 'idle'}
+        >
+          {pending === 'checkout' ? copy.checkoutPending : payButton.label}
+        </button>
+      )}
+      {summary.hasPaidDeposit && <span className="me-portal__pay-paid">{paidLabel}</span>}
+      {showCustodianLink && (
+        <button
+          type="button"
+          className="me-portal__pay-portal link-btn"
+          onClick={onPortal}
+          disabled={pending !== 'idle'}
+        >
+          {summary.custodianStatus === 'past_due' ? copy.custodianPastDue : copy.manageSub}
+        </button>
+      )}
+      {showSwitchedNote && <span className="me-portal__pay-switched">{copy.custodianSwitched}</span>}
+    </div>
+  )
+}
+
+/**
+ * Format CAD cents per OQLF convention (FR) or standard locale (EN).
+ * 75000 cents → "750,00 $" (fr-CA) or "CA$750.00" (en-CA).
+ */
+function formatCadCents(cents: number, lang: Lang): string {
+  return new Intl.NumberFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', {
+    style: 'currency',
+    currency: 'CAD',
+    currencyDisplay: lang === 'fr' ? 'symbol' : 'narrowSymbol',
+  }).format(cents / 100)
 }

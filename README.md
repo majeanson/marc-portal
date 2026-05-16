@@ -1,8 +1,9 @@
 # marc-portal
 
 Marc's solo-practice client portal. Quebec-side dev gig, async, 1 active build at
-a time. Deployed at <https://marc-portal.pages.dev> (or wherever the custom
-domain is pointed).
+a time. Deployed at <https://marcportal.com> (Cloudflare Pages custom domain;
+the underlying `marc-portal.pages.dev` URL still resolves but is not the
+canonical surface).
 
 ```text
 React + Vite SPA  ──►  Cloudflare Pages

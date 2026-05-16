@@ -16,7 +16,7 @@ interface DigestEnv extends Env {
   DIGEST_TOKEN?: string
 }
 
-const FROM = 'Marc Portal <onboarding@resend.dev>'
+const FROM = 'Marc Portal <noreply@marcportal.com>'
 const SLA_THRESHOLD_SECONDS = 48 * 3600
 
 export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) => {

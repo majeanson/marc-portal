@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const portalRoot = dirname(dirname(__filename))
-const baseUrl = process.env.PORTAL_BASE_URL ?? 'https://marc.example'
+const baseUrl = process.env.PORTAL_BASE_URL ?? 'https://marcportal.com'
 
 function urlEntry(loc) {
   return `  <url>\n    <loc>${baseUrl}${loc}</loc>\n  </url>`

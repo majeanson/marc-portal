@@ -15,7 +15,7 @@
 |---|---|
 | **Project** | Sentry error-monitoring integration for marc-portal |
 | **Date of PIA** | 2026-05-15 |
-| **Person responsible** (DPO de fait) | Marc Jeanson — marc.jeanson92@gmail.com |
+| **Person responsible** (DPO de fait) | Marc Jeanson — marc@marcportal.com |
 | **Operational scope** | marc-portal.pages.dev and any custom domain attached to the same Cloudflare Pages project. |
 | **Decision** | Proceed. Residual risk assessed as **low** after the mitigations in §6 are in place. |
 
