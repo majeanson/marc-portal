@@ -48,7 +48,7 @@ const COPY = {
           bullets: [
             'Je détiens repo, domaine et comptes en mon nom (en dépositaire)',
             'Je gère renouvellements de domaine, certificats, mises à jour de sécurité',
-            'Petites retouches incluses (jusqu’à 2 h / an)',
+            'Petites retouches incluses (jusqu’à 2 h / mois)',
             "Au-delà de 2 h, je facture à l'heure (au tarif Tier 2), seulement après ton OK",
             'Renouvellement annuel ; si non renouvelé, bascule automatique vers « Tout à toi »',
           ],
@@ -128,7 +128,7 @@ const COPY = {
 
     dormancy: {
       title: 'Et si je deviens injoignable?',
-      body: "C'est la situation à laquelle « Je m'en occupe » doit résister. Si je suis silencieux pendant 90 jours (aucune réponse à tes courriels), une procédure publiée te permet de prendre la pleine propriété toi-même, unilatéralement. La checklist te suit dans tes documents au moment de la livraison — tu n'as rien à demander à personne. C'est la sécurité qui rend ce mode honnête.",
+      body: "C'est la situation à laquelle « Je m'en occupe » doit résister. Si je ne réponds pas à un courriel dans les 30 jours, une procédure publiée te permet de prendre la pleine propriété toi-même, unilatéralement. La page « Checklist de transfert » contient la procédure exacte (tu peux l'imprimer) — tu n'as rien à demander à personne. C'est la sécurité qui rend ce mode honnête.",
     },
 
     faqs: {
@@ -140,7 +140,7 @@ const COPY = {
         },
         {
           q: 'Le tarif annuel couvre quoi exactement?',
-          a: "Le coût du domaine (~15 $/an, je passe au prix coûtant), le monitoring de santé du site, les mises à jour de sécurité automatiques, et jusqu'à 2 heures de petites retouches par année (changer un texte, ajuster une couleur, ajouter un champ simple). Au-delà, je facture à l'heure au tarif Tier 2 — on en parle avant, jamais de surprise.",
+          a: "Le coût du domaine (~15 $/an, je passe au prix coûtant), le monitoring de santé du site, les mises à jour de sécurité automatiques, et jusqu'à 2 heures de petites retouches par mois (changer un texte, ajuster une couleur, ajouter un champ simple). Au-delà, je facture à l'heure au tarif Tier 2 — on en parle avant, jamais de surprise.",
         },
         {
           q: 'Est-ce que je peux changer de mode plus tard?',
@@ -195,7 +195,7 @@ const COPY = {
           bullets: [
             'I hold repo, domain, and accounts in my name (as custodian)',
             'I manage domain renewals, TLS certificates, security updates',
-            'Small tweaks included (up to 2h / year)',
+            'Small tweaks included (up to 2h / month)',
             'Beyond 2h, I bill hourly (at the Tier 2 rate), only after you approve',
             "Annual renewal; if not renewed, auto-switch to 'All yours'",
           ],
@@ -275,7 +275,7 @@ const COPY = {
 
     dormancy: {
       title: 'What if I become unreachable?',
-      body: "This is the scenario 'I handle it' must survive. If I go silent for 90 days (no reply to your emails), a published procedure lets you take full ownership yourself, unilaterally. The checklist is handed to you at delivery — you don't have to ask anyone. It's the safety mechanism that makes this mode honest.",
+      body: "This is the scenario 'I handle it' must survive. If I don't reply to an email within 30 days, a published procedure lets you take full ownership yourself, unilaterally. The 'Handoff checklist' page carries the exact procedure (printable) — you don't have to ask anyone. It's the safety mechanism that makes this mode honest.",
     },
 
     faqs: {
@@ -287,7 +287,7 @@ const COPY = {
         },
         {
           q: 'What does the annual fee cover, exactly?',
-          a: 'Domain cost (~$15/yr, pass-through), site health monitoring, automatic security updates, and up to 2 hours of small tweaks per year (change a text, adjust a color, add a simple field). Beyond that, hourly at the Tier 2 rate — we discuss first, no surprises.',
+          a: 'Domain cost (~$15/yr, pass-through), site health monitoring, automatic security updates, and up to 2 hours of small tweaks per month (change a text, adjust a color, add a simple field). Beyond that, hourly at the Tier 2 rate — we discuss first, no surprises.',
         },
         {
           q: 'Can I change modes later?',

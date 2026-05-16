@@ -35,6 +35,10 @@ const urls = [
   urlEntry('/en/demo/sunday-night-dread'),
   urlEntry('/confidentialite'),
   urlEntry('/en/privacy'),
+  urlEntry('/handoff'),
+  urlEntry('/en/handoff'),
+  urlEntry('/handoff/checklist'),
+  urlEntry('/en/handoff/checklist'),
 ]
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

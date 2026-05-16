@@ -7909,3 +7909,77 @@ button.intake__progress-step:disabled {
   color: var(--accent-warm);
   margin-left: 6px;
 }
+
+/* Checklist — collapsed "technical detail" block at the bottom of
+   /handoff/checklist. Different audience (next dev), kept out of the way
+   for the typical reader. */
+.handoff-tech {
+  margin: 40px 0;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-soft);
+  border-radius: 6px;
+  max-width: 80ch;
+}
+.handoff-tech summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 15px;
+}
+.handoff-tech summary::-webkit-details-marker {
+  display: none;
+}
+.handoff-tech__title {
+  color: var(--text);
+}
+.handoff-tech__marker {
+  color: var(--accent-warm);
+  font-size: 18px;
+  line-height: 1;
+}
+.handoff-tech[open] .handoff-tech__marker {
+  font-size: 0;
+}
+.handoff-tech[open] .handoff-tech__marker::before {
+  content: '−';
+  font-size: 18px;
+}
+.handoff-tech__lead {
+  margin-top: 12px;
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.handoff-tech__section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.handoff-tech__section h3 {
+  font-size: 14px;
+  margin: 0 0 8px;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+.handoff-tech__steps {
+  margin: 0;
+  padding-left: 20px;
+}
+.handoff-tech__steps li {
+  font-size: 13px;
+  line-height: 1.55;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.handoff-tech__steps code,
+.handoff-tech__steps li code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--bg);
+  padding: 1px 5px;
+  border-radius: 3px;
+}

@@ -256,7 +256,7 @@ const FR = {
       },
       {
         q: 'À qui appartient le code à la fin?',
-        a: 'À toi, dans tous les cas. Deux modes : « Tout à toi » (tu détiens repo, domaine et comptes dès le jour 1) ou « Je m’en occupe » (je suis dépositaire des clés, transférables sur demande, sans frais, en ~1 semaine). Aucun des deux ne te coince — détails sur la page handoff (lien dans le pied de page).',
+        a: 'À toi, dans tous les cas. Deux modes : « Tout à toi » (tu détiens repo, domaine et comptes dès le jour 1) ou « Je m’en occupe » (je suis dépositaire des clés, transférables sur demande, sans frais, en environ une semaine). Aucun des deux ne te coince — <a href="/handoff">voir comment ça finit →</a>',
       },
       {
         q: 'Je peux apporter mes propres designs ou maquettes?',
@@ -880,7 +880,7 @@ const EN: Copy = {
       },
       {
         q: 'Who owns the code at the end?',
-        a: "Yours either way. Two modes: 'All yours' (you hold the repo, domain, and accounts from day 1) or 'I handle it' (I'm custodian of the keys, transferable on demand, no fee, in ~1 week). Neither traps you — details on the handoff page (link in the footer).",
+        a: "Yours either way. Two modes: 'All yours' (you hold the repo, domain, and accounts from day 1) or 'I handle it' (I'm custodian of the keys, transferable on demand, no fee, in about a week). Neither traps you — <a href=\"/en/handoff\">see how it ends →</a>",
       },
       {
         q: 'Can I bring my own designs or mockups?',

@@ -82,6 +82,12 @@
         "domain"
       ],
       "reason": "Initial fill — captures the two-mode ownership decision (Tout à toi default + Je m'en occupe at $200/yr), the public-checklist trust strategy, the 90-day dormancy kill-switch, and the soft-radio intake preference. Built across Handoff.tsx, HandoffChecklist.tsx, router.tsx (4 new routes), Footer/Pricing/About link surfaces, TypeForm radio + IntakeSummary display, and docs/handoff/CHECKLIST.md mirror."
+    },
+    {
+      "date": "2026-05-15",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "decisions"],
+      "reason": "Simplify the checklist for the actual audience. Page restructured into a 5-step plain-language summary + a single collapsed <details> block for asset-by-asset technical commands ('pour ton prochain dev'). Procedure mechanics simplified: (1) GPG-encrypted D1 dumps moved from mandatory to opt-in — 1Password shared file is the default share; (2) two git tags (v1.0-handoff + v1.0-handoff-accepted-YYYY-MM-DD) collapsed to one — the recap email is the acceptance record; (3) dormancy threshold dropped from 90 days × 3 emails to 30 days × 1 unanswered email — less legalistic, still operationally honest. FAQ ownership entry now carries a clickable link (FAQ.tsx switched to dangerouslySetInnerHTML, mirroring Privacy.tsx pattern). Sitemap script updated to include /handoff and /handoff/checklist (FR + EN), bringing total from 14 to 18 URLs."
     }
   ],
   "statusHistory": [

@@ -42,4 +42,16 @@
   <url>
     <loc>https://marc.example/en/privacy</loc>
   </url>
+  <url>
+    <loc>https://marc.example/handoff</loc>
+  </url>
+  <url>
+    <loc>https://marc.example/en/handoff</loc>
+  </url>
+  <url>
+    <loc>https://marc.example/handoff/checklist</loc>
+  </url>
+  <url>
+    <loc>https://marc.example/en/handoff/checklist</loc>
+  </url>
 </urlset>

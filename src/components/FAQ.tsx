@@ -106,7 +106,9 @@ export function FAQ({ lang }: { lang: Lang }) {
                     +
                   </span>
                 </summary>
-                <p className="faq__a">{item.a}</p>
+                {/* Answers are trusted i18n strings — same pattern as Privacy.tsx,
+                    lets us embed a couple of <a> tags without a richer schema. */}
+                <p className="faq__a" dangerouslySetInnerHTML={{ __html: item.a }} />
               </details>
             )
           })}
