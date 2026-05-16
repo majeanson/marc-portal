@@ -45,6 +45,14 @@ export function Pricing({ lang }: { lang: Lang }) {
                   <p className="tier__scope">{tier.scope}</p>
                   <div className="tier__after mono">{tier.after}</div>
                 </a>
+                {isAnchor && (
+                  <p className="tier__addendum">
+                    {t.tier2Note}{' '}
+                    <a href={`${langPrefix}/handoff`} className="tier__addendum-cta mono">
+                      {t.tier2NoteCta}
+                    </a>
+                  </p>
+                )}
               </li>
             )
           })}

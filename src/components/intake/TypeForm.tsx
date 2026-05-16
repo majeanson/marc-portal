@@ -5,6 +5,17 @@ import type { FieldDef, ProblemType } from '../../lib/intakeSchemas'
 
 export type FormData = Record<string, string>
 
+/**
+ * Reserved keys (not declared in any intake schema) that the form writes
+ * directly into formData. Underscore prefix signals "system field, not part
+ * of the schema-driven loop." Admin views read these alongside schema fields.
+ *
+ *   __handoff_mode  → 'tout-a-toi' | 'je-men-occupe' | 'on-en-parle'
+ */
+const HANDOFF_MODE_KEY = '__handoff_mode'
+type HandoffMode = 'tout-a-toi' | 'je-men-occupe' | 'on-en-parle'
+const HANDOFF_DEFAULT: HandoffMode = 'on-en-parle'
+
 export function TypeForm({
   lang,
   type,
@@ -27,6 +38,8 @@ export function TypeForm({
   const t = DICT[lang].intake.form
   const tConf = DICT[lang].intake.confirmation
   const schema = getSchemaForType(type)
+  const handoffMode = (values[HANDOFF_MODE_KEY] as HandoffMode) || HANDOFF_DEFAULT
+  const handoffHref = lang === 'fr' ? '/handoff' : '/en/handoff'
 
   const setField = (id: string, value: string) => {
     onChange({ ...values, [id]: value })
@@ -53,6 +66,48 @@ export function TypeForm({
             onChange={(v) => setField(field.id, v)}
           />
         ))}
+
+        <fieldset className="field field--handoff">
+          <legend className="field__label">{t.handoffMode.label}</legend>
+          <p className="field__hint">
+            {t.handoffMode.hint}{' '}
+            <a href={handoffHref} className="mono">
+              {t.handoffMode.learnMore}
+            </a>
+          </p>
+          <div className="radio-group">
+            <label className="radio">
+              <input
+                type="radio"
+                name={HANDOFF_MODE_KEY}
+                value="tout-a-toi"
+                checked={handoffMode === 'tout-a-toi'}
+                onChange={() => setField(HANDOFF_MODE_KEY, 'tout-a-toi')}
+              />
+              <span>{t.handoffMode.optionTout}</span>
+            </label>
+            <label className="radio">
+              <input
+                type="radio"
+                name={HANDOFF_MODE_KEY}
+                value="je-men-occupe"
+                checked={handoffMode === 'je-men-occupe'}
+                onChange={() => setField(HANDOFF_MODE_KEY, 'je-men-occupe')}
+              />
+              <span>{t.handoffMode.optionJe}</span>
+            </label>
+            <label className="radio">
+              <input
+                type="radio"
+                name={HANDOFF_MODE_KEY}
+                value="on-en-parle"
+                checked={handoffMode === 'on-en-parle'}
+                onChange={() => setField(HANDOFF_MODE_KEY, 'on-en-parle')}
+              />
+              <span>{t.handoffMode.optionParle}</span>
+            </label>
+          </div>
+        </fieldset>
       </div>
 
       {submitError && (

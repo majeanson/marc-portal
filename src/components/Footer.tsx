@@ -25,13 +25,16 @@ export function Footer({ lang }: { lang: Lang }) {
   const buildDate = formatBuildDate(__COMMIT_DATE__)
   const privacyHref = lang === 'fr' ? '/confidentialite' : '/en/privacy'
   const privacyLabel = lang === 'fr' ? 'Confidentialité' : 'Privacy'
+  const handoffHref = lang === 'fr' ? '/handoff' : '/en/handoff'
+  const handoffLabel = lang === 'fr' ? 'Comment ça finit' : 'How it ends'
   return (
     <footer className="site-footer">
       <div className="site-footer__flourish" aria-hidden="true" />
       <div className="site-footer__inner">
         <p className="site-footer__line">{t.contact}</p>
         <p className="site-footer__line">
-          {t.legal} · <a href={privacyHref}>{privacyLabel}</a>
+          {t.legal} · <a href={privacyHref}>{privacyLabel}</a> ·{' '}
+          <a href={handoffHref}>{handoffLabel}</a>
         </p>
         <p className="site-footer__line site-footer__line--meta">
           <span>{t.copyright}</span>
@@ -46,10 +49,7 @@ export function Footer({ lang }: { lang: Lang }) {
           </span>
         </p>
         {realIsAdmin && (
-          <p
-            className="site-footer__line site-footer__ops mono"
-            aria-label="Operator shortcuts"
-          >
+          <p className="site-footer__line site-footer__ops mono" aria-label="Operator shortcuts">
             <a
               href={CF_PAGES_URL}
               target="_blank"

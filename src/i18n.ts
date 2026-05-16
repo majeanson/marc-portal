@@ -30,7 +30,7 @@ const FR = {
     "Marc, dev québécois. Le soir et la fin de semaine, j'aide les gens à régler des problèmes du quotidien avec du code. Async — pas de meetings, à ton rythme.",
 
   hero: {
-    eyebrow: 'side-pratique · Québec · async',
+    eyebrow: 'side-gig · Québec · async',
     folio: '№ 01 — Marc, dev québécois',
     salut: 'Marc-Antoine, là pour résoudre des problèmes importants pour ma communauté',
     display: {
@@ -128,6 +128,9 @@ const FR = {
     eyebrow: 'prix publics',
     title: 'Combien ça coûte',
     body: 'Prix concrets, pas « contactez-nous ». Chaque tier (niveau de prix) renvoie à des projets réels du même niveau — tu vois ce que ça donne avant de soumettre.',
+    tier2Note:
+      'Inclus à la livraison : transfert complet (repo, comptes, domaine), ou gestion long terme — c’est ton choix.',
+    tier2NoteCta: 'Comment ça finit →',
     tiers: [
       {
         name: 'Tier 0',
@@ -253,7 +256,7 @@ const FR = {
       },
       {
         q: 'À qui appartient le code à la fin?',
-        a: 'À toi. Le repo Git, les comptes, le domaine — tout. Si un jour tu veux migrer à quelqu’un d’autre ou tout reprendre toi-même, il n’y a rien à dénouer.',
+        a: 'À toi, dans tous les cas. Deux modes : « Tout à toi » (tu détiens repo, domaine et comptes dès le jour 1) ou « Je m’en occupe » (je suis dépositaire des clés, transférables sur demande, sans frais, en ~1 semaine). Aucun des deux ne te coince — détails sur la page handoff (lien dans le pied de page).',
       },
       {
         q: 'Je peux apporter mes propres designs ou maquettes?',
@@ -265,7 +268,7 @@ const FR = {
   about: {
     eyebrow: 'qui je suis',
     title: 'À propos',
-    body: 'Je suis dev senior depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible — pour toi comme pour moi.',
+    body: 'Je suis dev depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible — pour toi comme pour moi.',
     body2:
       'Pas une agence. Pas une plateforme. Un humain qui décide, une machine au milieu pour gérer le reste — pour qu’on respecte tous les deux nos soirs et nos fins de semaine.',
     portraitAlt: 'Marc',
@@ -427,6 +430,14 @@ const FR = {
       autosaved: '✓ Sauvegardé automatiquement à chaque champ',
       back: '← Changer de type',
       continue: 'Soumettre →',
+      handoffMode: {
+        label: 'Préférence de gestion (optionnel)',
+        hint: 'À la livraison, comment veux-tu gérer le code, le domaine et les comptes? Modifiable plus tard — on confirme seulement au moment de livrer.',
+        learnMore: 'Voir comment ça finit →',
+        optionTout: 'Tout à toi (par défaut) — je détiens repo, domaine, comptes',
+        optionJe: "Je m'en occupe — Marc garde les clés (200 $/an)",
+        optionParle: 'On en parle plus tard',
+      },
     },
     confirmation: {
       eyebrowAccepted: 'reçu',
@@ -743,6 +754,9 @@ const EN: Copy = {
     eyebrow: 'public pricing',
     title: 'What it costs',
     body: 'Concrete prices, no "contact us." Each tier (price level) links to actual past projects of the same level — you see what it looks like before you submit.',
+    tier2Note:
+      'Included at delivery: full handoff (repo, accounts, domain), or long-term managed mode — your call.',
+    tier2NoteCta: 'How it ends →',
     tiers: [
       {
         name: 'Tier 0',
@@ -866,7 +880,7 @@ const EN: Copy = {
       },
       {
         q: 'Who owns the code at the end?',
-        a: "You do. The Git repo, the accounts, the domain — all yours. If you ever want to migrate to someone else or take it over yourself, there's nothing to untangle.",
+        a: "Yours either way. Two modes: 'All yours' (you hold the repo, domain, and accounts from day 1) or 'I handle it' (I'm custodian of the keys, transferable on demand, no fee, in ~1 week). Neither traps you — details on the handoff page (link in the footer).",
       },
       {
         q: 'Can I bring my own designs or mockups?',
@@ -878,7 +892,7 @@ const EN: Copy = {
   about: {
     eyebrow: 'who I am',
     title: 'About',
-    body: "I've been a senior dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible — for both of us.",
+    body: "I've been a dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible — for both of us.",
     body2:
       'Not an agency. Not a platform. A human who decides, with a bit of machine in the middle so we both keep our evenings and weekends.',
     portraitAlt: 'Marc',
@@ -1040,6 +1054,14 @@ const EN: Copy = {
       autosaved: '✓ Auto-saved on every field',
       back: '← Change type',
       continue: 'Submit →',
+      handoffMode: {
+        label: 'Management preference (optional)',
+        hint: 'At delivery, how do you want code, domain, and accounts handled? You can change this later — only confirmed at the moment of delivery.',
+        learnMore: 'See how it ends →',
+        optionTout: 'All yours (default) — you hold repo, domain, accounts',
+        optionJe: 'I handle it — Marc keeps the keys ($200/yr)',
+        optionParle: "Let's talk later",
+      },
     },
     confirmation: {
       eyebrowAccepted: 'received',

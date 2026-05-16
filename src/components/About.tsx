@@ -36,6 +36,14 @@ export function About({ lang }: { lang: Lang }) {
           <div className="about__copy">
             <p className="about__dropcap">{t.body}</p>
             <p>{t.body2}</p>
+            <p className="about__ownership-note">
+              {lang === 'fr'
+                ? 'À la fin du projet, repo, comptes et domaine te reviennent — soit dès le jour 1, soit sur demande. '
+                : 'At the end of the project, repo, accounts, and domain come back to you — either from day 1 or on demand. '}
+              <a href={lang === 'fr' ? '/handoff' : '/en/handoff'}>
+                {lang === 'fr' ? 'Voir comment ça finit →' : 'See how it ends →'}
+              </a>
+            </p>
             <ul className="about__links" aria-label={t.title}>
               <li>
                 <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">

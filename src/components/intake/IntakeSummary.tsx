@@ -128,8 +128,30 @@ export function IntakeSummary({
             </div>
           )
         })}
+        <HandoffModeRow lang={lang} values={values} />
       </dl>
     </>
+  )
+}
+
+/** Surfaces the optional `__handoff_mode` reserved key from formData so it
+ * shows up in the confirmation summary and in admin views. Non-editable: the
+ * preference can be re-discussed at delivery, not edited via this UI. */
+function HandoffModeRow({ lang, values }: { lang: Lang; values: FormData }) {
+  const raw = values['__handoff_mode']
+  if (!raw) return null
+  const label = lang === 'fr' ? 'Préférence de gestion' : 'Management preference'
+  const map: Record<string, { fr: string; en: string }> = {
+    'tout-a-toi': { fr: 'Tout à toi', en: 'All yours' },
+    'je-men-occupe': { fr: "Je m'en occupe", en: 'I handle it' },
+    'on-en-parle': { fr: 'On en parle plus tard', en: "Let's talk later" },
+  }
+  const friendly = map[raw]?.[lang] ?? raw
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <dt>{label}</dt>
+      <dd>{friendly}</dd>
+    </div>
   )
 }
 

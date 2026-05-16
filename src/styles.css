@@ -1338,12 +1338,7 @@ button.intake__progress-step:focus-visible {
   width: min(560px, 100%);
   height: 14px;
   border-radius: 6px;
-  background: linear-gradient(
-    90deg,
-    var(--border) 0%,
-    var(--bg-card) 50%,
-    var(--border) 100%
-  );
+  background: linear-gradient(90deg, var(--border) 0%, var(--bg-card) 50%, var(--border) 100%);
   background-size: 200% 100%;
   animation: route-fallback-shimmer 1.4s linear infinite;
   opacity: 0.7;
@@ -7625,4 +7620,292 @@ button.intake__progress-step:disabled {
 ::view-transition-new(root) {
   animation-duration: 280ms;
   animation-timing-function: cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   HANDOFF — /handoff and /handoff/checklist pages. Shares .privacy typography
+   for body sections; adds a 2-up grid for the mode comparison and a numbered
+   step list for the closing ritual / checklist.
+   ────────────────────────────────────────────────────────────────────── */
+.handoff__hero {
+  margin-bottom: 32px;
+}
+.handoff__hero h1 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+.handoff__section-sub {
+  color: var(--text-soft);
+  font-size: 14px;
+  max-width: 60ch;
+  margin: -4px 0 16px;
+}
+.handoff__section {
+  max-width: none;
+}
+
+.handoff__modes {
+  margin: 32px 0 40px;
+  max-width: none;
+}
+.handoff__modes h2 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.handoff-modes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 16px;
+}
+@media (max-width: 640px) {
+  .handoff-modes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.handoff-mode {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+}
+.handoff-mode--default {
+  border-color: var(--accent-warm);
+  box-shadow: 0 0 0 1px var(--accent-warm) inset;
+}
+.handoff-mode__eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  text-transform: lowercase;
+  margin-bottom: 4px;
+}
+.handoff-mode__name {
+  font-size: 22px;
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+.handoff-mode__lead {
+  font-size: 15px;
+  color: var(--text);
+  margin: 0 0 14px;
+  line-height: 1.4;
+}
+.handoff-mode__bullets {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.handoff-mode__bullets li {
+  margin-bottom: 4px;
+}
+.handoff-mode__cost {
+  font-size: 13px;
+  color: var(--accent-warm);
+  border-top: 1px solid var(--border-soft);
+  padding-top: 10px;
+  margin: auto 0 8px;
+}
+.handoff-mode__autonomy {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.handoff-assets {
+  margin: 16px 0 8px;
+  max-width: 70ch;
+}
+.handoff-assets__row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+}
+.handoff-assets__row:last-child {
+  border-bottom: 1px solid var(--border-soft);
+}
+.handoff-assets__row dt {
+  font-weight: 600;
+  color: var(--text);
+}
+.handoff-assets__row dd {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.55;
+}
+@media (max-width: 600px) {
+  .handoff-assets__row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+.handoff-steps {
+  margin: 16px 0;
+  padding-left: 0;
+  list-style: none;
+  max-width: 70ch;
+  counter-reset: handoff-step;
+}
+.handoff-steps__item {
+  border-left: 2px solid var(--border-soft);
+  padding: 4px 0 14px 16px;
+  margin-bottom: 6px;
+}
+.handoff-steps__item h3 {
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+.handoff-steps__item p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+.handoff-faqs {
+  margin: 12px 0;
+  max-width: 70ch;
+}
+.handoff-faqs__item {
+  border-bottom: 1px solid var(--border-soft);
+  padding: 8px 0;
+}
+.handoff-faqs__item summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 0;
+  list-style: none;
+  font-size: 15px;
+}
+.handoff-faqs__item summary::-webkit-details-marker {
+  display: none;
+}
+.handoff-faqs__item summary::before {
+  content: '+';
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--accent-warm);
+  font-family: var(--mono);
+}
+.handoff-faqs__item[open] summary::before {
+  content: '−';
+}
+.handoff-faqs__item p {
+  margin: 4px 0 8px;
+  color: var(--text);
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+.handoff__checklist-link {
+  margin-top: 16px;
+}
+
+.handoff__cta {
+  border-top: 1px solid var(--border-soft);
+  margin-top: 40px;
+  padding-top: 24px;
+  max-width: 70ch;
+}
+.handoff__cta h2 {
+  margin-bottom: 8px;
+}
+.handoff__cta p {
+  margin: 0 0 16px;
+  color: var(--text);
+  line-height: 1.55;
+}
+.handoff__cta-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Checklist page — re-uses .handoff-steps for the numbered procedure. */
+.handoff-legend {
+  margin: 24px 0 32px;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border-left: 3px solid var(--accent-warm);
+  border-radius: 4px;
+  max-width: 70ch;
+}
+.handoff-legend h2 {
+  font-size: 14px;
+  margin: 0 0 6px;
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+}
+.handoff-legend ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.handoff-legend strong {
+  color: var(--accent-warm);
+}
+.handoff-checklist__section ol {
+  margin: 8px 0;
+  padding-left: 22px;
+  max-width: 70ch;
+}
+.handoff-checklist__steps li {
+  margin-bottom: 6px;
+  line-height: 1.55;
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* Pricing — Tier 2 addendum line (handoff/managed mode hint). */
+.tier__addendum {
+  margin: 6px 14px 0;
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+.tier__addendum-cta {
+  color: var(--accent-warm);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tier__addendum-cta:hover {
+  text-decoration: underline;
+}
+
+/* About — ownership note paragraph above the outbound-links list. */
+.about__ownership-note {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+.about__ownership-note a {
+  color: var(--accent-warm);
+  white-space: nowrap;
+}
+
+/* Intake form — handoff mode preference (reserved __handoff_mode key). */
+.field--handoff {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--border-soft);
+}
+.field--handoff .field__hint {
+  margin-bottom: 10px;
+}
+.field--handoff .field__hint a {
+  color: var(--accent-warm);
+  margin-left: 6px;
 }

@@ -4,12 +4,7 @@
 // router config anyway (it'd recreate the router and lose route state).
 /* eslint-disable react-refresh/only-export-components */
 import { Suspense, lazy, type ReactNode } from 'react'
-import {
-  Outlet,
-  Route,
-  createBrowserRouter,
-  createRoutesFromElements,
-} from 'react-router-dom'
+import { Outlet, Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
 
 // Hot-path pages — keep eager so the home/intake/login critical path stays
 // fast and FCP-friendly.
@@ -28,6 +23,10 @@ const SndDemo = lazy(() => import('./pages/SndDemo').then((m) => ({ default: m.S
 const Engagement = lazy(() => import('./pages/Engagement').then((m) => ({ default: m.Engagement })))
 const Tier0 = lazy(() => import('./pages/Tier0').then((m) => ({ default: m.Tier0 })))
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
+const Handoff = lazy(() => import('./pages/Handoff').then((m) => ({ default: m.Handoff })))
+const HandoffChecklist = lazy(() =>
+  import('./pages/HandoffChecklist').then((m) => ({ default: m.HandoffChecklist })),
+)
 const AdminInbox = lazy(() => import('./pages/AdminInbox').then((m) => ({ default: m.AdminInbox })))
 const AdminTrash = lazy(() => import('./pages/AdminTrash').then((m) => ({ default: m.AdminTrash })))
 const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
@@ -151,6 +150,38 @@ export const router = createBrowserRouter(
         element={
           <L>
             <Privacy lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/handoff"
+        element={
+          <L>
+            <Handoff lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/handoff"
+        element={
+          <L>
+            <Handoff lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/handoff/checklist"
+        element={
+          <L>
+            <HandoffChecklist lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/handoff/checklist"
+        element={
+          <L>
+            <HandoffChecklist lang="en" />
           </L>
         }
       />
