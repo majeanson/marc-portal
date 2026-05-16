@@ -107,29 +107,31 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'fr'
   const footerLabel = lang === 'en' ? 'SHARED FROM MARC.PORTAL' : 'PARTAGÉ DEPUIS MARC.PORTAL'
 
-  const html = `
-    <div style="display:flex;flex-direction:column;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">
-      <div style="display:flex;align-items:center;gap:18px;color:#7a7568;font-size:22px;letter-spacing:3px;font-weight:400;">
-        <span>${tierLabel}</span>
-        <span>·</span>
-        <span>${escapeHtml(fields.status.toUpperCase())}</span>
-        <span>·</span>
-        <span>MARC.PORTAL</span>
-      </div>
-      <div style="margin-top:60px;font-size:62px;font-weight:700;color:#1f1d18;line-height:1.05;letter-spacing:-0.02em;">
-        ${escapeHtml(safeTitle)}
-      </div>
-      ${
-        safeTagline
-          ? `<div style="margin-top:28px;font-size:28px;color:#3f3c34;line-height:1.35;max-width:1040px;font-weight:400;">${escapeHtml(safeTagline)}</div>`
-          : ''
-      }
-      <div style="margin-top:auto;display:flex;align-items:center;gap:16px;">
-        <div style="width:140px;height:4px;background:#3d6e4e;"></div>
-        <div style="color:#7a7568;font-size:20px;letter-spacing:2px;font-weight:400;">${escapeHtml(footerLabel)}</div>
-      </div>
-    </div>
-  `
+  // satori is strict: every <div> must have explicit `display: flex` (or
+  // `display: none`) if it has more than one child, AND multi-line template
+  // whitespace becomes text-node children around the actual text. So we
+  // emit a single-line tree and set display:flex on every container.
+  // Single-text divs additionally get the text on the same line so the
+  // parser never sees stray whitespace-text-node siblings.
+  const tagline = safeTagline
+    ? `<div style="display:flex;margin-top:28px;font-size:28px;color:#3f3c34;line-height:1.35;max-width:1040px;font-weight:400;">${escapeHtml(safeTagline)}</div>`
+    : ''
+  const html =
+    `<div style="display:flex;flex-direction:column;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
+    `<div style="display:flex;align-items:center;gap:18px;color:#7a7568;font-size:22px;letter-spacing:3px;font-weight:400;">` +
+    `<div style="display:flex;">${tierLabel}</div>` +
+    `<div style="display:flex;">·</div>` +
+    `<div style="display:flex;">${escapeHtml(fields.status.toUpperCase())}</div>` +
+    `<div style="display:flex;">·</div>` +
+    `<div style="display:flex;">MARC.PORTAL</div>` +
+    `</div>` +
+    `<div style="display:flex;margin-top:60px;font-size:62px;font-weight:700;color:#1f1d18;line-height:1.05;letter-spacing:-0.02em;">${escapeHtml(safeTitle)}</div>` +
+    tagline +
+    `<div style="margin-top:auto;display:flex;align-items:center;gap:16px;">` +
+    `<div style="display:flex;width:140px;height:4px;background:#3d6e4e;"></div>` +
+    `<div style="display:flex;color:#7a7568;font-size:20px;letter-spacing:2px;font-weight:400;">${escapeHtml(footerLabel)}</div>` +
+    `</div>` +
+    `</div>`
 
   // Render path. Two failure modes wrapped here:
   //   1. Font fetch — synchronous error before satori runs (caught easily).
