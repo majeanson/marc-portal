@@ -9250,6 +9250,7 @@ button.intake__progress-step:disabled {
   font-weight: 700;
   font-size: clamp(40px, 6vw, 56px);
   line-height: 0.9;
+  padding-inline-end: 0.1em;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
@@ -9360,6 +9361,7 @@ button.intake__progress-step:disabled {
   color: var(--accent-warm);
   letter-spacing: -0.04em;
   flex-shrink: 0;
+  padding-inline-end: 0.12em;
 }
 .journey__phase-text {
   display: flex;
@@ -9507,6 +9509,7 @@ button.intake__progress-step:disabled {
   color: var(--text-faint);
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
+  padding-inline-end: 0.12em;
   background: linear-gradient(180deg, var(--text-faint) 0%, var(--text-soft) 90%);
   -webkit-background-clip: text;
   background-clip: text;
