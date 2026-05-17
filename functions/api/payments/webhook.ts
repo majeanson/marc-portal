@@ -22,6 +22,7 @@
 // only case that returns 401: those would be malicious or misconfigured and
 // should NOT be retried.
 
+import { sendTier2DepositReceiptAndFinalPrompt } from '../../_lib/email'
 import type { Env } from '../../_lib/env'
 import { ok, unauthorized } from '../../_lib/json'
 import { primaryAdminEmail } from '../../_lib/sessions'
@@ -50,10 +51,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return ok({ received: true })
   }
 
+  const origin = new URL(request.url).origin
+
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(env, event.data.object)
+        await handleCheckoutCompleted(env, event.data.object, origin)
         break
       case 'invoice.paid':
         await handleInvoicePaid(env, event.data.object)
@@ -89,7 +92,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   return ok({ received: true })
 }
 
-async function handleCheckoutCompleted(env: Env, obj: StripeObject): Promise<void> {
+async function handleCheckoutCompleted(env: Env, obj: StripeObject, origin: string): Promise<void> {
   const paymentId = obj.client_reference_id
   if (!paymentId) {
     console.warn('checkout.completed without client_reference_id; ignoring', obj.id)
@@ -100,6 +103,14 @@ async function handleCheckoutCompleted(env: Env, obj: StripeObject): Promise<voi
   const subscriptionId = obj.subscription ?? null
   const paymentIntentId = obj.payment_intent ?? null
   const now = Math.floor(Date.now() / 1000)
+
+  // Pre-read the row so we can tell first-transition from a Stripe retry.
+  // Side-effects (email nudges) MUST fire only on first transition; the
+  // status mutation below is idempotent via COALESCE.
+  const before = await env.DB.prepare(`SELECT paid_at FROM payments WHERE id = ?`)
+    .bind(paymentId)
+    .first<{ paid_at: number | null }>()
+  const isFirstTransition = before != null && before.paid_at == null
 
   // Update our payment row. Guarded by id so two arrivals of the same event
   // (Stripe retries) leave the row in the same terminal state.
@@ -128,6 +139,30 @@ async function handleCheckoutCompleted(env: Env, obj: StripeObject): Promise<voi
       )
         .bind(subscriptionId, sessionId)
         .run()
+    }
+  }
+
+  // Tier-2 deposit cleared on first transition: nudge the visitor that the
+  // final-balance button is now active on /me. Skipped on retries and when
+  // Resend isn't configured.
+  if (isFirstTransition && kind === 'tier2-deposit' && env.RESEND_API_KEY) {
+    const sessionId = obj.metadata?.session_id
+    if (sessionId) {
+      const session = await env.DB.prepare(
+        `SELECT email FROM sessions WHERE id = ? AND deleted_at IS NULL`,
+      )
+        .bind(sessionId)
+        .first<{ email: string }>()
+      if (session?.email) {
+        const lang: 'fr' | 'en' = obj.metadata?.lang === 'en' ? 'en' : 'fr'
+        await sendTier2DepositReceiptAndFinalPrompt(
+          env.RESEND_API_KEY,
+          session.email,
+          sessionId,
+          origin,
+          lang,
+        )
+      }
     }
   }
 }

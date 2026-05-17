@@ -1,10 +1,11 @@
 /**
- * /admin/facturation — buyer-facing billing.
+ * /admin/facturation — buyer-admin scaffolding surface.
  *
- * Stub. Real implementation: feat-billing-stripe (TBD) wires Stripe Checkout
- * + Customer Portal so buyers can update payment method, see invoice history,
- * cancel. For Phase 1 (manual billing), this page just shows the plan + the
- * "contact us via support session" path.
+ * The buyer-admin tree (Fleet, Team, Billing) is hidden from the operator
+ * sidebar but routes still resolve for direct-URL access. The visitor-facing
+ * payment surface lives on /me via PaymentActions — that is the real billing
+ * UI. This page just acknowledges that and points there, so a stray landing
+ * does not show a false "Stripe coming soon" promise.
  */
 
 import type { Lang } from '../i18n'
@@ -14,32 +15,31 @@ const COPY = {
   fr: {
     eyebrow: 'facturation',
     title: 'Plan & paiements',
-    sub: 'Voici l’état de ton plan, les prochaines factures, et l’historique de paiement.',
+    sub: 'Cette section fait partie de la maquette buyer-admin (multi-locataire), qui est gelée pour le moment. La facturation réelle des engagements vit ailleurs.',
     plan: 'Plan',
-    next: 'Prochaine facture',
-    soon: 'Stripe arrive bientôt',
-    soonBody:
-      'D’ici là, la facturation est faite manuellement par courriel. Ouvre une session de support si tu as une question ou si tu veux changer de plan.',
     placeholderPlan: 'À déterminer',
-    placeholderNext: '—',
+    realLeadHeading: 'Où se trouve la facturation réelle',
+    realLeadBody:
+      'Pour ton projet, le paiement (dépôt Tier 1/2, solde Tier 2, abonnement mode dépositaire) se fait directement depuis ta page personnelle — chaque session porte ses propres boutons de paiement et son statut.',
+    realLeadCta: 'Ouvrir /me →',
   },
   en: {
     eyebrow: 'billing',
     title: 'Plan & payments',
-    sub: 'Here’s your current plan, upcoming invoices, and payment history.',
+    sub: 'This page belongs to the buyer-admin scaffolding (multi-tenant), which is currently frozen. The real engagement billing lives elsewhere.',
     plan: 'Plan',
-    next: 'Next invoice',
-    soon: 'Stripe — coming soon',
-    soonBody:
-      'In the meantime, billing is handled manually by email. Open a support session if you have a question or want to change plans.',
     placeholderPlan: 'TBD',
-    placeholderNext: '—',
+    realLeadHeading: 'Where real billing happens',
+    realLeadBody:
+      'For your project, payment (Tier 1/2 deposit, Tier 2 final balance, custodian-mode subscription) happens directly on your personal page — each session carries its own payment buttons and status.',
+    realLeadCta: 'Open /me →',
   },
 } as const
 
 export function AdminBilling({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const { tenant } = useTenant()
+  const meHref = lang === 'en' ? '/en/me' : '/me'
 
   return (
     <div className="admin-page">
@@ -56,16 +56,17 @@ export function AdminBilling({ lang }: { lang: Lang }) {
             <div className="billing-cell__value">{tenant?.templateId ?? t.placeholderPlan}</div>
             <div className="billing-cell__sub mono">v{tenant?.templateVersion ?? '—'}</div>
           </div>
-          <div className="billing-cell">
-            <div className="billing-cell__label">{t.next}</div>
-            <div className="billing-cell__value">{t.placeholderNext}</div>
-          </div>
         </div>
       </section>
 
-      <section className="admin-block admin-block--soon">
-        <h2>{t.soon}</h2>
-        <p>{t.soonBody}</p>
+      <section className="admin-block">
+        <h2>{t.realLeadHeading}</h2>
+        <p>{t.realLeadBody}</p>
+        <p>
+          <a className="link-btn" href={meHref}>
+            {t.realLeadCta}
+          </a>
+        </p>
       </section>
     </div>
   )

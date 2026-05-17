@@ -238,6 +238,49 @@ export async function sendWithdrawalNotification(
   return send(apiKey, { from: RESEND_FROM, to: toEmail, subject, html, text })
 }
 
+/**
+ * Tier-2 deposit just cleared — visitor gets a short transactional note
+ * confirming receipt and pointing them back to /me where the "Pay final
+ * balance" button is now active. The button itself is already wired in
+ * PaymentActions.tsx; this is purely a nudge so the visitor doesn't wait
+ * for Marc's manual follow-up.
+ *
+ * Called from the webhook handler on the FIRST transition of a
+ * tier2-deposit payment row to status='paid'. Idempotency is enforced by
+ * the caller (a re-delivered webhook must not re-send the email).
+ */
+export async function sendTier2DepositReceiptAndFinalPrompt(
+  apiKey: string,
+  visitorEmail: string,
+  sessionId: string,
+  origin: string,
+  lang: 'fr' | 'en',
+): Promise<boolean> {
+  const langPrefix = lang === 'en' ? '/en' : ''
+  const sessionUrl = `${origin}${langPrefix}/session/${sessionId}`
+  const subject =
+    lang === 'fr'
+      ? 'Dépôt Tier 2 reçu — solde final disponible'
+      : 'Tier 2 deposit received — final balance available'
+  const lead =
+    lang === 'fr'
+      ? 'Ton dépôt (50 %) pour le projet Tier 2 est confirmé. Merci.'
+      : 'Your Tier 2 deposit (50%) is confirmed. Thank you.'
+  const body =
+    lang === 'fr'
+      ? 'Quand tu es prêt à payer le solde final (50 % restants), retourne sur la page de ta session — le bouton est maintenant actif.'
+      : "When you're ready to pay the final balance (the remaining 50%), head back to your session page — the button is now active."
+  const cta = lang === 'fr' ? 'Ouvrir ma session' : 'Open my session'
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
+<p><strong>${lead}</strong></p>
+<p style="color:#444">${body}</p>
+<p><a href="${sessionUrl}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">${cta}</a></p>
+<p style="color:#999;font-size:12px;word-break:break-all">${sessionUrl}</p>
+</body></html>`
+  const text = `${lead}\n\n${body}\n\n${cta}: ${sessionUrl}`
+  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+}
+
 function statusLabel(status: string, lang: 'fr' | 'en'): string {
   const FR: Record<string, string> = {
     draft: 'brouillon',

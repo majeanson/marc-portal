@@ -777,6 +777,77 @@ p {
   border-radius: 3px;
 }
 
+/* PIA-page tables, ToC, sub-headings. Re-uses the .privacy shell. */
+.privacy__toc {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 16px 0 32px;
+  background: var(--bg-card);
+  max-width: 70ch;
+}
+.privacy__toc p {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.privacy__toc ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.privacy__toc li {
+  margin: 2px 0;
+}
+.privacy__section h3 {
+  font-size: 16px;
+  margin: 20px 0 6px;
+}
+.privacy__section h4 {
+  font-size: 14px;
+  margin: 14px 0 4px;
+  color: var(--text-soft);
+}
+.privacy__section blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 8px 14px;
+  margin: 12px 0;
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.privacy__section ul {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+.privacy__section li {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+.pia-table {
+  border-collapse: collapse;
+  margin: 8px 0 16px;
+  width: 100%;
+  font-size: 13px;
+}
+.pia-table th,
+.pia-table td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  vertical-align: top;
+  text-align: left;
+  line-height: 1.45;
+}
+.pia-table thead th {
+  background: var(--bg-card);
+  font-weight: 600;
+}
+.pia-table tbody th {
+  background: var(--bg-card);
+  font-weight: 500;
+  width: 30%;
+}
+
 /* About — portrait + copy + outbound links */
 .about__layout {
   display: flex;

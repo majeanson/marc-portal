@@ -23,6 +23,7 @@ const SndDemo = lazy(() => import('./pages/SndDemo').then((m) => ({ default: m.S
 const Engagement = lazy(() => import('./pages/Engagement').then((m) => ({ default: m.Engagement })))
 const Tier0 = lazy(() => import('./pages/Tier0').then((m) => ({ default: m.Tier0 })))
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
+const Pia = lazy(() => import('./pages/Pia').then((m) => ({ default: m.Pia })))
 const Handoff = lazy(() => import('./pages/Handoff').then((m) => ({ default: m.Handoff })))
 const HandoffChecklist = lazy(() =>
   import('./pages/HandoffChecklist').then((m) => ({ default: m.HandoffChecklist })),
@@ -150,6 +151,22 @@ export const router = createBrowserRouter(
         element={
           <L>
             <Privacy lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/pia"
+        element={
+          <L>
+            <Pia lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/pia"
+        element={
+          <L>
+            <Pia lang="en" />
           </L>
         }
       />

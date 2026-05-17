@@ -324,6 +324,109 @@ If Stripe notifies you of an incident affecting your charges:
 4. Log the incident at the bottom of this RUNBOOK with date + Stripe's
    incident ID.
 
+## Payments smoke test (test mode end-to-end)
+
+Run before flipping a `sk_test_*` to `sk_live_*`, or any time the payment
+code path changes materially. Goal: validate the full Checkout → webhook
+→ /me update loop without spending real money.
+
+**Prereqs**
+
+- A `sk_test_*` Stripe secret key is installed (`wrangler pages secret put STRIPE_SECRET_KEY`).
+- `STRIPE_WEBHOOK_SECRET` is set (`whsec_*` from the Stripe Dashboard for
+  the corresponding test-mode endpoint).
+- `STRIPE_CUSTODIAN_PRICE_ID` is the test-mode `price_*` for the
+  $200/yr custodian product.
+- Stripe CLI installed locally (`stripe --version`).
+
+**Local-loop variant (recommended)**
+
+For a tight feedback loop, point Stripe at `localhost`:
+
+```bash
+# Terminal 1 — run the app
+npm run dev:cf            # serves on :8788 with Pages Functions
+
+# Terminal 2 — forward Stripe events to it
+stripe login              # one-time
+stripe listen --forward-to localhost:8788/api/payments/webhook
+# (the listener prints a whsec_*; export it as STRIPE_WEBHOOK_SECRET locally)
+```
+
+**Test card matrix** (Stripe test mode — no real charge):
+
+| Card                | Behavior                            |
+| ------------------- | ----------------------------------- |
+| 4242 4242 4242 4242 | Success                             |
+| 4000 0000 0000 9995 | Insufficient funds (declined)       |
+| 4000 0000 0000 0341 | Successful auth, fails on charge    |
+| 4000 0027 6000 3184 | 3D Secure challenge required        |
+
+Any future expiry (e.g. `12/30`), any 3-digit CVC, any postal (e.g. `H1A 1A1`).
+
+**Tier 1 happy path**
+
+1. As admin, set a session to `status='active'`, `tier=1`.
+2. Log in as the visitor; load `/me`. Confirm the "TEST MODE" banner is
+   visible and `Payer Tier 1 (≈ 300 $)` is enabled.
+3. Click → redirect to Stripe → enter `4242…4242` → submit.
+4. Redirected back to `/me?paid=1&pay=pay_*`. UI flips to `Payé · 300,00 $`.
+5. Verify D1: `wrangler d1 execute marc-portal-db --command "SELECT id, status, paid_at FROM payments ORDER BY created_at DESC LIMIT 1"` →
+   one row, `status='paid'`, `paid_at` set.
+6. Verify Stripe Dashboard → Payments → one $300 CAD entry, marked "Succeeded".
+
+**Tier 2 (deposit + final) — exercises the new auto-prompt**
+
+1. Set a session to `tier=2`.
+2. Pay deposit (≈ 750 $) — same card flow as above.
+3. **Verify the auto-prompt email fires.** Either inspect Resend's audit
+   trail or watch the `stripe listen` output for `checkout.session.completed`
+   → check the test inbox for "Dépôt Tier 2 reçu — solde final disponible".
+4. Refresh `/me`. The button should now read `Payer le solde (≈ 750 $)`.
+5. Pay the final → `/me` shows `Payé · 1 500,00 $` (sum, not just the leg).
+6. Verify D1: two rows, both `status='paid'`, both `paid_at` set.
+
+**Tier 2 retry-idempotency check (critical)**
+
+The auto-prompt email MUST fire exactly once. To prove it:
+
+1. Note the current count in the test inbox after a fresh deposit.
+2. In Stripe Dashboard → Developers → Webhooks → find the
+   `checkout.session.completed` event for that payment → "Resend".
+3. Confirm: no second email arrives; `paid_at` is unchanged; payment
+   row status remains `paid`.
+
+**Custodian subscription**
+
+1. On `/me`, click `Activer le mode dépositaire (200 $/an)`.
+2. Pay with `4242…` → redirect back. UI shows `actif` + `Gérer
+   l'abonnement`.
+3. Click "Gérer" → opens Stripe Customer Portal.
+4. Verify D1: `sessions.custodian_status='active'`,
+   `sessions.custodian_subscription_id='sub_*'`. One `payments` row with
+   `kind='custodian-sub'`, `stripe_invoice_id='in_*'`.
+5. From the Portal, cancel the subscription → webhook fires
+   `customer.subscription.deleted` → D1 flips to
+   `custodian_status='switched_to_tout_a_toi'`. Admin gets the
+   `[marc-portal] Stripe alert` email.
+
+**Failure paths**
+
+- **Unset `STRIPE_SECRET_KEY`**: `POST /api/payments/checkout` → 503;
+  the "Pay" button stays mounted but the inner state never resolves
+  (no banner shown either).
+- **Unset `STRIPE_WEBHOOK_SECRET`**: `POST /api/payments/webhook` → 401.
+- **Bad signature**: as above.
+- **Visitor accessing another visitor's session**: → 403.
+
+**When done**
+
+- Reset the test session(s) in D1 if you don't want them lingering:
+  `UPDATE sessions SET status='draft', tier=NULL WHERE id=...`.
+- The "TEST MODE" banner remains on the live page while `sk_test_*` is
+  in use — feature, not bug. It only disappears when a `sk_live_*` key
+  replaces it.
+
 ## Useful one-liners
 
 ```bash

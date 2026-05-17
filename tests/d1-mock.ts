@@ -23,6 +23,27 @@ interface SessionRowMock {
   showcased_at: number | null
   showcase_title: string | null
   showcase_tagline: string | null
+  custodian_status?: string | null
+  custodian_subscription_id?: string | null
+}
+
+interface PaymentRowMock {
+  id: string
+  session_id: string
+  kind: string
+  amount_cents: number
+  currency: string
+  status: string
+  stripe_checkout_session_id: string | null
+  stripe_payment_intent_id: string | null
+  stripe_subscription_id: string | null
+  stripe_invoice_id: string | null
+  stripe_customer_id: string | null
+  stripe_charge_id?: string | null
+  created_at: number
+  paid_at: number | null
+  refunded_at?: number | null
+  failure_reason?: string | null
 }
 
 interface MessageRowMock {
@@ -66,6 +87,7 @@ export class D1Mock {
   attachments = new Map<string, AttachmentRowMock>()
   rate_limits = new Map<string, RateLimitRowMock>()
   magic_link_tokens = new Map<string, MagicLinkRowMock>()
+  payments = new Map<string, PaymentRowMock>()
 
   prepare(sql: string): MockPreparedStatement {
     return new MockPreparedStatement(this, sql, [])
@@ -326,6 +348,45 @@ class MockPreparedStatement {
       return out
     }
 
+    // SELECT paid_at FROM payments WHERE id = ?  (used by webhook to detect
+    // first transition vs. Stripe retry)
+    if (sql.includes('SELECT paid_at FROM payments WHERE id = ?')) {
+      const p = this.db.payments.get(a[0] as string)
+      return p ? [{ paid_at: p.paid_at }] : []
+    }
+
+    // SELECT email FROM sessions WHERE id = ? AND deleted_at IS NULL
+    if (sql.includes('SELECT email FROM sessions WHERE id = ? AND deleted_at IS NULL')) {
+      const s = this.db.sessions.get(a[0] as string)
+      if (!s || s.deleted_at !== null) return []
+      return [{ email: s.email }]
+    }
+
+    // SELECT id FROM payments WHERE stripe_invoice_id = ? LIMIT 1  (idempotency)
+    if (
+      sql.includes('FROM payments') &&
+      sql.includes('WHERE stripe_invoice_id = ?') &&
+      sql.includes('LIMIT 1')
+    ) {
+      const invoiceId = a[0] as string
+      for (const p of this.db.payments.values()) {
+        if (p.stripe_invoice_id === invoiceId) return [{ id: p.id }]
+      }
+      return []
+    }
+
+    // SELECT id FROM sessions WHERE custodian_subscription_id = ? LIMIT 1
+    if (
+      sql.includes('FROM sessions') &&
+      sql.includes('WHERE custodian_subscription_id = ?')
+    ) {
+      const subId = a[0] as string
+      for (const s of this.db.sessions.values()) {
+        if (s.custodian_subscription_id === subId) return [{ id: s.id }]
+      }
+      return []
+    }
+
     return []
   }
 
@@ -542,6 +603,119 @@ class MockPreparedStatement {
       const id = a[0] as string
       const had = this.db.attachments.delete(id)
       return had ? 1 : 0
+    }
+
+    // INSERT INTO payments (id, session_id, kind, amount_cents, currency, status, created_at)
+    if (sql.startsWith('INSERT INTO payments') && sql.includes('amount_cents')) {
+      const id = a[0] as string
+      // Two INSERT shapes exist: the 7-field initial mint and the 9-field
+      // renewal-from-invoice insert. Detect by the SQL.
+      if (sql.includes('stripe_invoice_id')) {
+        this.db.payments.set(id, {
+          id,
+          session_id: a[1] as string,
+          kind: 'custodian-sub',
+          amount_cents: a[2] as number,
+          currency: 'cad',
+          status: 'paid',
+          stripe_checkout_session_id: null,
+          stripe_payment_intent_id: null,
+          stripe_subscription_id: a[4] as string,
+          stripe_invoice_id: a[3] as string,
+          stripe_customer_id: a[5] as string,
+          created_at: a[6] as number,
+          paid_at: a[7] as number,
+        })
+      } else {
+        this.db.payments.set(id, {
+          id,
+          session_id: a[1] as string,
+          kind: a[2] as string,
+          amount_cents: a[3] as number,
+          currency: 'cad',
+          status: 'pending',
+          stripe_checkout_session_id: null,
+          stripe_payment_intent_id: null,
+          stripe_subscription_id: null,
+          stripe_invoice_id: null,
+          stripe_customer_id: null,
+          created_at: a[4] as number,
+          paid_at: null,
+        })
+      }
+      return 1
+    }
+
+    // UPDATE payments SET stripe_checkout_session_id = ? WHERE id = ?
+    if (sql.startsWith('UPDATE payments SET stripe_checkout_session_id = ?')) {
+      const p = this.db.payments.get(a[1] as string)
+      if (p) p.stripe_checkout_session_id = a[0] as string
+      return p ? 1 : 0
+    }
+
+    // UPDATE payments SET status = 'paid', paid_at = COALESCE(...) — the
+    // webhook's primary mutation. Multiple COALESCE fields collapse to a
+    // few binds; we map by position to mirror webhook.ts.
+    if (
+      sql.startsWith('UPDATE payments') &&
+      sql.includes("status = 'paid'") &&
+      sql.includes('paid_at = COALESCE')
+    ) {
+      const p = this.db.payments.get(a[4] as string)
+      if (p) {
+        p.status = 'paid'
+        if (p.paid_at == null) p.paid_at = a[0] as number
+        if (p.stripe_payment_intent_id == null) p.stripe_payment_intent_id = a[1] as string | null
+        if (p.stripe_subscription_id == null) p.stripe_subscription_id = a[2] as string | null
+        if (p.stripe_customer_id == null) p.stripe_customer_id = a[3] as string | null
+      }
+      return p ? 1 : 0
+    }
+
+    // UPDATE payments SET status = 'failed', failure_reason = ? WHERE id = ?
+    if (sql.startsWith('UPDATE payments') && sql.includes("status = 'failed'")) {
+      const p = this.db.payments.get(a[1] as string)
+      if (p) {
+        p.status = 'failed'
+        p.failure_reason = a[0] as string
+      }
+      return p ? 1 : 0
+    }
+
+    // UPDATE sessions SET custodian_status = 'active', custodian_subscription_id = ?
+    if (sql.startsWith("UPDATE sessions SET custodian_status = 'active'")) {
+      const p = this.db.sessions.get(a[1] as string)
+      if (p) {
+        p.custodian_status = 'active'
+        p.custodian_subscription_id = a[0] as string
+      }
+      return p ? 1 : 0
+    }
+
+    // UPDATE sessions SET custodian_status = 'past_due' WHERE custodian_subscription_id = ?
+    if (sql.startsWith("UPDATE sessions SET custodian_status = 'past_due'")) {
+      const subId = a[0] as string
+      let n = 0
+      for (const s of this.db.sessions.values()) {
+        if (s.custodian_subscription_id === subId) {
+          s.custodian_status = 'past_due'
+          n++
+        }
+      }
+      return n
+    }
+
+    // UPDATE sessions SET custodian_status = 'switched_to_tout_a_toi'
+    if (sql.startsWith('UPDATE sessions SET custodian_status') && sql.includes('switched_to_tout_a_toi')) {
+      const subId = a[0] as string
+      let n = 0
+      for (const s of this.db.sessions.values()) {
+        if (s.custodian_subscription_id === subId) {
+          s.custodian_status = 'switched_to_tout_a_toi'
+          n++
+        }
+      }
+      return n
     }
 
     return 0

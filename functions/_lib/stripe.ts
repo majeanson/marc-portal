@@ -55,6 +55,8 @@ export async function createOneTimeCheckoutSession(opts: OneTimeOpts): Promise<C
 
   const form = new URLSearchParams()
   form.set('mode', 'payment')
+  // Stripe Checkout supports `fr-CA` but NOT `en-CA` — generic `en` is the
+  // only Canadian-English option. Verified against Stripe API reference.
   form.set('locale', opts.lang === 'fr' ? 'fr-CA' : 'en')
   form.set('customer_email', opts.visitorEmail)
   form.set('client_reference_id', opts.paymentId)
@@ -65,13 +67,17 @@ export async function createOneTimeCheckoutSession(opts: OneTimeOpts): Promise<C
   form.set('line_items[0][price_data][unit_amount]', String(opts.amountCents))
   form.set('line_items[0][quantity]', '1')
   // Metadata travels with both the Checkout session AND the resulting
-  // PaymentIntent — the webhook reads it from either shape.
+  // PaymentIntent — the webhook reads it from either shape. `lang` lets
+  // post-payment notifications respect the visitor's chosen language without
+  // a DB lookup back to the session row.
   form.set('metadata[payment_id]', opts.paymentId)
   form.set('metadata[session_id]', opts.sessionId)
   form.set('metadata[kind]', opts.kind)
+  form.set('metadata[lang]', opts.lang)
   form.set('payment_intent_data[metadata][payment_id]', opts.paymentId)
   form.set('payment_intent_data[metadata][session_id]', opts.sessionId)
   form.set('payment_intent_data[metadata][kind]', opts.kind)
+  form.set('payment_intent_data[metadata][lang]', opts.lang)
 
   return await postCheckoutSession(opts.apiKey, form)
 }
@@ -100,11 +106,13 @@ export async function createSubscriptionCheckoutSession(opts: SubOpts): Promise<
   form.set('metadata[payment_id]', opts.paymentId)
   form.set('metadata[session_id]', opts.sessionId)
   form.set('metadata[kind]', 'custodian-sub')
+  form.set('metadata[lang]', opts.lang)
   // Mirror onto the subscription itself; webhook events for renewals carry
   // the subscription's metadata, not the original Checkout's.
   form.set('subscription_data[metadata][payment_id]', opts.paymentId)
   form.set('subscription_data[metadata][session_id]', opts.sessionId)
   form.set('subscription_data[metadata][kind]', 'custodian-sub')
+  form.set('subscription_data[metadata][lang]', opts.lang)
 
   return await postCheckoutSession(opts.apiKey, form)
 }
