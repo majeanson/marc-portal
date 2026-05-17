@@ -4,3 +4,8 @@
 
 # Same for any other executable shell scripts we might add later.
 *.sh text eol=lf
+
+# SVGs are hashed in scripts/check-og-image.mjs. CRLF on a Windows working
+# tree would drift the hash and fail CI on the LF-normalised version Git
+# actually stores. Force LF so the working tree matches what Linux reads.
+*.svg text eol=lf
