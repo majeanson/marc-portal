@@ -2989,6 +2989,50 @@ button.intake__progress-step:focus-visible {
   color: var(--accent-warm);
 }
 
+/* Post-payment toast — banner at top of /me when Stripe redirects with
+   ?paid=1 (success, green) or ?paid=0 (visitor canceled at Checkout,
+   muted amber). Auto-dismisses after 8s; visitor can dismiss manually. */
+.me-portal__toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 720px;
+  margin: 12px auto 0;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font: 500 14px/1.4 var(--mono);
+}
+.me-portal__toast--paid {
+  background: var(--accent-soft);
+  color: var(--accent-warm);
+  border: 1px solid var(--accent);
+}
+.me-portal__toast--canceled {
+  background: #fff4e0;
+  color: #8a5a00;
+  border: 1px solid #f1d8a0;
+}
+.me-portal__toast-body {
+  flex: 1 1 auto;
+}
+.me-portal__toast-dismiss {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: 600 16px/1 var(--mono);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  opacity: 0.6;
+}
+.me-portal__toast-dismiss:hover,
+.me-portal__toast-dismiss:focus-visible {
+  opacity: 1;
+  outline: none;
+}
+
 /* Payment block — appears below the /me card link on active sessions and
    inside the /session/:id page. Stacks up to three sections: TEST MODE
    banner, "Project payment", "Custodian mode". Sits inside the

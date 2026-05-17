@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -281,6 +281,34 @@ export function MePortal({ lang }: { lang: Lang }) {
   )
   const langPrefix = lang === 'en' ? '/en' : ''
 
+  // Post-payment toast. Stripe redirects to /me?paid=1 (success) or ?paid=0
+  // (visitor canceled at Checkout). Initialize from URL at construction so a
+  // render-cycle race can't race past it.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [paymentToast, setPaymentToast] = useState<'paid' | 'canceled' | null>(() => {
+    const v = searchParams.get('paid')
+    return v === '1' ? 'paid' : v === '0' ? 'canceled' : null
+  })
+  // Once initialized, clear the URL params (so reload / share-link is clean)
+  // and arm an auto-dismiss. Runs only when the toast first becomes non-null,
+  // not on every searchParams change — react-router gives us a stable
+  // setSearchParams, but reading searchParams.get() inside this effect would
+  // re-fire it after we strip the params, which would race with auto-dismiss.
+  useEffect(() => {
+    if (paymentToast === null) return
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('paid')
+        next.delete('pay')
+        return next
+      },
+      { replace: true },
+    )
+    const timer = window.setTimeout(() => setPaymentToast(null), 8000)
+    return () => window.clearTimeout(timer)
+  }, [paymentToast, setSearchParams])
+
   const onDeleteAccount = async () => {
     if (deleteState !== 'confirming') {
       setDeleteState('confirming')
@@ -414,6 +442,25 @@ export function MePortal({ lang }: { lang: Lang }) {
     <>
       <Header lang={lang} />
       <main className="me-portal me-portal--console">
+        {paymentToast !== null && (
+          <div
+            className={`me-portal__toast me-portal__toast--${paymentToast}`}
+            role="status"
+            aria-live="polite"
+          >
+            <span className="me-portal__toast-body">
+              {paymentToast === 'paid' ? t.paymentJustReceived : t.paymentCanceled}
+            </span>
+            <button
+              type="button"
+              className="me-portal__toast-dismiss"
+              onClick={() => setPaymentToast(null)}
+              aria-label={lang === 'fr' ? 'Fermer' : 'Dismiss'}
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <section className="me-portal__head">
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h1 className="me-portal__title">{t.title}</h1>
