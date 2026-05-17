@@ -4,6 +4,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { DICT, type Lang } from '../i18n'
 import { captureException } from '../lib/sentry'
+import { ErrorStamp } from './NotFound'
 
 /**
  * Root-level error boundary. Wired as `errorElement` on the layout route in
@@ -36,7 +37,19 @@ export function RouteError() {
     <div className="app">
       <Header lang={lang} />
       <main id="main-content" className="page">
-        <section className="page__panel page__panel--centered">
+        <section className="page__panel page__panel--centered error-panel">
+          <ErrorStamp
+            label={
+              isNotFound
+                ? lang === 'fr'
+                  ? 'PAS LÀ'
+                  : 'NOT HERE'
+                : lang === 'fr'
+                  ? 'RATÉ'
+                  : 'FUMBLED'
+            }
+            sub={`${isNotFound ? '404' : '500'} · MARC.PORTAL`}
+          />
           <div className="mono section__eyebrow">{isNotFound ? '404' : '500'}</div>
           <h1>{t.title}</h1>
           <p>{t.body}</p>

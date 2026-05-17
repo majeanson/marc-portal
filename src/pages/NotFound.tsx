@@ -26,7 +26,8 @@ export function NotFound() {
     <div className="app">
       <Header lang={lang} />
       <main id="main-content" className="page">
-        <section className="page__panel page__panel--centered">
+        <section className="page__panel page__panel--centered error-panel">
+          <ErrorStamp label={lang === 'fr' ? 'PAS LÀ' : 'NOT HERE'} sub="404 · MARC.PORTAL" />
           <div className="mono section__eyebrow">404</div>
           <h1>{t.title}</h1>
           <p>{t.body}</p>
@@ -45,5 +46,67 @@ export function NotFound() {
       </main>
       <Footer lang={lang} />
     </div>
+  )
+}
+
+/** Shared corner stamp for error pages (NotFound + RouteError). Renders the
+ *  same VÉRIFIÉ-style mark but with a context-specific label (PAS LÀ / NOT
+ *  HERE on 404, RATÉ / FUMBLED on RouteError). Decorative, aria-hidden. */
+export function ErrorStamp({ label, sub }: { label: string; sub: string }) {
+  return (
+    <svg
+      className="error-panel__stamp"
+      viewBox="0 0 260 100"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <g transform="translate(130 50) rotate(-7)">
+        <rect
+          x="-122"
+          y="-42"
+          width="244"
+          height="84"
+          rx="10"
+          ry="10"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+        />
+        <rect
+          x="-114"
+          y="-34"
+          width="228"
+          height="68"
+          rx="6"
+          ry="6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <text
+          x="0"
+          y="-4"
+          textAnchor="middle"
+          fontFamily="var(--mono), monospace"
+          fontSize="20"
+          fontWeight="700"
+          letterSpacing="4"
+          fill="currentColor"
+        >
+          {label}
+        </text>
+        <text
+          x="0"
+          y="20"
+          textAnchor="middle"
+          fontFamily="var(--mono), monospace"
+          fontSize="11"
+          letterSpacing="5"
+          fill="currentColor"
+        >
+          {sub}
+        </text>
+      </g>
+    </svg>
   )
 }

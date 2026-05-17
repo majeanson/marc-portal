@@ -5653,6 +5653,243 @@ button.intake__progress-step:disabled {
   z-index: 1;
 }
 
+/* Error-page panels (NotFound + RouteError) — corner stamp + relative
+   positioning context. The stamp sits in the top-right of the panel so
+   it reads as "rejected at the door" without overlapping the headline. */
+.error-panel {
+  position: relative;
+}
+.error-panel__stamp {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 180px;
+  height: 70px;
+  color: #8a4f1c;
+  opacity: 0.65;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(138, 79, 28, 0.18));
+}
+@media (max-width: 720px) {
+  .error-panel__stamp {
+    width: 130px;
+    height: 50px;
+    top: 12px;
+    right: 12px;
+    opacity: 0.5;
+  }
+}
+
+/* Confirmation page — REÇU stamp that "lands" once on intake success.
+   Reuses the same SVG art as the hero stamp; the keyframe runs ONLY on
+   mount (no infinite). prefers-reduced-motion: stamp still renders,
+   just without the motion. The visitor's main feedback that their form
+   went somewhere — pairs with the eyebrow flip to "reçu" / "received". */
+.confirmation__stamp-wrap {
+  margin: 0 0 22px;
+  display: flex;
+  justify-content: flex-end;
+}
+.confirmation__stamp {
+  width: 220px;
+  height: 84px;
+  color: #8a4f1c;
+  opacity: 0;
+  transform: scale(1.4) rotate(2deg);
+  animation: confirmation-stamp-land 0.55s cubic-bezier(0.25, 1.4, 0.4, 1) 120ms forwards;
+  filter: drop-shadow(0 4px 8px rgba(138, 79, 28, 0.25));
+}
+@keyframes confirmation-stamp-land {
+  0% {
+    opacity: 0;
+    transform: scale(1.4) rotate(2deg);
+    filter: drop-shadow(0 8px 16px rgba(138, 79, 28, 0.4));
+  }
+  60% {
+    opacity: 0.9;
+    transform: scale(0.96) rotate(-1deg);
+  }
+  100% {
+    opacity: 0.78;
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 2px 4px rgba(138, 79, 28, 0.2));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confirmation__stamp {
+    animation: none;
+    opacity: 0.78;
+    transform: scale(1) rotate(0deg);
+    filter: none;
+  }
+}
+
+/* VÉRIFIÉ stamp echoing the OG card. Decorative, low-opacity warm-brown
+   so the headline always wins the eye. Positioned bottom-right of the
+   hero block. Mobile: smaller + nudged so it doesn't overlap the
+   CapacityCounter on narrow viewports. */
+.hero__stamp {
+  position: absolute;
+  right: calc(var(--gutter) + 16px);
+  bottom: 28px;
+  width: 220px;
+  height: 84px;
+  color: #8a4f1c;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+@media (prefers-color-scheme: dark) {
+  .hero__stamp {
+    opacity: 0.26;
+  }
+}
+:root[data-theme='night'] .hero__stamp {
+  opacity: 0.26;
+}
+@media (max-width: 720px) {
+  .hero__stamp {
+    width: 160px;
+    height: 60px;
+    bottom: 18px;
+    right: 12px;
+    opacity: 0.12;
+  }
+}
+
+/* "N projets livrés en YYYY" — small dotted-leader line that reads as
+   a quiet social-proof note. Lives between the secondary CTA and the
+   facts list. Hidden via JSX when count is 0. */
+.hero__shipped-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 0;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: var(--text-soft);
+}
+.hero__shipped-counter-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* Hero shipped-project preview — sits to the right of the hero text on
+   desktop, stacks below on narrow viewports. Anchors the "is this real?"
+   question with one live artifact. Hidden via JSX when no shipped
+   project exists, so the layout collapses cleanly on cold-start. */
+@media (min-width: 980px) {
+  .home .hero--editorial {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    column-gap: 56px;
+    align-items: start;
+  }
+  .home .hero--editorial .hero__inner {
+    grid-column: 1;
+  }
+  .hero__shipped {
+    grid-column: 2;
+    align-self: end;
+    /* Push slightly below the headline so the eye lands on the display
+       first, then drifts right to the thumbnail. */
+    margin-top: 110px;
+  }
+}
+.hero__shipped {
+  display: block;
+  margin-top: 36px;
+  position: relative;
+  z-index: 1;
+}
+.hero__shipped-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  box-shadow: 0 6px 20px -12px rgba(31, 29, 24, 0.18);
+}
+.hero__shipped-link:hover,
+.hero__shipped-link:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--accent-warm);
+  box-shadow: 0 14px 32px -14px rgba(61, 110, 78, 0.32);
+  text-decoration: none;
+  outline: none;
+}
+.hero__shipped-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-section);
+  overflow: hidden;
+}
+.hero__shipped-meta {
+  padding: 14px 16px 16px;
+}
+.hero__shipped-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.hero__shipped-eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.hero__shipped-tier {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-warm);
+  background: var(--accent-soft);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(61, 110, 78, 0.2);
+}
+.hero__shipped-title {
+  margin: 0 0 4px;
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--text);
+}
+.hero__shipped-tagline {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-mid);
+  /* Keep tagline to ~2 lines so the card stays compact. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.hero__shipped-open {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.hero__shipped-link:hover .hero__shipped-open,
+.hero__shipped-link:focus-visible .hero__shipped-open {
+  color: var(--accent-warm);
+}
+
 .hero__display {
   margin: 6px 0 24px;
   font-family: var(--display);
@@ -6163,16 +6400,22 @@ button.intake__progress-step:disabled {
   font-style: italic;
 }
 
-/* ── VibeFilter — ledger ──────────────────────────────────────────────────── */
+/* ── VibeFilter — wall poster ─────────────────────────────────────────────── */
+/* Restyled 2026-05-17 (PLAN_TOMORROW.md §2.2 follow-up) from a ledger
+   into a printed-poster pair. Two columns of the same content, but the
+   "do" side reads with stamped ✓ marks and the "don't" side reads with
+   strikethrough type — like a wall poster of practice rules. Bigger
+   asymmetric type than the ledger; less border-density, more breathing. */
 .home .vibe--ledger {
   display: grid;
   grid-template-columns: 1fr 1px 1fr;
-  gap: 36px;
-  margin-top: 28px;
+  gap: 48px;
+  margin-top: 32px;
   align-items: start;
   border-top: 1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
-  padding: 28px 0;
+  padding: 40px 0 44px;
+  position: relative;
 }
 .home .vibe--ledger .vibe__rule {
   background: var(--border-soft);
@@ -6183,13 +6426,14 @@ button.intake__progress-step:disabled {
   .home .vibe--ledger {
     grid-template-columns: 1fr;
     gap: 0;
+    padding: 32px 0 36px;
   }
   .home .vibe--ledger .vibe__rule {
     display: none;
   }
   .home .vibe--ledger .vibe__col--dont {
-    margin-top: 24px;
-    padding-top: 24px;
+    margin-top: 28px;
+    padding-top: 28px;
     border-top: 1px solid var(--border-soft);
   }
 }
@@ -6198,30 +6442,41 @@ button.intake__progress-step:disabled {
 }
 .home .vibe__mark {
   position: absolute;
-  top: -6px;
-  right: 0;
+  top: -10px;
+  right: -6px;
   font-family: var(--display);
   font-weight: 800;
-  font-size: 48px;
+  font-size: 88px;
   line-height: 1;
   color: var(--accent);
-  opacity: 0.18;
+  opacity: 0.14;
   pointer-events: none;
+  transform: rotate(-6deg);
+  letter-spacing: -0.02em;
 }
 .home .vibe__mark--dont {
-  color: var(--warm);
+  color: #c84242;
+  transform: rotate(8deg);
+  opacity: 0.16;
 }
 .home .vibe--ledger .vibe__col h3 {
   font-family: var(--display);
-  font-size: 18px;
-  letter-spacing: 0.06em;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin: 0 0 14px;
-  display: inline-flex;
-  gap: 10px;
+  margin: 0 0 22px;
+  color: var(--text);
 }
-.home .vibe--ledger .vibe__col h3::before {
-  font-size: 17px;
+.home .vibe__col--do h3 {
+  color: var(--accent-warm);
+}
+.home .vibe__col--dont h3 {
+  color: #8a2222;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(138, 34, 34, 0.45);
+  text-underline-offset: 0.1em;
 }
 .home .vibe--ledger .vibe__col ul {
   list-style: none;
@@ -6229,28 +6484,51 @@ button.intake__progress-step:disabled {
   margin: 0;
 }
 .home .vibe--ledger .vibe__col li {
-  padding: 11px 0 11px 22px;
+  padding: 12px 0 12px 36px;
   border-bottom: none;
   position: relative;
-  font-size: 16.5px;
-  line-height: 1.5;
+  font-size: 17.5px;
+  line-height: 1.45;
   color: var(--text);
 }
 .home .vibe--ledger .vibe__col li + li {
   border-top: 1px dashed var(--border-soft);
 }
-.home .vibe--ledger .vibe__col li::before {
-  content: '';
+/* "Do" side — ink-stamped ✓ glyph, accent-warm, slightly tilted. */
+.home .vibe__col--do li::before {
+  content: '✓';
   position: absolute;
-  left: 4px;
-  top: 19px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
+  left: 0;
+  top: 12px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--accent);
+  transform: rotate(-4deg);
+}
+/* "Don't" side — items get a soft strikethrough so the eye reads
+   "crossed off the list." The color stays readable; the strike does
+   the disqualification work. */
+.home .vibe__col--dont li {
+  color: var(--text-mid);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: rgba(200, 66, 66, 0.55);
+  text-underline-offset: 0.08em;
 }
 .home .vibe__col--dont li::before {
-  background: var(--warm);
+  content: '✗';
+  position: absolute;
+  left: 2px;
+  top: 12px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1;
+  color: #c84242;
+  text-decoration: none;
+  transform: rotate(5deg);
 }
 
 /* ── About — drop cap + framed portrait ───────────────────────────────────── */
@@ -6922,16 +7200,35 @@ button.intake__progress-step:disabled {
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
-.home .featured-projects__grid .project-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-3px);
+.home .featured-projects__grid .project-card:hover,
+.home .featured-projects__grid .project-card:focus-within {
+  /* Louder hover per §2.2: stronger lift, accent-warm border (vs neutral
+     accent), deeper shadow with a warm tint so the eye reads "this is
+     active, click me." Triggered by :focus-within too for keyboard. */
+  border-color: var(--accent-warm);
+  border-width: 1px;
+  transform: translateY(-4px);
   box-shadow:
     0 1px 0 var(--border-soft),
-    0 16px 30px -16px rgba(31, 29, 24, 0.18);
+    0 20px 36px -16px rgba(122, 76, 28, 0.28);
 }
 .home .featured-projects__grid .project-card__title {
   font-family: var(--display);
   letter-spacing: -0.015em;
+  transition: color 0.2s ease;
+}
+.home .featured-projects__grid .project-card:hover .project-card__title,
+.home .featured-projects__grid .project-card:focus-within .project-card__title {
+  color: var(--accent-warm);
+}
+.home .featured-projects__grid .project-card__tier {
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+.home .featured-projects__grid .project-card:hover .project-card__tier,
+.home .featured-projects__grid .project-card:focus-within .project-card__tier {
+  transform: translateY(-1px) scale(1.04);
 }
 .home .featured-projects__grid .project-card__link::after {
   content: ' →';
@@ -6945,7 +7242,8 @@ button.intake__progress-step:disabled {
   color: var(--accent-warm);
   font-family: var(--display);
 }
-.home .featured-projects__grid .project-card:hover .project-card__link::after {
+.home .featured-projects__grid .project-card:hover .project-card__link::after,
+.home .featured-projects__grid .project-card:focus-within .project-card__link::after {
   opacity: 1;
   transform: translateX(0);
 }

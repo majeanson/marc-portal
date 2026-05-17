@@ -52,6 +52,68 @@ export function Confirmation({
 
   return (
     <div className="intake__step">
+      {/* One-shot success stamp — plays only on the "accepted" branch, not
+          the waitlist branch (waitlist is good news but not "this is in
+          motion"). Pure CSS animation on mount; @keyframes confirmation-
+          stamp-land runs once. prefers-reduced-motion disables the motion
+          but keeps the stamp visible. */}
+      {!waitlist && (
+        <div className="confirmation__stamp-wrap" aria-hidden="true">
+          <svg
+            className="confirmation__stamp"
+            viewBox="0 0 260 100"
+            focusable="false"
+          >
+            <g transform="translate(130 50) rotate(-7)">
+              <rect
+                x="-122"
+                y="-42"
+                width="244"
+                height="84"
+                rx="10"
+                ry="10"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+              />
+              <rect
+                x="-114"
+                y="-34"
+                width="228"
+                height="68"
+                rx="6"
+                ry="6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <text
+                x="0"
+                y="-4"
+                textAnchor="middle"
+                fontFamily="var(--mono), monospace"
+                fontSize="20"
+                fontWeight="700"
+                letterSpacing="4"
+                fill="currentColor"
+              >
+                {lang === 'fr' ? 'REÇU' : 'RECEIVED'}
+              </text>
+              <text
+                x="0"
+                y="20"
+                textAnchor="middle"
+                fontFamily="var(--mono), monospace"
+                fontSize="11"
+                letterSpacing="5"
+                fill="currentColor"
+              >
+                MARC · PORTAL
+              </text>
+            </g>
+          </svg>
+        </div>
+      )}
       <div className="section__eyebrow">{waitlist ? t.eyebrowWaitlist : t.eyebrowAccepted}</div>
       <h2>{waitlist ? t.titleWaitlist : t.titleAccepted}</h2>
       <p>{waitlist ? t.bodyWaitlist : t.bodyAccepted}</p>
