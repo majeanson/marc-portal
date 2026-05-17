@@ -129,7 +129,7 @@ const FR = {
     title: 'Combien ça coûte',
     body: 'Prix concrets, pas de devis caché. Chaque tier (niveau de prix) renvoie à des projets réels du même niveau — tu vois ce que ça donne avant de soumettre.',
     tier2Note:
-      'Inclus à la livraison : transfert complet (repo, comptes, domaine), ou gestion long terme — c’est ton choix.',
+      "Par défaut à la livraison : mode dépositaire (200 $/an) — Marc opère le site. Tu peux opter pour « Tout à toi » à la place si tu gères déjà ta stack.",
     tier2NoteCta: 'Comment ça finit →',
     tiers: [
       {
@@ -149,7 +149,8 @@ const FR = {
       {
         name: 'Tier 2',
         price: '≈ 1 500 $',
-        scope: 'Projet de quelques semaines. Outil interne qui dure. Projets de communauté',
+        scope:
+          'Projet de quelques semaines. Outil interne qui dure. Projets de communauté. Payé en deux temps : 750 $ au démarrage, 750 $ à la livraison.',
         after: '1 ronde de retouches incluse',
         anchor: true,
       },
@@ -432,10 +433,10 @@ const FR = {
       continue: 'Soumettre →',
       handoffMode: {
         label: 'Préférence de gestion (optionnel)',
-        hint: 'À la livraison, comment veux-tu gérer le code, le domaine et les comptes? Modifiable plus tard — on confirme seulement au moment de livrer.',
+        hint: "À la livraison, qui détient les clés? Par défaut Marc s'en occupe (200 $/an) — c'est ce qui te dispense de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
         learnMore: 'Voir comment ça finit →',
-        optionTout: 'Tout à toi (par défaut) — je détiens repo, domaine, comptes',
-        optionJe: "Je m'en occupe — Marc garde les clés (200 $/an)",
+        optionJe: "Je m'en occupe — Marc garde les clés (200 $/an, mode recommandé)",
+        optionTout: 'Tout à toi — je gère DNS, Cloudflare, Resend moi-même',
         optionParle: 'On en parle plus tard',
       },
     },
@@ -755,7 +756,7 @@ const EN: Copy = {
     title: 'What it costs',
     body: 'Concrete prices, no hidden quotes. Each tier (price level) links to actual past projects of the same level — you see what it looks like before you submit.',
     tier2Note:
-      'Included at delivery: full handoff (repo, accounts, domain), or long-term managed mode — your call.',
+      'Default at delivery: custodian mode ($200/yr) — Marc operates the site. You can opt for "All yours" instead if you already manage your stack.',
     tier2NoteCta: 'How it ends →',
     tiers: [
       {
@@ -774,7 +775,8 @@ const EN: Copy = {
       {
         name: 'Tier 2',
         price: '≈ $1500',
-        scope: 'A few-week project. An internal tool that lasts. Community projects.',
+        scope:
+          'A few-week project. An internal tool that lasts. Community projects. Paid in two halves: $750 to start, $750 at delivery.',
         after: '1 round of tweaks included',
         anchor: true,
       },
@@ -1056,10 +1058,10 @@ const EN: Copy = {
       continue: 'Submit →',
       handoffMode: {
         label: 'Management preference (optional)',
-        hint: 'At delivery, how do you want code, domain, and accounts handled? You can change this later — only confirmed at the moment of delivery.',
+        hint: "At delivery, who holds the keys? By default Marc handles it ($200/yr) — that's what saves you from managing DNS, Cloudflare, Resend yourself. Can change later; 'All yours' requires an explicit confirmation at delivery.",
         learnMore: 'See how it ends →',
-        optionTout: 'All yours (default) — you hold repo, domain, accounts',
-        optionJe: 'I handle it — Marc keeps the keys ($200/yr)',
+        optionJe: 'I handle it — Marc keeps the keys ($200/yr, recommended)',
+        optionTout: 'All yours — I manage DNS, Cloudflare, Resend myself',
         optionParle: "Let's talk later",
       },
     },

@@ -20,10 +20,18 @@ const COPY = {
     refreshing: 'Mise à jour…',
     logout: 'Se déconnecter',
     viewTrash: 'Voir la corbeille →',
+    custodianLink: 'Tableau dépositaires →',
     untitled: 'Session sans intake',
     slaDueLabel: 'Réponse',
     slaOverdue: 'En retard',
     countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
+    needsAttentionHeading: 'À traiter',
+    filterAll: 'Toutes',
+    filterActiveNoTier: 'Active sans tier',
+    filterT3NoQuote: 'Tier 3 sans devis',
+    filterShippedNoMode: 'Livrée — mode à choisir',
+    filterCustodianPastDue: 'Dépositaire en retard',
+    noFiltered: 'Rien à traiter dans cette catégorie.',
   },
   en: {
     eyebrow: 'admin',
@@ -36,12 +44,46 @@ const COPY = {
     refreshing: 'Refreshing…',
     logout: 'Sign out',
     viewTrash: 'View trash →',
+    custodianLink: 'Custodian dashboard →',
     untitled: 'Session without intake',
     slaDueLabel: 'Reply',
     slaOverdue: 'Overdue',
     countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
+    needsAttentionHeading: 'Needs attention',
+    filterAll: 'All',
+    filterActiveNoTier: 'Active w/o tier',
+    filterT3NoQuote: 'Tier 3 w/o quote',
+    filterShippedNoMode: 'Shipped — mode TBD',
+    filterCustodianPastDue: 'Custodian past due',
+    noFiltered: 'Nothing in this bucket.',
   },
 } as const
+
+type AttentionFilter =
+  | 'all'
+  | 'active_no_tier'
+  | 't3_no_quote'
+  | 'shipped_no_mode'
+  | 'custodian_past_due'
+
+const THIRTY_DAYS_S = 30 * 24 * 3600
+
+function matchesFilter(s: SessionRow, f: AttentionFilter, nowS: number): boolean {
+  if (f === 'all') return true
+  if (f === 'active_no_tier') return s.status === 'active' && s.tier === null
+  if (f === 't3_no_quote') return s.tier === 3 && s.tier3_amount_cents === null
+  if (f === 'shipped_no_mode')
+    return (
+      s.status === 'shipped' &&
+      (s.custodian_status === null || s.custodian_status === 'none') &&
+      // Exclude visitors who explicitly confirmed Tout à toi — they made
+      // an active decision, no follow-up needed from Marc.
+      s.all_yours_acknowledged_at === null &&
+      nowS - s.updated_at < THIRTY_DAYS_S
+    )
+  if (f === 'custodian_past_due') return s.custodian_status === 'past_due'
+  return false
+}
 
 interface IntakePreview {
   type: ProblemType
@@ -131,7 +173,20 @@ export function AdminInbox({ lang }: { lang: Lang }) {
   const { email, isAdmin, loading: authLoading, logout } = useAuth()
   const [sessions, setSessions] = useState<SessionRow[] | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [attentionFilter, setAttentionFilter] = useState<AttentionFilter>('all')
+  // Captured once at mount. Coarse-grained — only used as the reference for
+  // "shipped within 30 days" which doesn't need second-precision freshness.
+  // Lazy init keeps render pure (react-hooks/purity).
+  const [nowS] = useState<number>(() => Math.floor(Date.now() / 1000))
   const langPrefix = lang === 'en' ? '/en' : ''
+
+  // Precompute the bucket counts so pills can show "Tier 3 w/o quote (2)"
+  // even when the filter isn't active. Cheap — runs only when sessions changes.
+  const bucketCount = (f: AttentionFilter) =>
+    (sessions ?? []).filter((s) => matchesFilter(s, f, nowS)).length
+  const filteredSessions = (sessions ?? []).filter((s) =>
+    matchesFilter(s, attentionFilter, nowS),
+  )
 
   // Refresh callable from event handlers only (visibility-change). Has a
   // synchronous setRefreshing(true) at the top, which keeps it out of effect
@@ -242,6 +297,9 @@ export function AdminInbox({ lang }: { lang: Lang }) {
                 {sessions !== null && (
                   <span className="mono admin-inbox__count">{t.countLabel(sessions.length)}</span>
                 )}
+                <a href={`${langPrefix}/admin/custodians`} className="link-btn mono">
+                  {t.custodianLink}
+                </a>
                 <a href={`${langPrefix}/admin/trash`} className="link-btn mono">
                   {t.viewTrash}
                 </a>
@@ -256,15 +314,61 @@ export function AdminInbox({ lang }: { lang: Lang }) {
               </div>
             </header>
 
+            {sessions !== null && sessions.length > 0 && (
+              <div className="admin-inbox__attention" role="tablist" aria-label={t.needsAttentionHeading}>
+                <h2 className="admin-inbox__attention-heading mono">
+                  {t.needsAttentionHeading}
+                </h2>
+                <div className="admin-inbox__attention-pills">
+                  <AttentionPill
+                    active={attentionFilter === 'all'}
+                    label={t.filterAll}
+                    n={sessions.length}
+                    onClick={() => setAttentionFilter('all')}
+                  />
+                  <AttentionPill
+                    active={attentionFilter === 'active_no_tier'}
+                    label={t.filterActiveNoTier}
+                    n={bucketCount('active_no_tier')}
+                    onClick={() => setAttentionFilter('active_no_tier')}
+                    tone="warn"
+                  />
+                  <AttentionPill
+                    active={attentionFilter === 't3_no_quote'}
+                    label={t.filterT3NoQuote}
+                    n={bucketCount('t3_no_quote')}
+                    onClick={() => setAttentionFilter('t3_no_quote')}
+                    tone="warn"
+                  />
+                  <AttentionPill
+                    active={attentionFilter === 'shipped_no_mode'}
+                    label={t.filterShippedNoMode}
+                    n={bucketCount('shipped_no_mode')}
+                    onClick={() => setAttentionFilter('shipped_no_mode')}
+                    tone="info"
+                  />
+                  <AttentionPill
+                    active={attentionFilter === 'custodian_past_due'}
+                    label={t.filterCustodianPastDue}
+                    n={bucketCount('custodian_past_due')}
+                    onClick={() => setAttentionFilter('custodian_past_due')}
+                    tone="urgent"
+                  />
+                </div>
+              </div>
+            )}
+
             {sessions === null ? (
               <p className="session-frame__pending">{t.loading}</p>
             ) : sessions.length === 0 ? (
               <div className="me-portal__empty">
                 <p className="me-portal__empty-title">{t.none}</p>
               </div>
+            ) : filteredSessions.length === 0 ? (
+              <p className="me-portal__no-matches">{t.noFiltered}</p>
             ) : (
               <ul className="me-portal__cards">
-                {sessions.map((s) => (
+                {filteredSessions.map((s) => (
                   <AdminCard key={s.id} session={s} lang={lang} langPrefix={langPrefix} copy={t} />
                 ))}
               </ul>
@@ -280,5 +384,34 @@ export function AdminInbox({ lang }: { lang: Lang }) {
       </main>
       <Footer lang={lang} />
     </div>
+  )
+}
+
+function AttentionPill({
+  active,
+  label,
+  n,
+  onClick,
+  tone,
+}: {
+  active: boolean
+  label: string
+  n: number
+  onClick: () => void
+  tone?: 'warn' | 'urgent' | 'info'
+}) {
+  const cls = [
+    'admin-inbox__attention-pill',
+    active ? 'admin-inbox__attention-pill--active' : '',
+    tone ? `admin-inbox__attention-pill--${tone}` : '',
+    n === 0 && !active ? 'admin-inbox__attention-pill--empty' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+  return (
+    <button type="button" className={cls} onClick={onClick} role="tab" aria-selected={active}>
+      <span>{label}</span>
+      <span className="admin-inbox__attention-pill-n mono">{n}</span>
+    </button>
   )
 }

@@ -142,8 +142,14 @@ function HandoffModeRow({ lang, values }: { lang: Lang; values: FormData }) {
   if (!raw) return null
   const label = lang === 'fr' ? 'Préférence de gestion' : 'Management preference'
   const map: Record<string, { fr: string; en: string }> = {
-    'tout-a-toi': { fr: 'Tout à toi', en: 'All yours' },
-    'je-men-occupe': { fr: "Je m'en occupe", en: 'I handle it' },
+    'je-men-occupe': {
+      fr: "Je m'en occupe (mode dépositaire recommandé)",
+      en: 'I handle it (custodian, recommended)',
+    },
+    'tout-a-toi': {
+      fr: 'Tout à toi (visiteur autonome côté ops)',
+      en: 'All yours (visitor manages ops)',
+    },
     'on-en-parle': { fr: 'On en parle plus tard', en: "Let's talk later" },
   }
   const friendly = map[raw]?.[lang] ?? raw

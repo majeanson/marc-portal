@@ -19,7 +19,7 @@ const COPY = {
     backHome: "← Retour à l'accueil",
     eyebrow: 'comment ça finit',
     title: "Tu n'es jamais pris au piège",
-    lead: "À la fin de chaque engagement, deux modes possibles. Tu choisis celui qui te convient — et tu peux changer d'avis n'importe quand, gratuit, en environ une semaine.",
+    lead: "À la fin de chaque engagement, deux modes possibles. Par défaut, je m'en occupe (mode dépositaire, 200 $/an) — c'est ce qui me permet de te livrer sans avoir à t'expliquer DNS, Cloudflare et Resend. Tu peux opter pour « Tout à toi » à la place, si tu maîtrises déjà ta stack. Et tu peux changer d'avis n'importe quand, gratuit, en environ une semaine.",
     asOf: 'En vigueur : 2026-05-15.',
 
     modes: {
@@ -27,34 +27,35 @@ const COPY = {
       sub: 'Mêmes livrables, mêmes garanties. Seule change la question de qui détient les clés.',
       items: [
         {
-          name: 'Tout à toi',
-          eyebrow: 'mode par défaut',
-          lead: 'Tu détiens repo, domaine et comptes dès le jour 1.',
-          bullets: [
-            'Le repo GitHub est sous ton compte (ou celui de ton entreprise)',
-            'Le domaine est enregistré à ton nom chez le registrar de ton choix',
-            'Le compte Cloudflare (hébergement) est au tien',
-            'Le compte Resend (courriels) est au tien',
-            'Je suis collaborateur invité pendant le projet — tu me retires en un clic à la fin',
-          ],
-          cost: 'Gratuit. C’est le mode par défaut.',
-          autonomy:
-            "Tu peux migrer ou tout reprendre à n'importe quel moment, sans question. Rien à dénouer.",
-        },
-        {
           name: "Je m'en occupe",
-          eyebrow: 'mode dépositaire',
-          lead: "Je garde les clés. Tu peux les récupérer n'importe quand.",
+          eyebrow: 'mode par défaut · recommandé',
+          lead: "Je garde les clés et j'opère ton site. Tu peux reprendre la garde quand tu veux.",
           bullets: [
             'Je détiens repo, domaine et comptes en mon nom (en dépositaire)',
-            'Je gère renouvellements de domaine, certificats, mises à jour de sécurité',
+            'Je gère DNS, renouvellements de domaine, certificats, mises à jour de sécurité',
+            'Resend (SPF, DKIM, DMARC), Cloudflare Pages, exports D1 : à mon nom, sous ma responsabilité',
             'Petites retouches incluses (jusqu’à 2 h / mois)',
             "Au-delà de 2 h, je facture à l'heure (au tarif Tier 2), seulement après ton OK",
             'Renouvellement annuel ; si non renouvelé, bascule automatique vers « Tout à toi »',
           ],
-          cost: '200 $ / an (couvre domaine + petites retouches)',
+          cost: '200 $ / an (couvre domaine + petites retouches + ops)',
           autonomy:
             "Tu peux basculer vers « Tout à toi » n'importe quand, gratuit, en environ une semaine. Aucun frais de sortie, aucune question.",
+        },
+        {
+          name: 'Tout à toi',
+          eyebrow: 'à la place du dépositaire',
+          lead: 'Tu reprends tout à ton nom à la livraison. Pour visiteurs déjà à l’aise avec leur stack.',
+          bullets: [
+            'Le repo GitHub passe sous ton compte (ou celui de ton entreprise)',
+            'Le domaine est enregistré à ton nom chez le registrar de ton choix',
+            'Le compte Cloudflare (hébergement) et Resend (courriels) sont à toi',
+            'Tu gères DNS, renouvellements, certificats, secrets — Marc n’assure plus le service',
+            'Demande une confirmation explicite (checklist de compétences) à la livraison',
+          ],
+          cost: 'Gratuit. Réservé aux visiteurs autonomes côté ops.',
+          autonomy:
+            "Tu peux migrer ou tout reprendre à n'importe quel moment, sans question. Rien à dénouer.",
         },
       ],
     },
@@ -155,7 +156,7 @@ const COPY = {
 
     cta: {
       title: 'Tu peux décider à la fin',
-      body: "Pas besoin de choisir maintenant. Tu peux indiquer une préférence sur le formulaire d'intake ou attendre la livraison — la décision est confirmée seulement à ce moment-là.",
+      body: "Par défaut tu pars en mode dépositaire (200 $/an) à la livraison. Si tu préfères « Tout à toi » à la place, tu coches une case de compétences techniques (DNS, Cloudflare, D1, Resend, rotation de clés) avant de confirmer — sinon, je m'en occupe.",
       intakeCta: 'Ouvrir le formulaire →',
       pricingCta: 'Voir les prix',
     },
@@ -166,7 +167,7 @@ const COPY = {
     backHome: '← Back home',
     eyebrow: 'how it ends',
     title: 'You are never trapped',
-    lead: 'At the end of every engagement, two possible modes. You pick the one that fits — and you can switch your mind anytime, free, in about a week.',
+    lead: "At the end of every engagement, two possible modes. By default, I handle it (custodian mode, $200/yr) — that's what lets me ship without having to teach you DNS, Cloudflare, and Resend. You can opt out for \"All yours\" instead, if you already own your stack. And you can switch your mind anytime, free, in about a week.",
     asOf: 'Effective: 2026-05-15.',
 
     modes: {
@@ -174,34 +175,35 @@ const COPY = {
       sub: 'Same deliverables, same guarantees. Only the question of who holds the keys changes.',
       items: [
         {
-          name: 'All yours',
-          eyebrow: 'default mode',
-          lead: 'You hold the repo, domain, and accounts from day 1.',
-          bullets: [
-            "The GitHub repo lives under your account (or your company's)",
-            'The domain is registered in your name at the registrar of your choice',
-            'The Cloudflare account (hosting) is yours',
-            'The Resend account (email) is yours',
-            "I'm an invited collaborator during the project — you remove me in one click at the end",
-          ],
-          cost: 'Free. This is the default mode.',
-          autonomy:
-            'You can migrate or take everything over at any time, no questions asked. Nothing to untangle.',
-        },
-        {
           name: 'I handle it',
-          eyebrow: 'custodian mode',
-          lead: 'I hold the keys. You can take them back anytime.',
+          eyebrow: 'default mode · recommended',
+          lead: 'I hold the keys and operate your site. You can take them back anytime.',
           bullets: [
             'I hold repo, domain, and accounts in my name (as custodian)',
-            'I manage domain renewals, TLS certificates, security updates',
+            'I manage DNS, domain renewals, TLS certificates, security updates',
+            'Resend (SPF, DKIM, DMARC), Cloudflare Pages, D1 exports: in my name, on my hook',
             'Small tweaks included (up to 2h / month)',
             'Beyond 2h, I bill hourly (at the Tier 2 rate), only after you approve',
             "Annual renewal; if not renewed, auto-switch to 'All yours'",
           ],
-          cost: '$200 / year (covers domain + small tweaks)',
+          cost: '$200 / year (covers domain + small tweaks + ops)',
           autonomy:
             "You can switch to 'All yours' anytime, free, in about a week. No exit fee, no questions.",
+        },
+        {
+          name: 'All yours',
+          eyebrow: 'opt out of custodian',
+          lead: 'You take everything at delivery. For visitors already comfortable with their stack.',
+          bullets: [
+            "The GitHub repo moves under your account (or your company's)",
+            'The domain is registered in your name at the registrar of your choice',
+            'Cloudflare (hosting) and Resend (email) accounts are yours',
+            "You manage DNS, renewals, certificates, secrets — I'm no longer on the hook",
+            'Requires an explicit confirmation (skills checklist) at delivery',
+          ],
+          cost: 'Free. For visitors who already own the ops stack.',
+          autonomy:
+            'You can migrate or take everything over at any time, no questions asked. Nothing to untangle.',
         },
       ],
     },
@@ -302,7 +304,7 @@ const COPY = {
 
     cta: {
       title: 'You can decide at the end',
-      body: 'No need to choose now. You can indicate a preference on the intake form or wait until delivery — the decision is only locked in at that point.',
+      body: "By default you go into custodian mode ($200/yr) at delivery. If you'd rather pick \"All yours\" instead, you tick a technical-skills checkbox (DNS, Cloudflare, D1, Resend, key rotation) before confirming — otherwise, I handle it.",
       intakeCta: 'Open the form →',
       pricingCta: 'See pricing',
     },

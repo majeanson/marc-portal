@@ -23,8 +23,11 @@ interface SessionRowMock {
   showcased_at: number | null
   showcase_title: string | null
   showcase_tagline: string | null
+  tier?: number | null
+  tier3_amount_cents?: number | null
   custodian_status?: string | null
   custodian_subscription_id?: string | null
+  all_yours_acknowledged_at?: number | null
 }
 
 interface PaymentRowMock {
@@ -588,6 +591,50 @@ class MockPreparedStatement {
       const id = a[1] as string
       const row = this.db.sessions.get(id)
       if (row) row.updated_at = a[0] as number
+      return row ? 1 : 0
+    }
+
+    // UPDATE sessions SET tier = ?, updated_at = ? WHERE id = ?
+    if (sql.startsWith('UPDATE sessions SET tier = ?, updated_at = ?')) {
+      const id = a[2] as string
+      const row = this.db.sessions.get(id)
+      if (row) {
+        ;(row as Record<string, unknown>).tier = a[0]
+        row.updated_at = a[1] as number
+      }
+      return row ? 1 : 0
+    }
+
+    // UPDATE sessions SET tier3_amount_cents = ?, updated_at = ? WHERE id = ?
+    if (sql.startsWith('UPDATE sessions SET tier3_amount_cents = ?, updated_at = ?')) {
+      const id = a[2] as string
+      const row = this.db.sessions.get(id)
+      if (row) {
+        ;(row as Record<string, unknown>).tier3_amount_cents = a[0]
+        row.updated_at = a[1] as number
+      }
+      return row ? 1 : 0
+    }
+
+    // UPDATE sessions SET all_yours_acknowledged_at = ?, updated_at = ? WHERE id = ?
+    if (sql.startsWith('UPDATE sessions SET all_yours_acknowledged_at = ?, updated_at = ?')) {
+      const id = a[2] as string
+      const row = this.db.sessions.get(id)
+      if (row) {
+        row.all_yours_acknowledged_at = a[0] as number | null
+        row.updated_at = a[1] as number
+      }
+      return row ? 1 : 0
+    }
+
+    // UPDATE sessions SET all_yours_acknowledged_at = NULL, updated_at = ? WHERE id = ?
+    if (sql.startsWith('UPDATE sessions SET all_yours_acknowledged_at = NULL, updated_at = ?')) {
+      const id = a[1] as string
+      const row = this.db.sessions.get(id)
+      if (row) {
+        row.all_yours_acknowledged_at = null
+        row.updated_at = a[0] as number
+      }
       return row ? 1 : 0
     }
 

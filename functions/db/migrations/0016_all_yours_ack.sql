@@ -1,0 +1,19 @@
+-- Visitor's explicit acknowledgment that they accept "Tout à toi" / "All
+-- yours" mode at delivery — that is, they're opting out of the $200/yr
+-- Custodian subscription and they understand they're on the hook for the
+-- ops stack (DNS, Cloudflare Pages, D1 schema, Resend SPF/DKIM, key
+-- rotation, etc.).
+--
+-- Why the column exists: Custodian is the recommended default now. The old
+-- model where "do nothing = All yours" was implicit (and silent) means the
+-- product couldn't tell the difference between "visitor decided All yours"
+-- and "visitor never decided." This breaks Marc's ability to follow up
+-- post-shipping. Once this column has a value, the decision is recorded
+-- and the AdminInbox stops surfacing the session as "decision pending."
+--
+-- Unix seconds when the visitor ticked "I acknowledge the threshold" and
+-- clicked Confirm in PaymentActions. NULL = no explicit ack. Once set,
+-- never cleared by the system (data is data); the visitor can still
+-- subscribe to Custodian afterward — the UI reads the live custodian_status
+-- as the *current* mode and treats this column as a historical signal.
+ALTER TABLE sessions ADD COLUMN all_yours_acknowledged_at INTEGER;

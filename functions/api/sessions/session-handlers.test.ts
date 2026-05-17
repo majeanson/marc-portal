@@ -27,6 +27,8 @@ vi.mock('../../_lib/email', () => ({
   sendStatusChangeNotification: vi.fn().mockResolvedValue(true),
   sendIntakeEditedNotification: vi.fn().mockResolvedValue(true),
   sendWithdrawalNotification: vi.fn().mockResolvedValue(true),
+  sendTierAssignedNotification: vi.fn().mockResolvedValue(true),
+  sendAllYoursAckNotification: vi.fn().mockResolvedValue(true),
 }))
 
 import { currentEmail } from '../../_lib/auth'
@@ -74,6 +76,10 @@ function seedSession(db: D1Mock, over: Record<string, unknown> = {}) {
     updated_at: 1700000000,
     deleted_at: null,
     status_history: null,
+    tier: null,
+    tier3_amount_cents: null,
+    custodian_status: null,
+    all_yours_acknowledged_at: null,
     ...over,
   })
 }
@@ -245,6 +251,189 @@ describe('PATCH /api/sessions/:id — intake edits', () => {
     seedSession(ctx.env._db)
     const res = await onRequestPatch(ctx as never)
     expect(res.status).toBe(403)
+  })
+})
+
+describe('PATCH /api/sessions/:id — tier assignment notification', () => {
+  it('null → tier 1 fires sendTierAssignedNotification with 30000 cents', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier: 1 },
+    })
+    seedSession(ctx.env._db)
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
+    const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(call[3]).toBe(1) // tier
+    expect(call[4]).toBe(30_000) // cents
+  })
+
+  it('null → tier 2 fires email with 150000 (total) cents', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier: 2 },
+    })
+    seedSession(ctx.env._db)
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
+    const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(call[3]).toBe(2)
+    expect(call[4]).toBe(150_000)
+  })
+
+  it('null → tier 3 WITHOUT quote does NOT fire email (visitor has nothing to act on)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier: 3 },
+    })
+    seedSession(ctx.env._db)
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(email.sendTierAssignedNotification).not.toHaveBeenCalled()
+  })
+
+  it('tier=3 already set, quote set for the first time → fires email', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier3AmountCents: 450_000 },
+    })
+    seedSession(ctx.env._db, { tier: 3, tier3_amount_cents: null })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
+    const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(call[3]).toBe(3)
+    expect(call[4]).toBe(450_000)
+  })
+
+  it('tier and quote set in one PATCH → fires email with the quote', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier: 3, tier3AmountCents: 600_000 },
+    })
+    seedSession(ctx.env._db)
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
+    const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(call[3]).toBe(3)
+    expect(call[4]).toBe(600_000)
+  })
+
+  it('changing an existing tier (1 → 2) does NOT fire email (only null→value)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier: 2 },
+    })
+    seedSession(ctx.env._db, { tier: 1 })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(email.sendTierAssignedNotification).not.toHaveBeenCalled()
+  })
+
+  it('null → tier 0 (redirect to patron) fires email', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier: 0 },
+    })
+    seedSession(ctx.env._db)
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
+    const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(call[3]).toBe(0)
+    expect(call[4]).toBe(null) // tier 0 = free, no price
+  })
+})
+
+describe('PATCH /api/sessions/:id — acknowledgeAllYours', () => {
+  it('visitor self-ack sets timestamp + notifies Marc', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'visitor@x.com',
+      body: { acknowledgeAllYours: true },
+    })
+    seedSession(ctx.env._db, { status: 'shipped' })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    const row = ctx.env._db.sessions.get('s1')!
+    expect(row.all_yours_acknowledged_at).not.toBeNull()
+    expect(email.sendAllYoursAckNotification).toHaveBeenCalledOnce()
+  })
+
+  it('admin-on-behalf ack does NOT notify Marc (admin already knows)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { acknowledgeAllYours: true },
+    })
+    seedSession(ctx.env._db, { status: 'shipped' })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(email.sendAllYoursAckNotification).not.toHaveBeenCalled()
+  })
+
+  it('re-ack on already-acked row is a no-op (no second email)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'visitor@x.com',
+      body: { acknowledgeAllYours: true },
+    })
+    seedSession(ctx.env._db, {
+      status: 'shipped',
+      all_yours_acknowledged_at: 1700000050,
+    })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    // Timestamp didn't change; no new email.
+    expect(ctx.env._db.sessions.get('s1')!.all_yours_acknowledged_at).toBe(1700000050)
+    expect(email.sendAllYoursAckNotification).not.toHaveBeenCalled()
+  })
+
+  it('acknowledgeAllYours=false clears the timestamp', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { acknowledgeAllYours: false },
+    })
+    seedSession(ctx.env._db, {
+      status: 'shipped',
+      all_yours_acknowledged_at: 1700000050,
+    })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(ctx.env._db.sessions.get('s1')!.all_yours_acknowledged_at).toBeNull()
+  })
+
+  it('non-owner non-admin gets 403', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'someone-else@x.com',
+      body: { acknowledgeAllYours: true },
+    })
+    seedSession(ctx.env._db, { status: 'shipped' })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(403)
+  })
+
+  it('rejects non-boolean payload', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'visitor@x.com',
+      body: { acknowledgeAllYours: 'yes' },
+    })
+    seedSession(ctx.env._db, { status: 'shipped' })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(400)
   })
 })
 

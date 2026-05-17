@@ -36,6 +36,16 @@ export interface SessionRow {
    * yet set a quote. PaymentActions disables the "Payer (sur devis)" button
    * client-side when this is NULL on a tier-3 session. */
   tier3_amount_cents: number | null
+  /** Custodian-subscription state, mirrored from the canonical source (the
+   *  payments summary). Values match CustodianStatus in paymentsApi.ts; NULL
+   *  is treated as 'none' downstream. Surfaced on the row so admin filters
+   *  don't need a per-session summary fetch. */
+  custodian_status: string | null
+  /** Unix seconds when the visitor explicitly confirmed "Tout à toi" /
+   *  "All yours" (opted out of Custodian). NULL = no explicit ack yet.
+   *  Set via PATCH `acknowledgeAllYours: true`. Historical signal — the
+   *  *current* mode is always read from custodian_status. */
+  all_yours_acknowledged_at: number | null
 }
 
 export interface AttachmentRow {
@@ -94,6 +104,9 @@ export function patchSession(
     tier?: SessionTier | null
     /** Admin-only tier-3 quoted amount in CAD cents. Pass null to clear. */
     tier3AmountCents?: number | null
+    /** Visitor-self or admin: explicit Tout-à-toi confirmation (the visitor
+     *  opts out of Custodian). true sets the timestamp; false clears. */
+    acknowledgeAllYours?: boolean
   },
 ): Promise<{ session: SessionRow }> {
   return api(`/api/sessions/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch })

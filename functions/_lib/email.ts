@@ -281,6 +281,185 @@ export async function sendTier2DepositReceiptAndFinalPrompt(
   return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
 }
 
+/**
+ * Marc assigned a tier to the visitor's session (or set the Tier-3 quote
+ * amount for the first time on a tier-3 row). Visitor gets a short email
+ * pointing them to the session page where the "Pay" button now lives.
+ *
+ * Called from PATCH /api/sessions/:id when:
+ *   - tier transitions from null to a non-null value (any tier), OR
+ *   - tier3_amount_cents transitions from null to a value on a tier=3 row
+ *     (i.e. the quote that unlocks the visitor's self-pay button).
+ *
+ * Tier 0 still sends an email — it's the "free, here's the patron" outcome,
+ * and the visitor needs to know Marc decided + where to look. The body
+ * differs per tier so each path reads as the right kind of news.
+ *
+ * `amountCadCents` is the canonical billed amount (300 / 1500 / quote) used
+ * to render an at-a-glance price line; null for tier 0 and for tier 3 when
+ * no quote has been set yet (in which case this function shouldn't be
+ * called — the caller is responsible).
+ */
+export async function sendTierAssignedNotification(
+  apiKey: string,
+  visitorEmail: string,
+  sessionId: string,
+  tier: 0 | 1 | 2 | 3,
+  amountCadCents: number | null,
+  origin: string,
+  lang: 'fr' | 'en',
+  /** True when this email fires from a Tier-3 *quote* that landed AFTER the
+   *  session was already active (admin set tier=3 silently first, then the
+   *  amount later). Lets the subject read "Quote ready" instead of
+   *  "Marc accepted", since acceptance happened earlier. Ignored for
+   *  tier 0/1/2 and for tier-3-with-quote-set-at-same-time. */
+  isLateQuote: boolean = false,
+): Promise<boolean> {
+  const langPrefix = lang === 'en' ? '/en' : ''
+  const sessionUrl = `${origin}${langPrefix}/session/${sessionId}`
+  const priceLine = amountCadCents != null ? formatCadCents(amountCadCents, lang) : null
+
+  // Per-tier subject + lead. Tier 0 is the "redirect to patron" exit; the
+  // other three are paid engagements.
+  let subject: string
+  let lead: string
+  let body: string
+  let cta: string
+  if (tier === 0) {
+    subject = lang === 'fr' ? 'Marc t’a répondu — Tier 0 (gratuit)' : 'Marc replied — Tier 0 (free)'
+    lead =
+      lang === 'fr'
+        ? 'Ton problème entre dans le Tier 0 : trop petit pour engager un dev.'
+        : "Your problem fits Tier 0: too small to hire a dev for."
+    body =
+      lang === 'fr'
+        ? 'Marc te redirige vers un patron prêt-à-utiliser ou un template — détails dans le fil de la session.'
+        : 'Marc redirects you to a ready-made pattern or template — details in the session thread.'
+    cta = lang === 'fr' ? 'Voir la suite' : "See what's next"
+  } else if (tier === 2) {
+    // Tier 2 is split — call out the 50/50 explicitly so the visitor
+    // doesn't think the deposit IS the total.
+    const halfLine = priceLine
+      ? lang === 'fr'
+        ? `Dépôt de ${formatCadCents(amountCadCents! / 2, lang)} pour démarrer (50 %), solde à la livraison.`
+        : `Deposit of ${formatCadCents(amountCadCents! / 2, lang)} to start (50%), balance at delivery.`
+      : ''
+    subject =
+      lang === 'fr'
+        ? 'Marc accepte — Tier 2 (~1 500 $) · paie le dépôt pour démarrer'
+        : 'Marc accepted — Tier 2 (~$1,500) · pay the deposit to start'
+    lead =
+      lang === 'fr'
+        ? `Marc a accepté ton projet en Tier 2${priceLine ? ` (≈ ${priceLine})` : ''}.`
+        : `Marc accepted your project at Tier 2${priceLine ? ` (≈ ${priceLine})` : ''}.`
+    body =
+      lang === 'fr'
+        ? `${halfLine} Le bouton « Payer le dépôt » est maintenant actif sur la page de ta session.`
+        : `${halfLine} The "Pay the deposit" button is now live on your session page.`
+    cta = lang === 'fr' ? 'Ouvrir ma session' : 'Open my session'
+  } else if (tier === 3) {
+    if (isLateQuote) {
+      // Acceptance happened earlier; this email is specifically the
+      // quote landing. Subject + lead reflect that to avoid sounding like
+      // a second acceptance.
+      subject =
+        lang === 'fr'
+          ? `Devis Tier 3 prêt${priceLine ? ` (${priceLine})` : ''} · paie pour démarrer`
+          : `Tier 3 quote ready${priceLine ? ` (${priceLine})` : ''} · pay to start`
+      lead =
+        lang === 'fr'
+          ? priceLine
+            ? `Marc a fixé le montant de ton projet Tier 3 à ${priceLine}.`
+            : 'Marc a fixé le montant de ton projet Tier 3.'
+          : priceLine
+            ? `Marc set the amount for your Tier 3 project to ${priceLine}.`
+            : 'Marc set the amount for your Tier 3 project.'
+    } else {
+      subject =
+        lang === 'fr'
+          ? `Marc accepte — devis Tier 3${priceLine ? ` (${priceLine})` : ''}`
+          : `Marc accepted — Tier 3 quote${priceLine ? ` (${priceLine})` : ''}`
+      lead =
+        lang === 'fr'
+          ? priceLine
+            ? `Marc a accepté ton projet en Tier 3 et a fixé le montant à ${priceLine}.`
+            : 'Marc a accepté ton projet en Tier 3.'
+          : priceLine
+            ? `Marc accepted your project at Tier 3 and set the amount to ${priceLine}.`
+            : 'Marc accepted your project at Tier 3.'
+    }
+    body =
+      lang === 'fr'
+        ? 'Le bouton « Payer (sur devis) » est actif sur la page de ta session. Si tu as des questions, écris dans le fil — Marc répond là.'
+        : 'The "Pay (quoted)" button is live on your session page. If you have questions, drop them in the thread — Marc replies there.'
+    cta = lang === 'fr' ? 'Ouvrir ma session' : 'Open my session'
+  } else {
+    // Tier 1
+    subject =
+      lang === 'fr'
+        ? `Marc accepte — Tier 1${priceLine ? ` (${priceLine})` : ''} · paie pour démarrer`
+        : `Marc accepted — Tier 1${priceLine ? ` (${priceLine})` : ''} · pay to start`
+    lead =
+      lang === 'fr'
+        ? `Marc a accepté ton projet en Tier 1${priceLine ? ` (${priceLine})` : ''}.`
+        : `Marc accepted your project at Tier 1${priceLine ? ` (${priceLine})` : ''}.`
+    body =
+      lang === 'fr'
+        ? 'Le bouton « Payer Tier 1 » est maintenant actif sur la page de ta session. Une fois le paiement reçu, je démarre.'
+        : 'The "Pay Tier 1" button is now live on your session page. Once the payment lands, I start.'
+    cta = lang === 'fr' ? 'Ouvrir ma session' : 'Open my session'
+  }
+
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
+<p><strong>${lead}</strong></p>
+<p style="color:#444">${body}</p>
+<p><a href="${sessionUrl}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">${cta}</a></p>
+<p style="color:#999;font-size:12px;word-break:break-all">${sessionUrl}</p>
+</body></html>`
+  const text = `${lead}\n\n${body}\n\n${cta}: ${sessionUrl}`
+  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+}
+
+/** Format CAD cents per OQLF (FR) / standard locale (EN). Mirrors the
+ *  client-side formatter in PaymentActions.tsx — duplicated here because
+ *  Workers Intl.NumberFormat supports CAD currency formatting at runtime.
+ *  Round-dollar amounts drop the cents portion so subjects/bodies read as
+ *  "$300" / "300 $" rather than "$300.00" / "300,00 $". */
+function formatCadCents(cents: number, lang: 'fr' | 'en'): string {
+  const isRound = cents % 100 === 0
+  return new Intl.NumberFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', {
+    style: 'currency',
+    currency: 'CAD',
+    currencyDisplay: lang === 'fr' ? 'symbol' : 'narrowSymbol',
+    minimumFractionDigits: isRound ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(cents / 100)
+}
+
+/**
+ * The visitor just explicitly confirmed "Tout à toi" / "All yours" — they
+ * opted OUT of Custodian. Marc gets a heads-up so he can plan the handoff
+ * accordingly. Visitor doesn't get an email back; the UI confirms it
+ * on /session/:id.
+ */
+export async function sendAllYoursAckNotification(
+  apiKey: string,
+  marcEmail: string,
+  visitorEmail: string,
+  sessionId: string,
+  origin: string,
+): Promise<boolean> {
+  const subject = "Visitor confirmed 'All yours' (opted out of Custodian)"
+  const url = `${origin}/admin/inbox/${sessionId}`
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
+<p><strong>${escapeHtml(visitorEmail)}</strong> ticked the skills checklist and confirmed Tout à toi.</p>
+<p style="color:#444">They take ownership of the ops stack at handoff. Plan the asset transfer accordingly.</p>
+<p><a href="${url}">Open in admin</a></p>
+</body></html>`
+  const text = `${visitorEmail} confirmed Tout à toi (opted out of Custodian).\n\n${url}`
+  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+}
+
 function statusLabel(status: string, lang: 'fr' | 'en'): string {
   const FR: Record<string, string> = {
     draft: 'brouillon',

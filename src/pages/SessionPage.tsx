@@ -26,6 +26,8 @@ import { IntakeSummary } from '../components/intake/IntakeSummary'
 import { SessionStatusStrip } from '../components/intake/SessionStatusStrip'
 import { SessionTierStrip } from '../components/intake/SessionTierStrip'
 import { PaymentActions } from '../components/PaymentActions'
+import { SessionWhatsNext } from '../components/SessionWhatsNext'
+import { getPaymentSummary, type PaymentSummary } from '../lib/paymentsApi'
 import { SessionHeader } from '../components/intake/SessionHeader'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDateTime, formatRelativeWindow } from '../lib/format'
@@ -241,6 +243,11 @@ export function SessionPage({ lang }: { lang: Lang }) {
   const [messages, setMessages] = useState<MessageRow[]>([])
   const [advancements, setAdvancements] = useState<AdvancementRow[] | null>(null)
   const [advancementsLoading, setAdvancementsLoading] = useState<boolean>(true)
+  // Payment summary mirrors what PaymentActions fetches internally. Lifted
+  // here so SessionWhatsNext can render precise next-step copy (e.g. "you
+  // paid the deposit, balance is at delivery") without an additional round-
+  // trip. PaymentActions still self-fetches in MePortal compact cards.
+  const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [error, setError] = useState<'forbidden' | 'notfound' | null>(null)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
@@ -344,6 +351,25 @@ export function SessionPage({ lang }: { lang: Lang }) {
       cancelled = true
     }
   }, [authLoading, email, id])
+
+  // Payment summary — drives SessionWhatsNext's tier-aware copy. Failures
+  // (Stripe unconfigured 503, network) just keep summary null and the strip
+  // falls back to status-only copy. Effect re-fires on session updates so
+  // post-payment redirects refresh the strip.
+  useEffect(() => {
+    if (authLoading || !id || !email) return
+    let cancelled = false
+    getPaymentSummary(id)
+      .then((s) => {
+        if (!cancelled) setSummary(s)
+      })
+      .catch(() => {
+        if (!cancelled) setSummary(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [authLoading, email, id, session?.updated_at])
 
   const onAdvCreated = useCallback((row: AdvancementRow) => {
     setAdvancements((prev) => (prev ? [row, ...prev] : [row]))
@@ -708,7 +734,19 @@ export function SessionPage({ lang }: { lang: Lang }) {
               />
             )}
 
-            {session.status === 'active' && <PaymentActions session={session} lang={lang} />}
+            <SessionWhatsNext
+              session={session}
+              summary={summary}
+              isAdmin={isAdmin}
+              lang={lang}
+            />
+
+            {/* Render PaymentActions for active *and* shipped sessions: the
+                ownership-decision (All yours vs Custodian) sections live
+                inside the component and need the shipped state to surface. */}
+            {(session.status === 'active' || session.status === 'shipped') && (
+              <PaymentActions session={session} lang={lang} />
+            )}
 
             <SessionHeader
               eyebrow={

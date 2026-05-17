@@ -72,6 +72,12 @@ function buildSections(lang: Lang): Section[] {
             desc: 'Soft-deleted sessions. Restore or hard-delete from here.',
             badge: '/admin/trash',
           },
+          {
+            href: `${langPrefix}/admin/custodians`,
+            title: 'Custodians',
+            desc: 'Active "I handle it" subscriptions, past-due failures, ended/switched history. MRR at a glance.',
+            badge: '/admin/custodians',
+          },
         ],
       },
       {
@@ -162,6 +168,12 @@ function buildSections(lang: Lang): Section[] {
           title: 'Corbeille',
           desc: 'Sessions supprimées (soft-delete). Restaure ou supprime définitivement.',
           badge: '/admin/trash',
+        },
+        {
+          href: `${langPrefix}/admin/custodians`,
+          title: 'Dépositaires',
+          desc: 'Abonnements « Je m’en occupe » actifs, paiements en retard, historique des bascules. MRR d’un coup d’œil.',
+          badge: '/admin/custodians',
         },
       ],
     },

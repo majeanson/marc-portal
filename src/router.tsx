@@ -30,6 +30,9 @@ const HandoffChecklist = lazy(() =>
 )
 const AdminInbox = lazy(() => import('./pages/AdminInbox').then((m) => ({ default: m.AdminInbox })))
 const AdminTrash = lazy(() => import('./pages/AdminTrash').then((m) => ({ default: m.AdminTrash })))
+const AdminCustodians = lazy(() =>
+  import('./pages/AdminCustodians').then((m) => ({ default: m.AdminCustodians })),
+)
 const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
 const AdminAppearance = lazy(() =>
   import('./pages/AdminAppearance').then((m) => ({ default: m.AdminAppearance })),
@@ -288,6 +291,22 @@ export const router = createBrowserRouter(
         element={
           <L>
             <AdminTrash lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/admin/custodians"
+        element={
+          <L>
+            <AdminCustodians lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/admin/custodians"
+        element={
+          <L>
+            <AdminCustodians lang="en" />
           </L>
         }
       />

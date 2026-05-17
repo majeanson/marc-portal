@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 import { PaymentActions } from './PaymentActions'
 import * as paymentsApi from '../lib/paymentsApi'
+import * as sessionsApi from '../lib/sessionsApi'
 import type { PaymentSummary, PaymentRow } from '../lib/paymentsApi'
 import type { SessionRow } from '../lib/sessionsApi'
 
@@ -19,6 +21,9 @@ function mkSession(overrides: Partial<SessionRow> = {}): SessionRow {
     showcase_title: null,
     showcase_tagline: null,
     tier: 1,
+    tier3_amount_cents: null,
+    custodian_status: null,
+    all_yours_acknowledged_at: null,
     ...overrides,
   }
 }
@@ -109,10 +114,10 @@ describe('PaymentActions tier 2 split flow', () => {
 })
 
 describe('PaymentActions custodian section', () => {
-  it('shows the "Activate custodian mode" CTA after deposit is paid', async () => {
-    // Gating tightened: custodian section only surfaces once the visitor has
-    // paid for work (or already has a sub). A tier-1 visitor who paid their
-    // $300 deposit is the canonical "ready to consider custodian" moment.
+  it('shows the "Activate custodian mode" CTA at delivery (status=shipped)', async () => {
+    // Gating now matches /handoff's promise: the ownership decision (All
+    // yours vs Custodian) belongs at delivery, not mid-build. The trigger
+    // is session.status === 'shipped', not hasPaidDeposit.
     mockSummary(
       mkSummary({
         custodianStatus: 'none',
@@ -120,16 +125,37 @@ describe('PaymentActions custodian section', () => {
         rows: [mkRow({ kind: 'tier1' })],
       }),
     )
-    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    render(<PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Activate custodian mode/ })).toBeInTheDocument(),
     )
     expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument()
+    // The All-yours block renders too, as the explicit "current mode"
+    // counterpart so the visitor sees the choice as a pair.
+    expect(screen.getByRole('heading', { name: /All yours/ })).toBeInTheDocument()
   })
 
-  it('hides the custodian section pre-engagement (no deposit yet, no sub)', async () => {
+  it('hides the custodian section mid-build (active, deposit paid, no sub)', async () => {
+    // Even after deposit is paid, the custodian decision is held back until
+    // the project actually ships. Mirrors /handoff: "decided at delivery".
+    mockSummary(
+      mkSummary({
+        custodianStatus: 'none',
+        hasPaidDeposit: true,
+        rows: [mkRow({ kind: 'tier1' })],
+      }),
+    )
+    render(<PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />)
+    await waitFor(() =>
+      expect(screen.getByText(/Paid · \$300\.00/)).toBeInTheDocument(),
+    )
+    expect(screen.queryByRole('heading', { name: /Custodian mode/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /All yours/ })).not.toBeInTheDocument()
+  })
+
+  it('hides the custodian section pre-engagement (active, no payment, no sub)', async () => {
     mockSummary(mkSummary({ custodianStatus: 'none' }))
-    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    render(<PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />)
     // Project section renders (tier=1, no payment yet)
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /Project payment/ })).toBeInTheDocument(),
@@ -186,5 +212,94 @@ describe('PaymentActions project section', () => {
       expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument(),
     )
     expect(screen.queryByRole('heading', { name: /Project payment/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('PaymentActions All-yours acknowledgment', () => {
+  it('decision-pending: Custodian is primary (renders first), All-yours requires checkbox + confirm', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'none', hasPaidDeposit: true }))
+    render(
+      <PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />,
+    )
+    // Both sections present
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument(),
+    )
+    expect(screen.getByRole('heading', { name: /All yours/ })).toBeInTheDocument()
+    // Skills heading + ack copy visible
+    expect(screen.getByText(/I can handle:/)).toBeInTheDocument()
+    expect(screen.getByText(/Cloudflare Pages/)).toBeInTheDocument()
+    // Confirm button disabled until checkbox is ticked.
+    const confirm = screen.getByRole('button', { name: /Confirm "All yours"/ })
+    expect(confirm).toBeDisabled()
+    fireEvent.click(screen.getByRole('checkbox'))
+    expect(confirm).not.toBeDisabled()
+  })
+
+  it('clicking Confirm patches the session and renders "Confirmed on X"', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'none', hasPaidDeposit: true }))
+    // Patch returns the same row with all_yours_acknowledged_at set.
+    const ackedAt = 1730000000
+    vi.spyOn(sessionsApi, 'patchSession').mockResolvedValue({
+      session: {
+        ...mkSession({ tier: 1, status: 'shipped' }),
+        all_yours_acknowledged_at: ackedAt,
+      },
+    })
+    render(
+      <PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />,
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Confirm "All yours"/ })).toBeInTheDocument(),
+    )
+    fireEvent.click(screen.getByRole('checkbox'))
+    fireEvent.click(screen.getByRole('button', { name: /Confirm "All yours"/ }))
+    await waitFor(() =>
+      expect(screen.getByText(/Confirmed on/)).toBeInTheDocument(),
+    )
+    // Once acked, the checkbox + Confirm button disappear.
+    expect(screen.queryByRole('button', { name: /Confirm "All yours"/ })).not.toBeInTheDocument()
+    expect(sessionsApi.patchSession).toHaveBeenCalledWith(expect.any(String), {
+      acknowledgeAllYours: true,
+    })
+  })
+
+  it('already-acked session: shows "Confirmed on X" without ack UI', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'none' }))
+    render(
+      <PaymentActions
+        session={{
+          ...mkSession({ tier: 1, status: 'shipped' }),
+          all_yours_acknowledged_at: 1730000000,
+        }}
+        lang="en"
+      />,
+    )
+    await waitFor(() => expect(screen.getByText(/Confirmed on/)).toBeInTheDocument())
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Confirm "All yours"/ })).not.toBeInTheDocument()
+  })
+
+  it('mid-build (active, no ship) does NOT render either ownership section', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'none', hasPaidDeposit: true }))
+    render(
+      <PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />,
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /Project payment/ })).toBeInTheDocument(),
+    )
+    expect(screen.queryByRole('heading', { name: /Custodian mode/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /All yours/ })).not.toBeInTheDocument()
+  })
+
+  it('custodian active: All-yours section hidden (manage via Stripe portal only)', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'active' }))
+    render(
+      <PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />,
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Manage subscription/ })).toBeInTheDocument(),
+    )
+    expect(screen.queryByRole('heading', { name: /All yours/ })).not.toBeInTheDocument()
   })
 })

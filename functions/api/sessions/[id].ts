@@ -5,8 +5,10 @@
 
 import { currentEmail } from '../../_lib/auth'
 import {
+  sendAllYoursAckNotification,
   sendIntakeEditedNotification,
   sendStatusChangeNotification,
+  sendTierAssignedNotification,
   sendWithdrawalNotification,
 } from '../../_lib/email'
 import type { Env } from '../../_lib/env'
@@ -55,6 +57,12 @@ interface PatchBody {
    * Used by /api/payments/checkout when the visitor self-pays a tier-3
    * project. 10000 (100 CAD) .. 10000000 (100000 CAD). */
   tier3AmountCents?: unknown
+  /** Visitor-self or admin: explicit acknowledgment of "Tout à toi"
+   *  mode (opting out of Custodian). Pass `true` to set
+   *  all_yours_acknowledged_at to now; `false` to clear it back to NULL.
+   *  Only the session owner or admin can set this. Best-effort email to
+   *  Marc on the first-time set. */
+  acknowledgeAllYours?: unknown
 }
 
 export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params }) => {
@@ -211,6 +219,10 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   }
 
   // Tier — admin-only. Accepts 0/1/2/3 or null to clear. Anything else 400s.
+  // tierAssigned is captured so we can fire a tier-assigned email below — but
+  // only on the null→value transition. Tier *changes* (1→2) are not notified;
+  // those should accompany a thread message from Marc anyway.
+  let tierAssigned: 0 | 1 | 2 | 3 | null = null
   if (body.tier !== undefined) {
     if (!admin) return forbidden('only admin can set tier')
     if (
@@ -218,6 +230,9 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
       (typeof body.tier !== 'number' || ![0, 1, 2, 3].includes(body.tier))
     ) {
       return badRequest('tier must be 0, 1, 2, 3, or null')
+    }
+    if (session.tier === null && body.tier !== null) {
+      tierAssigned = body.tier as 0 | 1 | 2 | 3
     }
     await env.DB.prepare(`UPDATE sessions SET tier = ?, updated_at = ? WHERE id = ?`)
       .bind(body.tier, now, id)
@@ -228,6 +243,12 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   // or null to clear. Stored regardless of current tier (admin may quote before
   // switching tier=3 to surface the button to the visitor). checkout.ts reads
   // this when kind='tier3' for visitor-self pays.
+  //
+  // tier3QuoteJustSet: true on the null→value transition so we can fire the
+  // tier-assigned email for the late-quote case (admin set tier=3 silently,
+  // then later set the amount — the amount-set is the *real* moment the
+  // visitor can act on it).
+  let tier3QuoteJustSet = false
   if (body.tier3AmountCents !== undefined) {
     if (!admin) return forbidden('only admin can set tier3AmountCents')
     if (body.tier3AmountCents !== null) {
@@ -238,9 +259,46 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
         return badRequest('tier3AmountCents out of range (10000..10000000 cents)')
       }
     }
+    if (
+      session.tier3_amount_cents === null &&
+      body.tier3AmountCents !== null &&
+      // Either tier is already 3, or we just set it to 3 in this same PATCH.
+      (session.tier === 3 || (tierAssigned === 3))
+    ) {
+      tier3QuoteJustSet = true
+    }
     await env.DB.prepare(`UPDATE sessions SET tier3_amount_cents = ?, updated_at = ? WHERE id = ?`)
       .bind(body.tier3AmountCents, now, id)
       .run()
+  }
+
+  // All-yours acknowledgment — visitor-self or admin. `true` writes a
+  // timestamp (only on the null→value transition, so re-acks are no-ops);
+  // `false` clears it back to NULL (useful when admin wants to reset for
+  // an edge-case decision-take-back). Best-effort email to Marc on the
+  // first-time set so he can plan the handoff.
+  let allYoursJustAcked = false
+  if (body.acknowledgeAllYours !== undefined) {
+    if (!canAccessSession(email, admin, session)) return forbidden()
+    if (typeof body.acknowledgeAllYours !== 'boolean') {
+      return badRequest('acknowledgeAllYours must be a boolean')
+    }
+    if (body.acknowledgeAllYours) {
+      if (session.all_yours_acknowledged_at === null) {
+        allYoursJustAcked = true
+        await env.DB.prepare(
+          `UPDATE sessions SET all_yours_acknowledged_at = ?, updated_at = ? WHERE id = ?`,
+        )
+          .bind(now, now, id)
+          .run()
+      }
+    } else if (session.all_yours_acknowledged_at !== null) {
+      await env.DB.prepare(
+        `UPDATE sessions SET all_yours_acknowledged_at = NULL, updated_at = ? WHERE id = ?`,
+      )
+        .bind(now, id)
+        .run()
+    }
   }
 
   const fresh = await loadSession(env.DB, id)
@@ -264,6 +322,58 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     if (marc) {
       await sendIntakeEditedNotification(env.RESEND_API_KEY, marc, fresh.email, id, origin)
+    }
+  }
+
+  // Visitor confirmed Tout à toi → admin heads-up. Skip when admin did the
+  // patch themselves (they already know). Only on the first-time set.
+  if (allYoursJustAcked && !admin && fresh) {
+    const marc = primaryAdminEmail(env.ADMIN_EMAILS)
+    if (marc) {
+      await sendAllYoursAckNotification(env.RESEND_API_KEY, marc, fresh.email, id, origin)
+    }
+  }
+
+  // Tier assignment (or first-time Tier-3 quote) — fire ONE email per moment
+  // the visitor can take new action. Rules:
+  //   - tier just set to 0/1/2 → email (price is known immediately)
+  //   - tier just set to 3 WITHOUT a quote → silent (visitor has nothing to do
+  //     yet beyond wait; the quote-set fires the email)
+  //   - tier already 3, quote just set → email (this is when the Pay button
+  //     actually appears)
+  //   - tier just set to 3 AND quote set in same PATCH → email (covered by
+  //     tier3QuoteJustSet, which is true when both happen together)
+  if (fresh) {
+    const shouldEmailTier =
+      (tierAssigned !== null && tierAssigned !== 3) ||
+      (tierAssigned === 3 && tier3QuoteJustSet) ||
+      tier3QuoteJustSet
+    if (shouldEmailTier) {
+      const t = (tierAssigned ?? fresh.tier) as 0 | 1 | 2 | 3
+      // Canonical CAD amounts — kept in sync with the public Pricing copy and
+      // with TIER_AMOUNTS in functions/api/payments/checkout.ts.
+      //   tier 0: free (no price)
+      //   tier 1: 300 CAD
+      //   tier 2: 1500 CAD total (deposit + final)
+      //   tier 3: visitor-quoted (tier3_amount_cents)
+      let cents: number | null = null
+      if (t === 1) cents = 30_000
+      else if (t === 2) cents = 150_000
+      else if (t === 3) cents = fresh.tier3_amount_cents
+      // Late-quote case: tier=3 was already set on the row (not assigned in
+      // this PATCH) AND the quote is what just landed. Subject reads as
+      // "quote ready" rather than "Marc accepted".
+      const isLateQuote = t === 3 && tierAssigned !== 3 && tier3QuoteJustSet
+      await sendTierAssignedNotification(
+        env.RESEND_API_KEY,
+        fresh.email,
+        id,
+        t,
+        cents,
+        origin,
+        visitorLang(fresh),
+        isLateQuote,
+      )
     }
   }
 

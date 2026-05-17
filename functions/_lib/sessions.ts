@@ -45,6 +45,17 @@ export interface SessionRow {
    * yet set a quote — visitor's "Payer (sur devis)" button is then disabled
    * client-side. Used by /api/payments/checkout for tier3 visitor-self pays. */
   tier3_amount_cents: number | null
+  /** Custodian-subscription state (one of: 'none' | 'active' | 'past_due' |
+   *  'canceled' | 'switched_to_tout_a_toi'). Mirrored on the row so admin
+   *  listings and the AdminCustodians page can filter without joining the
+   *  payments summary per row. NULL is treated as 'none' downstream. */
+  custodian_status: string | null
+  /** Unix seconds when the visitor explicitly acknowledged opting OUT of
+   *  Custodian mode (i.e. they confirmed "Tout à toi" / "All yours" with
+   *  the skills checklist on /session/:id). NULL = no explicit ack. Set
+   *  via PATCH `acknowledgeAllYours`; persisted forever — the live mode is
+   *  always custodian_status, this is a historical-decision marker. */
+  all_yours_acknowledged_at: number | null
 }
 
 export interface MessageRow {
@@ -109,7 +120,7 @@ export async function loadSession(db: D1Database, id: string): Promise<SessionRo
       `SELECT id, email, intake_json, status, created_at, updated_at,
               deleted_at, status_history,
               showcased_at, showcase_title, showcase_tagline, tier,
-              tier3_amount_cents
+              tier3_amount_cents, custodian_status, all_yours_acknowledged_at
        FROM sessions WHERE id = ?`,
     )
     .bind(id)

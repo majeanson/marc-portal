@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
-import type { SessionRow } from '../lib/sessionsApi'
+import { patchSession, type SessionRow } from '../lib/sessionsApi'
 import {
   getPaymentSummary,
   openCustomerPortal,
@@ -8,6 +8,7 @@ import {
   type PaymentKind,
   type PaymentSummary,
 } from '../lib/paymentsApi'
+import { formatDate } from '../lib/format'
 
 const COPY = {
   fr: {
@@ -19,8 +20,11 @@ const COPY = {
     payTier1: 'Payer Tier 1 (≈ 300,00 $) →',
     payTier2Deposit: 'Payer le dépôt (≈ 750,00 $) →',
     payTier2Final: 'Payer le solde (≈ 750,00 $) →',
+    payTier2FinalHint:
+      'Disponible maintenant si tu veux solder. Sinon, Marc te ping à la livraison — pas pressé.',
     payTier3Quoted: (amount: string) => `Payer ${amount} →`,
-    tier3PendingQuote: 'Devis Tier 3 en attente — Marc t’envoie le montant après triage.',
+    tier3PendingQuote:
+      'Devis Tier 3 en attente — Marc poste le montant dans le fil ci-dessous (et te ping par courriel) sous 72 h.',
     askFirst: 'Question avant de payer ? Écris-moi ↓',
     paid: 'Payé ✓',
     paidAmount: (amount: string) => `Payé · ${amount}`,
@@ -28,17 +32,20 @@ const COPY = {
     fullyRefunded: (amount: string) => `Remboursé · ${amount}`,
     checkoutPending: 'Ouverture du paiement…',
 
-    // Custodian section
+    // Custodian section — now framed as the recommended default. The $200/yr
+    // exists precisely so Marc handles the ops stack (DNS, Cloudflare, D1,
+    // Resend, secret rotation) instead of explaining it; Custodian is the
+    // path that lets him do that.
     custodianHeading: 'Mode dépositaire',
-    custodianOptional: 'facultatif',
-    custodianActive: 'actif',
+    custodianRecommended: 'recommandé',
+    custodianActive: 'mode actuel',
     custodianPastDueLabel: 'paiement en retard',
     custodianEnded: 'terminé',
     custodianDetailsLink: 'Voir les détails ↗',
     custodianPitch:
-      'Je garde les clés (repo, domaine, comptes) pour 200 $/an. Petites retouches incluses (jusqu’à 2 h/mois). Annulable n’importe quand — bascule automatique vers « Tout à toi ».',
+      'Mode par défaut. Marc garde les clés (repo, domaine, Cloudflare, Resend) pour 200 $/an, gère DNS, renouvellements, certificats, mises à jour de sécurité, et inclut jusqu’à 2 h/mois de petites retouches. Annulable à tout moment — bascule automatique vers « Tout à toi ».',
     custodianActiveBody:
-      'Je détiens repo, domaine et comptes en mon nom. Renouvellement annuel automatique. Tu peux annuler ou modifier le mode de paiement via le portail Stripe.',
+      'Marc détient repo, domaine et comptes en son nom. Renouvellement annuel automatique. Tu peux annuler ou modifier le mode de paiement via le portail Stripe.',
     custodianPastDueBody:
       'Stripe n’a pas réussi à débiter ta carte. Mets à jour le mode de paiement avant la fin de la période de grâce, sinon ton mode bascule automatiquement vers « Tout à toi ».',
     custodianEndedBody:
@@ -47,6 +54,37 @@ const COPY = {
     paySubscribeAgain: 'Reprendre l’abonnement →',
     manageSub: 'Gérer l’abonnement ↗',
     manageSubPastDue: 'Mettre à jour le paiement ↗',
+
+    // "Tout à toi" — now framed as an explicit opt-out. The visitor must
+    // tick a skills checklist before they can confirm; Marc doesn't want to
+    // explain DNS records and Resend SPF — Custodian exists to absorb that.
+    toutAToiHeading: 'Tout à toi',
+    toutAToiOptOut: 'à la place du dépositaire',
+    toutAToiCurrent: 'mode actuel',
+    toutAToiEndedByCancel: 'mode actuel (abonnement annulé)',
+    toutAToiPitch:
+      'À la place du dépositaire — pour les visiteurs déjà à l’aise avec leur stack. Tout passe à ton nom à la livraison. Tu reprends la garde du repo, du domaine, du compte Cloudflare, et de Resend. Marc n’assure plus le service.',
+    toutAToiAckIntro:
+      'Avant de confirmer, coche la case ci-dessous. Le mode dépositaire existe précisément parce que ces tâches sont fastidieuses ; si tu coches sans les connaître, tu prends le risque d’un site qui casse silencieusement et que Marc ne te dépannera pas gratuitement.',
+    toutAToiSkillsHeading: 'Je sais gérer :',
+    toutAToiSkills: [
+      'Enregistrements DNS (A, CNAME, MX, TXT) chez mon registrar',
+      'Déploiements Cloudflare Pages (env, domaine, rollback)',
+      'Migrations et exports D1 (SQLite, secrets de connexion)',
+      'Resend (SPF, DKIM, DMARC) pour mon domaine',
+      'Rotation des clés API et secrets HMAC',
+      'Admin GitHub (collaborateurs, branches, déploiements)',
+    ],
+    toutAToiAckCheckbox:
+      'Je confirme. Je prends la responsabilité de la stack. Marc ne gère plus rien après la livraison.',
+    toutAToiConfirm: 'Confirmer « Tout à toi »',
+    toutAToiAcking: 'Confirmation…',
+    toutAToiAckedOn: (date: string) => `Confirmé le ${date}`,
+    toutAToiAckedBody:
+      'Tu as pris la responsabilité de la stack. Marc te transfère les comptes à la livraison ; au-delà, c’est à toi.',
+    toutAToiSwitchToCustodian: 'Activer le mode dépositaire à la place →',
+    toutAToiAckError:
+      'Échec — réessaie. La décision peut aussi être prise plus tard.',
 
     // Test mode banner
     testModeBadge: 'MODE TEST',
@@ -58,8 +96,11 @@ const COPY = {
     payTier1: 'Pay Tier 1 (≈ $300.00) →',
     payTier2Deposit: 'Pay deposit (≈ $750.00) →',
     payTier2Final: 'Pay final balance (≈ $750.00) →',
+    payTier2FinalHint:
+      "Available now if you want to clear it. Otherwise Marc'll ping you at delivery — no rush.",
     payTier3Quoted: (amount: string) => `Pay ${amount} →`,
-    tier3PendingQuote: 'Tier 3 quote pending — Marc sends the amount after triage.',
+    tier3PendingQuote:
+      'Tier 3 quote pending — Marc posts the amount in the thread below (and emails you) within 72h.',
     askFirst: 'Question before paying? Drop me a note ↓',
     paid: 'Paid ✓',
     paidAmount: (amount: string) => `Paid · ${amount}`,
@@ -68,15 +109,15 @@ const COPY = {
     checkoutPending: 'Opening checkout…',
 
     custodianHeading: 'Custodian mode',
-    custodianOptional: 'optional',
-    custodianActive: 'active',
+    custodianRecommended: 'recommended',
+    custodianActive: 'current mode',
     custodianPastDueLabel: 'payment past due',
     custodianEnded: 'ended',
     custodianDetailsLink: 'See the details ↗',
     custodianPitch:
-      'I hold the keys (repo, domain, accounts) for $200/yr. Small tweaks included (up to 2h/month). Cancel anytime — auto-switches to "All yours".',
+      "Default mode. Marc holds the keys (repo, domain, Cloudflare, Resend) for $200/yr, handles DNS, renewals, certificates, security updates, and includes up to 2h/month of small tweaks. Cancel anytime — auto-switches to \"All yours\".",
     custodianActiveBody:
-      'I hold repo, domain, and accounts in my name. Auto-renews annually. You can cancel or update the payment method via the Stripe portal.',
+      'Marc holds repo, domain, and accounts in his name. Auto-renews annually. You can cancel or update the payment method via the Stripe portal.',
     custodianPastDueBody:
       'Stripe failed to charge your card. Update the payment method before the grace period ends, otherwise your mode auto-switches to "All yours".',
     custodianEndedBody:
@@ -85,6 +126,33 @@ const COPY = {
     paySubscribeAgain: 'Re-activate subscription →',
     manageSub: 'Manage subscription ↗',
     manageSubPastDue: 'Update payment method ↗',
+
+    toutAToiHeading: 'All yours',
+    toutAToiOptOut: 'opt out of custodian',
+    toutAToiCurrent: 'current mode',
+    toutAToiEndedByCancel: 'current mode (subscription canceled)',
+    toutAToiPitch:
+      'Instead of Custodian — for visitors already comfortable with their stack. Everything moves to your name at delivery. You take back the repo, domain, Cloudflare account, and Resend setup. Marc is no longer on the hook.',
+    toutAToiAckIntro:
+      "Before you confirm, tick the checkbox below. Custodian mode exists precisely because these tasks are tedious; if you tick without knowing them, you risk a site that breaks quietly and Marc won't fix it for free.",
+    toutAToiSkillsHeading: 'I can handle:',
+    toutAToiSkills: [
+      'DNS records (A, CNAME, MX, TXT) at my registrar',
+      'Cloudflare Pages deploys (env, domain, rollback)',
+      'D1 migrations and exports (SQLite, connection secrets)',
+      'Resend (SPF, DKIM, DMARC) for my domain',
+      'Rotating API keys and HMAC secrets',
+      'GitHub admin (collaborators, branches, deploys)',
+    ],
+    toutAToiAckCheckbox:
+      "I confirm. I take responsibility for the stack. Marc isn't on the hook after delivery.",
+    toutAToiConfirm: 'Confirm "All yours"',
+    toutAToiAcking: 'Confirming…',
+    toutAToiAckedOn: (date: string) => `Confirmed on ${date}`,
+    toutAToiAckedBody:
+      "You've taken responsibility for the stack. Marc transfers the accounts at delivery; from there, it's on you.",
+    toutAToiSwitchToCustodian: 'Activate Custodian mode instead →',
+    toutAToiAckError: 'Failed — try again. The decision can also be made later.',
 
     testModeBadge: 'TEST MODE',
     testModeBody:
@@ -114,7 +182,7 @@ const COPY = {
  * button. See /handoff for the full narrative this mirrors.
  */
 export function PaymentActions({
-  session,
+  session: sessionProp,
   lang,
   variant = 'full',
 }: {
@@ -132,7 +200,24 @@ export function PaymentActions({
   const copy = COPY[lang]
   const langPrefix = lang === 'en' ? '/en' : ''
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
-  const [pending, setPending] = useState<'idle' | 'checkout' | 'portal'>('idle')
+  const [pending, setPending] = useState<'idle' | 'checkout' | 'portal' | 'acking'>('idle')
+  const [ackChecked, setAckChecked] = useState(false)
+  const [ackError, setAckError] = useState(false)
+  // Override for the ack timestamp so a successful PATCH updates the UI
+  // without forcing the parent to refetch. The prop's value wins by
+  // default; the override applies only when set locally. Keyed on the
+  // session id so reusing the component for a different session doesn't
+  // leak stale ack state (lazy init reads the live prop).
+  const [ackedAtOverride, setAckedAtOverride] = useState<number | null>(null)
+  // Stable: this comparison is in render-time only, no setState side effect.
+  const effectiveAckedAt =
+    ackedAtOverride !== null
+      ? ackedAtOverride
+      : sessionProp.all_yours_acknowledged_at
+  const session: SessionRow = {
+    ...sessionProp,
+    all_yours_acknowledged_at: effectiveAckedAt,
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -165,6 +250,21 @@ export function PaymentActions({
       const r = await openCustomerPortal({ sessionId: session.id, lang })
       window.location.assign(r.url)
     } catch {
+      setPending('idle')
+    }
+  }
+  const onAckAllYours = async () => {
+    if (!ackChecked || pending !== 'idle') return
+    setPending('acking')
+    setAckError(false)
+    try {
+      const r = await patchSession(session.id, { acknowledgeAllYours: true })
+      // Store the server's authoritative timestamp so the "Confirmed on X"
+      // line renders accurately even before the parent refetches.
+      setAckedAtOverride(r.session.all_yours_acknowledged_at)
+    } catch {
+      setAckError(true)
+    } finally {
       setPending('idle')
     }
   }
@@ -255,18 +355,39 @@ export function PaymentActions({
           ? 'pending-quote'
           : 'paid'
 
-  // Gate the custodian section. The decision is post-engagement per /handoff
-  // ("at the end of each engagement, two modes possible"), so don't surface
-  // the upsell to visitors who haven't bought work yet — that reads as
-  // pressure. Show when:
-  //   - the visitor has paid for any one-time work (engagement underway), OR
-  //   - a custodian state already exists on the session (active / past_due /
-  //     ended — surface management or re-subscribe regardless of project state)
-  // Tier-0 free engagements with no sub history: silent.
-  const showCustodianSection = summary.hasPaidDeposit || custodianState !== 'none'
+  // Ownership-mode gating. Policy flip: Custodian is the recommended
+  // default; "Tout à toi" is an explicit opt-out that requires the visitor
+  // to acknowledge a technical-skills checklist (DNS, Cloudflare, D1,
+  // Resend, secret rotation). Why: the $200/yr exists precisely so Marc
+  // doesn't have to teach those skills — a silent "do nothing = All yours"
+  // default produced support drag.
+  //
+  //   - showCustodianSection: shipped OR a subscription state exists. When
+  //     no decision yet, this section renders FIRST as the recommended
+  //     path. When a sub is active/past_due it's the only section shown
+  //     (manage via Stripe portal).
+  //   - showAllYoursSection: shipped AND custodian isn't currently active
+  //     or past_due. Covers (a) decision-pending → ack UI, (b) acked →
+  //     "current mode confirmed on X", (c) sub ended → "current mode by
+  //     default (sub ended)". Hidden mid-build and during an active sub
+  //     so we never read as urging the visitor to drop Custodian.
+  //
+  // Tier-0 free engagements with no sub history: both false → silent.
+  const allYoursAcked = session.all_yours_acknowledged_at !== null
+  const showCustodianSection = session.status === 'shipped' || custodianState !== 'none'
+  const showAllYoursSection =
+    session.status === 'shipped' && custodianState !== 'active' && custodianState !== 'past_due'
+  const showOwnershipDecision = showAllYoursSection || showCustodianSection
+
+  // Decision-pending: shipped, no sub, no ack. This is the only state where
+  // we render Custodian as visually primary and All-yours below as an
+  // acknowledged opt-out. In all other states (acked / sub-ended / sub-
+  // active) sections render as peer status surfaces with no urgency.
+  const decisionPending =
+    session.status === 'shipped' && custodianState === 'none' && !allYoursAcked
 
   // Don't render the whole block when there's literally nothing to show.
-  if (projectState === 'hidden' && !showCustodianSection) {
+  if (projectState === 'hidden' && !showOwnershipDecision) {
     return null
   }
 
@@ -316,7 +437,19 @@ export function PaymentActions({
             {custodianState === 'active' && copy.custodianActive}
             {custodianState === 'past_due' && copy.custodianPastDueLabel}
             {custodianState === 'ended' && copy.custodianEnded}
-            {custodianState === 'none' && copy.custodianOptional}
+            {custodianState === 'none' &&
+              (decisionPending ? copy.custodianRecommended : copy.custodianRecommended)}
+          </span>
+        )}
+        {showAllYoursSection && (
+          <span className="me-portal__pay-cust-pill me-portal__pay-cust-pill--tout mono">
+            {copy.toutAToiHeading}
+            {' · '}
+            {allYoursAcked
+              ? copy.toutAToiCurrent
+              : custodianState === 'ended'
+                ? copy.toutAToiCurrent
+                : copy.toutAToiOptOut}
           </span>
         )}
       </div>
@@ -360,6 +493,12 @@ export function PaymentActions({
               <span className="me-portal__pay-muted">{copy.tier3PendingQuote}</span>
             )}
           </div>
+          {/* Tier-2 final-balance timing: button is live as soon as deposit is
+              paid, but most visitors should wait for handoff. Surface the
+              expectation inline so the timing isn't ambiguous. */}
+          {projectState === 'pay' && payButton?.kind === 'tier2-final' && (
+            <p className="field__hint me-portal__pay-hint">{copy.payTier2FinalHint}</p>
+          )}
           {projectState === 'pay' && (
             <a href="#thread" className="me-portal__pay-ask-link mono">
               {copy.askFirst}
@@ -368,65 +507,190 @@ export function PaymentActions({
         </section>
       )}
 
-      {showCustodianSection && (
-        <section
-          className={`me-portal__pay-section me-portal__pay-custodian me-portal__pay-custodian--${custodianState}`}
-          aria-labelledby={`pay-cust-${session.id}`}
-        >
-          <header className="me-portal__pay-section-head">
-            <h3 className="me-portal__pay-section-title mono" id={`pay-cust-${session.id}`}>
-              {copy.custodianHeading}{' '}
-              <span className="me-portal__pay-section-tag mono">
-                {custodianState === 'active' && copy.custodianActive}
-                {custodianState === 'past_due' && copy.custodianPastDueLabel}
-                {custodianState === 'ended' && copy.custodianEnded}
-                {custodianState === 'none' && copy.custodianOptional}
-              </span>
-            </h3>
-            <a className="me-portal__pay-details-link mono" href={`${langPrefix}/handoff`}>
-              {copy.custodianDetailsLink}
-            </a>
-          </header>
-          <p className="me-portal__pay-custodian-body">
-            {custodianState === 'active' && copy.custodianActiveBody}
-            {custodianState === 'past_due' && copy.custodianPastDueBody}
-            {custodianState === 'ended' && copy.custodianEndedBody}
-            {custodianState === 'none' && copy.custodianPitch}
-          </p>
-          <div className="me-portal__pay-section-body">
-            {custodianState === 'none' && (
-              <button
-                type="button"
-                className="me-portal__pay-btn"
-                onClick={() => onPay('custodian-sub')}
-                disabled={pending !== 'idle'}
-              >
-                {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribe}
-              </button>
+      {(() => {
+        // Decision-pending puts Custodian first as the recommended path.
+        // All other states show All-yours first (it's the "current mode"
+        // framing). The ordering decision is purely visual — both sections
+        // are independent.
+        const custodianTag =
+          custodianState === 'active'
+            ? copy.custodianActive
+            : custodianState === 'past_due'
+              ? copy.custodianPastDueLabel
+              : custodianState === 'ended'
+                ? copy.custodianEnded
+                : copy.custodianRecommended
+        const custodianBody =
+          custodianState === 'active'
+            ? copy.custodianActiveBody
+            : custodianState === 'past_due'
+              ? copy.custodianPastDueBody
+              : custodianState === 'ended'
+                ? copy.custodianEndedBody
+                : copy.custodianPitch
+
+        const custodianSection = showCustodianSection ? (
+          <section
+            key="cust"
+            className={`me-portal__pay-section me-portal__pay-custodian me-portal__pay-custodian--${custodianState}${decisionPending ? ' me-portal__pay-custodian--recommended' : ''}`}
+            aria-labelledby={`pay-cust-${session.id}`}
+          >
+            <header className="me-portal__pay-section-head">
+              <h3 className="me-portal__pay-section-title mono" id={`pay-cust-${session.id}`}>
+                {copy.custodianHeading}{' '}
+                <span className="me-portal__pay-section-tag mono">{custodianTag}</span>
+              </h3>
+              <a className="me-portal__pay-details-link mono" href={`${langPrefix}/handoff`}>
+                {copy.custodianDetailsLink}
+              </a>
+            </header>
+            <p className="me-portal__pay-custodian-body">{custodianBody}</p>
+            <div className="me-portal__pay-section-body">
+              {custodianState === 'none' && (
+                <button
+                  type="button"
+                  className="me-portal__pay-btn"
+                  onClick={() => onPay('custodian-sub')}
+                  disabled={pending !== 'idle'}
+                >
+                  {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribe}
+                </button>
+              )}
+              {custodianState === 'ended' && (
+                <button
+                  type="button"
+                  className="me-portal__pay-btn"
+                  onClick={() => onPay('custodian-sub')}
+                  disabled={pending !== 'idle'}
+                >
+                  {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribeAgain}
+                </button>
+              )}
+              {(custodianState === 'active' || custodianState === 'past_due') && (
+                <button
+                  type="button"
+                  className="me-portal__pay-portal link-btn"
+                  onClick={onPortal}
+                  disabled={pending !== 'idle'}
+                >
+                  {custodianState === 'past_due' ? copy.manageSubPastDue : copy.manageSub}
+                </button>
+              )}
+            </div>
+          </section>
+        ) : null
+
+        // All-yours has three visual variants:
+        //   (a) acked → "Confirmed on X" + body, no ack UI; offer
+        //       "Activate Custodian instead" link as escape hatch.
+        //   (b) custodianState === 'ended' (canceled / switched) → current
+        //       mode by default after the sub ended; no ack UI.
+        //   (c) decision-pending (none + !acked) → pitch + skills list +
+        //       checkbox + Confirm button.
+        const ackedDate =
+          session.all_yours_acknowledged_at != null
+            ? formatDate(
+                new Date(session.all_yours_acknowledged_at * 1000).toISOString().slice(0, 10),
+                lang,
+              )
+            : null
+        const allYoursTag = allYoursAcked
+          ? copy.toutAToiCurrent
+          : custodianState === 'ended'
+            ? copy.toutAToiEndedByCancel
+            : copy.toutAToiOptOut
+        const allYoursSection = showAllYoursSection ? (
+          <section
+            key="tout"
+            className={`me-portal__pay-section me-portal__pay-tout-a-toi${decisionPending ? ' me-portal__pay-tout-a-toi--secondary' : ''}`}
+            aria-labelledby={`pay-tout-${session.id}`}
+          >
+            <header className="me-portal__pay-section-head">
+              <h3 className="me-portal__pay-section-title mono" id={`pay-tout-${session.id}`}>
+                {copy.toutAToiHeading}{' '}
+                <span className="me-portal__pay-section-tag mono">{allYoursTag}</span>
+              </h3>
+              <a className="me-portal__pay-details-link mono" href={`${langPrefix}/handoff`}>
+                {copy.custodianDetailsLink}
+              </a>
+            </header>
+            {allYoursAcked ? (
+              <>
+                <p className="me-portal__pay-custodian-body">
+                  {ackedDate && (
+                    <span className="me-portal__pay-acked-on mono">
+                      {copy.toutAToiAckedOn(ackedDate)}
+                    </span>
+                  )}{' '}
+                  {copy.toutAToiAckedBody}
+                </p>
+              </>
+            ) : custodianState === 'ended' ? (
+              <p className="me-portal__pay-custodian-body">{copy.custodianEndedBody}</p>
+            ) : (
+              // Decision-pending: skills list + checkbox + confirm.
+              <>
+                <p className="me-portal__pay-custodian-body">{copy.toutAToiPitch}</p>
+                <p className="me-portal__pay-custodian-body me-portal__pay-ack-intro">
+                  {copy.toutAToiAckIntro}
+                </p>
+                <div className="me-portal__pay-ack-skills">
+                  <div className="mono me-portal__pay-ack-skills-heading">
+                    {copy.toutAToiSkillsHeading}
+                  </div>
+                  <ul className="me-portal__pay-ack-skills-list">
+                    {copy.toutAToiSkills.map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+                <label className="me-portal__pay-ack-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={ackChecked}
+                    onChange={(e) => setAckChecked(e.target.checked)}
+                    disabled={pending === 'acking'}
+                  />
+                  <span>{copy.toutAToiAckCheckbox}</span>
+                </label>
+                <div className="me-portal__pay-section-body">
+                  <button
+                    type="button"
+                    className="me-portal__pay-btn me-portal__pay-btn--secondary"
+                    onClick={onAckAllYours}
+                    disabled={!ackChecked || pending !== 'idle'}
+                  >
+                    {pending === 'acking' ? copy.toutAToiAcking : copy.toutAToiConfirm}
+                  </button>
+                </div>
+                {ackError && (
+                  <p
+                    className="mono me-portal__pay-ack-error"
+                    role="alert"
+                    aria-live="assertive"
+                  >
+                    {copy.toutAToiAckError}
+                  </p>
+                )}
+              </>
             )}
-            {custodianState === 'ended' && (
-              <button
-                type="button"
-                className="me-portal__pay-btn"
-                onClick={() => onPay('custodian-sub')}
-                disabled={pending !== 'idle'}
-              >
-                {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribeAgain}
-              </button>
-            )}
-            {(custodianState === 'active' || custodianState === 'past_due') && (
-              <button
-                type="button"
-                className="me-portal__pay-portal link-btn"
-                onClick={onPortal}
-                disabled={pending !== 'idle'}
-              >
-                {custodianState === 'past_due' ? copy.manageSubPastDue : copy.manageSub}
-              </button>
-            )}
-          </div>
-        </section>
-      )}
+          </section>
+        ) : null
+
+        // Render order — Custodian first when decision-pending, All-yours
+        // first otherwise.
+        return decisionPending ? (
+          <>
+            {custodianSection}
+            {allYoursSection}
+          </>
+        ) : (
+          <>
+            {allYoursSection}
+            {custodianSection}
+          </>
+        )
+      })()}
     </div>
   )
 }

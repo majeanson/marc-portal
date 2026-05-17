@@ -24,7 +24,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     ? env.DB.prepare(
         `SELECT id, email, intake_json, status, created_at, updated_at,
                 deleted_at, status_history,
-                showcased_at, showcase_title, showcase_tagline, tier
+                showcased_at, showcase_title, showcase_tagline, tier,
+                tier3_amount_cents, custodian_status, all_yours_acknowledged_at
          FROM sessions
          WHERE deleted_at ${wantDeleted ? 'IS NOT NULL' : 'IS NULL'}
          ORDER BY updated_at DESC`,
@@ -32,7 +33,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     : env.DB.prepare(
         `SELECT id, email, intake_json, status, created_at, updated_at,
                 deleted_at, status_history,
-                showcased_at, showcase_title, showcase_tagline, tier
+                showcased_at, showcase_title, showcase_tagline, tier,
+                tier3_amount_cents, custodian_status, all_yours_acknowledged_at
          FROM sessions WHERE email = ? AND deleted_at IS NULL
          ORDER BY updated_at DESC`,
       ).bind(email)
@@ -122,6 +124,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     showcase_tagline: null,
     tier: null,
     tier3_amount_cents: null,
+    custodian_status: null,
+    all_yours_acknowledged_at: null,
   }
   return ok({ session: row })
 }

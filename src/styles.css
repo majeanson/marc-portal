@@ -3187,6 +3187,247 @@ button.intake__progress-step:focus-visible {
   color: var(--text-soft);
 }
 
+/* "Tout à toi" — opt-out from Custodian. Gentler chrome than Custodian
+   since it's the secondary path. */
+.me-portal__pay-tout-a-toi .me-portal__pay-section-tag {
+  background: #eef2f5;
+  color: #3a5160;
+  border-color: #d8e0e7;
+}
+.me-portal__pay-cust-pill--tout {
+  background: #eef2f5;
+  color: #3a5160;
+  border-color: #d8e0e7;
+}
+
+/* Recommended/decision-pending styling — Custodian gets accent-tinted
+   background to read as the primary path; All-yours below it gets
+   dimmed-down chrome ("here if you need it"). */
+.me-portal__pay-custodian--recommended {
+  background: #fdf7ec;
+  border-left: 3px solid var(--accent-warm);
+}
+.me-portal__pay-custodian--recommended .me-portal__pay-section-tag {
+  background: var(--accent-warm);
+  color: #fff;
+  border-color: var(--accent-warm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.me-portal__pay-tout-a-toi--secondary {
+  background: var(--bg-app);
+  opacity: 0.95;
+}
+
+/* Skills checklist for the All-yours ack. List items render as quiet
+   plain-bullets; the heading gets uppercase mono styling. */
+.me-portal__pay-ack-intro {
+  font-size: 12.5px;
+  color: var(--text-soft);
+}
+.me-portal__pay-ack-skills {
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  background: var(--bg-section);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+.me-portal__pay-ack-skills-heading {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+}
+.me-portal__pay-ack-skills-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.me-portal__pay-ack-skills-list li {
+  margin: 2px 0;
+}
+.me-portal__pay-ack-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  cursor: pointer;
+}
+.me-portal__pay-ack-checkbox input {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.me-portal__pay-btn--secondary {
+  background: var(--bg-app);
+  color: var(--text);
+  border: 1px solid var(--text);
+}
+.me-portal__pay-btn--secondary:hover:not(:disabled),
+.me-portal__pay-btn--secondary:focus-visible:not(:disabled) {
+  background: var(--text);
+  color: var(--bg-app);
+}
+.me-portal__pay-acked-on {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+}
+.me-portal__pay-ack-error {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: #8a2222;
+}
+
+/* Inline hint shown under the T2 final-balance button — slimmer than
+   .field__hint defaults so it reads as a side-note next to a CTA. */
+.me-portal__pay-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+/* SessionWhatsNext — a one-line "you are here" strip on /session/:id.
+   Sits above the payment block. Four tones map to the four moods of the
+   message: info (waiting / no action), cta (action expected from visitor),
+   ok (status reads as good news), muted (terminal / declined). */
+.session-whats-next {
+  padding: 10px 14px;
+  margin: 6px 0 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-section);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.session-whats-next--info {
+  background: #f4f6f9;
+  border-color: #dde4ec;
+}
+.session-whats-next--cta {
+  background: #fff5e6;
+  border-color: #f0d8a8;
+  color: #6b4a00;
+}
+.session-whats-next--ok {
+  background: #eaf5ec;
+  border-color: #cfe6d4;
+  color: #2a6d3a;
+}
+.session-whats-next--muted {
+  background: var(--bg-app);
+  border-color: var(--border-soft);
+  color: var(--text-soft);
+}
+
+/* AdminInbox needs-attention filter — quiet by default, tone-colored when
+   the bucket is non-empty or active. */
+.admin-inbox__attention {
+  margin: 12px 0 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  background: var(--bg-section);
+}
+.admin-inbox__attention-heading {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.admin-inbox__attention-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-inbox__attention-pill {
+  appearance: none;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-app);
+  color: var(--text);
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-inbox__attention-pill:hover,
+.admin-inbox__attention-pill:focus-visible {
+  border-color: var(--text);
+}
+.admin-inbox__attention-pill--active {
+  background: var(--text);
+  color: var(--bg-app);
+  border-color: var(--text);
+}
+.admin-inbox__attention-pill-n {
+  font-size: 11px;
+  opacity: 0.75;
+}
+.admin-inbox__attention-pill--warn:not(.admin-inbox__attention-pill--active) {
+  border-color: #f1d8a0;
+  background: #fff4e0;
+  color: #8a5a00;
+}
+.admin-inbox__attention-pill--urgent:not(.admin-inbox__attention-pill--active) {
+  border-color: #f1c0c0;
+  background: #fdecec;
+  color: #8a2222;
+}
+.admin-inbox__attention-pill--info:not(.admin-inbox__attention-pill--active) {
+  border-color: #cfdce6;
+  background: #eef4f9;
+  color: #2b556d;
+}
+.admin-inbox__attention-pill--empty:not(.admin-inbox__attention-pill--active) {
+  opacity: 0.45;
+}
+
+/* AdminCustodians page — buckets are vertically stacked cards. Tone hint
+   is a left-edge accent stripe so urgent doesn't dominate the eye. */
+.admin-custodians__mrr {
+  margin-top: 6px;
+  color: var(--text-soft);
+  font-size: 12.5px;
+}
+.admin-custodians__bucket {
+  margin-top: 22px;
+  padding-left: 12px;
+  border-left: 3px solid var(--border-soft);
+}
+.admin-custodians__bucket--urgent {
+  border-left-color: #c84242;
+}
+.admin-custodians__bucket--ok {
+  border-left-color: #4a9462;
+}
+.admin-custodians__bucket--muted {
+  border-left-color: var(--border-soft);
+}
+.admin-custodians__bucket-heading {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin: 0 0 10px;
+}
+.admin-custodians__bucket-count {
+  font-weight: 400;
+  opacity: 0.6;
+}
+
 /* Primary CTA — used by tier payments + custodian activate. */
 .me-portal__pay-btn {
   appearance: none;
