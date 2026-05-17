@@ -28,6 +28,7 @@ const COPY = {
       items: [
         {
           name: "Je m'en occupe",
+          id: 'je-men-occupe',
           eyebrow: 'mode par défaut · recommandé',
           lead: "Je garde les clés et j'opère ton site. Tu peux reprendre la garde quand tu veux.",
           bullets: [
@@ -44,6 +45,7 @@ const COPY = {
         },
         {
           name: 'Tout à toi',
+          id: 'tout-a-toi',
           eyebrow: 'à la place du dépositaire',
           lead: 'Tu reprends tout à ton nom à la livraison. Pour visiteurs déjà à l’aise avec leur stack.',
           bullets: [
@@ -51,7 +53,17 @@ const COPY = {
             'Le domaine est enregistré à ton nom chez le registrar de ton choix',
             'Le compte Cloudflare (hébergement) et Resend (courriels) sont à toi',
             'Tu gères DNS, renouvellements, certificats, secrets — Marc n’assure plus le service',
-            'Demande une confirmation explicite (checklist de compétences) à la livraison',
+          ],
+          skillsIntro:
+            'Avant de pouvoir confirmer ce mode à la livraison, tu attestes savoir gérer les six points ci-dessous. Le mode dépositaire existe précisément parce que ces tâches sont fastidieuses — si tu coches sans les connaître, tu prends le risque d’un site qui casse silencieusement et que Marc ne dépannera pas gratuitement.',
+          skillsHeading: 'Tu sais gérer :',
+          skills: [
+            'Enregistrements DNS (A, CNAME, MX, TXT) chez mon registrar',
+            'Déploiements Cloudflare Pages (env, domaine, rollback)',
+            'Migrations et exports D1 (SQLite, secrets de connexion)',
+            'Resend (SPF, DKIM, DMARC) pour mon domaine',
+            'Rotation des clés API et secrets HMAC',
+            'Admin GitHub (collaborateurs, branches, déploiements)',
           ],
           cost: 'Gratuit. Réservé aux visiteurs autonomes côté ops.',
           autonomy:
@@ -177,6 +189,7 @@ const COPY = {
       items: [
         {
           name: 'I handle it',
+          id: 'i-handle-it',
           eyebrow: 'default mode · recommended',
           lead: 'I hold the keys and operate your site. You can take them back anytime.',
           bullets: [
@@ -193,6 +206,7 @@ const COPY = {
         },
         {
           name: 'All yours',
+          id: 'all-yours',
           eyebrow: 'opt out of custodian',
           lead: 'You take everything at delivery. For visitors already comfortable with their stack.',
           bullets: [
@@ -200,7 +214,17 @@ const COPY = {
             'The domain is registered in your name at the registrar of your choice',
             'Cloudflare (hosting) and Resend (email) accounts are yours',
             "You manage DNS, renewals, certificates, secrets — I'm no longer on the hook",
-            'Requires an explicit confirmation (skills checklist) at delivery',
+          ],
+          skillsIntro:
+            "Before you can confirm this mode at delivery, you attest you can handle the six items below. Custodian mode exists precisely because these tasks are tedious — if you tick without knowing them, you risk a site that breaks quietly and Marc won't fix for free.",
+          skillsHeading: 'You can handle:',
+          skills: [
+            'DNS records (A, CNAME, MX, TXT) at my registrar',
+            'Cloudflare Pages deploys (env, domain, rollback)',
+            'D1 migrations and exports (SQLite, connection secrets)',
+            'Resend (SPF, DKIM, DMARC) for my domain',
+            'Rotating API keys and HMAC secrets',
+            'GitHub admin (collaborators, branches, deploys)',
           ],
           cost: 'Free. For visitors who already own the ops stack.',
           autonomy:
@@ -348,6 +372,7 @@ export function Handoff({ lang }: { lang: Lang }) {
                 {t.modes.items.map((m, i) => (
                   <article
                     key={m.name}
+                    id={'id' in m ? m.id : undefined}
                     className={`handoff-mode${i === 0 ? ' handoff-mode--default' : ' handoff-mode--managed'}`}
                   >
                     <div className="handoff-mode__eyebrow mono">{m.eyebrow}</div>
@@ -358,6 +383,17 @@ export function Handoff({ lang }: { lang: Lang }) {
                         <li key={b}>{b}</li>
                       ))}
                     </ul>
+                    {'skills' in m && (
+                      <div className="handoff-mode__skills-block">
+                        <p className="handoff-mode__skills-intro">{m.skillsIntro}</p>
+                        <p className="handoff-mode__skills-heading mono">{m.skillsHeading}</p>
+                        <ul className="handoff-mode__skills">
+                          {m.skills.map((s) => (
+                            <li key={s}>{s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     <p className="handoff-mode__cost mono">{m.cost}</p>
                     <p className="handoff-mode__autonomy">{m.autonomy}</p>
                   </article>
