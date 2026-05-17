@@ -19,7 +19,6 @@ const FR = {
     sections: {
       projects: 'Projets',
       how: 'Comment ça marche',
-      journey: 'Parcours',
       pricing: 'Prix',
       vibe: 'Je fais / Je fais pas',
       about: 'À propos',
@@ -98,7 +97,12 @@ const FR = {
     title: 'Ce que je livre, en vrai',
     sub: 'Chaque carte est un projet vivant, vrai code, vrais problèmes, dernier build accessible.',
     seeAll: 'Voir tous les projets →',
-    deeperLook: 'Coup d’œil approfondi sur la galerie →',
+    galleryCard: {
+      eyebrow: 'envie de tout voir?',
+      title: 'La galerie complète, tous les projets',
+      body: 'Au-delà des trois cartes ci-dessus, la galerie filtre par tier et par statut. Chaque carte ouvre le détail du projet avec le dernier build en direct.',
+      cta: 'Voir tous les projets →',
+    },
     loading: 'Chargement…',
     openBuild: 'Ouvrir le build ↗',
     untitled: 'Projet sans titre',
@@ -869,7 +873,6 @@ const EN: Copy = {
     sections: {
       projects: 'Projects',
       how: 'How it works',
-      journey: 'Journey',
       pricing: 'Pricing',
       vibe: "What I do / don't",
       about: 'About',
@@ -948,7 +951,12 @@ const EN: Copy = {
     title: 'What I’m actually shipping',
     sub: 'Each card is a living project — real code, real problems, latest build open for inspection.',
     seeAll: 'See all projects →',
-    deeperLook: 'Take a deeper look at the gallery →',
+    galleryCard: {
+      eyebrow: 'want to see everything?',
+      title: 'The full gallery, every project',
+      body: 'Beyond the three cards above, the gallery filters by tier and by status. Each card opens the project detail with the live build embedded.',
+      cta: 'See all projects →',
+    },
     loading: 'Loading…',
     openBuild: 'Open the build ↗',
     untitled: 'Untitled project',

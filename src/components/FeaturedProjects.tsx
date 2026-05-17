@@ -45,9 +45,6 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 className="section__display">{t.title}</h2>
           <p className="featured-projects__sub section__lead">{t.sub}</p>
-          <a className="featured-projects__deeper" href={galleryHref}>
-            {t.deeperLook}
-          </a>
         </header>
 
         {isLoading && <p className="mono featured-projects__loading">{t.loading}</p>}
@@ -59,11 +56,19 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
                 <FeaturedCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} />
               ))}
             </ul>
-            <div className="featured-projects__more">
-              <a className="featured-projects__see-all" href={galleryHref}>
-                {t.seeAll}
-              </a>
-            </div>
+            {/* Shared drill-down card pattern — matches the journey-card in
+                #how so visitors get the same "go deeper" affordance every
+                time a home section has a dedicated full page. No stats here,
+                so the --no-stats modifier collapses the grid to a single
+                column. */}
+            <a className="home-drill-card home-drill-card--no-stats" href={galleryHref}>
+              <div className="home-drill-card-text">
+                <div className="home-drill-card-eyebrow mono">{t.galleryCard.eyebrow}</div>
+                <h3 className="home-drill-card-title">{t.galleryCard.title}</h3>
+                <p className="home-drill-card-body">{t.galleryCard.body}</p>
+              </div>
+              <span className="home-drill-card-cta mono">{t.galleryCard.cta}</span>
+            </a>
           </>
         )}
 

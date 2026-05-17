@@ -946,26 +946,6 @@ p {
   max-width: 60ch;
   font-size: 17px;
 }
-.featured-projects__deeper {
-  display: inline-block;
-  margin: 0 0 24px;
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent-warm);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  padding-bottom: 2px;
-  transition:
-    border-color 0.15s,
-    color 0.15s;
-}
-.featured-projects__deeper:hover,
-.featured-projects__deeper:focus-visible {
-  border-bottom-color: var(--accent-warm);
-  text-decoration: none;
-  outline: none;
-}
 .featured-projects__grid {
   /* Three cards on desktop, gracefully collapsing — but a touch tighter than
      the gallery so the strip doesn't dominate the home page vertically. */
@@ -975,28 +955,6 @@ p {
 .featured-projects__loading {
   color: var(--text-soft);
   margin: 0;
-}
-.featured-projects__more {
-  margin-top: 24px;
-  display: flex;
-  justify-content: flex-end;
-}
-.featured-projects__see-all {
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent-warm);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  padding-bottom: 2px;
-  transition:
-    border-color 0.15s,
-    color 0.15s;
-}
-.featured-projects__see-all:hover,
-.featured-projects__see-all:focus-visible {
-  border-bottom-color: var(--accent-warm);
-  text-decoration: none;
 }
 
 /* Footer — colophon */
@@ -6249,7 +6207,14 @@ button.intake__progress-step:disabled {
     font-size: 56px;
   }
 }
-.home .how__journey-card {
+/* Shared "drill-down card" used at the foot of home sections that have a
+   dedicated full-page version. The pattern reads: eyebrow → title → body
+   → optional stats grid → CTA. Same visual treatment in #how (drills to
+   /parcours) and #featured (drills to /projects), so visitors get a
+   predictable "go deeper" affordance across the home page. The stats grid
+   is optional; sections without numbers add the --no-stats modifier and
+   the grid collapses to a single column. */
+.home .home-drill-card {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) auto;
   grid-template-areas:
@@ -6269,36 +6234,42 @@ button.intake__progress-step:disabled {
     box-shadow 0.2s ease,
     transform 0.2s ease;
 }
-.home .how__journey-card:hover,
-.home .how__journey-card:focus-visible {
+.home .home-drill-card--no-stats {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    'text'
+    'cta';
+}
+.home .home-drill-card:hover,
+.home .home-drill-card:focus-visible {
   border-color: var(--accent-warm);
   box-shadow: 0 6px 24px -12px rgba(44, 82, 57, 0.25);
   transform: translateY(-1px);
 }
-.home .how__journey-card-text {
+.home .home-drill-card-text {
   grid-area: text;
 }
-.home .how__journey-card-eyebrow {
+.home .home-drill-card-eyebrow {
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent-warm);
   margin-bottom: 10px;
 }
-.home .how__journey-card-title {
+.home .home-drill-card-title {
   font-size: 22px;
   line-height: 1.25;
   margin: 0 0 10px;
   color: var(--text);
 }
-.home .how__journey-card-body {
+.home .home-drill-card-body {
   margin: 0;
   font-size: 15px;
   line-height: 1.55;
   color: var(--text-mid);
   max-width: 52ch;
 }
-.home .how__journey-card-stats {
+.home .home-drill-card-stats {
   grid-area: stats;
   list-style: none;
   padding: 0;
@@ -6307,24 +6278,24 @@ button.intake__progress-step:disabled {
   gap: 28px;
   align-self: center;
 }
-.home .how__journey-card-stat {
+.home .home-drill-card-stat {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
 }
-.home .how__journey-card-stat-val {
+.home .home-drill-card-stat-val {
   font-size: 22px;
   font-weight: 600;
   color: var(--accent-warm);
   letter-spacing: -0.01em;
 }
-.home .how__journey-card-stat-label {
+.home .home-drill-card-stat-label {
   font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--text-mid);
 }
-.home .how__journey-card-cta {
+.home .home-drill-card-cta {
   grid-area: cta;
   align-self: end;
   justify-self: end;
@@ -6337,13 +6308,13 @@ button.intake__progress-step:disabled {
     color 0.2s ease,
     border-color 0.2s ease;
 }
-.home .how__journey-card:hover .how__journey-card-cta,
-.home .how__journey-card:focus-visible .how__journey-card-cta {
+.home .home-drill-card:hover .home-drill-card-cta,
+.home .home-drill-card:focus-visible .home-drill-card-cta {
   color: var(--text);
   border-bottom-color: var(--text);
 }
 @media (max-width: 720px) {
-  .home .how__journey-card {
+  .home .home-drill-card {
     grid-template-columns: 1fr;
     grid-template-areas:
       'text'
@@ -6352,11 +6323,16 @@ button.intake__progress-step:disabled {
     gap: 22px;
     padding: 24px 22px;
   }
-  .home .how__journey-card-stats {
+  .home .home-drill-card--no-stats {
+    grid-template-areas:
+      'text'
+      'cta';
+  }
+  .home .home-drill-card-stats {
     gap: 22px;
     flex-wrap: wrap;
   }
-  .home .how__journey-card-cta {
+  .home .home-drill-card-cta {
     justify-self: start;
   }
 }
@@ -7120,10 +7096,6 @@ button.intake__progress-step:disabled {
   }
   .cta__body {
     font-size: 16.5px;
-  }
-
-  .home .featured-projects__more {
-    justify-content: flex-start;
   }
 }
 

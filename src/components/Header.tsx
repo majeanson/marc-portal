@@ -74,18 +74,17 @@ export function Header({ lang }: { lang: Lang }) {
           >
             marc<span className="dot">.</span>portal
           </a>
+          {/* Header nav is anchor-only: every link points at a home section.
+              Drill-down to a dedicated full page (e.g. /projects, /parcours)
+              happens from inside the relevant section, not from the header,
+              so visitors always land on the home page first and can read the
+              teaser before committing to the deep view. */}
           <nav className="site-header__sections" aria-label={t.nav.sections.projects}>
-            <a href={`${langPrefix}/projects`} className="site-header__section-link">
+            <a href={`${langPrefix}/#featured`} className="site-header__section-link">
               {t.nav.sections.projects}
             </a>
             <a href={`${langPrefix}/#how`} className="site-header__section-link">
               {t.nav.sections.how}
-            </a>
-            <a
-              href={lang === 'fr' ? '/parcours' : '/en/journey'}
-              className="site-header__section-link"
-            >
-              {t.nav.sections.journey}
             </a>
             <a href={`${langPrefix}/#pricing`} className="site-header__section-link">
               {t.nav.sections.pricing}
