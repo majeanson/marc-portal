@@ -8,11 +8,7 @@ import { Link } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
 import { DICT, type Lang } from '../i18n'
-import {
-  listPublicVouches,
-  type PublicVouch,
-  type VouchRelationship,
-} from '../lib/vouchesApi'
+import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
 
 export function Vouches({ lang }: { lang: Lang }) {
   const t = DICT[lang].vouches
@@ -60,9 +56,7 @@ export function Vouches({ lang }: { lang: Lang }) {
               …
             </p>
           )}
-          {vouches !== null && vouches.length === 0 && (
-            <p className="field__hint">{t.empty}</p>
-          )}
+          {vouches !== null && vouches.length === 0 && <p className="field__hint">{t.empty}</p>}
           {vouches !== null && vouches.length > 0 && (
             <ul className="vouches-list__items">
               {vouches.map((v) => (

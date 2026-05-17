@@ -30,7 +30,10 @@ vi.mock('../_lib/email', () => ({
 import { currentEmail } from '../_lib/auth'
 import * as email from '../_lib/email'
 import { onRequestGet as onRequestGetAdmin } from './admin/vouches'
-import { onRequestDelete as onRequestDeleteAdmin, onRequestPatch as onRequestPatchAdmin } from './admin/vouches/[id]'
+import {
+  onRequestDelete as onRequestDeleteAdmin,
+  onRequestPatch as onRequestPatchAdmin,
+} from './admin/vouches/[id]'
 import { onRequestGet as onRequestGetPublic } from './public/vouches'
 import { onRequestPost as onRequestPostSubmit } from './vouches'
 

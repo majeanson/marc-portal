@@ -61,9 +61,7 @@ export function Hero({ lang }: { lang: Lang }) {
   // Captured at mount via lazy init so render stays pure (react-hooks/purity).
   const [currentYear] = useState<number>(() => new Date().getFullYear())
   const shippedThisYear = (projects ?? []).filter(
-    (p) =>
-      p.status === 'shipped' &&
-      new Date(p.showcasedAt * 1000).getFullYear() === currentYear,
+    (p) => p.status === 'shipped' && new Date(p.showcasedAt * 1000).getFullYear() === currentYear,
   ).length
 
   return (
@@ -76,12 +74,7 @@ export function Hero({ lang }: { lang: Lang }) {
           they saw in the Slack/iMessage unfurl, so the landed page reads
           as "yes, same place." Decorative, no role, low-opacity so it
           never competes with the display headline. */}
-      <svg
-        className="hero__stamp"
-        viewBox="0 0 260 100"
-        aria-hidden="true"
-        focusable="false"
-      >
+      <svg className="hero__stamp" viewBox="0 0 260 100" aria-hidden="true" focusable="false">
         <g transform="translate(130 50) rotate(-7)">
           <rect
             x="-122"

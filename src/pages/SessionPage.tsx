@@ -734,12 +734,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
               />
             )}
 
-            <SessionWhatsNext
-              session={session}
-              summary={summary}
-              isAdmin={isAdmin}
-              lang={lang}
-            />
+            <SessionWhatsNext session={session} summary={summary} isAdmin={isAdmin} lang={lang} />
 
             {/* Render PaymentActions for active *and* shipped sessions: the
                 ownership-decision (All yours vs Custodian) sections live

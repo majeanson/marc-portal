@@ -47,7 +47,7 @@ const COPY = {
   fr: {
     pageTitle: 'Sous le capot — Marc',
     metaDescription:
-      "Le portail marc.portal documenté par lui-même : chaque fonctionnalité, sa raison, ses décisions. Format LAC (Life-as-Code).",
+      'Le portail marc.portal documenté par lui-même : chaque fonctionnalité, sa raison, ses décisions. Format LAC (Life-as-Code).',
     backHome: "← Retour à l'accueil",
     eyebrow: 'méta · le portail, raconté par lui-même',
     title: 'Sous le capot',
@@ -57,7 +57,8 @@ const COPY = {
     countLabel: (n: number) => `${n} fonctionnalité${n === 1 ? '' : 's'}`,
     asOf: (iso: string) => `Manifeste généré le ${formatDate(iso, 'fr')}.`,
     sourceLinkLabel: 'voir feature.json ↗',
-    decisionsLabel: (n: number) => `${n} décision${n === 1 ? '' : 's'} consignée${n === 1 ? '' : 's'}`,
+    decisionsLabel: (n: number) =>
+      `${n} décision${n === 1 ? '' : 's'} consignée${n === 1 ? '' : 's'}`,
     freshFresh: 'frais',
     freshWarm: 'tiède',
     freshStale: 'à revoir',
@@ -78,7 +79,7 @@ const COPY = {
     backHome: '← Back home',
     eyebrow: 'meta · the portal, in its own words',
     title: 'Under the hood',
-    lead: "This portal uses my own tool (LAC — Life-as-Code) to document its own decisions. Each feature below is a `feature.json` file versioned next to the code. That's what lets me say \"yes it's solid\" without having to prove it from scratch each time.",
+    lead: 'This portal uses my own tool (LAC — Life-as-Code) to document its own decisions. Each feature below is a `feature.json` file versioned next to the code. That\'s what lets me say "yes it\'s solid" without having to prove it from scratch each time.',
     leadSecond:
       'You can read the source of each file on GitHub. The date on the right is the last status transition (active, frozen, etc.) — green within 90 days, yellow between 90 and 180, amber beyond.',
     countLabel: (n: number) => `${n} feature${n === 1 ? '' : 's'}`,
@@ -181,11 +182,13 @@ export function Meta({ lang }: { lang: Lang }) {
                     <div className="meta-feature__foot">
                       <span className="mono">{t.decisionsLabel(f.decisionsCount)}</span>
                       {f.lastTransitionDate && (
-                        <span
-                          className={`mono meta-feature__fresh meta-feature__fresh--${fresh}`}
-                        >
+                        <span className={`mono meta-feature__fresh meta-feature__fresh--${fresh}`}>
                           {formatDate(f.lastTransitionDate, lang)} ·{' '}
-                          {fresh === 'fresh' ? t.freshFresh : fresh === 'warm' ? t.freshWarm : t.freshStale}
+                          {fresh === 'fresh'
+                            ? t.freshFresh
+                            : fresh === 'warm'
+                              ? t.freshWarm
+                              : t.freshStale}
                         </span>
                       )}
                       <a
@@ -222,4 +225,3 @@ export function Meta({ lang }: { lang: Lang }) {
     </div>
   )
 }
-

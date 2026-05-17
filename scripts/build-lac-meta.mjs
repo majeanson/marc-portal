@@ -61,9 +61,7 @@ function projectFeature(raw, dirSlug) {
   const status = typeof raw.status === 'string' ? raw.status : 'draft'
   const history = Array.isArray(raw.statusHistory) ? raw.statusHistory : []
   const lastTransitionDate =
-    history.length > 0 && history[history.length - 1].date
-      ? history[history.length - 1].date
-      : null
+    history.length > 0 && history[history.length - 1].date ? history[history.length - 1].date : null
   const problem = typeof raw.problem === 'string' ? raw.problem.trim() : ''
   const trimmed =
     problem.length > PROBLEM_TRIM ? problem.slice(0, PROBLEM_TRIM - 1).trimEnd() + '…' : problem

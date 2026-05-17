@@ -31,9 +31,7 @@ export function HeroShippedProject({
   // in a "shipped this year" frame.
   const pick = useMemo(() => {
     if (!projects) return null
-    const candidates = projects.filter(
-      (p) => p.status === 'shipped' && p.currentBuild?.buildUrl,
-    )
+    const candidates = projects.filter((p) => p.status === 'shipped' && p.currentBuild?.buildUrl)
     if (candidates.length === 0) return null
     // listPublicProjects returns showcased_at DESC already, but be defensive
     // — sort by the build's date when present, else by showcasedAt.
@@ -50,10 +48,9 @@ export function HeroShippedProject({
   const tagline = pick.tagline
   const tierBadge = pick.tier !== null ? `Tier ${pick.tier}` : null
   const href = `${langPrefix}/share/${pick.id}`
-  const buildHref =
-    pick.currentBuild?.buildUrl
-      ? `${pick.currentBuild.buildUrl}${pick.currentBuild.iframePath ?? ''}`
-      : null
+  const buildHref = pick.currentBuild?.buildUrl
+    ? `${pick.currentBuild.buildUrl}${pick.currentBuild.iframePath ?? ''}`
+    : null
 
   const eyebrow = lang === 'fr' ? 'Dernier projet livré' : 'Latest shipped'
   const openLabel = lang === 'fr' ? 'Ouvrir →' : 'Open →'
@@ -61,16 +58,13 @@ export function HeroShippedProject({
   return (
     <aside
       className="hero__shipped"
-      aria-label={lang === 'fr' ? 'Aperçu du dernier projet livré' : 'Latest shipped project preview'}
+      aria-label={
+        lang === 'fr' ? 'Aperçu du dernier projet livré' : 'Latest shipped project preview'
+      }
     >
       <a className="hero__shipped-link" href={href}>
         <div className="hero__shipped-thumb">
-          <ProjectCardPreview
-            buildHref={buildHref}
-            title={title}
-            sessionId={pick.id}
-            lang={lang}
-          />
+          <ProjectCardPreview buildHref={buildHref} title={title} sessionId={pick.id} lang={lang} />
         </div>
         <div className="hero__shipped-meta">
           <div className="hero__shipped-meta-row">

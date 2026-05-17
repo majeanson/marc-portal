@@ -146,9 +146,7 @@ describe('PaymentActions custodian section', () => {
       }),
     )
     render(<PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />)
-    await waitFor(() =>
-      expect(screen.getByText(/Paid · \$300\b/)).toBeInTheDocument(),
-    )
+    await waitFor(() => expect(screen.getByText(/Paid · \$300\b/)).toBeInTheDocument())
     expect(screen.queryByRole('heading', { name: /Custodian mode/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /All yours/ })).not.toBeInTheDocument()
   })
@@ -218,9 +216,7 @@ describe('PaymentActions project section', () => {
 describe('PaymentActions All-yours acknowledgment', () => {
   it('decision-pending: Custodian is primary (renders first), All-yours requires checkbox + confirm', async () => {
     mockSummary(mkSummary({ custodianStatus: 'none', hasPaidDeposit: true }))
-    render(
-      <PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />,
-    )
+    render(<PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />)
     // Both sections present
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument(),
@@ -246,17 +242,13 @@ describe('PaymentActions All-yours acknowledgment', () => {
         all_yours_acknowledged_at: ackedAt,
       },
     })
-    render(
-      <PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />,
-    )
+    render(<PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Confirm "All yours"/ })).toBeInTheDocument(),
     )
     fireEvent.click(screen.getByRole('checkbox'))
     fireEvent.click(screen.getByRole('button', { name: /Confirm "All yours"/ }))
-    await waitFor(() =>
-      expect(screen.getByText(/Confirmed on/)).toBeInTheDocument(),
-    )
+    await waitFor(() => expect(screen.getByText(/Confirmed on/)).toBeInTheDocument())
     // Once acked, the checkbox + Confirm button disappear.
     expect(screen.queryByRole('button', { name: /Confirm "All yours"/ })).not.toBeInTheDocument()
     expect(sessionsApi.patchSession).toHaveBeenCalledWith(expect.any(String), {
@@ -282,9 +274,7 @@ describe('PaymentActions All-yours acknowledgment', () => {
 
   it('mid-build (active, no ship) does NOT render either ownership section', async () => {
     mockSummary(mkSummary({ custodianStatus: 'none', hasPaidDeposit: true }))
-    render(
-      <PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />,
-    )
+    render(<PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /Project payment/ })).toBeInTheDocument(),
     )
@@ -294,9 +284,7 @@ describe('PaymentActions All-yours acknowledgment', () => {
 
   it('custodian active: All-yours section hidden (manage via Stripe portal only)', async () => {
     mockSummary(mkSummary({ custodianStatus: 'active' }))
-    render(
-      <PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />,
-    )
+    render(<PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Manage subscription/ })).toBeInTheDocument(),
     )

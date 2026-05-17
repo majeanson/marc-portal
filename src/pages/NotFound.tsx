@@ -54,12 +54,7 @@ export function NotFound() {
  *  HERE on 404, RATÉ / FUMBLED on RouteError). Decorative, aria-hidden. */
 export function ErrorStamp({ label, sub }: { label: string; sub: string }) {
   return (
-    <svg
-      className="error-panel__stamp"
-      viewBox="0 0 260 100"
-      aria-hidden="true"
-      focusable="false"
-    >
+    <svg className="error-panel__stamp" viewBox="0 0 260 100" aria-hidden="true" focusable="false">
       <g transform="translate(130 50) rotate(-7)">
         <rect
           x="-122"

@@ -799,7 +799,7 @@ const FR = {
     submitCta: 'Écrire un témoignage →',
     submit: {
       pageTitle: 'Écrire un témoignage',
-      heading: "Tu as déjà travaillé avec moi ? Dis-le en quelques phrases.",
+      heading: 'Tu as déjà travaillé avec moi ? Dis-le en quelques phrases.',
       lead: 'Court, honnête, à ta voix. Je relis avant que ça paraisse — coquilles, longueur, ton. Ton courriel reste en privé : c’est seulement pour pouvoir te recontacter si je dois ajuster un mot.',
       privacy:
         'Ton nom et tes mots seront visibles publiquement. Ton courriel ne sera jamais affiché.',
@@ -1633,7 +1633,7 @@ const EN: Copy = {
   vouches: {
     pageTitle: 'Vouches',
     heading: 'A few words from people who worked with me',
-    lead: "The portal is quick to try; these vouches help you decide if the contact fits. Marc reads them, may tighten the wording before publishing — and your email never appears here.",
+    lead: 'The portal is quick to try; these vouches help you decide if the contact fits. Marc reads them, may tighten the wording before publishing — and your email never appears here.',
     empty: 'No vouches published yet. Check back in a few weeks.',
     relationshipLabels: {
       client: 'Client',

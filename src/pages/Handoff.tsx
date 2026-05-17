@@ -168,7 +168,7 @@ const COPY = {
     backHome: '← Back home',
     eyebrow: 'how it ends',
     title: 'You are never trapped',
-    lead: "At the end of every engagement, two possible modes. By default, I handle it (custodian mode, $200/yr) — that's what lets me ship without having to teach you DNS, Cloudflare, and Resend. You can opt out for \"All yours\" instead, if you already own your stack. And you can switch your mind anytime, free, in about a week.",
+    lead: 'At the end of every engagement, two possible modes. By default, I handle it (custodian mode, $200/yr) — that\'s what lets me ship without having to teach you DNS, Cloudflare, and Resend. You can opt out for "All yours" instead, if you already own your stack. And you can switch your mind anytime, free, in about a week.',
     asOf: 'Effective: 2026-05-15.',
 
     modes: {
@@ -305,7 +305,7 @@ const COPY = {
 
     cta: {
       title: 'You can decide at the end',
-      body: "By default you go into custodian mode ($200/yr) at delivery. If you'd rather pick \"All yours\" instead, you tick a technical-skills checkbox (DNS, Cloudflare, D1, Resend, key rotation) before confirming — otherwise, I handle it.",
+      body: 'By default you go into custodian mode ($200/yr) at delivery. If you\'d rather pick "All yours" instead, you tick a technical-skills checkbox (DNS, Cloudflare, D1, Resend, key rotation) before confirming — otherwise, I handle it.',
       intakeCta: 'Open the form →',
       pricingCta: 'See pricing',
       journeyCta: 'See the full journey (all 12 steps) →',
@@ -430,10 +430,7 @@ export function Handoff({ lang }: { lang: Lang }) {
                 <a href={`${langPrefix}/#pricing`} className="link-btn mono">
                   {t.cta.pricingCta}
                 </a>
-                <a
-                  href={lang === 'fr' ? '/parcours' : '/en/journey'}
-                  className="link-btn mono"
-                >
+                <a href={lang === 'fr' ? '/parcours' : '/en/journey'} className="link-btn mono">
                   {t.cta.journeyCta}
                 </a>
               </div>

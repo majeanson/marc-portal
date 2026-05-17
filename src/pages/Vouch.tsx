@@ -57,10 +57,7 @@ export function Vouch({ lang }: { lang: Lang }) {
       errs.name = ts.errors.invalidName
     }
     const trimmedEmail = email.trim()
-    if (
-      !/\S+@\S+\.\S+/.test(trimmedEmail) ||
-      trimmedEmail.length > VOUCH_LIMITS.emailMax
-    ) {
+    if (!/\S+@\S+\.\S+/.test(trimmedEmail) || trimmedEmail.length > VOUCH_LIMITS.emailMax) {
       errs.email = ts.errors.invalidEmail
     }
     if (!relationship) {

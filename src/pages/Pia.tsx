@@ -759,8 +759,8 @@ function PiaStripe() {
         <code>payments.refunded_amount_cents</code> on the portal side, and flips{' '}
         <code>payments.status</code> to <code>&apos;refunded&apos;</code> only on full refund;
         partial refunds leave the status as <code>&apos;paid&apos;</code> and surface the partial
-        amount in the visitor&apos;s <code>/me</code> view. Refund timing and amount are also visible
-        to the visitor in their Stripe receipt + the Customer Portal.
+        amount in the visitor&apos;s <code>/me</code> view. Refund timing and amount are also
+        visible to the visitor in their Stripe receipt + the Customer Portal.
       </p>
 
       <h4>6.5 Visitor-facing notice (Loi 25 art. 8)</h4>

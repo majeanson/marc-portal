@@ -25,10 +25,7 @@ vi.mock('../../_lib/stripe', async () => {
 })
 
 import { currentEmail } from '../../_lib/auth'
-import {
-  createOneTimeCheckoutSession,
-  createSubscriptionCheckoutSession,
-} from '../../_lib/stripe'
+import { createOneTimeCheckoutSession, createSubscriptionCheckoutSession } from '../../_lib/stripe'
 import { onRequestPost } from './checkout'
 
 const mockedCurrentEmail = vi.mocked(currentEmail)
@@ -130,9 +127,7 @@ describe('POST /api/payments/checkout — tier2-deposit', () => {
     const sessionId = seedSession(env)
     mockedCurrentEmail.mockResolvedValue('visitor@x.com')
 
-    await onRequestPost(
-      postCheckout(env, { sessionId, kind: 'tier2-final', lang: 'fr' }) as never,
-    )
+    await onRequestPost(postCheckout(env, { sessionId, kind: 'tier2-final', lang: 'fr' }) as never)
     expect(mockedOneTime.mock.calls[0]![0].amountCents).toBe(75000)
     expect(mockedOneTime.mock.calls[0]![0].kind).toBe('tier2-final')
   })

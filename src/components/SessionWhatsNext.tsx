@@ -58,11 +58,7 @@ export function SessionWhatsNext({
         ? t.slaOverdue
         : formatRelativeWindow(sla.msLeft, lang)
       : null
-    return (
-      <Frame tone="info">
-        {window ? t.triageWithSla(window) : t.triagePlain}
-      </Frame>
-    )
+    return <Frame tone="info">{window ? t.triageWithSla(window) : t.triagePlain}</Frame>
   }
 
   if (session.status === 'rejected') {
@@ -105,27 +101,23 @@ export function SessionWhatsNext({
 
   if (tier === 1) {
     const paidT1 = summary.rows.some((r) => r.kind === 'tier1' && r.status === 'paid')
-    return paidT1
-      ? <Frame tone="ok">{t.activeTier1Paid}</Frame>
-      : <Frame tone="cta">{t.activeTier1Unpaid}</Frame>
+    return paidT1 ? (
+      <Frame tone="ok">{t.activeTier1Paid}</Frame>
+    ) : (
+      <Frame tone="cta">{t.activeTier1Unpaid}</Frame>
+    )
   }
 
   if (tier === 2) {
-    const paidDeposit = summary.rows.some(
-      (r) => r.kind === 'tier2-deposit' && r.status === 'paid',
-    )
-    const paidFinal = summary.rows.some(
-      (r) => r.kind === 'tier2-final' && r.status === 'paid',
-    )
+    const paidDeposit = summary.rows.some((r) => r.kind === 'tier2-deposit' && r.status === 'paid')
+    const paidFinal = summary.rows.some((r) => r.kind === 'tier2-final' && r.status === 'paid')
     if (!paidDeposit) return <Frame tone="cta">{t.activeTier2NoDeposit}</Frame>
     if (!paidFinal) return <Frame tone="ok">{t.activeTier2DepositOnly}</Frame>
     return <Frame tone="ok">{t.activeTier2Cleared}</Frame>
   }
 
   if (tier === 3) {
-    const hasPayRow = summary.rows.some(
-      (r) => r.kind === 'tier3' && r.status === 'paid',
-    )
+    const hasPayRow = summary.rows.some((r) => r.kind === 'tier3' && r.status === 'paid')
     if (hasPayRow) return <Frame tone="ok">{t.activeTier3Paid}</Frame>
     if (session.tier3_amount_cents == null) {
       return <Frame tone="info">{t.activeTier3PendingQuote}</Frame>
@@ -157,7 +149,7 @@ function Frame({
 const COPY = {
   fr: {
     triagePlain:
-      "Marc lit ton intake et te répond — oui, non, ou « raconte-moi plus » — par courriel et dans le fil.",
+      'Marc lit ton intake et te répond — oui, non, ou « raconte-moi plus » — par courriel et dans le fil.',
     triageWithSla: (w: string) =>
       `Marc répond ${w} — oui, non, ou « raconte-moi plus ». Tu reçois aussi un courriel quand c’est posté.`,
     slaOverdue: 'bientôt (un peu en retard)',
@@ -180,8 +172,7 @@ const COPY = {
     activeTier0:
       'Marc t’a redirigé vers un patron / template (Tier 0). Détails dans le fil ci-dessous — pas de paiement à faire.',
     activeLoading: 'Marc a accepté ton projet. Chargement des détails de paiement…',
-    activeTier1Unpaid:
-      'Marc a accepté en Tier 1 (≈ 300 $). Paie ci-dessous pour démarrer.',
+    activeTier1Unpaid: 'Marc a accepté en Tier 1 (≈ 300 $). Paie ci-dessous pour démarrer.',
     activeTier1Paid:
       'Tier 1 payé. Marc démarre. Les avancements apparaissent dans la chronologie plus bas — tu reçois aussi un courriel aux étapes clés.',
     activeTier2NoDeposit:
@@ -204,7 +195,7 @@ const COPY = {
       `Marc replies ${w} — yes, no, or 'tell me more'. You'll also get an email when it's posted.`,
     slaOverdue: 'soon (a bit overdue)',
     rejected:
-      "Marc declined this session — the reason is in the thread. You can open a new proposal anytime.",
+      'Marc declined this session — the reason is in the thread. You can open a new proposal anytime.',
     shippedNudgeDefault:
       'Project shipped. By default you go into custodian mode ($200/yr) — Marc keeps operating the site. If you prefer "All yours", confirm it below (skills checklist).',
     shippedNudgeCustodian:
@@ -214,7 +205,7 @@ const COPY = {
     shippedAllYoursAcked:
       'Project shipped. You confirmed "All yours" — Marc is transferring the accounts. You can still activate custodian mode later if needed.',
     shippedCustodianActive:
-      "Project shipped. Custodian mode active — Marc is operating the site. Manage the subscription via the Stripe portal below.",
+      'Project shipped. Custodian mode active — Marc is operating the site. Manage the subscription via the Stripe portal below.',
     shippedCustodianPastDue:
       "Project shipped. Custodian mode active but Stripe couldn't charge your card — update the payment via the Stripe portal below before the grace period ends.",
     activeNoTier:
@@ -222,21 +213,19 @@ const COPY = {
     activeTier0:
       'Marc redirected you to a pattern/template (Tier 0). Details in the thread — no payment due.',
     activeLoading: 'Marc accepted your project. Loading payment details…',
-    activeTier1Unpaid:
-      'Marc accepted at Tier 1 (≈ $300). Pay below to start the build.',
+    activeTier1Unpaid: 'Marc accepted at Tier 1 (≈ $300). Pay below to start the build.',
     activeTier1Paid:
       "Tier 1 paid. Marc is starting. Build updates appear in the timeline below — you'll also get an email at key steps.",
     activeTier2NoDeposit:
       'Marc accepted at Tier 2 (≈ $1500, paid in two halves). Pay the $750 deposit below to start; the $750 balance is due at delivery.',
     activeTier2DepositOnly:
-      "Tier 2 deposit received — Marc is starting. The final balance ($750) is due at delivery; you can clear it earlier if you want.",
+      'Tier 2 deposit received — Marc is starting. The final balance ($750) is due at delivery; you can clear it earlier if you want.',
     activeTier2Cleared:
       "Tier 2 fully paid. Marc is wrapping up. Delivery is coming — you'll be notified by email.",
     activeTier3PendingQuote:
       'Marc accepted at Tier 3 — he posts the exact amount in the thread below (and emails you) within 72h.',
     activeTier3Quoted:
-      "Marc posted his Tier 3 quote. Pay below to start; ask questions in the thread.",
-    activeTier3Paid:
-      'Tier 3 paid. Marc is starting. Build updates appear in the timeline below.',
+      'Marc posted his Tier 3 quote. Pay below to start; ask questions in the thread.',
+    activeTier3Paid: 'Tier 3 paid. Marc is starting. Build updates appear in the timeline below.',
   },
 } as const

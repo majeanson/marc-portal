@@ -273,7 +273,11 @@ describe('POST /api/payments/webhook — tier2-deposit auto-prompt', () => {
     ;(stripeMod.verifyWebhookSignature as ReturnType<typeof vi.fn>).mockResolvedValueOnce(false)
     const env = buildEnv()
     const res = await onRequestPost({
-      request: buildWebhookRequest({ id: 'x', type: 'checkout.session.completed', data: { object: {} } }),
+      request: buildWebhookRequest({
+        id: 'x',
+        type: 'checkout.session.completed',
+        data: { object: {} },
+      }),
       env,
       params: {},
     } as never)

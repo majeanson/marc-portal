@@ -263,7 +263,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
       session.tier3_amount_cents === null &&
       body.tier3AmountCents !== null &&
       // Either tier is already 3, or we just set it to 3 in this same PATCH.
-      (session.tier === 3 || (tierAssigned === 3))
+      (session.tier === 3 || tierAssigned === 3)
     ) {
       tier3QuoteJustSet = true
     }

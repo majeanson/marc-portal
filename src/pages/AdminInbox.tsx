@@ -205,9 +205,7 @@ export function AdminInbox({ lang }: { lang: Lang }) {
   // even when the filter isn't active. Cheap — runs only when sessions changes.
   const bucketCount = (f: AttentionFilter) =>
     (sessions ?? []).filter((s) => matchesFilter(s, f, nowS)).length
-  const filteredSessions = (sessions ?? []).filter((s) =>
-    matchesFilter(s, attentionFilter, nowS),
-  )
+  const filteredSessions = (sessions ?? []).filter((s) => matchesFilter(s, attentionFilter, nowS))
 
   // Refresh callable from event handlers only (visibility-change). Has a
   // synchronous setRefreshing(true) at the top, which keeps it out of effect
@@ -326,10 +324,12 @@ export function AdminInbox({ lang }: { lang: Lang }) {
             </header>
 
             {sessions !== null && sessions.length > 0 && (
-              <div className="admin-inbox__attention" role="tablist" aria-label={t.needsAttentionHeading}>
-                <h2 className="admin-inbox__attention-heading mono">
-                  {t.needsAttentionHeading}
-                </h2>
+              <div
+                className="admin-inbox__attention"
+                role="tablist"
+                aria-label={t.needsAttentionHeading}
+              >
+                <h2 className="admin-inbox__attention-heading mono">{t.needsAttentionHeading}</h2>
                 <div className="admin-inbox__attention-pills">
                   <AttentionPill
                     active={attentionFilter === 'all'}

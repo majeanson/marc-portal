@@ -83,8 +83,7 @@ const COPY = {
     toutAToiAckedBody:
       'Tu as pris la responsabilité de la stack. Marc te transfère les comptes à la livraison ; au-delà, c’est à toi.',
     toutAToiSwitchToCustodian: 'Activer le mode dépositaire à la place →',
-    toutAToiAckError:
-      'Échec — réessaie. La décision peut aussi être prise plus tard.',
+    toutAToiAckError: 'Échec — réessaie. La décision peut aussi être prise plus tard.',
 
     // Test mode banner
     testModeBadge: 'MODE TEST',
@@ -115,7 +114,7 @@ const COPY = {
     custodianEnded: 'ended',
     custodianDetailsLink: 'See the details ↗',
     custodianPitch:
-      "Default mode. Marc holds the keys (repo, domain, Cloudflare, Resend) for $200/yr, handles DNS, renewals, certificates, security updates, and includes up to 2h/month of small tweaks. Cancel anytime — auto-switches to \"All yours\".",
+      'Default mode. Marc holds the keys (repo, domain, Cloudflare, Resend) for $200/yr, handles DNS, renewals, certificates, security updates, and includes up to 2h/month of small tweaks. Cancel anytime — auto-switches to "All yours".',
     custodianActiveBody:
       'Marc holds repo, domain, and accounts in his name. Auto-renews annually. You can cancel or update the payment method via the Stripe portal.',
     custodianPastDueBody:
@@ -211,9 +210,7 @@ export function PaymentActions({
   const [ackedAtOverride, setAckedAtOverride] = useState<number | null>(null)
   // Stable: this comparison is in render-time only, no setState side effect.
   const effectiveAckedAt =
-    ackedAtOverride !== null
-      ? ackedAtOverride
-      : sessionProp.all_yours_acknowledged_at
+    ackedAtOverride !== null ? ackedAtOverride : sessionProp.all_yours_acknowledged_at
   const session: SessionRow = {
     ...sessionProp,
     all_yours_acknowledged_at: effectiveAckedAt,
@@ -320,10 +317,7 @@ export function PaymentActions({
   // (which means amount_cents was fully refunded). We surface them as a
   // separate line so the visitor sees the net picture without us silently
   // subtracting from the "Paid" total.
-  const refundedCents = oneTimeRows.reduce(
-    (sum, r) => sum + (r.refunded_amount_cents ?? 0),
-    0,
-  )
+  const refundedCents = oneTimeRows.reduce((sum, r) => sum + (r.refunded_amount_cents ?? 0), 0)
   const allOneTimeFullyRefunded =
     oneTimeRows.length > 0 && oneTimeRows.every((r) => r.status === 'refunded')
   const paidLabel = allOneTimeFullyRefunded
@@ -664,11 +658,7 @@ export function PaymentActions({
                   </button>
                 </div>
                 {ackError && (
-                  <p
-                    className="mono me-portal__pay-ack-error"
-                    role="alert"
-                    aria-live="assertive"
-                  >
+                  <p className="mono me-portal__pay-ack-error" role="alert" aria-live="assertive">
                     {copy.toutAToiAckError}
                   </p>
                 )}

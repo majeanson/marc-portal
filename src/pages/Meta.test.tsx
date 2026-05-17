@@ -58,9 +58,7 @@ vi.mock('../data/lac-features.json', () => ({
         tags: ['tag-a', 'tag-b'],
         problem: 'A short problem statement for the active feature.',
         decisionsCount: 3,
-        lastTransitionDate: new Date(Date.now() - 30 * 24 * 3600 * 1000)
-          .toISOString()
-          .slice(0, 10),
+        lastTransitionDate: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString().slice(0, 10),
       },
       {
         featureKey: 'feat-2026-002',

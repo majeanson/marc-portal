@@ -225,7 +225,8 @@ ${alertsHtml}
 
   const subjectParts: string[] = []
   if (rows.length > 0) subjectParts.push(`${rows.length} en triage`)
-  if (alerts.length > 0) subjectParts.push(`${alerts.length} alerte${alerts.length === 1 ? '' : 's'}`)
+  if (alerts.length > 0)
+    subjectParts.push(`${alerts.length} alerte${alerts.length === 1 ? '' : 's'}`)
   const subject = `Digest — ${subjectParts.join(' · ')}`
 
   // Best-effort send. If Resend is down we still return 200 so the cron job

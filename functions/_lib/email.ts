@@ -330,7 +330,7 @@ export async function sendTierAssignedNotification(
     lead =
       lang === 'fr'
         ? 'Ton problème entre dans le Tier 0 : trop petit pour engager un dev.'
-        : "Your problem fits Tier 0: too small to hire a dev for."
+        : 'Your problem fits Tier 0: too small to hire a dev for.'
     body =
       lang === 'fr'
         ? 'Marc te redirige vers un patron prêt-à-utiliser ou un template — détails dans le fil de la session.'

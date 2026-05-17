@@ -17,11 +17,7 @@ export const VOUCH_RELATIONSHIPS: ReadonlySet<VouchRelationship> = new Set([
   'other',
 ])
 
-export const VOUCH_STATUSES: ReadonlySet<VouchStatus> = new Set([
-  'pending',
-  'approved',
-  'rejected',
-])
+export const VOUCH_STATUSES: ReadonlySet<VouchStatus> = new Set(['pending', 'approved', 'rejected'])
 
 /** Hard limits — match the validator in functions/api/vouches.ts. The
  *  client-side form should mirror these so the visitor sees errors

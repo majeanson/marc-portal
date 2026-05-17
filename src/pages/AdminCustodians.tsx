@@ -348,10 +348,7 @@ function CustodianRow({
             <span className="mono me-portal__date">
               {ackedDateStr
                 ? `${copy.ackedOnLabel} ${ackedDateStr}`
-                : formatDate(
-                    new Date(session.updated_at * 1000).toISOString().slice(0, 10),
-                    lang,
-                  )}
+                : formatDate(new Date(session.updated_at * 1000).toISOString().slice(0, 10), lang)}
             </span>
           </div>
           <h3 className="me-portal__card-title">{title}</h3>

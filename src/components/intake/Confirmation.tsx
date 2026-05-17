@@ -59,11 +59,7 @@ export function Confirmation({
           but keeps the stamp visible. */}
       {!waitlist && (
         <div className="confirmation__stamp-wrap" aria-hidden="true">
-          <svg
-            className="confirmation__stamp"
-            viewBox="0 0 260 100"
-            focusable="false"
-          >
+          <svg className="confirmation__stamp" viewBox="0 0 260 100" focusable="false">
             <g transform="translate(130 50) rotate(-7)">
               <rect
                 x="-122"
