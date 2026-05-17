@@ -319,6 +319,15 @@
 
 ## Working notes / decisions log
 
+- 2026-05-17 — **Decision: freeze buyer-admin / Fleet / Tenant code with note**
+  (PLAN_TOMORROW.md §3.4, Q1 in §10 open-questions). Default path picked:
+  keep as scaffolding, document the freeze in each page header so future-Marc
+  knows it's intentional, not abandoned. Cost to carry: ~0 — lazy chunks
+  never load for the default users, sidebar already hides them. Re-open
+  trigger: actually wanting to productize the white-label template (§5.4 in
+  the plan, Q8 90-day backlog), or a buyer-driven need that turns up
+  concretely. Freeze-note added to AdminFleet, AdminFleetNew, AdminAppearance.
+  AdminBilling and AdminTeam already carried adequate scaffolding notes.
 - 2026-05-15 — Audit captured from /portal codebase walkthrough. Starting work
   from P1 top-down.
 - 2026-05-15 — First batch shipped: P1.5 (per-IP rate limit), P1.6 (token

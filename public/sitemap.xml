@@ -54,4 +54,10 @@
   <url>
     <loc>https://marcportal.com/en/handoff/checklist</loc>
   </url>
+  <url>
+    <loc>https://marcportal.com/meta</loc>
+  </url>
+  <url>
+    <loc>https://marcportal.com/en/meta</loc>
+  </url>
 </urlset>

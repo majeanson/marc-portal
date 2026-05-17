@@ -3,6 +3,7 @@ import { DICT } from '../i18n'
 
 export function HowItWorks({ lang }: { lang: Lang }) {
   const t = DICT[lang].how
+  const journeyHref = lang === 'fr' ? '/parcours' : '/en/journey'
   return (
     <section className="section section--alt section--editorial" id="how">
       <div className="section__inner">
@@ -26,6 +27,9 @@ export function HowItWorks({ lang }: { lang: Lang }) {
             </li>
           ))}
         </ol>
+        <a className="how__journey-link mono" href={journeyHref}>
+          {t.fullJourneyCta}
+        </a>
       </div>
     </section>
   )

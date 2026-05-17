@@ -98,7 +98,7 @@ describe('PaymentActions tier 2 split flow', () => {
     )
   })
 
-  it('shows "Paid · $1,500.00" once both legs are paid (sum, not single row)', async () => {
+  it('shows "Paid · $1,500" once both legs are paid (sum, not single row)', async () => {
     mockSummary(
       mkSummary({
         rows: [
@@ -109,7 +109,7 @@ describe('PaymentActions tier 2 split flow', () => {
       }),
     )
     render(<PaymentActions session={mkSession({ tier: 2 })} lang="en" />)
-    await waitFor(() => expect(screen.getByText(/Paid · \$1,500\.00/)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/Paid · \$1,500\b/)).toBeInTheDocument())
   })
 })
 
@@ -147,7 +147,7 @@ describe('PaymentActions custodian section', () => {
     )
     render(<PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />)
     await waitFor(() =>
-      expect(screen.getByText(/Paid · \$300\.00/)).toBeInTheDocument(),
+      expect(screen.getByText(/Paid · \$300\b/)).toBeInTheDocument(),
     )
     expect(screen.queryByRole('heading', { name: /Custodian mode/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /All yours/ })).not.toBeInTheDocument()

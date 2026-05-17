@@ -48,4 +48,22 @@
   <text x="80" y="575" font-family="Cascadia Code, JetBrains Mono, monospace" font-size="20" fill="#7a7568" letter-spacing="2">
     1 ACTIVE PROJECT  ·  72H REPLY  ·  HOSTED IN CANADA
   </text>
+
+  <!-- Signature stamp (bottom-right). See og-image.svg for design rationale. -->
+  <g transform="translate(1010 510) rotate(-7)" opacity="0.78">
+    <rect x="-130" y="-46" width="260" height="92" rx="10" ry="10"
+          fill="none" stroke="#8a4f1c" stroke-width="3"/>
+    <rect x="-122" y="-38" width="244" height="76" rx="6" ry="6"
+          fill="none" stroke="#8a4f1c" stroke-width="1.5"/>
+    <text x="0" y="-6" text-anchor="middle"
+          font-family="Cascadia Code, JetBrains Mono, monospace"
+          font-size="22" font-weight="700" letter-spacing="4" fill="#8a4f1c">
+      VERIFIED
+    </text>
+    <text x="0" y="22" text-anchor="middle"
+          font-family="Cascadia Code, JetBrains Mono, monospace"
+          font-size="14" letter-spacing="6" fill="#8a4f1c">
+      QUÉBEC  ·  ASYNC
+    </text>
+  </g>
 </svg>

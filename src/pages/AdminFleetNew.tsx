@@ -5,6 +5,9 @@
  * entry. The Cloudflare Pages custom-domain-add API call is NOT yet wired
  * (feat-2026-018) — operators must add the domain in the CF dashboard and
  * the buyer points DNS. The wizard surfaces the next-step instructions.
+ *
+ * FROZEN (2026-05-17, per PLAN_TOMORROW.md §3.4). See AdminFleet.tsx for
+ * the full rationale. Kept for an eventual white-label move.
  */
 
 import { useState } from 'react'

@@ -9,6 +9,9 @@
  * On save, PATCH /api/tenant/theme persists the JSON; on cancel, we revert by
  * re-applying the originally-loaded theme. Refresh after save so other tabs/users
  * pick up the change on next mount.
+ *
+ * FROZEN (2026-05-17, per PLAN_TOMORROW.md §3.4). See AdminFleet.tsx for
+ * the full rationale. Kept for an eventual white-label move.
  */
 
 import { useMemo, useState } from 'react'

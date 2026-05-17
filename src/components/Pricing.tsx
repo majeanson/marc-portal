@@ -19,6 +19,7 @@ export function Pricing({ lang }: { lang: Lang }) {
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 className="section__display">{t.title}</h2>
           <p className="section__lead">{t.body}</p>
+          <p className="tier__asof mono">{t.asOf}</p>
         </header>
         <ol className="tiers tiers--menu">
           {t.tiers.map((tier) => {
@@ -57,6 +58,7 @@ export function Pricing({ lang }: { lang: Lang }) {
             )
           })}
         </ol>
+        <p className="tier__disclaimer">{t.disclaimer}</p>
       </div>
     </section>
   )

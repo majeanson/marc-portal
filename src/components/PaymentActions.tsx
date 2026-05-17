@@ -17,9 +17,9 @@ const COPY = {
     // (formatCadCents) so the button and the post-payment "Payé · X $"
     // pill use the same convention. OQLF: thin-space + dollar sign after.
     projectHeading: 'Paiement du projet',
-    payTier1: 'Payer Tier 1 (≈ 300,00 $) →',
-    payTier2Deposit: 'Payer le dépôt (≈ 750,00 $) →',
-    payTier2Final: 'Payer le solde (≈ 750,00 $) →',
+    payTier1: 'Payer Tier 1 (≈ 300 $) →',
+    payTier2Deposit: 'Payer le dépôt (≈ 750 $) →',
+    payTier2Final: 'Payer le solde (≈ 750 $) →',
     payTier2FinalHint:
       'Disponible maintenant si tu veux solder. Sinon, Marc te ping à la livraison — pas pressé.',
     payTier3Quoted: (amount: string) => `Payer ${amount} →`,
@@ -93,9 +93,9 @@ const COPY = {
   },
   en: {
     projectHeading: 'Project payment',
-    payTier1: 'Pay Tier 1 (≈ $300.00) →',
-    payTier2Deposit: 'Pay deposit (≈ $750.00) →',
-    payTier2Final: 'Pay final balance (≈ $750.00) →',
+    payTier1: 'Pay Tier 1 (≈ $300) →',
+    payTier2Deposit: 'Pay deposit (≈ $750) →',
+    payTier2Final: 'Pay final balance (≈ $750) →',
     payTier2FinalHint:
       "Available now if you want to clear it. Otherwise Marc'll ping you at delivery — no rush.",
     payTier3Quoted: (amount: string) => `Pay ${amount} →`,
@@ -697,12 +697,17 @@ export function PaymentActions({
 
 /**
  * Format CAD cents per OQLF convention (FR) or standard locale (EN).
- * 75000 cents → "750,00 $" (fr-CA) or "CA$750.00" (en-CA).
+ * Round-dollar amounts drop the cents portion so "Paid · $300" reads cleaner
+ * than "Paid · $300.00". Mirrors the server-side helper in functions/_lib/email.ts.
+ * 75000 cents → "750 $" (fr-CA) or "$750" (en-CA); 75050 → "750,50 $" / "$750.50".
  */
 function formatCadCents(cents: number, lang: Lang): string {
+  const isRound = cents % 100 === 0
   return new Intl.NumberFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', {
     style: 'currency',
     currency: 'CAD',
     currencyDisplay: lang === 'fr' ? 'symbol' : 'narrowSymbol',
+    minimumFractionDigits: isRound ? 0 : 2,
+    maximumFractionDigits: 2,
   }).format(cents / 100)
 }

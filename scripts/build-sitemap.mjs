@@ -39,6 +39,8 @@ const urls = [
   urlEntry('/en/handoff'),
   urlEntry('/handoff/checklist'),
   urlEntry('/en/handoff/checklist'),
+  urlEntry('/meta'),
+  urlEntry('/en/meta'),
 ]
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

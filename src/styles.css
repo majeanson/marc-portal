@@ -540,6 +540,39 @@ p {
   text-decoration: none;
 }
 
+/* Primary CTA — promoted per §2.2(a). Larger, slightly elevated, more
+   typographic weight. Only applied on the hero so we don't bulk up the
+   same .hero__cta class used elsewhere (e.g. /me, /handoff). */
+.hero__cta--primary {
+  padding: 18px 28px;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 12px rgba(61, 110, 78, 0.18);
+}
+.hero__cta--primary:hover {
+  box-shadow: 0 8px 22px rgba(61, 110, 78, 0.28);
+}
+
+/* Secondary CTA — the "I just want to peek" path per §2.2(d). Sits on
+   its own line beneath the primary so the eye reads "main action, then
+   alternative" without visual competition. */
+.hero__secondary-cta {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+  color: var(--text-soft);
+  border-bottom: 1px dotted var(--text-soft);
+  padding-bottom: 2px;
+}
+.hero__secondary-cta:hover,
+.hero__secondary-cta:focus-visible {
+  color: var(--accent-warm);
+  border-bottom-color: var(--accent-warm);
+  text-decoration: none;
+  outline: none;
+}
+
 /* Capacity counter */
 .capacity {
   margin-top: 28px;
@@ -576,9 +609,30 @@ p {
   border-radius: 50%;
   background: var(--accent-warm);
   display: inline-block;
+  /* Slow, gentle pulse — telegraphs "live count, not static text" without
+     drawing the eye away from the hero CTA. Once-around-per-cycle so it's
+     a tick rather than a strobe. prefers-reduced-motion disables it. */
+  animation: capacity-tick 4s ease-in-out infinite;
 }
 .capacity__pill--active::before {
   background: var(--status-active);
+}
+@keyframes capacity-tick {
+  0%,
+  60%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1.35);
+    opacity: 0.7;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .capacity__pill::before {
+    animation: none;
+  }
 }
 
 /* Steps */
@@ -3428,6 +3482,149 @@ button.intake__progress-step:focus-visible {
   opacity: 0.6;
 }
 
+/* Public LAC meta page — /meta and /en/meta. Editorial grid of the
+   portal's own feature.json projection. Each card mirrors a small
+   subset of the LAC schema: status, problem snippet, tags, decisions,
+   last-transition date with green/amber/red freshness pill. */
+.meta-page__hero {
+  margin-bottom: 28px;
+}
+.meta-features {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+@media (min-width: 720px) {
+  .meta-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.meta-feature {
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 18px 20px;
+  background: var(--bg-section);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.meta-feature--active {
+  border-left: 3px solid var(--accent);
+}
+.meta-feature--frozen {
+  border-left: 3px solid #b5a575;
+}
+.meta-feature--draft {
+  border-left: 3px solid var(--border-soft);
+}
+.meta-feature__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.meta-feature__title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--text);
+}
+.meta-feature__status {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+.meta-feature--active .meta-feature__status {
+  background: #eaf5ec;
+  color: #2a6d3a;
+  border-color: #cfe6d4;
+}
+.meta-feature--frozen .meta-feature__status {
+  background: #faf3df;
+  color: #6b5a2a;
+  border-color: #ebdfbf;
+}
+.meta-feature__key {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-soft);
+  letter-spacing: 0.04em;
+}
+.meta-feature__problem {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-mid);
+}
+.meta-feature__tags {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.meta-feature__tags li {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  padding: 2px 7px;
+  background: var(--bg-app);
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+}
+.meta-feature__foot {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px dotted var(--border-soft);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.meta-feature__fresh--fresh {
+  color: #2a6d3a;
+}
+.meta-feature__fresh--warm {
+  color: #8a5a00;
+}
+.meta-feature__fresh--stale {
+  color: #8a2222;
+}
+.meta-feature__source {
+  margin-left: auto;
+  color: var(--text-soft);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--text-soft);
+  padding-bottom: 1px;
+}
+.meta-feature__source:hover,
+.meta-feature__source:focus-visible {
+  color: var(--accent-warm);
+  border-bottom-color: var(--accent-warm);
+  outline: none;
+}
+.meta-page__cta {
+  margin-top: 24px;
+  font-size: 13.5px;
+}
+.meta-page__back-link {
+  margin-top: 18px;
+}
+
 /* Primary CTA — used by tier payments + custodian activate. */
 .me-portal__pay-btn {
   appearance: none;
@@ -5615,6 +5812,40 @@ button.intake__progress-step:disabled {
   outline: none;
 }
 
+/* Live slot pill — sits next to the primary CTA so the visitor reads
+   capacity state right at the moment of clicking. Reads /api/capacity
+   on mount via the existing atCap useEffect on Hero. Two tones:
+   --open (sage, "1 slot open") and --full (warm, "waitlist open"). */
+.hero__slot-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  border: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+.hero__slot-pill--open {
+  background: #eaf5ec;
+  color: #2a6d3a;
+  border-color: #cfe6d4;
+}
+.hero__slot-pill--full {
+  background: #fff4e0;
+  color: #8a5a00;
+  border-color: #f1d8a0;
+}
+.hero__slot-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
 .home .hero__facts {
   margin: 28px 0 0;
   gap: 6px;
@@ -5683,73 +5914,10 @@ button.intake__progress-step:disabled {
   color: var(--text-faint);
 }
 
-/* Hero TOC — magazine-style table of contents at the foot of the hero.
-   Centered column: small "Lire" eyebrow above a row of numbered links. */
-.hero__toc {
-  margin-top: 56px;
-  padding-top: 22px;
-  border-top: 1px solid var(--border-soft);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  z-index: 1;
-  text-align: center;
-}
-.hero__toc-label {
-  font-size: 11px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-.hero__toc-label::before,
-.hero__toc-label::after {
-  content: '';
-  display: inline-block;
-  width: 18px;
-  height: 1px;
-  background: var(--border);
-  vertical-align: middle;
-  margin: 0 10px 2px;
-}
-.hero__toc-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 28px;
-  max-width: 720px;
-}
-.hero__toc-link {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  color: var(--text-mid);
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: 15px;
-  text-decoration: none;
-  padding: 4px 0;
-  border-bottom: 1px solid transparent;
-  transition:
-    color 0.18s,
-    border-color 0.18s;
-}
-.hero__toc-link:hover,
-.hero__toc-link:focus-visible {
-  color: var(--accent-warm);
-  border-bottom-color: var(--accent-warm);
-  outline: none;
-  text-decoration: none;
-}
-.hero__toc-num {
-  font-size: 11px;
-  color: var(--text-faint);
-  letter-spacing: 0.08em;
-}
+/* Hero TOC removed 2026-05-17 (PLAN_TOMORROW.md §2.2(b)) — SectionRail
+   on /pages/Home.tsx is the single source for in-page navigation. The
+   .hero__toc*, .hero__toc-label, .hero__toc-list, .hero__toc-link,
+   .hero__toc-num rules that used to live here are gone with the JSX. */
 
 /* CTA buttons — wax-stamp lift on hover, with restrained shadow */
 .home .hero__cta {
@@ -5839,6 +6007,23 @@ button.intake__progress-step:disabled {
   .home .step--editorial .step__numeral {
     font-size: 56px;
   }
+}
+.home .how__journey-link {
+  display: inline-block;
+  margin-top: 28px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--accent-warm);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-warm);
+  padding-bottom: 2px;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.home .how__journey-link:hover {
+  color: var(--text);
+  border-bottom-color: var(--text);
 }
 
 /* ── Pricing — menu layout ────────────────────────────────────────────────── */
@@ -5953,8 +6138,29 @@ button.intake__progress-step:disabled {
   text-transform: uppercase;
   padding: 4px 10px;
   border-radius: 2px;
-  transform: rotate(-1.5deg);
+  /* Pushed from -1.5° to -4° for that "actual printed stamp" tilt per the
+     plan (§2.3). Pairs with the new asOf/disclaimer copy that frames the
+     price list as a versioned, signed document. */
+  transform: rotate(-4deg);
   box-shadow: 0 2px 0 var(--accent-warm);
+}
+
+/* Menu-folio and disclaimer copy that wraps the price list — versioned-
+   document framing, like the asOf line on /handoff. */
+.tier__asof {
+  margin: 16px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--text-soft);
+}
+.tier__disclaimer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-mid);
+  font-style: italic;
 }
 
 /* ── VibeFilter — ledger ──────────────────────────────────────────────────── */
@@ -6460,17 +6666,6 @@ button.intake__progress-step:disabled {
     justify-content: flex-end;
     flex: 0 0 auto;
   }
-  .hero__toc {
-    margin-top: 40px;
-    gap: 10px;
-  }
-  .hero__toc-list {
-    gap: 6px 18px;
-  }
-  .hero__toc-link {
-    font-size: 14px;
-  }
-
   .section__head {
     margin-bottom: 32px;
   }
@@ -8594,4 +8789,515 @@ button.intake__progress-step:disabled {
   background: var(--bg);
   padding: 1px 5px;
   border-radius: 3px;
+}
+
+/* ── Journey — full parcours: snake spine + infographic cards ─────────────── */
+.journey {
+  padding-block: clamp(48px, 8vw, 96px);
+}
+.journey__head {
+  max-width: 720px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+.journey__title {
+  font-family: var(--display);
+  font-size: clamp(34px, 5.6vw, 60px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin: 16px 0 16px;
+  color: var(--text);
+}
+.journey__sub {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-mid);
+  margin: 0 auto;
+  max-width: 60ch;
+}
+.journey__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 40px 0 24px;
+}
+.journey__stat {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 22px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+.journey__stat-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: lowercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  margin: 0;
+}
+.journey__stat-val {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.journey__stat-num {
+  font-family: var(--sans);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(40px, 6vw, 56px);
+  line-height: 0.9;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+.journey__stat-unit {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-soft);
+  letter-spacing: 0.05em;
+}
+.journey__stat--you .journey__stat-num {
+  color: var(--accent-warm);
+}
+.journey__stat--time .journey__stat-num {
+  color: var(--cool);
+}
+.journey__stat--calls .journey__stat-num {
+  color: var(--warm);
+}
+
+.journey__legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  font-size: 11px;
+  text-transform: lowercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+}
+.journey__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.journey__legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid var(--border);
+}
+.journey__legend-item--you .journey__legend-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.journey__legend-item--me .journey__legend-dot {
+  background: var(--warm);
+  border-color: var(--warm);
+}
+.journey__legend-item--both .journey__legend-dot {
+  background: var(--cool);
+  border-color: var(--cool);
+}
+
+/* Path spine — runs full height of the steps area. */
+.journey__path {
+  position: relative;
+  margin-top: 24px;
+}
+.journey__path::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 64px;
+  left: 50%;
+  width: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--border) 0,
+    var(--border) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  transform: translateX(-1px);
+  pointer-events: none;
+}
+
+.journey__phase {
+  position: relative;
+  padding: 24px 0 16px;
+}
+.journey__phase-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg);
+  padding: 14px 22px;
+  margin: 0 auto 28px;
+  width: fit-content;
+  max-width: 360px;
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 6px var(--bg);
+}
+.journey__phase-roman {
+  font-family: var(--sans);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 0.85;
+  color: var(--accent-warm);
+  letter-spacing: -0.04em;
+  flex-shrink: 0;
+}
+.journey__phase-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.journey__phase-name {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0;
+}
+.journey__phase-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  color: var(--text-soft);
+  margin: 0;
+}
+
+.journey__steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 64px 1fr;
+  row-gap: 28px;
+}
+.journey__step {
+  position: relative;
+}
+.journey__step--left {
+  grid-column: 1;
+  padding-right: 8px;
+}
+.journey__step--right {
+  grid-column: 3;
+  padding-left: 8px;
+}
+
+/* Dot on the spine + horizontal connector from spine to card. */
+.journey__step-dot {
+  position: absolute;
+  top: 30px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--text-soft);
+  z-index: 2;
+}
+.journey__step--left .journey__step-dot {
+  right: -40px;
+}
+.journey__step--right .journey__step-dot {
+  left: -40px;
+}
+.journey__step--you .journey__step-dot {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.journey__step--me .journey__step-dot {
+  border-color: var(--warm);
+  background: var(--warm-soft);
+}
+.journey__step--both .journey__step-dot {
+  border-color: var(--cool);
+  background: var(--cool-soft);
+}
+.journey__step::before {
+  content: '';
+  position: absolute;
+  top: 37px;
+  height: 2px;
+  background: var(--border);
+}
+.journey__step--left::before {
+  right: -32px;
+  width: 24px;
+}
+.journey__step--right::before {
+  left: -32px;
+  width: 24px;
+}
+
+/* The card itself */
+.journey__card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  position: relative;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.journey__step:hover .journey__card {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(31, 29, 24, 0.08);
+  border-color: var(--border);
+}
+.journey__step--you .journey__card {
+  border-left: 3px solid var(--accent);
+}
+.journey__step--me .journey__card {
+  border-left: 3px solid var(--warm);
+}
+.journey__step--both .journey__card {
+  border-left: 3px solid var(--cool);
+}
+.journey__step--right.journey__step--you .journey__card,
+.journey__step--right.journey__step--me .journey__card,
+.journey__step--right.journey__step--both .journey__card {
+  border-left-width: 1px;
+  border-right-width: 3px;
+  border-right-style: solid;
+}
+.journey__step--right.journey__step--you .journey__card {
+  border-right-color: var(--accent);
+}
+.journey__step--right.journey__step--me .journey__card {
+  border-right-color: var(--warm);
+}
+.journey__step--right.journey__step--both .journey__card {
+  border-right-color: var(--cool);
+}
+
+.journey__card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.journey__step-num {
+  font-family: var(--sans);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(180deg, var(--text-faint) 0%, var(--text-soft) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.journey__step--you .journey__step-num {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-warm) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.journey__step--me .journey__step-num {
+  background: linear-gradient(180deg, var(--warm) 0%, var(--text) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.journey__step--both .journey__step-num {
+  background: linear-gradient(180deg, var(--cool) 0%, var(--text) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.journey__step-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  text-transform: lowercase;
+  letter-spacing: 0.05em;
+  padding-top: 8px;
+}
+.journey__step-actor {
+  font-weight: 700;
+  color: var(--text);
+}
+.journey__step--you .journey__step-actor {
+  color: var(--accent-warm);
+}
+.journey__step--me .journey__step-actor {
+  color: var(--warm);
+}
+.journey__step--both .journey__step-actor {
+  color: var(--cool);
+}
+.journey__step-duration {
+  color: var(--text-mid);
+}
+.journey__step-where {
+  color: var(--text-soft);
+}
+.journey__step-title {
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.journey__step-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-mid);
+}
+
+/* Outro card */
+.journey__outro {
+  margin-top: 56px;
+  text-align: center;
+  padding: 56px 24px 24px;
+  border-top: 1px solid var(--border-soft);
+  position: relative;
+}
+.journey__outro::before {
+  content: '✓';
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--sans);
+  box-shadow: 0 0 0 6px var(--bg);
+}
+.journey__outro-title {
+  font-family: var(--display);
+  font-size: clamp(28px, 4.2vw, 40px);
+  margin: 0 0 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.journey__outro-body {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-mid);
+  max-width: 56ch;
+  margin: 0 auto 28px;
+}
+
+@media (max-width: 640px) {
+  .journey__stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .journey__stat-num {
+    font-size: 40px;
+  }
+}
+
+/* Mobile/tablet: collapse to a single column with the spine on the left. */
+@media (max-width: 760px) {
+  .journey__path::before {
+    left: 20px;
+  }
+  .journey__phase-head {
+    margin: 0 0 24px;
+    max-width: none;
+    width: auto;
+    margin-left: 8px;
+  }
+  .journey__phase-roman {
+    font-size: 36px;
+  }
+  .journey__steps {
+    grid-template-columns: 1fr;
+    row-gap: 18px;
+  }
+  .journey__step--left,
+  .journey__step--right {
+    grid-column: 1;
+    padding: 0 0 0 44px;
+  }
+  .journey__step--left .journey__step-dot,
+  .journey__step--right .journey__step-dot {
+    left: 12px;
+    right: auto;
+    top: 26px;
+  }
+  .journey__step--left::before,
+  .journey__step--right::before {
+    left: 28px;
+    right: auto;
+    width: 14px;
+    top: 33px;
+  }
+  .journey__step--right.journey__step--you .journey__card,
+  .journey__step--right.journey__step--me .journey__card,
+  .journey__step--right.journey__step--both .journey__card {
+    border-right-width: 1px;
+    border-left-width: 3px;
+    border-left-style: solid;
+  }
+  .journey__step--right.journey__step--you .journey__card {
+    border-left-color: var(--accent);
+  }
+  .journey__step--right.journey__step--me .journey__card {
+    border-left-color: var(--warm);
+  }
+  .journey__step--right.journey__step--both .journey__card {
+    border-left-color: var(--cool);
+  }
+  .journey__step-num {
+    font-size: 36px;
+  }
+  .journey__step-title {
+    font-size: 17px;
+  }
+  .journey__card {
+    padding: 16px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey__card {
+    transition: none;
+  }
+  .journey__step:hover .journey__card {
+    transform: none;
+  }
 }

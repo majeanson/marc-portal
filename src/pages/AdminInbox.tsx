@@ -111,6 +111,27 @@ const STATUS_ORDER: Record<SessionStatus, number> = {
   rejected: 4,
 }
 
+/**
+ * Inbox sort: overdue-SLA rows first (regardless of status), then status
+ * priority (triage → active → draft → shipped → rejected), then newest
+ * updated_at. The SLA-first tier exists so Marc never opens the inbox to a
+ * triage row that aged past 72h sitting below an active one. computeSla
+ * only marks `active` for triage/draft anyway, so this doesn't reshuffle
+ * shipped/rejected.
+ */
+function sortInboxRows(rows: SessionRow[]): SessionRow[] {
+  return [...rows].sort((a, b) => {
+    const aSla = computeSla(a)
+    const bSla = computeSla(b)
+    const aOverdue = aSla.active && aSla.overdue ? 1 : 0
+    const bOverdue = bSla.active && bSla.overdue ? 1 : 0
+    if (aOverdue !== bOverdue) return bOverdue - aOverdue
+    const ds = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
+    if (ds !== 0) return ds
+    return b.updated_at - a.updated_at
+  })
+}
+
 function formatTime(unix: number, lang: Lang): string {
   return new Date(unix * 1000).toLocaleString(lang === 'fr' ? 'fr-CA' : 'en-CA', {
     dateStyle: 'short',
@@ -195,12 +216,7 @@ export function AdminInbox({ lang }: { lang: Lang }) {
     setRefreshing(true)
     try {
       const r = await listSessions()
-      const sorted = [...r.sessions].sort((a, b) => {
-        const da = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
-        if (da !== 0) return da
-        return b.updated_at - a.updated_at
-      })
-      setSessions(sorted)
+      setSessions(sortInboxRows(r.sessions))
     } catch {
       setSessions([])
     } finally {
@@ -225,12 +241,7 @@ export function AdminInbox({ lang }: { lang: Lang }) {
       try {
         const r = await listSessions()
         if (cancelled) return
-        const sorted = [...r.sessions].sort((a, b) => {
-          const da = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
-          if (da !== 0) return da
-          return b.updated_at - a.updated_at
-        })
-        setSessions(sorted)
+        setSessions(sortInboxRows(r.sessions))
       } catch {
         if (!cancelled) setSessions([])
       }

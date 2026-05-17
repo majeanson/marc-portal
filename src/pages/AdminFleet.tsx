@@ -4,6 +4,12 @@
  *
  * Default view is the table of tenants. The "Provision new buyer" CTA
  * navigates to /admin/fleet/new.
+ *
+ * FROZEN (2026-05-17, per PLAN_TOMORROW.md §3.4): the buyer-admin /
+ * Fleet / Tenant code is kept as scaffolding for an eventual white-label
+ * productization, but is hidden from the operator sidebar and not part
+ * of the live solo-practice flow. Cost to carry: ~0 (lazy chunks).
+ * Re-open when productizing or deleting; see AUDIT.md decisions log.
  */
 
 import { useEffect, useState } from 'react'

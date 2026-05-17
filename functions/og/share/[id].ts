@@ -130,6 +130,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
     `<div style="margin-top:auto;display:flex;align-items:center;gap:16px;">` +
     `<div style="display:flex;width:140px;height:4px;background:#3d6e4e;"></div>` +
     `<div style="display:flex;color:#7a7568;font-size:20px;letter-spacing:2px;font-weight:400;">${escapeHtml(footerLabel)}</div>` +
+    // Signature stamp at the right edge of the footer — text-only (no
+    // SVG path / rotation since satori support for transforms is partial
+    // and brittle across font fallbacks). Reads as the EN-locale "VERIFIED
+    // QUÉBEC" mark on the static home OG, in muted brand brown.
+    `<div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;color:#8a4f1c;font-size:18px;letter-spacing:4px;font-weight:700;line-height:1.2;">` +
+    `<div style="display:flex;">${lang === 'en' ? 'VERIFIED' : 'VÉRIFIÉ'}</div>` +
+    `<div style="display:flex;font-size:13px;letter-spacing:5px;font-weight:400;margin-top:4px;">QUÉBEC · ASYNC</div>` +
+    `</div>` +
     `</div>` +
     `</div>`
 
