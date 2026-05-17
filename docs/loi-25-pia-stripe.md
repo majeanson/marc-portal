@@ -35,19 +35,19 @@ in `mode: subscription`, and renewals are handled entirely by Stripe
 
 ## 3. Data inventory
 
-### 3.1 What we transmit to Stripe
+### 3.1 What the portal transmits to Stripe
 
 | Field | Source | Personal info? | Why |
 |---|---|---|---|
 | `customer_email` | session row | **Yes** (email) | Stripe sends receipt; matches visitor's account |
-| `client_reference_id` | our `pay_*` id | No (opaque) | Webhook idempotency join |
-| `metadata.payment_id` | our `pay_*` id | No (opaque) | Same; carried through |
-| `metadata.session_id` | our session id | No (opaque) | Locate the session on webhook |
+| `client_reference_id` | the portal `pay_*` id | No (opaque) | Webhook idempotency join |
+| `metadata.payment_id` | the portal `pay_*` id | No (opaque) | Same; carried through |
+| `metadata.session_id` | the portal session id | No (opaque) | Locate the session on webhook |
 | `metadata.kind` | `tier1` / `tier2-deposit` / … | No (categorical) | Tax/accounting categorization |
 | Line-item label | constant + optional showcase title | No (project name only) | Receipt clarity |
 | `amount` (one-time) or `price_id` (sub) | static (TIER_AMOUNTS / env) | No (price) | Amount to charge |
 
-### 3.2 What we collect via Stripe (but never store ourselves)
+### 3.2 What the portal collects via Stripe (but never stores)
 
 Stripe collects card data, billing address (if Stripe Tax is enabled —
 **not enabled** in this project), and any tax-ID the visitor enters in
@@ -55,7 +55,7 @@ the Stripe-hosted Customer Portal. None of these reach the marc-portal
 server. They live in Stripe's vault under their PCI-DSS Level 1
 controls.
 
-### 3.3 What we receive from Stripe (webhooks)
+### 3.3 What the portal receives from Stripe (webhooks)
 
 | Field | Stored where | Why |
 |---|---|---|
@@ -65,19 +65,19 @@ controls.
 | `subscription` (sub_…) | `payments.stripe_subscription_id` + `sessions.custodian_subscription_id` | Map renewals back to session |
 | Event type, `paid_at` | `payments.status`, `paid_at` | Status of the payment |
 
-Visitor's email is **not** copied from the webhook into our DB — we
-already have it on the session row. Card details (the last4, brand,
-exp) are present in Stripe's webhook payloads but we explicitly do not
-persist them (PCI scope avoidance; we don't need them).
+Visitor's email is **not** copied from the webhook into the portal DB
+— it already lives on the session row. Card details (the last4,
+brand, exp) are present in Stripe's webhook payloads but are
+explicitly not persisted (PCI scope avoidance; they aren't needed).
 
 ### 3.4 What is explicitly excluded
 
-- **No card data.** Stripe-hosted Checkout means we never see PAN/CVC/
-  exp; we never become PCI-DSS in-scope beyond SAQ A (the lowest tier,
-  satisfied by simply using Stripe Checkout per their attestation).
-- **No billing address persisted on our side.** Stripe collects it for
-  receipt + tax purposes; we do not echo it into D1.
-- **No client identity in our Sentry events.** The `/api/payments/*`
+- **No card data.** Stripe-hosted Checkout means the portal never sees
+  PAN/CVC/exp; PCI-DSS scope stays at SAQ A (the lowest tier, satisfied
+  by simply using Stripe Checkout per their attestation).
+- **No billing address persisted on the portal side.** Stripe collects
+  it for receipt + tax purposes; it is not echoed into D1.
+- **No client identity in Sentry events.** The `/api/payments/*`
   endpoints run under the same middleware as the rest; `beforeSend`
   strips cookies, auth headers, query strings. The webhook handler
   does not re-throw (it logs + 200s), so its body — which contains
@@ -96,30 +96,38 @@ Stripe transfer is given via the privacy notice on `/me` (see §6.5).
 **Material distinction from Sentry:** Stripe operates a Canadian
 processing entity, **Stripe Payments Canada Ltd.** (incorporated in
 Ontario; CRA registered). Per Stripe's privacy policy and Master
-Services Agreement, payments originating from Canadian customers are
-processed by Stripe Payments Canada Ltd. This means:
+Services Agreement, the primary processing entity for payments
+originating from Canadian customers is Stripe Payments Canada Ltd.
+This means:
 
-- The processing **is not a cross-border transfer** for purposes of
-  Loi 25 art. 17 (which governs transfers *outside* Quebec/Canada).
+- The direct transfer initiated by marc-portal lands at a Canadian
+  Stripe entity, which **reduces but does not eliminate** the Loi 25
+  art. 17 surface (compared to sending data straight to a US-only
+  processor like Sentry).
 - Card networks (Visa / Mastercard / Amex) still route data
   internationally as a function of the global payment system — but
   marc-portal is not the entity making that transfer; the bank is.
 - Stripe's standard processing infrastructure is global (US/EU/etc.),
-  and Stripe transfers data internally per their intra-group DPA. We
-  rely on Stripe's adequate-protection commitments under their privacy
-  policy and the Stripe DPA.
+  and Stripe performs intra-group transfers — including to US-based
+  affiliates — as part of operating that infrastructure. These
+  intra-group transfers are governed by Stripe's intra-group DPA,
+  which we accepted at account onboarding (see §6.3).
 
-**Conclusion:** Loi 25 art. 17 obligations are met by virtue of using
-the Canadian entity. The DPA with Stripe Payments Canada Ltd. (signed
-during account onboarding — see §6.3) covers the remaining processor
-obligations under art. 18.
+**Conclusion:** The art. 17 risk is best characterized as
+**substantially mitigated, not fully avoided**. The Canadian primary
+processing entity removes the most direct cross-border transfer; the
+remaining residual transfers (intra-Stripe US/EU replication) are
+governed by Stripe's accepted DPA — the same risk-allocation
+mechanism every Canadian merchant using Stripe relies on. The
+processor obligations under Loi 25 art. 18 continue to apply via the
+DPA regardless of routing.
 
 ## 6. Mitigations
 
 ### 6.1 Code-level minimization
 
 - **Stripe-hosted Checkout** chosen over Stripe Elements: no card data
-  ever crosses our origin. Reduces PCI scope to SAQ A; reduces
+  ever crosses the portal origin. Reduces PCI scope to SAQ A; reduces
   attack surface to zero.
 - **`customer_email` is the only PII** sent on Checkout creation.
   Visitor's name, address, phone, billing address are not transmitted.
@@ -136,7 +144,7 @@ obligations under art. 18.
 ### 6.2 Residual risk: receipt emails sent by Stripe
 
 Stripe emails a receipt to `customer_email` on every successful
-charge. This email is sent by Stripe directly (not us) to the visitor
+charge. This email is sent by Stripe directly (not by the portal) to the visitor
 (not a third party). It contains the line-item label (which is
 "Tier 2 — [project name]" by default) and the amount. The line-item
 label could leak the project name to anyone who can read the
@@ -159,8 +167,11 @@ negligible.**
 
 If a visitor requests a refund (per FAQ: any time mid-project), Marc
 issues it from the Stripe Dashboard. The `charge.refunded` webhook
-updates `payments.status = 'refunded'` on our side. Refund timing and
-amount are visible to the visitor in their Stripe receipt + the
+writes the refunded amount to `payments.refunded_amount_cents` on the
+portal side, and flips `payments.status` to `'refunded'` only on full
+refund; partial refunds leave the status as `'paid'` and surface the
+partial amount in the visitor's `/me` view. Refund timing and amount
+are also visible to the visitor in their Stripe receipt + the
 Customer Portal.
 
 ### 6.5 Visitor-facing notice (Loi 25 art. 8)
@@ -184,13 +195,13 @@ written request to Marc).
   note if the visitor requests it.
 - **Right of erasure (art. 28.1)**: complex. Stripe retains
   transaction records for **7 years** under FINTRAC + Income Tax Act
-  obligations; we cannot delete them on demand without breaking the
-  audit trail. We can:
+  obligations; they cannot be deleted on demand without breaking the
+  audit trail. The procedure is:
   1. Anonymize the `customer_email` on the Stripe customer object
      (replace with `deleted+<id>@marc-portal.invalid`).
   2. Delete the local `payments` rows that link Stripe IDs to a
      marc-portal session (the visitor-side personal-info linkage).
-  3. Decline to delete the Stripe-side immutable financial records,
+  3. Leave the Stripe-side immutable financial records in place,
      citing the legal-obligation exception in Loi 25 art. 28.1.
   This is the same posture every Quebec business that processes
   payments must adopt.

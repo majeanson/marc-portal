@@ -88,17 +88,17 @@ const COPY: Record<'fr' | 'en', Copy> = {
     activeLabel: 'EN COURS',
     noActiveLabel: 'PROCHAIN CRÉNEAU OUVERT',
     responseLabel: 'RÉPONSE 72H',
-    footerHost: 'marc-portal.pages.dev',
+    footerHost: 'marcportal.com',
   },
   en: {
     eyebrow: 'SIDE PRACTICE · QUEBEC · ASYNC',
     brand: 'marc.portal',
-    headline: ['Dev in Quebec.', 'Day job.', 'I help at night.'],
+    headline: ['Québécois dev.', 'Day job.', 'I help at night.'],
     shippedLabel: (n) => (n === 1 ? '1 PROJECT SHIPPED' : `${n} PROJECTS SHIPPED`),
     activeLabel: 'IN PROGRESS',
     noActiveLabel: 'NEXT SLOT OPEN',
     responseLabel: 'REPLY < 72H',
-    footerHost: 'marc-portal.pages.dev',
+    footerHost: 'marcportal.com',
   },
 }
 

@@ -22,7 +22,7 @@ const ANCHORS: Record<Lang, Array<[string, string]>> = {
     ['#featured', 'Projects'],
     ['#how', 'How it works'],
     ['#pricing', 'Pricing'],
-    ['#vibe', 'We do / we don’t'],
+    ['#vibe', 'I do / I don’t'],
     ['#about', 'About'],
   ],
 }

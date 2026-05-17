@@ -25,6 +25,11 @@ export function Footer({ lang }: { lang: Lang }) {
   const buildDate = formatBuildDate(__COMMIT_DATE__)
   const privacyHref = lang === 'fr' ? '/confidentialite' : '/en/privacy'
   const privacyLabel = lang === 'fr' ? 'Confidentialité' : 'Privacy'
+  const piaHref = lang === 'fr' ? '/pia' : '/en/pia'
+  // The PIA is load-bearing for Loi 25 art. 3.3 / 17 compliance — must be
+  // reachable without expanding the privacy page body. CAI inspectors look
+  // for a footer link.
+  const piaLabel = lang === 'fr' ? 'Évaluation (PIA)' : 'Impact assessment'
   const handoffHref = lang === 'fr' ? '/handoff' : '/en/handoff'
   const handoffLabel = lang === 'fr' ? 'Comment ça finit' : 'How it ends'
   return (
@@ -33,7 +38,7 @@ export function Footer({ lang }: { lang: Lang }) {
       <div className="site-footer__inner">
         <p className="site-footer__line">{t.contact}</p>
         <p className="site-footer__line">
-          {t.legal} · <a href={privacyHref}>{privacyLabel}</a> ·{' '}
+          {t.legal} · <a href={privacyHref}>{privacyLabel}</a> · <a href={piaHref}>{piaLabel}</a> ·{' '}
           <a href={handoffHref}>{handoffLabel}</a>
         </p>
         <p className="site-footer__line site-footer__line--meta">

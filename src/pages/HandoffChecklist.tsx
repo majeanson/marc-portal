@@ -32,7 +32,7 @@ const COPY = {
     backLabel: '← Retour à « Comment ça finit »',
     eyebrow: 'transfert — procédure',
     title: 'Checklist de transfert',
-    lead: "Ce qui se passe concrètement quand on livre. La version courte tient en 5 étapes. Les détails techniques (commandes, comptes, étapes pour ton prochain dev) sont en bas, repliés — tu n'as pas besoin de les lire pour te sentir en sécurité.",
+    lead: "Ce qui se passe concrètement quand je livre. La version courte tient en 5 étapes. Les détails techniques (commandes, comptes, étapes pour ton prochain dev) sont en bas, repliés — tu n'as pas besoin de les lire pour te sentir en sécurité.",
     asOf: 'En vigueur : 2026-05-15.',
 
     quickSummary: {
@@ -168,7 +168,7 @@ const COPY = {
     backLabel: '← Back to "How it ends"',
     eyebrow: 'transfer — procedure',
     title: 'Handoff checklist',
-    lead: "What concretely happens when we deliver. The short version fits in 5 steps. The technical detail (commands, accounts, steps for your next dev) is at the bottom, collapsed — you don't need to read it to feel safe.",
+    lead: "What concretely happens when I deliver. The short version fits in 5 steps. The technical detail (commands, accounts, steps for your next dev) is at the bottom, collapsed — you don't need to read it to feel safe.",
     asOf: 'Effective: 2026-05-15.',
 
     quickSummary: {

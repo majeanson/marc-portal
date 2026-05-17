@@ -24,6 +24,8 @@ const COPY = {
     askFirst: 'Question avant de payer ? Écris-moi ↓',
     paid: 'Payé ✓',
     paidAmount: (amount: string) => `Payé · ${amount}`,
+    partiallyRefunded: (amount: string) => `Remboursement partiel : ${amount}`,
+    fullyRefunded: (amount: string) => `Remboursé · ${amount}`,
     checkoutPending: 'Ouverture du paiement…',
 
     // Custodian section
@@ -61,6 +63,8 @@ const COPY = {
     askFirst: 'Question before paying? Drop me a note ↓',
     paid: 'Paid ✓',
     paidAmount: (amount: string) => `Paid · ${amount}`,
+    partiallyRefunded: (amount: string) => `Partial refund: ${amount}`,
+    fullyRefunded: (amount: string) => `Refunded · ${amount}`,
     checkoutPending: 'Opening checkout…',
 
     custodianHeading: 'Custodian mode',
@@ -208,11 +212,31 @@ export function PaymentActions({
   // both deposit and final sees "Paid · $1500" rather than just the most
   // recent leg's $750. Custodian sub renewals are excluded (they're a
   // separate, perpetual flow with its own Manage link).
-  const paidOneTimeCents = summary.rows
-    .filter((r) => r.status === 'paid' && r.kind !== 'custodian-sub' && r.paid_at)
+  const oneTimeRows = summary.rows.filter((r) => r.kind !== 'custodian-sub' && r.paid_at)
+  const paidOneTimeCents = oneTimeRows
+    .filter((r) => r.status === 'paid')
     .reduce((sum, r) => sum + r.amount_cents, 0)
-  const paidLabel =
-    paidOneTimeCents > 0 ? copy.paidAmount(formatCadCents(paidOneTimeCents, lang)) : copy.paid
+  // Refunds: a row with refunded_amount_cents > 0 OR a status='refunded' row
+  // (which means amount_cents was fully refunded). We surface them as a
+  // separate line so the visitor sees the net picture without us silently
+  // subtracting from the "Paid" total.
+  const refundedCents = oneTimeRows.reduce(
+    (sum, r) => sum + (r.refunded_amount_cents ?? 0),
+    0,
+  )
+  const allOneTimeFullyRefunded =
+    oneTimeRows.length > 0 && oneTimeRows.every((r) => r.status === 'refunded')
+  const paidLabel = allOneTimeFullyRefunded
+    ? copy.fullyRefunded(formatCadCents(refundedCents, lang))
+    : paidOneTimeCents > 0
+      ? copy.paidAmount(formatCadCents(paidOneTimeCents, lang))
+      : copy.paid
+  // Show the partial-refund note only when there's an actual partial — i.e.
+  // refunded > 0 but not everything is fully refunded.
+  const partialRefundLabel =
+    refundedCents > 0 && !allOneTimeFullyRefunded
+      ? copy.partiallyRefunded(formatCadCents(refundedCents, lang))
+      : null
 
   // Decide what to render in the project-payment section.
   //   'pay'           — payButton is set (tier 1/2/3, work owing)
@@ -272,7 +296,14 @@ export function PaymentActions({
             {pending === 'checkout' ? copy.checkoutPending : payButton.label}
           </button>
         )}
-        {projectState === 'paid' && <span className="me-portal__pay-paid">{paidLabel}</span>}
+        {projectState === 'paid' && (
+          <>
+            <span className="me-portal__pay-paid">{paidLabel}</span>
+            {partialRefundLabel && (
+              <span className="me-portal__pay-refund mono">{partialRefundLabel}</span>
+            )}
+          </>
+        )}
         {projectState === 'pending-quote' && (
           <span className="me-portal__pay-muted">{copy.tier3PendingQuote}</span>
         )}
@@ -317,7 +348,14 @@ export function PaymentActions({
                 {pending === 'checkout' ? copy.checkoutPending : payButton.label}
               </button>
             )}
-            {projectState === 'paid' && <span className="me-portal__pay-paid">{paidLabel}</span>}
+            {projectState === 'paid' && (
+              <>
+                <span className="me-portal__pay-paid">{paidLabel}</span>
+                {partialRefundLabel && (
+                  <span className="me-portal__pay-refund mono">{partialRefundLabel}</span>
+                )}
+              </>
+            )}
             {projectState === 'pending-quote' && (
               <span className="me-portal__pay-muted">{copy.tier3PendingQuote}</span>
             )}

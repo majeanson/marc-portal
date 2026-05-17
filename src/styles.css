@@ -3217,6 +3217,16 @@ button.intake__progress-step:focus-visible {
   font-size: 13px;
   letter-spacing: 0.02em;
 }
+.me-portal__pay-refund {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff4ec;
+  color: #8a4a14;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
 .me-portal__pay-portal {
   font-size: 13px;
 }

@@ -24,7 +24,7 @@ const COPY = {
   },
   en: {
     title: 'Sign in',
-    intro: "Enter your email — we'll send you a one-time sign-in link. No password.",
+    intro: "Enter your email — I'll send you a one-time sign-in link. No password.",
     placeholder: 'you@email.com',
     submit: 'Send the link',
     sending: 'Sending…',

@@ -14,7 +14,13 @@
 //                                     visitor-visible promise).
 //   customer.subscription.updated  — logged only; we wait for terminal events
 //                                     before changing custodian_status.
-//   charge.refunded                — mark linked row refunded.
+//   charge.refunded                — track refunded_amount_cents; flip status
+//                                     only when fully refunded.
+//
+// Idempotency: every event.id is recorded in webhook_events on first arrival.
+// Stripe retries (same event.id) short-circuit at the top with no side
+// effects — the DB UPDATEs are already idempotent, but admin-notification
+// emails are NOT, so this prevents duplicate Marc-alerts on retry storms.
 //
 // We return 200 on every internal failure path so Stripe doesn't retry into
 // backoff — the rethrow path forwards the error to Sentry via the
@@ -22,6 +28,7 @@
 // only case that returns 401: those would be malicious or misconfigured and
 // should NOT be retried.
 
+import { randomTokenB64url } from '../../_lib/bytes'
 import { sendTier2DepositReceiptAndFinalPrompt } from '../../_lib/email'
 import type { Env } from '../../_lib/env'
 import { ok, unauthorized } from '../../_lib/json'
@@ -49,6 +56,27 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     // Malformed body but signature passed — log + 200 so Stripe doesn't retry.
     console.error('stripe webhook: signed body did not parse')
     return ok({ received: true })
+  }
+
+  // Event dedupe. INSERT OR IGNORE returns changes=0 on conflict — that's a
+  // Stripe retry of an event we've already processed. Side effects (admin
+  // emails, visitor prompts) are NOT idempotent in the handlers below, so we
+  // short-circuit here. The DB UPDATEs further down are independently
+  // idempotent (COALESCE / UNIQUE), but a duplicate run would re-send
+  // notifications.
+  if (event.id) {
+    const nowSec = Math.floor(Date.now() / 1000)
+    const ins = await env.DB.prepare(
+      `INSERT OR IGNORE INTO webhook_events (event_id, event_type, received_at)
+       VALUES (?, ?, ?)`,
+    )
+      .bind(event.id, event.type, nowSec)
+      .run()
+    const changes = (ins.meta as { changes?: number }).changes ?? 0
+    if (changes === 0) {
+      console.log(`stripe webhook: duplicate event ${event.id} (${event.type}); skipping`)
+      return ok({ received: true, duplicate: true })
+    }
   }
 
   const origin = new URL(request.url).origin
@@ -200,7 +228,10 @@ async function handleInvoicePaid(env: Env, obj: StripeObject): Promise<void> {
     )
       .bind(invoiceId, now, subscriptionId)
       .run()
-    if ((linkRes.meta as { changes?: number }).changes && (linkRes.meta as { changes?: number }).changes! > 0) {
+    if (
+      (linkRes.meta as { changes?: number }).changes &&
+      (linkRes.meta as { changes?: number }).changes! > 0
+    ) {
       return
     }
 
@@ -266,46 +297,103 @@ async function handleSubscriptionDeleted(env: Env, obj: StripeObject): Promise<v
   )
     .bind(subscriptionId)
     .run()
-  await maybeNotifyAdmin(env, `Custodian sub canceled (subscription ${subscriptionId}) — initiate transfer to 'Tout à toi'`)
+  await maybeNotifyAdmin(
+    env,
+    `Custodian sub canceled (subscription ${subscriptionId}) — initiate transfer to 'Tout à toi'`,
+  )
 }
 
 async function handleChargeRefunded(env: Env, obj: StripeObject): Promise<void> {
-  const chargeId = obj.id
+  // Stripe sends a `charge.refunded` event with the CHARGE id as obj.id and
+  // the parent payment_intent as obj.payment_intent. We don't populate
+  // stripe_charge_id on our payment rows (checkout.completed gives us
+  // payment_intent, not charge), so match via the payment_intent — that's
+  // the field webhook.ts:121 wrote on checkout completion.
+  const paymentIntentId = obj.payment_intent
+  if (!paymentIntentId) {
+    console.warn('charge.refunded without payment_intent; ignoring', obj.id)
+    return
+  }
+  const amountRefunded = obj.amount_refunded ?? 0
   const now = Math.floor(Date.now() / 1000)
-  // A charge can be partially refunded — for now we only flag the row when
-  // it goes refunded *at all*. Partial-refund accounting (track refunded
-  // cents separately) can come later if a real case forces the question.
+
+  // Find the payment row + its amount_cents so we can decide partial vs full.
+  const row = await env.DB.prepare(
+    `SELECT id, amount_cents FROM payments WHERE stripe_payment_intent_id = ? LIMIT 1`,
+  )
+    .bind(paymentIntentId)
+    .first<{ id: string; amount_cents: number }>()
+  if (!row) {
+    // Not finding a row is OK: refunds initiated from the Stripe Dashboard on
+    // out-of-band charges shouldn't break the webhook. The Dashboard remains
+    // the source of truth.
+    console.log(`charge.refunded: no local row for pi=${paymentIntentId}; ignoring`)
+    return
+  }
+
+  const isFullyRefunded = amountRefunded >= row.amount_cents
+  // Record the refunded amount unconditionally; flip status only on full
+  // refund. UI surfaces refunded_amount_cents as a separate field so a
+  // partial refund is visible.
   await env.DB.prepare(
     `UPDATE payments
-        SET status = 'refunded',
-            refunded_at = COALESCE(refunded_at, ?)
-      WHERE stripe_charge_id = ?`,
+        SET refunded_amount_cents = ?,
+            status = CASE WHEN ? = 1 THEN 'refunded' ELSE status END,
+            refunded_at = CASE WHEN ? = 1 THEN COALESCE(refunded_at, ?) ELSE refunded_at END
+      WHERE id = ?`,
   )
-    .bind(now, chargeId)
+    .bind(amountRefunded, isFullyRefunded ? 1 : 0, isFullyRefunded ? 1 : 0, now, row.id)
     .run()
-  // If we don't have stripe_charge_id wired through yet (it's set lazily
-  // from the payment_intent's expanded charges), the UPDATE is a no-op —
-  // acceptable; the dashboard remains the source of truth for refunds.
 }
 
+/**
+ * Notify Marc that something operationally important happened. Tries Resend
+ * first; if that fails (network blip, Resend outage, missing API key), writes
+ * a row to admin_alerts so the admin UI surfaces the alert on next load.
+ *
+ * This is the only durable path for sub-cancel + payment-failed signals —
+ * losing one of these to a transient outage means the auto-switch-to-
+ * tout-a-toi happens silently. The alerts table is the safety net.
+ */
 async function maybeNotifyAdmin(env: Env, body: string): Promise<void> {
   const to = primaryAdminEmail(env.ADMIN_EMAILS)
-  if (!to || !env.RESEND_API_KEY) return
-  try {
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Marc Portal <noreply@marcportal.com>',
-        to,
-        subject: '[marc-portal] Stripe alert',
-        text: body,
-      }),
-    })
-  } catch (err) {
-    console.error('admin notify failed', err)
+  let emailDelivered = false
+  if (to && env.RESEND_API_KEY) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Marc Portal <noreply@marcportal.com>',
+          to,
+          subject: '[marc-portal] Stripe alert',
+          text: body,
+        }),
+      })
+      emailDelivered = res.ok
+      if (!res.ok) {
+        console.error('admin notify: resend non-2xx', res.status)
+      }
+    } catch (err) {
+      console.error('admin notify failed', err)
+    }
+  }
+  // Durable fallback: write to admin_alerts whenever email did not land.
+  // Insert is best-effort — a D1 failure here just falls back to the log.
+  if (!emailDelivered) {
+    try {
+      const id = `alrt_${randomTokenB64url(10)}`
+      const now = Math.floor(Date.now() / 1000)
+      await env.DB.prepare(
+        `INSERT INTO admin_alerts (id, kind, body, created_at) VALUES (?, 'stripe', ?, ?)`,
+      )
+        .bind(id, body, now)
+        .run()
+    } catch (err) {
+      console.error('admin_alerts insert failed', err)
+    }
   }
 }

@@ -25,6 +25,10 @@ export interface PaymentRow {
   created_at: number
   paid_at: number | null
   refunded_at: number | null
+  /** Cumulative refunded cents. 0 = nothing refunded. = amount_cents on full
+   * refund (status flips to 'refunded'). Between 0 and amount_cents = partial
+   * refund (status stays 'paid' but UI surfaces the partial amount). */
+  refunded_amount_cents: number
 }
 
 export type StripeMode = 'test' | 'live' | 'unset'

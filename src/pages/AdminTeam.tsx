@@ -1,10 +1,14 @@
 /**
- * /admin/equipe — buyer-facing team management.
+ * /admin/equipe — surface kept for the (frozen) feat-buyer-admin scenario
+ * where a buyer who installs the portal would need per-tenant team
+ * invitations. For Marc's own tenant — the only operationally live one —
+ * this is a solo practice and team management is intentionally NOT on the
+ * roadmap.
  *
- * Stub. Real implementation lives in feat-buyer-admin (feat-2026-020) and
- * needs: invite by email, role per member (owner / admin / member), revoke,
- * list pending invites. For now the UI shows the owner alone with a "coming
- * soon" rail.
+ * Previous copy said "arrive bientôt" / "coming soon" which was a false
+ * promise: vision is solo practice, not a SaaS team product. Rewritten to
+ * surface the actual posture honestly so Marc-or-a-buyer landing here gets
+ * the truth and a single owner row.
  */
 
 import type { Lang } from '../i18n'
@@ -14,21 +18,21 @@ import { useAuth } from '../lib/authContext'
 const COPY = {
   fr: {
     eyebrow: 'équipe',
-    title: 'Membres de l’équipe',
-    sub: 'Invite tes collègues à utiliser l’app. Chacun a son propre lien magique de connexion.',
+    title: 'Membres',
+    sub: 'Cabinet solo. La gestion d’équipe n’est pas prévue — un seul opérateur, le propriétaire, suffit au modèle du portail.',
     owner: 'Propriétaire',
-    soon: 'Invitations à venir',
-    soonBody:
-      'La gestion d’équipe complète arrive bientôt — invitations par courriel, rôles, révocation. Pour l’instant, contacte-nous via une session si tu veux ajouter quelqu’un.',
+    posture: 'Modèle solo',
+    postureBody:
+      'Aucune invitation, aucun rôle, aucun partage de compte. Si tu as besoin que quelqu’un voie une session, ouvre-lui simplement la session via un lien magique sur son propre courriel — pas de notion d’équipe interne.',
   },
   en: {
     eyebrow: 'team',
-    title: 'Team members',
-    sub: 'Invite your colleagues to use the app. Each gets their own magic-link sign-in.',
+    title: 'Members',
+    sub: 'Solo practice. Team management is intentionally not planned — a single operator, the owner, fits the portal model.',
     owner: 'Owner',
-    soon: 'Invitations — coming soon',
-    soonBody:
-      'Full team management is on the way — email invitations, roles, revocation. For now, reach out via a support session if you need to add someone.',
+    posture: 'Solo model',
+    postureBody:
+      'No invitations, no roles, no shared accounts. If someone needs to see a session, simply open it for them via a magic link on their own email — there is no internal team concept.',
   },
 } as const
 
@@ -57,9 +61,9 @@ export function AdminTeam({ lang }: { lang: Lang }) {
         </ul>
       </section>
 
-      <section className="admin-block admin-block--soon">
-        <h2>{t.soon}</h2>
-        <p>{t.soonBody}</p>
+      <section className="admin-block">
+        <h2>{t.posture}</h2>
+        <p>{t.postureBody}</p>
         {tenant && (
           <p className="admin-meta mono">
             tenant: {tenant.slug} · template: {tenant.templateId}@{tenant.templateVersion}

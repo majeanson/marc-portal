@@ -92,8 +92,7 @@ function PiaSentry() {
         the marc-portal SPA + Pages Functions.
         <br />
         <strong>Status:</strong> Internal record. Not filed with the Commission d’accès à
-        l’information (CAI) unless requested. Maintained at{' '}
-        <code>docs/loi-25-pia.md</code>.
+        l’information (CAI) unless requested. Maintained at <code>docs/loi-25-pia.md</code>.
       </blockquote>
 
       <h3>1. Identification</h3>
@@ -132,9 +131,8 @@ function PiaSentry() {
       <p>
         The marc-portal frontend (<code>@sentry/react</code>) and Pages Functions (a hand-rolled
         envelope poster in <code>functions/_lib/sentry.ts</code>) emit an error event to Sentry
-        whenever code throws an unhandled exception. The event is transmitted over HTTPS to
-        Sentry’s US-region ingest endpoint (
-        <code>o4510241708244992.ingest.us.sentry.io</code>).
+        whenever code throws an unhandled exception. The event is transmitted over HTTPS to Sentry’s
+        US-region ingest endpoint (<code>o4510241708244992.ingest.us.sentry.io</code>).
       </p>
 
       <h3>3. Data inventory</h3>
@@ -214,17 +212,17 @@ function PiaSentry() {
           capability IDs, <code>?lang=</code> would all otherwise ride along.
         </li>
         <li>
-          <strong>Authentication headers</strong> — <code>Cookie</code>,{' '}
-          <code>Authorization</code>, <code>X-CSRF-Token</code> are deleted in{' '}
-          <code>beforeSend</code> (client) and in <code>requestSummary</code> (server).
+          <strong>Authentication headers</strong> — <code>Cookie</code>, <code>Authorization</code>,{' '}
+          <code>X-CSRF-Token</code> are deleted in <code>beforeSend</code> (client) and in{' '}
+          <code>requestSummary</code> (server).
         </li>
         <li>
           <strong>IP address</strong> — <code>sendDefaultPii: false</code> in the SDK +{' '}
-          <code>user.ip_address</code> nullified defensively. Sentry’s server-side “Prevent
-          Storing of IP Addresses” toggle is enabled.
+          <code>user.ip_address</code> nullified defensively. Sentry’s server-side “Prevent Storing
+          of IP Addresses” toggle is enabled.
         </li>
         <li>
-          <strong>Request bodies</strong> — neither the SDK nor our envelope poster serialize
+          <strong>Request bodies</strong> — neither the SDK nor the envelope poster serializes
           request bodies.
         </li>
         <li>
@@ -240,8 +238,8 @@ function PiaSentry() {
       <p>
         Diagnose and fix software defects that affect Quebec visitors. Without error monitoring,
         defects surface only when a visitor explicitly reports them — many won’t, and the visitor
-        suffers a broken experience in silence. Error monitoring is therefore strictly necessary
-        for the prestation of the service at the quality level the practice commits to.
+        suffers a broken experience in silence. Error monitoring is therefore strictly necessary for
+        the prestation of the service at the quality level the practice commits to.
       </p>
 
       <h3>5. Cross-border transfer assessment (Loi 25 art. 17)</h3>
@@ -249,37 +247,44 @@ function PiaSentry() {
         <tbody>
           <tr>
             <th>Recipient</th>
-            <td>Functional Software Inc., dba Sentry. 132 Hawthorne St, San Francisco, CA 94107, USA.</td>
+            <td>
+              Functional Software Inc., dba Sentry. 132 Hawthorne St, San Francisco, CA 94107, USA.
+            </td>
           </tr>
           <tr>
             <th>Jurisdiction</th>
             <td>
               United States. No federal omnibus privacy law equivalent to Loi 25 or GDPR;
-              sector-specific. Sentry voluntarily complies with GDPR, CCPA, ISO 27001, SOC 2 Type II.
+              sector-specific. Sentry voluntarily complies with GDPR, CCPA, ISO 27001, SOC 2 Type
+              II.
             </td>
           </tr>
           <tr>
             <th>Equivalent protection</th>
             <td>
               Achieved contractually via Sentry’s Data Processing Agreement (DPA), Standard
-              Contractual Clauses (SCCs), and the technical mitigations in §6. Combination
-              delivers protection materially equivalent to Loi 25 for the limited dataset.
+              Contractual Clauses (SCCs), and the technical mitigations in §6. Combination delivers
+              protection materially equivalent to Loi 25 for the limited dataset.
             </td>
           </tr>
           <tr>
             <th>Volume</th>
-            <td>Low. One operator, ~ one visitor at a time. Expected event rate: &lt; 100/month.</td>
+            <td>
+              Low. One operator, ~ one visitor at a time. Expected event rate: &lt; 100/month.
+            </td>
           </tr>
           <tr>
             <th>Sensitivity</th>
             <td>
-              Telemetry only. No special categories of personal info (CCQ art. 12 — health,
-              ethnic origin, etc.) ever touch the error pipeline.
+              Telemetry only. No special categories of personal info (CCQ art. 12 — health, ethnic
+              origin, etc.) ever touch the error pipeline.
             </td>
           </tr>
           <tr>
             <th>Necessity</th>
-            <td>Operationally required to deliver the service quality committed in /confidentialite.</td>
+            <td>
+              Operationally required to deliver the service quality committed in /confidentialite.
+            </td>
           </tr>
         </tbody>
       </table>
@@ -291,8 +296,8 @@ function PiaSentry() {
       <h4>6.1 Minimization (in code)</h4>
       <ul>
         <li>
-          Hardcoded DSN in <code>src/lib/sentry.ts</code> and{' '}
-          <code>functions/_lib/sentry.ts</code> collapses the env-var attack surface.
+          Hardcoded DSN in <code>src/lib/sentry.ts</code> and <code>functions/_lib/sentry.ts</code>{' '}
+          collapses the env-var attack surface.
         </li>
         <li>
           <code>beforeSend</code> strips Cookie, Authorization, X-CSRF-Token, URL query strings
@@ -303,16 +308,19 @@ function PiaSentry() {
           non-operator visitor.
         </li>
         <li>
-          Server-side <code>requestSummary</code> emits <code>${'{origin}'}${'{pathname}'}</code>{' '}
+          Server-side <code>requestSummary</code> emits{' '}
+          <code>
+            ${'{origin}'}${'{pathname}'}
+          </code>{' '}
           only.
         </li>
       </ul>
 
       <h4>6.2 Residual risk: share-capability IDs in URL paths</h4>
       <p>
-        Routes like <code>/share/:id</code> carry a 72-bit capability token in the URL path.
-        Loss of the token to Sentry is equivalent to loss of the share URL itself — which the
-        visitor was free to send to anyone. <strong>Residual risk: negligible.</strong>
+        Routes like <code>/share/:id</code> carry a 72-bit capability token in the URL path. Loss of
+        the token to Sentry is equivalent to loss of the share URL itself — which the visitor was
+        free to send to anyone. <strong>Residual risk: negligible.</strong>
       </p>
 
       <h4>6.3 Sentry account / DPA (operational)</h4>
@@ -367,9 +375,9 @@ function PiaSentry() {
       <h3>7. Rights handling (art. 27 / 28 / 28.1)</h3>
       <ul>
         <li>
-          <strong>Right of access:</strong> Sentry events do not carry a visitor’s identity. When
-          a visitor asks “what do you have on me?”, the canonical response w.r.t. Sentry is “no
-          events about you specifically; Sentry events are anonymous.”
+          <strong>Right of access:</strong> Sentry events do not carry a visitor’s identity. When a
+          visitor asks “what do you have on me?”, the canonical response w.r.t. Sentry is “no events
+          about you specifically; Sentry events are anonymous.”
         </li>
         <li>
           <strong>Right of rectification:</strong> not applicable to error events.
@@ -381,17 +389,17 @@ function PiaSentry() {
 
       <h3>8. Breach posture (art. 3.5 + 3.6)</h3>
       <p>
-        Sentry has its own incident-response and breach-notification obligations under their DPA.
-        In the event of a breach affecting marc-portal events: identify exposed events; per §3.1,
-        no PII for non-operator visitors → for visitors, no notification to CAI is required
-        (no serious harm risk); for operator-tagged events, notify Marc (himself).
+        Sentry has its own incident-response and breach-notification obligations under their DPA. In
+        the event of a breach affecting marc-portal events: identify exposed events; per §3.1, no
+        PII for non-operator visitors → for visitors, no notification to CAI is required (no serious
+        harm risk); for operator-tagged events, notify Marc (himself).
       </p>
 
       <h3>9. Review schedule</h3>
       <p>
         Reviewed annually on the anniversary of integration (2026-05-15), whenever Sentry’s
-        configuration changes, or whenever the marc-portal data model adds a class of personal
-        info that could surface in stack traces. <strong>Next scheduled review: 2027-05-15.</strong>
+        configuration changes, or whenever the marc-portal data model adds a class of personal info
+        that could surface in stack traces. <strong>Next scheduled review: 2027-05-15.</strong>
       </p>
     </section>
   )
@@ -405,12 +413,11 @@ function PiaStripe() {
         <strong>Statute:</strong> Loi 25 (Quebec), art. 3.3 (PIA requirement for new projects
         involving personal info) and art. 17 (cross-border transfers).
         <br />
-        <strong>Scope:</strong> Adoption of Stripe as the payments processor for marc-portal
-        (Tier 1/2/3 one-time payments + custodian-mode subscriptions).
+        <strong>Scope:</strong> Adoption of Stripe as the payments processor for marc-portal (Tier
+        1/2/3 one-time payments + custodian-mode subscriptions).
         <br />
         <strong>Status:</strong> Internal record. Not filed with the Commission d’accès à
-        l’information (CAI) unless requested. Maintained at{' '}
-        <code>docs/loi-25-pia-stripe.md</code>.
+        l’information (CAI) unless requested. Maintained at <code>docs/loi-25-pia-stripe.md</code>.
       </blockquote>
 
       <h3>1. Identification</h3>
@@ -447,18 +454,18 @@ function PiaStripe() {
 
       <h3>2. Description of the processing</h3>
       <p>
-        When a visitor clicks <strong>Pay</strong> on <code>/me</code> for an accepted session,
-        the marc-portal server creates a Stripe Checkout session via the Stripe REST API and
-        redirects the browser to Stripe’s hosted payment page. The visitor enters their card
-        details directly into Stripe’s page — <strong>card data never transits or is stored by
-        marc-portal</strong>. After payment, Stripe sends a signed webhook to{' '}
-        <code>/api/payments/webhook</code>, which updates the local D1 record and emits a
-        confirmation. For the custodian-mode subscription, the same flow runs in{' '}
-        <code>mode: subscription</code>, and renewals are handled entirely by Stripe.
+        When a visitor clicks <strong>Pay</strong> on <code>/me</code> for an accepted session, the
+        marc-portal server creates a Stripe Checkout session via the Stripe REST API and redirects
+        the browser to Stripe’s hosted payment page. The visitor enters their card details directly
+        into Stripe’s page — <strong>card data never transits or is stored by marc-portal</strong>.
+        After payment, Stripe sends a signed webhook to <code>/api/payments/webhook</code>, which
+        updates the local D1 record and emits a confirmation. For the custodian-mode subscription,
+        the same flow runs in <code>mode: subscription</code>, and renewals are handled entirely by
+        Stripe.
       </p>
 
       <h3>3. Data inventory</h3>
-      <h4>3.1 What we transmit to Stripe</h4>
+      <h4>3.1 What the portal transmits to Stripe</h4>
       <table className="pia-table">
         <thead>
           <tr>
@@ -484,7 +491,7 @@ function PiaStripe() {
               <code>client_reference_id</code>
             </td>
             <td>
-              our <code>pay_*</code> id
+              the portal <code>pay_*</code> id
             </td>
             <td>No (opaque)</td>
             <td>Webhook idempotency join</td>
@@ -494,7 +501,7 @@ function PiaStripe() {
               <code>metadata.payment_id</code>
             </td>
             <td>
-              our <code>pay_*</code> id
+              the portal <code>pay_*</code> id
             </td>
             <td>No (opaque)</td>
             <td>Same; carried through</td>
@@ -503,7 +510,7 @@ function PiaStripe() {
             <td>
               <code>metadata.session_id</code>
             </td>
-            <td>our session id</td>
+            <td>the portal session id</td>
             <td>No (opaque)</td>
             <td>Locate the session on webhook</td>
           </tr>
@@ -534,15 +541,15 @@ function PiaStripe() {
         </tbody>
       </table>
 
-      <h4>3.2 What we collect via Stripe (but never store ourselves)</h4>
+      <h4>3.2 What the portal collects via Stripe (but never stores)</h4>
       <p>
-        Stripe collects card data, billing address (if Stripe Tax is enabled — <strong>not
-        enabled</strong> in this project), and any tax-ID the visitor enters in the
+        Stripe collects card data, billing address (if Stripe Tax is enabled —{' '}
+        <strong>not enabled</strong> in this project), and any tax-ID the visitor enters in the
         Stripe-hosted Customer Portal. None of these reach the marc-portal server. They live in
         Stripe’s vault under their PCI-DSS Level 1 controls.
       </p>
 
-      <h4>3.3 What we receive from Stripe (webhooks)</h4>
+      <h4>3.3 What the portal receives from Stripe (webhooks)</h4>
       <table className="pia-table">
         <thead>
           <tr>
@@ -601,22 +608,22 @@ function PiaStripe() {
         </tbody>
       </table>
       <p>
-        Visitor’s email is <strong>not</strong> copied from the webhook into our DB — we already
-        have it on the session row. Card details (last4, brand, exp) are present in Stripe’s
-        webhook payloads but we explicitly do not persist them (PCI scope avoidance).
+        Visitor’s email is <strong>not</strong> copied from the webhook into the portal DB — it
+        already lives on the session row. Card details (last4, brand, exp) are present in Stripe’s
+        webhook payloads but are explicitly not persisted (PCI scope avoidance).
       </p>
 
       <h4>3.4 What is explicitly excluded</h4>
       <ul>
         <li>
-          <strong>No card data.</strong> Stripe-hosted Checkout means we never see PAN/CVC/exp;
-          we never become PCI-DSS in-scope beyond SAQ A.
+          <strong>No card data.</strong> Stripe-hosted Checkout means the portal never sees
+          PAN/CVC/exp; PCI-DSS scope stays at SAQ A.
         </li>
         <li>
-          <strong>No billing address persisted on our side.</strong>
+          <strong>No billing address persisted on the portal side.</strong>
         </li>
         <li>
-          <strong>No client identity in our Sentry events.</strong> The webhook handler does not
+          <strong>No client identity in Sentry events.</strong> The webhook handler does not
           re-throw (it logs + 200s), so its body — which contains visitor email from Stripe — is
           never captured by Sentry.
         </li>
@@ -624,39 +631,45 @@ function PiaStripe() {
 
       <h3>4. Lawful basis (Loi 25 art. 12, 12.1)</h3>
       <p>
-        The processing is <strong>necessary for the performance of the contract</strong> the
-        visitor entered into when accepting a tier price. Payment is the consideration; without
-        it the engagement cannot complete. Consent is implicit in the act of clicking “Pay”;
-        explicit consent for the Stripe transfer is given via the privacy notice on{' '}
-        <code>/me</code>.
+        The processing is <strong>necessary for the performance of the contract</strong> the visitor
+        entered into when accepting a tier price. Payment is the consideration; without it the
+        engagement cannot complete. Consent is implicit in the act of clicking “Pay”; explicit
+        consent for the Stripe transfer is given via the privacy notice on <code>/me</code>.
       </p>
 
       <h3>5. Cross-border transfer analysis (Loi 25 art. 17)</h3>
       <p>
         <strong>Material distinction from Sentry:</strong> Stripe operates a Canadian processing
         entity, <strong>Stripe Payments Canada Ltd.</strong> (incorporated in Ontario; CRA
-        registered). Per Stripe’s privacy policy and Master Services Agreement, payments
-        originating from Canadian customers are processed by Stripe Payments Canada Ltd. This
-        means:
+        registered). Per Stripe’s privacy policy and Master Services Agreement, the primary
+        processing entity for payments originating from Canadian customers is Stripe Payments Canada
+        Ltd. This means:
       </p>
       <ul>
         <li>
-          The processing <strong>is not a cross-border transfer</strong> for purposes of Loi 25
-          art. 17 (which governs transfers <em>outside</em> Quebec/Canada).
+          The direct transfer initiated by marc-portal lands at a Canadian Stripe entity, which{' '}
+          <strong>reduces but does not eliminate</strong> the Loi 25 art. 17 surface (compared to
+          sending data straight to a US-only processor like Sentry).
         </li>
         <li>
-          Card networks (Visa / Mastercard / Amex) still route data internationally as a
-          function of the global payment system — but marc-portal is not the entity making that
-          transfer; the bank is.
+          Card networks (Visa / Mastercard / Amex) still route data internationally as a function of
+          the global payment system — but marc-portal is not the entity making that transfer; the
+          bank is.
         </li>
         <li>
-          Stripe’s standard processing infrastructure is global; we rely on Stripe’s
-          adequate-protection commitments under their privacy policy and DPA.
+          Stripe’s standard processing infrastructure is global (US/EU/etc.), and Stripe performs
+          intra-group transfers — including to US-based affiliates — as part of operating that
+          infrastructure. These intra-group transfers are governed by Stripe’s intra-group DPA,
+          which we accepted at account onboarding (see §6.3).
         </li>
       </ul>
       <p>
-        <strong>Conclusion:</strong> Loi 25 art. 17 obligations are met by virtue of using the
-        Canadian entity.
+        <strong>Conclusion:</strong> The art. 17 risk is best characterized as{' '}
+        <strong>substantially mitigated, not fully avoided</strong>. The Canadian primary processing
+        entity removes the most direct cross-border transfer; the remaining residual transfers
+        (intra-Stripe US/EU replication) are governed by Stripe’s accepted DPA — the same
+        risk-allocation mechanism every Canadian merchant using Stripe relies on. The processor
+        obligations under Loi 25 art. 18 continue to apply via the DPA regardless of routing.
       </p>
 
       <h3>6. Mitigations</h3>
@@ -664,7 +677,7 @@ function PiaStripe() {
       <ul>
         <li>
           <strong>Stripe-hosted Checkout</strong> chosen over Stripe Elements: no card data ever
-          crosses our origin. PCI scope reduced to SAQ A.
+          crosses the portal origin. PCI scope reduced to SAQ A.
         </li>
         <li>
           <strong>
@@ -674,8 +687,7 @@ function PiaStripe() {
         </li>
         <li>
           <strong>Stripe Tax is NOT enabled.</strong> Once revenue crosses the $30k QC
-          small-supplier threshold and registration becomes mandatory, this PIA must be
-          re-reviewed.
+          small-supplier threshold and registration becomes mandatory, this PIA must be re-reviewed.
         </li>
         <li>
           <strong>Webhook handler returns 200 + logs on failure</strong> — does not re-throw, so
@@ -689,7 +701,7 @@ function PiaStripe() {
       <h4>6.2 Residual risk: receipt emails sent by Stripe</h4>
       <p>
         Stripe emails a receipt to <code>customer_email</code> on every successful charge. This
-        email is sent by Stripe directly (not us) to the visitor (not a third party). It
+        email is sent by Stripe directly (not by the portal) to the visitor (not a third party). It
         contains the line-item label and the amount. <strong>Residual risk: negligible.</strong>
       </p>
 
@@ -703,7 +715,9 @@ function PiaStripe() {
         </thead>
         <tbody>
           <tr>
-            <td>Confirm Stripe Payments Canada Ltd. as processing entity (account country = Canada)</td>
+            <td>
+              Confirm Stripe Payments Canada Ltd. as processing entity (account country = Canada)
+            </td>
             <td>⬜ confirm at activation</td>
           </tr>
           <tr>
@@ -720,8 +734,8 @@ function PiaStripe() {
           </tr>
           <tr>
             <td>
-              Confirm <code>Stripe-Version: 2024-11-20.acacia</code> pin matches dashboard
-              default OR update code
+              Confirm <code>Stripe-Version: 2024-11-20.acacia</code> pin matches dashboard default
+              OR update code
             </td>
             <td>⬜</td>
           </tr>
@@ -741,57 +755,59 @@ function PiaStripe() {
       <h4>6.4 Refund / reversal handling</h4>
       <p>
         If a visitor requests a refund, Marc issues it from the Stripe Dashboard. The{' '}
-        <code>charge.refunded</code> webhook updates <code>payments.status = &apos;refunded&apos;</code>{' '}
-        on our side. Refund timing and amount are visible to the visitor in their Stripe receipt
-        + the Customer Portal.
+        <code>charge.refunded</code> webhook writes the refunded amount to{' '}
+        <code>payments.refunded_amount_cents</code> on the portal side, and flips{' '}
+        <code>payments.status</code> to <code>&apos;refunded&apos;</code> only on full refund;
+        partial refunds leave the status as <code>&apos;paid&apos;</code> and surface the partial
+        amount in the visitor&apos;s <code>/me</code> view. Refund timing and amount are also visible
+        to the visitor in their Stripe receipt + the Customer Portal.
       </p>
 
       <h4>6.5 Visitor-facing notice (Loi 25 art. 8)</h4>
       <p>
-        <code>/confidentialite</code> (FR) and <code>/en/privacy</code> (EN) §11 disclose:
-        existence of Stripe Payments Canada Ltd., what is transmitted, the Canadian-processing
-        posture, retention (per Stripe policy), and the rights-of-access path (via Customer
-        Portal or written request to Marc).
+        <code>/confidentialite</code> (FR) and <code>/en/privacy</code> (EN) §11 disclose: existence
+        of Stripe Payments Canada Ltd., what is transmitted, the Canadian-processing posture,
+        retention (per Stripe policy), and the rights-of-access path (via Customer Portal or written
+        request to Marc).
       </p>
 
       <h3>7. Rights handling (art. 27 / 28 / 28.1)</h3>
       <ul>
         <li>
-          <strong>Right of access:</strong> Stripe Customer Portal surfaces invoice history,
-          card history, payment method. For a full export, Marc retrieves from the Stripe
-          Dashboard on written request and delivers within 30 days.
+          <strong>Right of access:</strong> Stripe Customer Portal surfaces invoice history, card
+          history, payment method. For a full export, Marc retrieves from the Stripe Dashboard on
+          written request and delivers within 30 days.
         </li>
         <li>
-          <strong>Right of rectification:</strong> card on file is changed in the Customer
-          Portal. Billing address ditto. Receipts are immutable by design; a corrected receipt
-          is issued as a credit note.
+          <strong>Right of rectification:</strong> card on file is changed in the Customer Portal.
+          Billing address ditto. Receipts are immutable by design; a corrected receipt is issued as
+          a credit note.
         </li>
         <li>
           <strong>Right of erasure:</strong> Stripe retains transaction records for{' '}
-          <strong>7 years</strong> under FINTRAC + Income Tax Act obligations; we cannot delete
-          them on demand. We can anonymize the customer email on Stripe’s side, delete the
-          local <code>payments</code> rows that link Stripe IDs to a marc-portal session, and
-          decline to delete Stripe-side immutable financial records citing the legal-obligation
+          <strong>7 years</strong> under FINTRAC + Income Tax Act obligations; they cannot be
+          deleted on demand. The customer email can be anonymized on Stripe’s side, the local{' '}
+          <code>payments</code> rows that link Stripe IDs to a marc-portal session can be deleted,
+          and Stripe-side immutable financial records remain in place under the legal-obligation
           exception in Loi 25 art. 28.1.
         </li>
       </ul>
 
       <h3>8. Breach posture (art. 3.5 + 3.6)</h3>
       <p>
-        Stripe has its own incident-response and breach-notification obligations under their
-        DPA. In the event of a breach affecting marc-portal events: read Stripe’s incident
-        report and identify the time window + affected accounts; for any affected visitor,
-        notify within 72h by email (per Loi 25 art. 3.5 if the breach poses a risk of serious
-        harm) and notify the CAI within the same 72h window (art. 3.6); log the incident in{' '}
-        <code>RUNBOOK.md</code>.
+        Stripe has its own incident-response and breach-notification obligations under their DPA. In
+        the event of a breach affecting marc-portal events: read Stripe’s incident report and
+        identify the time window + affected accounts; for any affected visitor, notify within 72h by
+        email (per Loi 25 art. 3.5 if the breach poses a risk of serious harm) and notify the CAI
+        within the same 72h window (art. 3.6); log the incident in <code>RUNBOOK.md</code>.
       </p>
 
       <h3>9. Review schedule</h3>
       <p>
-        Reviewed annually on the anniversary of integration (2026-05-16), whenever Stripe
-        products change (e.g. enabling Stripe Tax, Stripe Connect, Issuing, Identity), whenever
-        a Canadian processing-entity change is announced by Stripe, or whenever the marc-portal
-        payment surface adds new data fields (currently: <code>customer_email</code> only).{' '}
+        Reviewed annually on the anniversary of integration (2026-05-16), whenever Stripe products
+        change (e.g. enabling Stripe Tax, Stripe Connect, Issuing, Identity), whenever a Canadian
+        processing-entity change is announced by Stripe, or whenever the marc-portal payment surface
+        adds new data fields (currently: <code>customer_email</code> only).{' '}
         <strong>Next scheduled review: 2027-05-16.</strong>
       </p>
     </section>

@@ -38,7 +38,7 @@ const COPY = {
     copied: 'Link copied ✓',
     previewBtn: 'View card ↗',
     previewAlt: 'Preview of marc.portal’s dynamic social card',
-    nativeText: 'Marc — dev in Quebec. Evenings, I help solve everyday problems with code.',
+    nativeText: 'Marc — Québécois dev. Evenings, I help solve everyday problems with code.',
   },
 } as const
 

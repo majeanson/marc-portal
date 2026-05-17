@@ -74,7 +74,7 @@ const FR = {
       },
       {
         num: '04',
-        title: 'On livre',
+        title: 'Je livre',
         body: 'Le projet devient une page publique (avec une option pour cacher tes données commerciales). Une ronde de retouches incluse.',
       },
     ],
@@ -127,7 +127,7 @@ const FR = {
   pricing: {
     eyebrow: 'prix publics',
     title: 'Combien ça coûte',
-    body: 'Prix concrets, pas « contactez-nous ». Chaque tier (niveau de prix) renvoie à des projets réels du même niveau — tu vois ce que ça donne avant de soumettre.',
+    body: 'Prix concrets, pas de devis caché. Chaque tier (niveau de prix) renvoie à des projets réels du même niveau — tu vois ce que ça donne avant de soumettre.',
     tier2Note:
       'Inclus à la livraison : transfert complet (repo, comptes, domaine), ou gestion long terme — c’est ton choix.',
     tier2NoteCta: 'Comment ça finit →',
@@ -240,7 +240,7 @@ const FR = {
     items: [
       {
         q: 'Le prix annoncé, c’est vraiment ça?',
-        a: 'Oui. Tier 0 est à 0 $ et sert à se voir si on est compatibles. Les tiers 1 à 3 ont un prix forfaitaire avant de commencer — on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise.',
+        a: 'Oui. Tier 0 est à 0 $ et sert à se voir si on est compatibles. Les tiers 1 à 3 ont un prix forfaitaire avant de commencer — on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise. Le reçu officiel vient de Stripe (noreply@stripe.com) — c’est normal, c’est mon processeur de paiement.',
       },
       {
         q: 'Et si ça prend plus de temps que prévu?',
@@ -404,7 +404,7 @@ const FR = {
     },
     account: {
       eyebrow: 'compte gratuit',
-      title: "On a besoin d'une adresse courriel",
+      title: "J'ai besoin d'une adresse courriel",
       body: "C'est tout. Pas de mot de passe pendant que tu remplis. Si tu reviens plus tard, je t'envoie un lien magique (un lien par courriel) pour reprendre. Le brouillon se sauvegarde tout seul à chaque champ.",
       emailLabel: 'Courriel',
       nameLabel: 'Ton prénom (optionnel)',
@@ -465,7 +465,7 @@ const FR = {
         'Tu peux modifier tes réponses à tout moment depuis ton portail (« Mes sessions »).',
       magicLinkSentTitle: 'Vérifie ton courriel pour finaliser',
       magicLinkSentBody: (email: string) =>
-        `On t’a envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session — il expire dans 30 minutes.`,
+        `Je t’ai envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session — il expire dans 30 minutes.`,
       magicLinkAgain: 'Pas reçu ? Renvoyer le lien',
       parkedStripHint: 'Ton formulaire est en attente — il démarre dès ta connexion.',
     },
@@ -488,7 +488,7 @@ const FR = {
     formIframePathHint:
       'Site-relatif (commence par /). Vide = racine du déploiement. Sert à pointer l’iframe sur la page la plus pertinente.',
     formBuildUrl: 'URL du build (optionnel)',
-    formBuildUrlPlaceholder: 'https://snd-demo.pages.dev',
+    formBuildUrlPlaceholder: 'https://marcportal.com/demo/sunday-night-dread',
     formBuildUrlHint:
       'Pour un build hébergé ailleurs (autre repo, autre projet Cloudflare). Vide = stamping automatique au prochain déploiement du portail.',
     formFlags: 'Visibilité',
@@ -615,14 +615,14 @@ const FR = {
 
   notFound: {
     title: 'Cette page n’existe pas',
-    body: 'Le lien que tu as suivi pointe sur quelque chose qu’on n’a pas. Probablement une vieille URL.',
+    body: 'Le lien que tu as suivi pointe sur quelque chose qui n’existe pas. Probablement une vieille URL.',
     homeCta: '← Retour à l’accueil',
     intakeCta: 'Démarrer une demande →',
   },
 
   errorBoundary: {
     title: 'Quelque chose a planté',
-    body: 'On a essayé d’ouvrir cette page et ça n’a pas marché. C’est probablement un changement déployé pendant que tu naviguais. Rafraîchis ; si ça persiste, écris-moi.',
+    body: 'Cette page n’a pas chargé. C’est probablement un changement déployé pendant que tu naviguais. Rafraîchis ; si ça persiste, écris-moi.',
     refreshCta: 'Rafraîchir',
     homeCta: '← Retour à l’accueil',
   },
@@ -651,13 +651,13 @@ const EN: Copy = {
     },
   },
 
-  brandTitle: 'Marc — dev in Quebec City',
+  brandTitle: 'Marc — Québécois dev',
   metaDescription:
-    'Marc, a dev in Quebec City. Evenings and weekends, I help people solve everyday problems with code. Async — no meetings, at your pace.',
+    'Marc, a Québécois dev. Evenings and weekends, I help people solve everyday problems with code. Async — no meetings, at your pace.',
 
   hero: {
     eyebrow: 'side-practice · Quebec · async',
-    folio: '№ 01 — Marc, a dev in Quebec',
+    folio: '№ 01 — Marc, a Québécois dev',
     salut: 'Marc-Antoine, here to solve important problems for my community',
     display: {
       pre: 'Marc-Antoine,',
@@ -700,7 +700,7 @@ const EN: Copy = {
       },
       {
         num: '04',
-        title: 'We ship',
+        title: 'I ship',
         body: 'The project becomes a public page (with an option to redact your commercial data). One round of post-ship tweaks included.',
       },
     ],
@@ -728,7 +728,7 @@ const EN: Copy = {
 
   vibe: {
     eyebrow: 'catch the vibe',
-    title: 'What we do, what we don’t',
+    title: 'What I do, what I don’t',
     body: "Read this before filling out the form. If it matches, we'll get along. If not, no drama — there are plenty of other devs who do other things.",
     do: {
       title: 'I do',
@@ -753,7 +753,7 @@ const EN: Copy = {
   pricing: {
     eyebrow: 'public pricing',
     title: 'What it costs',
-    body: 'Concrete prices, no "contact us." Each tier (price level) links to actual past projects of the same level — you see what it looks like before you submit.',
+    body: 'Concrete prices, no hidden quotes. Each tier (price level) links to actual past projects of the same level — you see what it looks like before you submit.',
     tier2Note:
       'Included at delivery: full handoff (repo, accounts, domain), or long-term managed mode — your call.',
     tier2NoteCta: 'How it ends →',
@@ -864,7 +864,7 @@ const EN: Copy = {
     items: [
       {
         q: 'Is the price really that price?',
-        a: "Yes. Tier 0 is $0 and exists so we can see if we're a fit. Tiers 1–3 are fixed-price quoted before we start — I won't go past the quote without a conversation first. No surprise invoice.",
+        a: "Yes. Tier 0 is $0 and exists so we can see if we're a fit. Tiers 1–3 are fixed-price quoted before we start — I won't go past the quote without a conversation first. No surprise invoice. The official receipt comes from Stripe (noreply@stripe.com) — that's normal, it's my payment processor.",
       },
       {
         q: 'What if it takes longer than expected?',
@@ -1028,7 +1028,7 @@ const EN: Copy = {
     },
     account: {
       eyebrow: 'free account',
-      title: 'We just need an email',
+      title: 'I just need an email',
       body: "That's it. No password while you fill the form. If you come back later, I'll send a magic link (a sign-in link by email) to resume. Your draft auto-saves on every field.",
       emailLabel: 'Email',
       nameLabel: 'First name (optional)',
@@ -1088,7 +1088,7 @@ const EN: Copy = {
       sessionEditHint: 'You can edit your answers anytime from your portal ("My sessions").',
       magicLinkSentTitle: 'Check your email to finish',
       magicLinkSentBody: (email: string) =>
-        `A sign-in link was sent to ${email}. Open it to access your session — it expires in 30 minutes.`,
+        `I sent a sign-in link to ${email}. Open it to access your session — it expires in 30 minutes.`,
       magicLinkAgain: "Didn't get it? Resend the link",
       parkedStripHint: 'Your form is parked — it kicks off as soon as you sign in.',
     },
@@ -1111,7 +1111,7 @@ const EN: Copy = {
     formIframePathHint:
       'Site-relative (starts with /). Empty = deploy root. Used to focus the iframe on the most relevant page.',
     formBuildUrl: 'Build URL (optional)',
-    formBuildUrlPlaceholder: 'https://snd-demo.pages.dev',
+    formBuildUrlPlaceholder: 'https://marcportal.com/demo/sunday-night-dread',
     formBuildUrlHint:
       'For a build hosted elsewhere (different repo or Cloudflare project). Empty = auto-stamp on the portal’s next deploy.',
     formFlags: 'Visibility',
@@ -1236,14 +1236,14 @@ const EN: Copy = {
 
   notFound: {
     title: "This page doesn't exist",
-    body: "The link you followed points at something we don't have. Probably an old URL.",
+    body: "The link you followed points at something that isn't here. Probably an old URL.",
     homeCta: '← Back home',
     intakeCta: 'Start a request →',
   },
 
   errorBoundary: {
     title: 'Something went sideways',
-    body: "We tried to open this page and it didn't load. Most likely a deploy raced your navigation. Refresh; if it sticks, write to me.",
+    body: "This page didn't load. Most likely a deploy raced your navigation. Refresh; if it sticks, write to me.",
     refreshCta: 'Refresh',
     homeCta: '← Back home',
   },

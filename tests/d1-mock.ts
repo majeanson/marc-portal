@@ -43,6 +43,7 @@ interface PaymentRowMock {
   created_at: number
   paid_at: number | null
   refunded_at?: number | null
+  refunded_amount_cents?: number
   failure_reason?: string | null
 }
 
@@ -81,6 +82,20 @@ interface MagicLinkRowMock {
   ip: string
 }
 
+interface WebhookEventRowMock {
+  event_id: string
+  event_type: string
+  received_at: number
+}
+
+interface AdminAlertRowMock {
+  id: string
+  kind: string
+  body: string
+  created_at: number
+  resolved_at: number | null
+}
+
 export class D1Mock {
   sessions = new Map<string, SessionRowMock>()
   messages = new Map<string, MessageRowMock>()
@@ -88,6 +103,8 @@ export class D1Mock {
   rate_limits = new Map<string, RateLimitRowMock>()
   magic_link_tokens = new Map<string, MagicLinkRowMock>()
   payments = new Map<string, PaymentRowMock>()
+  webhook_events = new Map<string, WebhookEventRowMock>()
+  admin_alerts = new Map<string, AdminAlertRowMock>()
 
   prepare(sql: string): MockPreparedStatement {
     return new MockPreparedStatement(this, sql, [])
@@ -376,15 +393,39 @@ class MockPreparedStatement {
     }
 
     // SELECT id FROM sessions WHERE custodian_subscription_id = ? LIMIT 1
-    if (
-      sql.includes('FROM sessions') &&
-      sql.includes('WHERE custodian_subscription_id = ?')
-    ) {
+    if (sql.includes('FROM sessions') && sql.includes('WHERE custodian_subscription_id = ?')) {
       const subId = a[0] as string
       for (const s of this.db.sessions.values()) {
         if (s.custodian_subscription_id === subId) return [{ id: s.id }]
       }
       return []
+    }
+
+    // SELECT id, amount_cents FROM payments WHERE stripe_payment_intent_id = ? LIMIT 1
+    // (used by charge.refunded handler)
+    if (
+      sql.includes('FROM payments') &&
+      sql.includes('SELECT id, amount_cents') &&
+      sql.includes('stripe_payment_intent_id = ?')
+    ) {
+      const pi = a[0] as string
+      for (const p of this.db.payments.values()) {
+        if (p.stripe_payment_intent_id === pi) return [{ id: p.id, amount_cents: p.amount_cents }]
+      }
+      return []
+    }
+
+    // SELECT id, kind, body, created_at FROM admin_alerts WHERE resolved_at IS NULL
+    // (used by daily digest to surface unresolved Stripe-notification fallbacks)
+    if (sql.includes('FROM admin_alerts') && sql.includes('resolved_at IS NULL')) {
+      const rows: Array<{ id: string; kind: string; body: string; created_at: number }> = []
+      for (const v of this.db.admin_alerts.values()) {
+        if (v.resolved_at == null) {
+          rows.push({ id: v.id, kind: v.kind, body: v.body, created_at: v.created_at })
+        }
+      }
+      rows.sort((x, y) => x.created_at - y.created_at)
+      return rows
     }
 
     return []
@@ -706,12 +747,92 @@ class MockPreparedStatement {
     }
 
     // UPDATE sessions SET custodian_status = 'switched_to_tout_a_toi'
-    if (sql.startsWith('UPDATE sessions SET custodian_status') && sql.includes('switched_to_tout_a_toi')) {
+    if (
+      sql.startsWith('UPDATE sessions SET custodian_status') &&
+      sql.includes('switched_to_tout_a_toi')
+    ) {
       const subId = a[0] as string
       let n = 0
       for (const s of this.db.sessions.values()) {
         if (s.custodian_subscription_id === subId) {
           s.custodian_status = 'switched_to_tout_a_toi'
+          n++
+        }
+      }
+      return n
+    }
+
+    // INSERT OR IGNORE INTO webhook_events (event_id, event_type, received_at)
+    if (sql.startsWith('INSERT OR IGNORE INTO webhook_events')) {
+      const event_id = a[0] as string
+      if (this.db.webhook_events.has(event_id)) return 0
+      this.db.webhook_events.set(event_id, {
+        event_id,
+        event_type: a[1] as string,
+        received_at: a[2] as number,
+      })
+      return 1
+    }
+
+    // DELETE FROM webhook_events WHERE received_at < ?
+    if (sql.startsWith('DELETE FROM webhook_events WHERE received_at <')) {
+      const cutoff = a[0] as number
+      let n = 0
+      for (const [k, v] of this.db.webhook_events) {
+        if (v.received_at < cutoff) {
+          this.db.webhook_events.delete(k)
+          n++
+        }
+      }
+      return n
+    }
+
+    // INSERT INTO admin_alerts (id, kind, body, created_at)
+    if (sql.startsWith('INSERT INTO admin_alerts')) {
+      const id = a[0] as string
+      this.db.admin_alerts.set(id, {
+        id,
+        kind: 'stripe',
+        body: a[1] as string,
+        created_at: a[2] as number,
+        resolved_at: null,
+      })
+      return 1
+    }
+
+    // UPDATE payments SET refunded_amount_cents = ?, status = CASE ..., refunded_at = CASE ...
+    // (charge.refunded handler)
+    if (
+      sql.startsWith('UPDATE payments') &&
+      sql.includes('refunded_amount_cents = ?') &&
+      sql.includes('CASE WHEN ? = 1')
+    ) {
+      const id = a[4] as string
+      const p = this.db.payments.get(id)
+      if (p) {
+        p.refunded_amount_cents = a[0] as number
+        const flip = (a[1] as number) === 1
+        if (flip) {
+          p.status = 'refunded'
+          if (p.refunded_at == null) p.refunded_at = a[3] as number
+        }
+      }
+      return p ? 1 : 0
+    }
+
+    // UPDATE payments SET status = 'canceled' WHERE status = 'pending' AND created_at < ?
+    // (daily reap of stale pending rows)
+    if (
+      sql.startsWith('UPDATE payments') &&
+      sql.includes("status = 'canceled'") &&
+      sql.includes("status = 'pending'") &&
+      sql.includes('created_at <')
+    ) {
+      const cutoff = a[0] as number
+      let n = 0
+      for (const p of this.db.payments.values()) {
+        if (p.status === 'pending' && p.created_at < cutoff) {
+          p.status = 'canceled'
           n++
         }
       }

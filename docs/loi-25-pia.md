@@ -57,8 +57,8 @@ event is transmitted over HTTPS to Sentry's US-region ingest endpoint
   nullified defensively in `beforeSend`. Sentry's server-side
   "Prevent Storing of IP Addresses" toggle is enabled (operator action,
   see §6.4).
-- **Request bodies** — neither the SDK nor our envelope poster
-  serialize request bodies.
+- **Request bodies** — neither the SDK nor the envelope poster
+  serializes request bodies.
 - **Session replays** — `replaysSessionSampleRate: 0`,
   `replaysOnErrorSampleRate: 0`.
 - **Performance traces** — `tracesSampleRate: 0`.
@@ -139,11 +139,11 @@ there is no individual record to exfiltrate).
 - **Right of rectification (art. 28)**: not applicable to error events
   (visitors can't rectify a stack trace they didn't produce).
 - **Right of erasure (art. 28.1)**: the 30-day retention auto-purges.
-  If a visitor demands faster erasure and we cannot identify their
-  events (since they're anonymous), we treat the request as satisfied
-  by the existing minimization posture. If we ever start tagging
-  visitor identity to events (we don't today), this PIA must be
-  revisited.
+  If a visitor demands faster erasure and their events cannot be
+  identified (since they're anonymous), the request is treated as
+  satisfied by the existing minimization posture. If visitor identity
+  ever starts getting tagged to events (not done today), this PIA must
+  be revisited.
 
 ## 8. Breach posture (art. 3.5 + 3.6)
 

@@ -36,6 +36,10 @@ export interface PaymentRow {
   created_at: number
   paid_at: number | null
   refunded_at: number | null
+  /** Cumulative refunded amount in cents (added in 0016_payments_v2). Zero
+   * when nothing has been refunded; equal to amount_cents on full refund;
+   * a value in between signals a partial refund (status stays 'paid'). */
+  refunded_amount_cents: number
 }
 
 interface SessionWithCustodian extends SessionRow {
@@ -75,7 +79,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     `SELECT id, session_id, kind, amount_cents, currency, status,
             stripe_checkout_session_id, stripe_payment_intent_id,
             stripe_subscription_id, stripe_invoice_id, stripe_customer_id,
-            created_at, paid_at, refunded_at
+            created_at, paid_at, refunded_at, refunded_amount_cents
        FROM payments
       WHERE session_id = ?
       ORDER BY created_at DESC`,

@@ -43,7 +43,8 @@
     "No audio upload yet — clips are text transcripts only; the dictation recording UX ships in a follow-up.",
     "Invoice draft generation isn't wired in this slice; the parser exists but isn't exposed via API.",
     "End-user accounts (installers/dispatchers/accountants) aren't scaffolded yet; only the tenant owner can sign in.",
-    "No edit or delete on clips in this slice — append-only until the next iteration."
+    "No edit or delete on clips in this slice — append-only until the next iteration.",
+    "No buyer-facing deploy is live — 'active' here means the code path exists in this repo (SndApp.tsx + /api/snd/clips), not that a tenanted SND deployment is in production. The static demo at /demo/sunday-night-dread is the only end-user surface today. Productization as a sellable template (Gumroad / Cloudflare Pages 'Deploy' button) is parked pending vision review; see feat-buyer-admin's frozen note for the broader context."
   ],
   "lastVerifiedDate": "2026-05-07",
   "revisions": [

@@ -1,7 +1,27 @@
 {
   "featureKey": "feat-2026-020",
   "title": "Buyer Admin — per-tenant settings hub at /admin on the buyer's domain",
-  "status": "draft",
+  "status": "frozen",
   "problem": "Each tenant's owner needs a self-serve admin surface to manage their own app: invite team members (their installers, their accountant), view their billing state, export their data, and — via feat-runtime-theme-editor — control the app's appearance. Lives at /admin on the buyer's own domain (e.g. roger-voice-truck.com/admin), strictly buyer-scoped: they see only their tenant's data, can never reach fleet metadata or another tenant's anything. Self-serve here is the lever that keeps Marc's daily ops near zero — buyers add their own team members, change their own logo, and only escalate to Marc through a support session when something is genuinely broken.",
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "knownLimitations": [
+    "Frozen — vision resolved as solo practice (not a marketplace). The /admin/equipe, /admin/facturation, /admin/apparence, /admin/fleet routes still exist as direct-URL pages and the components compile, but they are not in the sidebar and are not maintained as live surfaces. AdminTeam was rewritten on 2026-05-17 to honestly state 'solo model — no team management planned' rather than 'arrive bientôt'. AdminBilling redirects to /me now that payments are wired. Re-open this feature only if the productized white-label path (one-time template sale) becomes a live offer.",
+    "Tenant resolution + tenant_id-scoped queries remain in middleware and handlers as architecture; that part is not frozen and is exercised by the lone t_marc tenant."
+  ],
+  "revisions": [
+    {
+      "date": "2026-05-17",
+      "author": "marc+claude",
+      "fields_changed": ["status", "knownLimitations"],
+      "reason": "Flip draft → frozen. Vision resolved as solo practice — buyer-admin / fleet / team / appearance / billing UIs stay as direct-URL routes but are not maintained as live surfaces. AdminTeam copy rewritten from 'arrive bientôt' false promise to honest 'solo model' framing. Document the frozen-not-deleted posture so future-Marc-or-Claude doesn't re-litigate."
+    }
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "frozen",
+      "date": "2026-05-17",
+      "reason": "Vision resolved 2026-05-09 (bmad audit) as solo practice. Surface kept as scaffolding; not a roadmap item."
+    }
+  ]
 }

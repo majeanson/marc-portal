@@ -49,6 +49,7 @@ function mkRow(overrides: Partial<PaymentRow>): PaymentRow {
     created_at: 1700000000,
     paid_at: 1700000010,
     refunded_at: null,
+    refunded_amount_cents: 0,
     ...overrides,
   }
 }
