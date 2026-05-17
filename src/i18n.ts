@@ -19,6 +19,7 @@ const FR = {
     sections: {
       projects: 'Projets',
       how: 'Comment ça marche',
+      journey: 'Parcours',
       pricing: 'Prix',
       vibe: 'Je fais / Je fais pas',
       about: 'À propos',
@@ -57,6 +58,17 @@ const FR = {
     eyebrow: 'Quatre étapes',
     title: 'Comment ça marche',
     fullJourneyCta: 'Voir le parcours complet (les 12 étapes) →',
+    journeyCard: {
+      eyebrow: 'envie de tout voir?',
+      title: 'Le parcours complet, étape par étape',
+      body: 'Les 4 grands moments ci-dessus se décomposent en 12 étapes concrètes. Le détail : qui fait quoi, en combien de temps, à quel moment.',
+      stats: [
+        { val: '6 / 12', label: 'étapes que tu fais' },
+        { val: '≈ 20 min', label: 'ton temps total' },
+        { val: '0', label: 'appels téléphoniques' },
+      ],
+      cta: 'Voir les 12 étapes →',
+    },
     steps: [
       {
         num: '01',
@@ -773,6 +785,58 @@ const FR = {
     },
   },
 
+  vouches: {
+    pageTitle: 'Recommandations',
+    heading: 'Quelques mots de gens qui ont travaillé avec moi',
+    lead: "Le portail est rapide à essayer ; ces témoignages aident à savoir si le contact me va. Marc lit, peut resserrer le texte avant qu'il paraisse — et ton courriel n'apparaît jamais ici.",
+    empty: 'Pas encore de témoignages publiés. Reviens dans quelques semaines.',
+    relationshipLabels: {
+      client: 'Client',
+      colleague: 'Collègue',
+      friend: 'Ami·e',
+      other: 'Autre',
+    },
+    submitCta: 'Écrire un témoignage →',
+    submit: {
+      pageTitle: 'Écrire un témoignage',
+      heading: "Tu as déjà travaillé avec moi ? Dis-le en quelques phrases.",
+      lead: 'Court, honnête, à ta voix. Je relis avant que ça paraisse — coquilles, longueur, ton. Ton courriel reste en privé : c’est seulement pour pouvoir te recontacter si je dois ajuster un mot.',
+      privacy:
+        'Ton nom et tes mots seront visibles publiquement. Ton courriel ne sera jamais affiché.',
+      successHeading: 'Reçu — merci.',
+      successBody:
+        'Je relis dans les prochains jours. Si c’est bon tel quel, ça paraît sans autre étape. Si je veux resserrer un mot, je t’écris.',
+      submitAnother: 'Soumettre un autre témoignage',
+      backHome: '← Retour à l’accueil',
+      fields: {
+        nameLabel: 'Ton nom',
+        namePlaceholder: 'Alex Tremblay',
+        emailLabel: 'Ton courriel (privé)',
+        emailPlaceholder: 'alex@exemple.com',
+        emailHint: 'Pour te recontacter si je dois ajuster. Jamais affiché.',
+        relationshipLabel: 'Comment on se connaît',
+        bodyLabel: 'Ton mot',
+        bodyPlaceholder:
+          "Ce qu'on a fait ensemble, ce que ça a changé, comment c'était de travailler avec moi…",
+        bodyHint: '30 à 600 caractères.',
+        linkLabel: 'Lien (optionnel)',
+        linkPlaceholder: 'https://tonsite.ca',
+        linkHint: 'Ton site, LinkedIn, GitHub — affiché à côté de ton nom.',
+      },
+      submitButton: 'Envoyer',
+      submitting: 'Envoi…',
+      errors: {
+        rateLimit: 'Trop d’envois récents — réessaie dans une heure.',
+        invalidName: 'Nom invalide — 2 à 80 caractères.',
+        invalidEmail: 'Courriel invalide.',
+        invalidRelationship: 'Choisis une option.',
+        invalidBody: 'Le mot doit faire entre 30 et 600 caractères.',
+        invalidLink: 'Le lien doit commencer par http(s):// et faire moins de 200 caractères.',
+        generic: 'Quelque chose a planté. Réessaie ?',
+      },
+    },
+  },
+
   notFound: {
     title: 'Cette page n’existe pas',
     body: 'Le lien que tu as suivi pointe sur quelque chose qui n’existe pas. Probablement une vieille URL.',
@@ -805,6 +869,7 @@ const EN: Copy = {
     sections: {
       projects: 'Projects',
       how: 'How it works',
+      journey: 'Journey',
       pricing: 'Pricing',
       vibe: "What I do / don't",
       about: 'About',
@@ -843,6 +908,17 @@ const EN: Copy = {
     eyebrow: 'Four steps',
     title: 'How it works',
     fullJourneyCta: 'See the full journey (all 12 steps) →',
+    journeyCard: {
+      eyebrow: 'want to see the whole thing?',
+      title: 'The full journey, step by step',
+      body: 'The 4 big moments above break down into 12 concrete steps. The detail: who does what, in how much time, at what point.',
+      stats: [
+        { val: '6 / 12', label: 'steps on your side' },
+        { val: '≈ 20 min', label: 'your total time' },
+        { val: '0', label: 'phone calls' },
+      ],
+      cta: 'See all 12 steps →',
+    },
     steps: [
       {
         num: '01',
@@ -1551,6 +1627,56 @@ const EN: Copy = {
       title: 'That’s it.',
       body: 'If you’re counting, you take 6 moves out of 12 — and most are one minute. The other 6 are me, working, while you do something else. That’s the deal.',
       cta: 'Describe your problem →',
+    },
+  },
+
+  vouches: {
+    pageTitle: 'Vouches',
+    heading: 'A few words from people who worked with me',
+    lead: "The portal is quick to try; these vouches help you decide if the contact fits. Marc reads them, may tighten the wording before publishing — and your email never appears here.",
+    empty: 'No vouches published yet. Check back in a few weeks.',
+    relationshipLabels: {
+      client: 'Client',
+      colleague: 'Colleague',
+      friend: 'Friend',
+      other: 'Other',
+    },
+    submitCta: 'Write a vouch →',
+    submit: {
+      pageTitle: 'Write a vouch',
+      heading: 'Worked with me before? Say it in a few sentences.',
+      lead: "Short, honest, in your voice. I read before it ships — typos, length, tone. Your email stays private: it's only so I can reach back out if I need to tweak a word.",
+      privacy: 'Your name and your words will be public. Your email will never be displayed.',
+      successHeading: 'Got it — thanks.',
+      successBody:
+        'I read in the next few days. If it’s good as-is, it ships without another step. If I want to tighten a word, I’ll email you.',
+      submitAnother: 'Submit another vouch',
+      backHome: '← Back home',
+      fields: {
+        nameLabel: 'Your name',
+        namePlaceholder: 'Alex Smith',
+        emailLabel: 'Your email (private)',
+        emailPlaceholder: 'alex@example.com',
+        emailHint: 'So I can reach back if I need to adjust. Never shown.',
+        relationshipLabel: 'How we know each other',
+        bodyLabel: 'Your words',
+        bodyPlaceholder: 'What we shipped, what it changed, what it was like working with me…',
+        bodyHint: '30 to 600 characters.',
+        linkLabel: 'Link (optional)',
+        linkPlaceholder: 'https://yoursite.com',
+        linkHint: 'Your site, LinkedIn, GitHub — shown next to your name.',
+      },
+      submitButton: 'Send',
+      submitting: 'Sending…',
+      errors: {
+        rateLimit: 'Too many recent submissions — try again in an hour.',
+        invalidName: 'Invalid name — 2 to 80 characters.',
+        invalidEmail: 'Invalid email.',
+        invalidRelationship: 'Pick an option.',
+        invalidBody: 'Your words must be 30 to 600 characters.',
+        invalidLink: 'Link must start with http(s):// and be under 200 characters.',
+        generic: 'Something broke. Try again?',
+      },
     },
   },
 

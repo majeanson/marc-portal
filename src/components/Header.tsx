@@ -81,6 +81,12 @@ export function Header({ lang }: { lang: Lang }) {
             <a href={`${langPrefix}/#how`} className="site-header__section-link">
               {t.nav.sections.how}
             </a>
+            <a
+              href={lang === 'fr' ? '/parcours' : '/en/journey'}
+              className="site-header__section-link"
+            >
+              {t.nav.sections.journey}
+            </a>
             <a href={`${langPrefix}/#pricing`} className="site-header__section-link">
               {t.nav.sections.pricing}
             </a>

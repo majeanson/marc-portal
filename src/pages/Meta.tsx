@@ -63,6 +63,7 @@ const COPY = {
     freshStale: 'à revoir',
     learnMore: 'En savoir plus sur LAC ↗',
     learnMoreHref: 'https://lifeascode.dev',
+    journeyCta: 'Voir le parcours complet (les 12 étapes) →',
     statusLabels: {
       active: 'actif',
       draft: 'brouillon',
@@ -89,6 +90,7 @@ const COPY = {
     freshStale: 'stale',
     learnMore: 'Learn more about LAC ↗',
     learnMoreHref: 'https://lifeascode.dev',
+    journeyCta: 'See the full journey (all 12 steps) →',
     statusLabels: {
       active: 'active',
       draft: 'draft',
@@ -204,6 +206,9 @@ export function Meta({ lang }: { lang: Lang }) {
               <a href={t.learnMoreHref} target="_blank" rel="noreferrer">
                 {t.learnMore}
               </a>
+            </p>
+            <p className="meta-page__cta mono">
+              <a href={lang === 'fr' ? '/parcours' : '/en/journey'}>{t.journeyCta}</a>
             </p>
             <p className="meta-page__back-link">
               <a href={`${langPrefix}/`} className="link-btn mono">

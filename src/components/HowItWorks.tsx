@@ -27,8 +27,21 @@ export function HowItWorks({ lang }: { lang: Lang }) {
             </li>
           ))}
         </ol>
-        <a className="how__journey-link mono" href={journeyHref}>
-          {t.fullJourneyCta}
+        <a className="how__journey-card" href={journeyHref}>
+          <div className="how__journey-card-text">
+            <div className="how__journey-card-eyebrow mono">{t.journeyCard.eyebrow}</div>
+            <h3 className="how__journey-card-title">{t.journeyCard.title}</h3>
+            <p className="how__journey-card-body">{t.journeyCard.body}</p>
+          </div>
+          <ul className="how__journey-card-stats" aria-hidden="true">
+            {t.journeyCard.stats.map((s) => (
+              <li key={s.label} className="how__journey-card-stat">
+                <span className="how__journey-card-stat-val">{s.val}</span>
+                <span className="how__journey-card-stat-label mono">{s.label}</span>
+              </li>
+            ))}
+          </ul>
+          <span className="how__journey-card-cta mono">{t.journeyCard.cta}</span>
         </a>
       </div>
     </section>

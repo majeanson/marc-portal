@@ -159,6 +159,7 @@ const COPY = {
       body: "Par défaut tu pars en mode dépositaire (200 $/an) à la livraison. Si tu préfères « Tout à toi » à la place, tu coches une case de compétences techniques (DNS, Cloudflare, D1, Resend, rotation de clés) avant de confirmer — sinon, je m'en occupe.",
       intakeCta: 'Ouvrir le formulaire →',
       pricingCta: 'Voir les prix',
+      journeyCta: 'Voir le parcours complet (les 12 étapes) →',
     },
   },
   en: {
@@ -307,6 +308,7 @@ const COPY = {
       body: "By default you go into custodian mode ($200/yr) at delivery. If you'd rather pick \"All yours\" instead, you tick a technical-skills checkbox (DNS, Cloudflare, D1, Resend, key rotation) before confirming — otherwise, I handle it.",
       intakeCta: 'Open the form →',
       pricingCta: 'See pricing',
+      journeyCta: 'See the full journey (all 12 steps) →',
     },
   },
 } as const
@@ -427,6 +429,12 @@ export function Handoff({ lang }: { lang: Lang }) {
                 </a>
                 <a href={`${langPrefix}/#pricing`} className="link-btn mono">
                   {t.cta.pricingCta}
+                </a>
+                <a
+                  href={lang === 'fr' ? '/parcours' : '/en/journey'}
+                  className="link-btn mono"
+                >
+                  {t.cta.journeyCta}
                 </a>
               </div>
             </section>

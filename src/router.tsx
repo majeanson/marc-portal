@@ -57,6 +57,8 @@ const PublicAdvancements = lazy(() =>
 const Projects = lazy(() => import('./pages/Projects').then((m) => ({ default: m.Projects })))
 const Napkin = lazy(() => import('./pages/Napkin').then((m) => ({ default: m.Napkin })))
 const Journey = lazy(() => import('./pages/Journey').then((m) => ({ default: m.Journey })))
+const Vouches = lazy(() => import('./pages/Vouches').then((m) => ({ default: m.Vouches })))
+const Vouch = lazy(() => import('./pages/Vouch').then((m) => ({ default: m.Vouch })))
 
 // Minimal skeleton shown while a lazy() chunk is in flight. Visually quiet,
 // avoids the "is this broken?" feel of an empty aria-busy main. Header is
@@ -293,6 +295,38 @@ export const router = createBrowserRouter(
         element={
           <L>
             <Projects lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/vouches"
+        element={
+          <L>
+            <Vouches lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/vouches"
+        element={
+          <L>
+            <Vouches lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/vouch"
+        element={
+          <L>
+            <Vouch lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/vouch"
+        element={
+          <L>
+            <Vouch lang="en" />
           </L>
         }
       />

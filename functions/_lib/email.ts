@@ -437,6 +437,37 @@ function formatCadCents(cents: number, lang: 'fr' | 'en'): string {
 }
 
 /**
+ * A new vouch was just submitted. Marc gets a heads-up so he can
+ * moderate (approve / reject / edit) in /admin/vouches. Visitor doesn't
+ * get an email back — the UI tells them "Marc relit avant que ça
+ * paraisse." Matches the async-no-calls voice.
+ */
+export async function sendNewVouchNotification(
+  apiKey: string,
+  marcEmail: string,
+  vouchId: string,
+  authorName: string,
+  authorEmail: string,
+  relationship: string,
+  bodyPreview: string,
+  origin: string,
+): Promise<boolean> {
+  const subject = 'A new vouch is awaiting moderation'
+  // No dedicated /admin/vouches page yet — link to the hub so Marc lands
+  // somewhere live. Replace with /admin/vouches once that surface ships.
+  const url = `${origin}/admin`
+  const preview = bodyPreview.length > 240 ? bodyPreview.slice(0, 237) + '…' : bodyPreview
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:520px;margin:auto;padding:24px;color:#1a1a1a">
+<p><strong>${escapeHtml(authorName)}</strong> <span style="color:#7a7568">(${escapeHtml(relationship)})</span> just submitted a vouch.</p>
+<blockquote style="margin:14px 0;padding:10px 14px;background:#fbf7ec;border-left:3px solid #3d6e4e;color:#3f3c34;font-size:14px;line-height:1.5;">${escapeHtml(preview)}</blockquote>
+<p style="color:#444;font-size:13px">From <code>${escapeHtml(authorEmail)}</code> · id <code>${escapeHtml(vouchId)}</code></p>
+<p><a href="${url}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">Moderate</a></p>
+</body></html>`
+  const text = `${authorName} (${relationship}) submitted a vouch:\n\n${preview}\n\nFrom ${authorEmail} · id ${vouchId}\n\n${url}`
+  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+}
+
+/**
  * The visitor just explicitly confirmed "Tout à toi" / "All yours" — they
  * opted OUT of Custodian. Marc gets a heads-up so he can plan the handoff
  * accordingly. Visitor doesn't get an email back; the UI confirms it

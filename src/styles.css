@@ -2183,6 +2183,10 @@ button.intake__progress-step:focus-visible {
   font-size: 12px;
   color: var(--text-soft);
 }
+.field__hint--error {
+  color: var(--warm);
+  font-weight: 500;
+}
 .field__input {
   font-family: var(--sans);
   font-size: 16px;
@@ -6245,22 +6249,116 @@ button.intake__progress-step:disabled {
     font-size: 56px;
   }
 }
-.home .how__journey-link {
-  display: inline-block;
-  margin-top: 28px;
+.home .how__journey-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) auto;
+  grid-template-areas:
+    'text  stats'
+    'cta   cta';
+  gap: 28px 40px;
+  align-items: start;
+  margin-top: 48px;
+  padding: 32px 36px;
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent-warm);
+  background: var(--surface, transparent);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.home .how__journey-card:hover,
+.home .how__journey-card:focus-visible {
+  border-color: var(--accent-warm);
+  box-shadow: 0 6px 24px -12px rgba(44, 82, 57, 0.25);
+  transform: translateY(-1px);
+}
+.home .how__journey-card-text {
+  grid-area: text;
+}
+.home .how__journey-card-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-warm);
+  margin-bottom: 10px;
+}
+.home .how__journey-card-title {
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 0 0 10px;
+  color: var(--text);
+}
+.home .how__journey-card-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-mid);
+  max-width: 52ch;
+}
+.home .how__journey-card-stats {
+  grid-area: stats;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 28px;
+  align-self: center;
+}
+.home .how__journey-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.home .how__journey-card-stat-val {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent-warm);
+  letter-spacing: -0.01em;
+}
+.home .how__journey-card-stat-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-mid);
+}
+.home .how__journey-card-cta {
+  grid-area: cta;
+  align-self: end;
+  justify-self: end;
   font-size: 13px;
   letter-spacing: 0.04em;
   color: var(--accent-warm);
-  text-decoration: none;
   border-bottom: 1px solid var(--accent-warm);
   padding-bottom: 2px;
   transition:
     color 0.2s ease,
     border-color 0.2s ease;
 }
-.home .how__journey-link:hover {
+.home .how__journey-card:hover .how__journey-card-cta,
+.home .how__journey-card:focus-visible .how__journey-card-cta {
   color: var(--text);
   border-bottom-color: var(--text);
+}
+@media (max-width: 720px) {
+  .home .how__journey-card {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'text'
+      'stats'
+      'cta';
+    gap: 22px;
+    padding: 24px 22px;
+  }
+  .home .how__journey-card-stats {
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+  .home .how__journey-card-cta {
+    justify-self: start;
+  }
 }
 
 /* ── Pricing — menu layout ────────────────────────────────────────────────── */
@@ -9598,4 +9696,52 @@ button.intake__progress-step:disabled {
   .journey__step:hover .journey__card {
     transform: none;
   }
+}
+
+/* Vouches — public list cards. The card itself is intentionally quiet:
+   the body text carries the weight; attribution is a small footer. */
+.vouches-list {
+  margin: 32px 0;
+}
+.vouches-list__items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.vouch-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+}
+.vouch-card__body {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--text);
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+}
+.vouch-card__body p {
+  margin: 0;
+}
+.vouch-card__attribution {
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+.vouch-card__name {
+  font-weight: 600;
+  color: var(--text);
+}
+.vouch-card__name a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--border);
+}
+.vouch-card__name a:hover {
+  border-bottom-color: var(--accent);
 }

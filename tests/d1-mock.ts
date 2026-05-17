@@ -99,6 +99,20 @@ interface AdminAlertRowMock {
   resolved_at: number | null
 }
 
+interface VouchRowMock {
+  id: string
+  author_name: string
+  author_email: string
+  author_relationship: string
+  body: string
+  link_url: string | null
+  session_id: string | null
+  status: string
+  created_at: number
+  approved_at: number | null
+  deleted_at: number | null
+}
+
 export class D1Mock {
   sessions = new Map<string, SessionRowMock>()
   messages = new Map<string, MessageRowMock>()
@@ -108,6 +122,7 @@ export class D1Mock {
   payments = new Map<string, PaymentRowMock>()
   webhook_events = new Map<string, WebhookEventRowMock>()
   admin_alerts = new Map<string, AdminAlertRowMock>()
+  vouches = new Map<string, VouchRowMock>()
 
   prepare(sql: string): MockPreparedStatement {
     return new MockPreparedStatement(this, sql, [])
@@ -429,6 +444,109 @@ class MockPreparedStatement {
       }
       rows.sort((x, y) => x.created_at - y.created_at)
       return rows
+    }
+
+    // SELECT COUNT(*) AS n FROM vouches WHERE (author_email = ? OR ...) AND created_at > ?
+    // — rate-limit lookup (1/24h per email + 3/24h per IP via two separate calls).
+    if (sql.includes('FROM vouches') && sql.includes('SELECT COUNT(*)')) {
+      const since = a[a.length - 1] as number
+      let n = 0
+      if (sql.includes('author_email = ?')) {
+        const email = a[0] as string
+        for (const v of this.db.vouches.values()) {
+          if (v.author_email === email && v.created_at > since) n++
+        }
+      }
+      return [{ n }]
+    }
+
+    // SELECT id FROM sessions WHERE id = ? AND deleted_at IS NULL
+    // (vouches.ts uses this for the optional sessionId attribution check.)
+    if (sql === 'SELECT id FROM sessions WHERE id = ? AND deleted_at IS NULL') {
+      const s = this.db.sessions.get(a[0] as string)
+      if (!s || s.deleted_at !== null) return []
+      return [{ id: s.id }]
+    }
+
+    // SELECT * FROM vouches by id
+    if (sql.startsWith('SELECT') && sql.includes('FROM vouches WHERE id = ?')) {
+      const id = a[0] as string
+      const v = this.db.vouches.get(id)
+      return v ? [{ ...v }] : []
+    }
+
+    // Public list filtered by sessionId: includes WHERE session_id = ?
+    if (
+      sql.startsWith('SELECT') &&
+      sql.includes('FROM vouches') &&
+      sql.includes("status = 'approved'") &&
+      sql.includes('deleted_at IS NULL') &&
+      sql.includes('session_id = ?')
+    ) {
+      const sessionId = a[0] as string
+      const rows = [...this.db.vouches.values()]
+        .filter(
+          (v) => v.status === 'approved' && v.deleted_at == null && v.session_id === sessionId,
+        )
+        .sort((x, y) => y.created_at - x.created_at)
+      return rows.map((v) => ({ ...v }))
+    }
+
+    // Public list: SELECT ... FROM vouches WHERE status = 'approved' AND
+    // deleted_at IS NULL ORDER BY created_at DESC
+    if (
+      sql.startsWith('SELECT') &&
+      sql.includes('FROM vouches') &&
+      sql.includes("status = 'approved'") &&
+      sql.includes('deleted_at IS NULL')
+    ) {
+      const rows = [...this.db.vouches.values()]
+        .filter((v) => v.status === 'approved' && v.deleted_at == null)
+        .sort((x, y) => y.created_at - x.created_at)
+      return rows.map((v) => ({ ...v }))
+    }
+
+    // Admin list filtered by status: WHERE status = ?
+    if (
+      sql.startsWith('SELECT') &&
+      sql.includes('FROM vouches') &&
+      sql.includes('WHERE status = ?')
+    ) {
+      const wantedStatus = a[0] as string
+      const rows = [...this.db.vouches.values()]
+        .filter((v) => v.status === wantedStatus)
+        .sort((x, y) => {
+          // (deleted_at IS NULL) DESC — live rows before trashed.
+          const aLive = x.deleted_at == null ? 1 : 0
+          const bLive = y.deleted_at == null ? 1 : 0
+          if (aLive !== bLive) return bLive - aLive
+          return y.created_at - x.created_at
+        })
+      return rows.map((v) => ({ ...v }))
+    }
+
+    // Admin unfiltered list: pending first, then live, then by created_at.
+    if (
+      sql.startsWith('SELECT') &&
+      sql.includes('FROM vouches') &&
+      sql.includes("(status = 'pending') DESC")
+    ) {
+      const rows = [...this.db.vouches.values()].sort((x, y) => {
+        const aPending = x.status === 'pending' ? 1 : 0
+        const bPending = y.status === 'pending' ? 1 : 0
+        if (aPending !== bPending) return bPending - aPending
+        const aLive = x.deleted_at == null ? 1 : 0
+        const bLive = y.deleted_at == null ? 1 : 0
+        if (aLive !== bLive) return bLive - aLive
+        return y.created_at - x.created_at
+      })
+      return rows.map((v) => ({ ...v }))
+    }
+
+    // Generic admin list: SELECT ... FROM vouches ORDER BY created_at DESC
+    if (sql.startsWith('SELECT') && sql.includes('FROM vouches ORDER BY created_at DESC')) {
+      const rows = [...this.db.vouches.values()].sort((x, y) => y.created_at - x.created_at)
+      return rows.map((v) => ({ ...v }))
     }
 
     return []
@@ -884,6 +1002,89 @@ class MockPreparedStatement {
         }
       }
       return n
+    }
+
+    // INSERT INTO vouches (id, author_name, author_email, author_relationship,
+    //                     body, link_url, session_id, status, created_at)
+    if (sql.startsWith('INSERT INTO vouches')) {
+      const id = a[0] as string
+      this.db.vouches.set(id, {
+        id,
+        author_name: a[1] as string,
+        author_email: a[2] as string,
+        author_relationship: a[3] as string,
+        body: a[4] as string,
+        link_url: a[5] as string | null,
+        session_id: a[6] as string | null,
+        status: 'pending',
+        created_at: a[7] as number,
+        approved_at: null,
+        deleted_at: null,
+      })
+      return 1
+    }
+
+    // UPDATE vouches SET deleted_at = NULL WHERE id = ?
+    //   (undelete; SET clause has a literal NULL, not a bind)
+    if (sql === 'UPDATE vouches SET deleted_at = NULL WHERE id = ?') {
+      const id = a[0] as string
+      const v = this.db.vouches.get(id)
+      if (v) v.deleted_at = null
+      return v ? 1 : 0
+    }
+
+    // Generic vouches UPDATE: parse the SET clause so admin/vouches/[id] can
+    // assemble updates from any combination of fields.
+    //
+    //   UPDATE vouches SET <field> = ? [, <field> = ?]* WHERE id = ?
+    //
+    // Supports literal NULLs (e.g. `approved_at = NULL`) — those don't consume
+    // a bind. Bind order matches the order of `?`-fields left-to-right.
+    if (sql.startsWith('UPDATE vouches SET ') && sql.endsWith(' WHERE id = ?')) {
+      const inner = sql.slice('UPDATE vouches SET '.length, -' WHERE id = ?'.length)
+      const id = a[a.length - 1] as string
+      const v = this.db.vouches.get(id)
+      if (!v) return 0
+      const parts = inner.split(',').map((s) => s.trim())
+      let bindIdx = 0
+      for (const part of parts) {
+        const eq = part.indexOf('=')
+        if (eq === -1) continue
+        const col = part.slice(0, eq).trim()
+        const rhs = part.slice(eq + 1).trim()
+        let value: unknown
+        if (rhs === 'NULL') {
+          value = null
+        } else if (rhs === '?') {
+          value = a[bindIdx++]
+        } else {
+          continue
+        }
+        switch (col) {
+          case 'status':
+            v.status = value as string
+            break
+          case 'approved_at':
+            v.approved_at = value as number | null
+            break
+          case 'deleted_at':
+            v.deleted_at = value as number | null
+            break
+          case 'author_name':
+            v.author_name = value as string
+            break
+          case 'author_relationship':
+            v.author_relationship = value as string
+            break
+          case 'body':
+            v.body = value as string
+            break
+          case 'link_url':
+            v.link_url = value as string | null
+            break
+        }
+      }
+      return 1
     }
 
     return 0
