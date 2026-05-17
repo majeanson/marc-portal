@@ -87,19 +87,9 @@ const COPY = {
     deleting: 'Suppression…',
     deleteFailed: 'La suppression a échoué — réessaie ou écris-moi.',
     unreadBadge: 'NOUVEAU',
-    payNow: 'Payer maintenant →',
-    payTier1: 'Payer Tier 1 (≈ 300 $) →',
-    payTier2Deposit: 'Payer le dépôt (≈ 750 $) →',
-    payTier2Final: 'Payer le solde (≈ 750 $) →',
-    payTier3: 'Payer (sur devis) →',
-    paid: 'Payé ✓',
-    paidAmount: (amount: string) => `Payé · ${amount}`,
-    paySubscribe: 'Devenir dépositaire (200 $/an) →',
-    manageSub: 'Gérer l’abonnement ↗',
-    custodianActive: 'Mode dépositaire · actif',
-    custodianPastDue: 'Renouvellement échoué — voir l’abonnement',
-    custodianSwitched: 'Mode Tout à toi (abonnement terminé)',
-    checkoutPending: 'Ouverture du paiement…',
+    // Payment copy now lives in src/components/PaymentActions.tsx (which owns
+    // the section UI). Only the post-payment toast copy stays here because
+    // it's rendered by /me's top-level <main>, not by PaymentActions.
     paymentJustReceived: 'Merci — paiement reçu.',
     paymentCanceled: 'Paiement annulé. Tu peux réessayer.',
     helpToggle: 'Comment ça marche ?',
@@ -197,19 +187,7 @@ const COPY = {
     deleting: 'Deleting…',
     deleteFailed: 'Deletion failed — retry or write to me.',
     unreadBadge: 'NEW',
-    payNow: 'Pay now →',
-    payTier1: 'Pay Tier 1 (≈ $300) →',
-    payTier2Deposit: 'Pay deposit (≈ $750) →',
-    payTier2Final: 'Pay final balance (≈ $750) →',
-    payTier3: 'Pay (quoted amount) →',
-    paid: 'Paid ✓',
-    paidAmount: (amount: string) => `Paid · ${amount}`,
-    paySubscribe: 'Become custodian ($200/yr) →',
-    manageSub: 'Manage subscription ↗',
-    custodianActive: 'Custodian mode · active',
-    custodianPastDue: 'Renewal failed — open subscription',
-    custodianSwitched: "Mode 'All yours' (subscription ended)",
-    checkoutPending: 'Opening checkout…',
+    // See FR side — payment copy lives in PaymentActions; toast copy stays.
     paymentJustReceived: 'Thanks — payment received.',
     paymentCanceled: 'Payment canceled. You can try again.',
     helpToggle: 'How this works',
@@ -768,7 +746,9 @@ function SessionCard({
           <span className="me-portal__open mono">{copy.openBtn}</span>
         </div>
       </a>
-      {session.status === 'active' && <PaymentActions session={session} lang={lang} />}
+      {session.status === 'active' && (
+        <PaymentActions session={session} lang={lang} variant="compact" />
+      )}
     </li>
   )
 }

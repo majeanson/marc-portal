@@ -49,7 +49,9 @@ interface OneTimeOpts {
   projectLabel?: string
 }
 
-export async function createOneTimeCheckoutSession(opts: OneTimeOpts): Promise<CheckoutSessionResult> {
+export async function createOneTimeCheckoutSession(
+  opts: OneTimeOpts,
+): Promise<CheckoutSessionResult> {
   const baseLabel = KIND_LABELS[opts.kind][opts.lang]
   const label = opts.projectLabel ? `${baseLabel} — ${opts.projectLabel}`.slice(0, 80) : baseLabel
 
@@ -79,7 +81,7 @@ export async function createOneTimeCheckoutSession(opts: OneTimeOpts): Promise<C
   form.set('payment_intent_data[metadata][kind]', opts.kind)
   form.set('payment_intent_data[metadata][lang]', opts.lang)
 
-  return await postCheckoutSession(opts.apiKey, form)
+  return await postCheckoutSession(opts.apiKey, form, `checkout-${opts.paymentId}`)
 }
 
 interface SubOpts {
@@ -93,7 +95,9 @@ interface SubOpts {
   lang: 'fr' | 'en'
 }
 
-export async function createSubscriptionCheckoutSession(opts: SubOpts): Promise<CheckoutSessionResult> {
+export async function createSubscriptionCheckoutSession(
+  opts: SubOpts,
+): Promise<CheckoutSessionResult> {
   const form = new URLSearchParams()
   form.set('mode', 'subscription')
   form.set('locale', opts.lang === 'fr' ? 'fr-CA' : 'en')
@@ -114,19 +118,32 @@ export async function createSubscriptionCheckoutSession(opts: SubOpts): Promise<
   form.set('subscription_data[metadata][kind]', 'custodian-sub')
   form.set('subscription_data[metadata][lang]', opts.lang)
 
-  return await postCheckoutSession(opts.apiKey, form)
+  return await postCheckoutSession(opts.apiKey, form, `checkout-${opts.paymentId}`)
 }
 
-async function postCheckoutSession(apiKey: string, form: URLSearchParams): Promise<CheckoutSessionResult> {
+async function postCheckoutSession(
+  apiKey: string,
+  form: URLSearchParams,
+  idempotencyKey?: string,
+): Promise<CheckoutSessionResult> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/x-www-form-urlencoded',
+    // Stripe-Version pin — keep behavior stable across API rollouts. Bump
+    // intentionally with a code change, not silently.
+    'Stripe-Version': '2024-11-20.acacia',
+  }
+  // Stripe Idempotency-Key: a repeated POST with the same key returns the
+  // original response (Checkout session id + url) instead of creating a new
+  // session. Closes the slow-network double-click hole — visitor's browser
+  // shows the same Checkout URL on retry, no orphan `pending` payment row.
+  // Key derived from our paymentId, which is already unique per click.
+  if (idempotencyKey) {
+    headers['Idempotency-Key'] = idempotencyKey
+  }
   const res = await fetch(`${STRIPE_API}/checkout/sessions`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-      // Stripe-Version pin — keep behavior stable across API rollouts. Bump
-      // intentionally with a code change, not silently.
-      'Stripe-Version': '2024-11-20.acacia',
-    },
+    headers,
     body: form.toString(),
   })
   const text = await res.text()

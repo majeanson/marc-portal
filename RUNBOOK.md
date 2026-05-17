@@ -289,6 +289,7 @@ Canada Ltd. is the QC processing entity → no cross-border transfer.
 | 10 | Set `STRIPE_SECRET_KEY` via the same CLI command | CLI |
 | 11 | Enable Customer Portal: Settings → Billing → Customer portal → "Activate" | Dashboard |
 | 12 | In Customer Portal config: allow update payment method, cancel subscription, view invoice history | Same screen |
+| 13 | Cancellations → enable **"Cancel immediately"** alongside or instead of "Cancel at end of period". Default is period-end only, which means a visitor who hits "Manage subscription → Cancel" stays charged until renewal. Enable immediate so leaving the engagement is one click, not an email to Marc. | Same screen → Cancellations |
 
 If any of (1)–(10) is missing, payments will silently fail at runtime —
 endpoint returns 503 or webhook returns 401. The /me UI hides the "Pay"
@@ -439,3 +440,32 @@ npx wrangler d1 migrations apply marc-portal-db --local
 # Tail prod Functions logs
 npx wrangler pages deployment tail --project-name marc-portal
 ```
+
+## Calendar reminders
+
+Time-based ops tasks that aren't urgent today but will rot if forgotten.
+
+### DMARC tighten (target: 2026-06-14)
+
+When Resend's `marcportal.com` domain was verified on 2026-05-16, the
+DMARC record was added at `_dmarc.marcportal.com` as `v=DMARC1; p=none;`
+— monitor-only. In 2-4 weeks (target 2026-06-14), check the deliverability
+report in Resend (or a free DMARC analyzer like postmarkapp.com/dmarc).
+
+If no false positives are visible (legitimate mail being marked as
+suspicious by receivers), tighten to:
+
+```
+v=DMARC1; p=quarantine; pct=25;
+```
+
+`pct=25` quarantines only 25% of failing mail — gradual rollout. Wait
+another 2 weeks; if still clean, drop pct and move to `p=quarantine`.
+Eventually `p=reject` for max anti-spoof protection.
+
+Update via Cloudflare DNS → `marcportal.com` → DNS → edit the existing
+`_dmarc` TXT record. Propagation is ~5 min on CF nameservers.
+
+If false positives appear (Marc's mail bouncing, Resend log showing
+DMARC failures from a legitimate `noreply@marcportal.com` send), back
+off to `p=none` and investigate before re-tightening.

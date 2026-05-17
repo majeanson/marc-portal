@@ -108,15 +108,33 @@ describe('PaymentActions tier 2 split flow', () => {
 })
 
 describe('PaymentActions custodian section', () => {
-  it('shows the "Activate custodian mode" CTA when no subscription exists', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'none' }))
-    // Need tier=1 so the component renders (parent guard hides everything
-    // when project section is hidden AND custodian state is 'none').
+  it('shows the "Activate custodian mode" CTA after deposit is paid', async () => {
+    // Gating tightened: custodian section only surfaces once the visitor has
+    // paid for work (or already has a sub). A tier-1 visitor who paid their
+    // $300 deposit is the canonical "ready to consider custodian" moment.
+    mockSummary(
+      mkSummary({
+        custodianStatus: 'none',
+        hasPaidDeposit: true,
+        rows: [mkRow({ kind: 'tier1' })],
+      }),
+    )
     render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Activate custodian mode/ })).toBeInTheDocument(),
     )
     expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument()
+  })
+
+  it('hides the custodian section pre-engagement (no deposit yet, no sub)', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'none' }))
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    // Project section renders (tier=1, no payment yet)
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /Project payment/ })).toBeInTheDocument(),
+    )
+    // But custodian section should NOT render — premature upsell.
+    expect(screen.queryByRole('heading', { name: /Custodian mode/ })).not.toBeInTheDocument()
   })
 
   it('shows "Re-activate subscription" after a prior sub ended', async () => {

@@ -51,6 +51,10 @@ interface PatchBody {
   showcase?: unknown
   /** Admin-only: tier classification (0/1/2/3) or null to clear. */
   tier?: unknown
+  /** Admin-only: Tier-3 quoted amount in CAD cents, or null to clear.
+   * Used by /api/payments/checkout when the visitor self-pays a tier-3
+   * project. 10000 (100 CAD) .. 10000000 (100000 CAD). */
+  tier3AmountCents?: unknown
 }
 
 export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params }) => {
@@ -217,6 +221,25 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     }
     await env.DB.prepare(`UPDATE sessions SET tier = ?, updated_at = ? WHERE id = ?`)
       .bind(body.tier, now, id)
+      .run()
+  }
+
+  // Tier 3 quoted amount — admin-only. Cents, 10000..10000000 (100..100000 CAD),
+  // or null to clear. Stored regardless of current tier (admin may quote before
+  // switching tier=3 to surface the button to the visitor). checkout.ts reads
+  // this when kind='tier3' for visitor-self pays.
+  if (body.tier3AmountCents !== undefined) {
+    if (!admin) return forbidden('only admin can set tier3AmountCents')
+    if (body.tier3AmountCents !== null) {
+      if (typeof body.tier3AmountCents !== 'number' || !Number.isInteger(body.tier3AmountCents)) {
+        return badRequest('tier3AmountCents must be an integer (cents) or null')
+      }
+      if (body.tier3AmountCents < 10_000 || body.tier3AmountCents > 10_000_000) {
+        return badRequest('tier3AmountCents out of range (10000..10000000 cents)')
+      }
+    }
+    await env.DB.prepare(`UPDATE sessions SET tier3_amount_cents = ?, updated_at = ? WHERE id = ?`)
+      .bind(body.tier3AmountCents, now, id)
       .run()
   }
 

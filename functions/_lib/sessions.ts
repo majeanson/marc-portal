@@ -41,6 +41,10 @@ export interface SessionRow {
   /** Tier classification (0/1/2/3) matching the public Pricing copy. NULL =
    * not yet classified by admin. Used to badge the public gallery card. */
   tier: number | null
+  /** Tier 3 only: admin-quoted amount in cents. NULL when the admin hasn't
+   * yet set a quote — visitor's "Payer (sur devis)" button is then disabled
+   * client-side. Used by /api/payments/checkout for tier3 visitor-self pays. */
+  tier3_amount_cents: number | null
 }
 
 export interface MessageRow {
@@ -104,7 +108,8 @@ export async function loadSession(db: D1Database, id: string): Promise<SessionRo
     .prepare(
       `SELECT id, email, intake_json, status, created_at, updated_at,
               deleted_at, status_history,
-              showcased_at, showcase_title, showcase_tagline, tier
+              showcased_at, showcase_title, showcase_tagline, tier,
+              tier3_amount_cents
        FROM sessions WHERE id = ?`,
     )
     .bind(id)

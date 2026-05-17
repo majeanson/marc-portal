@@ -83,7 +83,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const session = await env.DB.prepare(
     `SELECT id, email, intake_json, status, created_at, updated_at,
             deleted_at, status_history,
-            showcased_at, showcase_title, showcase_tagline, tier
+            showcased_at, showcase_title, showcase_tagline, tier,
+            tier3_amount_cents
      FROM sessions WHERE id = ? AND deleted_at IS NULL`,
   )
     .bind(sessionId)
@@ -93,9 +94,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const admin = isAdmin(env, email)
   if (!canAccessSession(email, admin, session)) return forbidden()
 
-  // Compute the line-item amount. amountCadOverride is admin-only and only
-  // honored for tier3 (where the public copy says "sur devis post-triage").
-  // Visitors can never override; their request hits the canonical map.
+  // Compute the line-item amount. Tier 3 precedence:
+  //   1. Admin's amountCadOverride on this request (escape hatch for one-offs)
+  //   2. sessions.tier3_amount_cents (the persisted admin quote — what the
+  //      visitor's self-pay button uses)
+  //   3. TIER_AMOUNTS['tier3'] baseline (last-resort fallback so the endpoint
+  //      doesn't 4xx; admin should have quoted before exposing the button)
   let amountCents = 0
   if (kind !== 'custodian-sub') {
     if (admin && kind === 'tier3' && typeof body.amountCadOverride === 'number') {
@@ -104,6 +108,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         return badRequest('amountCadOverride out of range (100..100000 CAD)')
       }
       amountCents = dollars * 100
+    } else if (kind === 'tier3' && session.tier3_amount_cents != null) {
+      amountCents = session.tier3_amount_cents
     } else {
       amountCents = TIER_AMOUNTS[kind]
     }
@@ -169,18 +175,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     // writes (e.g. if the visitor clicks "Pay" twice; the second attempt fails
     // here and we surface 409). For now, accept that and let Stripe show its
     // own "session expired" page; future polish if it becomes a problem.
-    await env.DB.prepare(
-      `UPDATE payments SET stripe_checkout_session_id = ? WHERE id = ?`,
-    )
+    await env.DB.prepare(`UPDATE payments SET stripe_checkout_session_id = ? WHERE id = ?`)
       .bind(result.id, paymentId)
       .run()
     return ok({ url: result.url, paymentId })
   } catch (err) {
     // Mark the row as failed so admin can see it; throw so the middleware
     // forwards to Sentry with the request context.
-    await env.DB.prepare(
-      `UPDATE payments SET status = 'failed', failure_reason = ? WHERE id = ?`,
-    )
+    await env.DB.prepare(`UPDATE payments SET status = 'failed', failure_reason = ? WHERE id = ?`)
       .bind(err instanceof Error ? err.message.slice(0, 500) : 'unknown', paymentId)
       .run()
     throw err

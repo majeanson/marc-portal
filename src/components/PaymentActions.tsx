@@ -11,12 +11,18 @@ import {
 
 const COPY = {
   fr: {
-    // Project payment section
+    // Project payment section.
+    // Button-label amounts mirror the Intl.NumberFormat output below
+    // (formatCadCents) so the button and the post-payment "Payé · X $"
+    // pill use the same convention. OQLF: thin-space + dollar sign after.
     projectHeading: 'Paiement du projet',
-    payTier1: 'Payer Tier 1 (≈ 300 $) →',
-    payTier2Deposit: 'Payer le dépôt (≈ 750 $) →',
-    payTier2Final: 'Payer le solde (≈ 750 $) →',
+    payTier1: 'Payer Tier 1 (≈ 300,00 $) →',
+    payTier2Deposit: 'Payer le dépôt (≈ 750,00 $) →',
+    payTier2Final: 'Payer le solde (≈ 750,00 $) →',
     payTier3: 'Payer (sur devis) →',
+    payTier3Quoted: (amount: string) => `Payer ${amount} →`,
+    tier3PendingQuote: 'Devis Tier 3 en attente — Marc t’envoie le montant après triage.',
+    askFirst: 'Question avant de payer ? Écris-moi ↓',
     paid: 'Payé ✓',
     paidAmount: (amount: string) => `Payé · ${amount}`,
     checkoutPending: 'Ouverture du paiement…',
@@ -48,10 +54,13 @@ const COPY = {
   },
   en: {
     projectHeading: 'Project payment',
-    payTier1: 'Pay Tier 1 (≈ $300) →',
-    payTier2Deposit: 'Pay deposit (≈ $750) →',
-    payTier2Final: 'Pay final balance (≈ $750) →',
+    payTier1: 'Pay Tier 1 (≈ $300.00) →',
+    payTier2Deposit: 'Pay deposit (≈ $750.00) →',
+    payTier2Final: 'Pay final balance (≈ $750.00) →',
     payTier3: 'Pay (quoted amount) →',
+    payTier3Quoted: (amount: string) => `Pay ${amount} →`,
+    tier3PendingQuote: 'Tier 3 quote pending — Marc sends the amount after triage.',
+    askFirst: 'Question before paying? Drop me a note ↓',
     paid: 'Paid ✓',
     paidAmount: (amount: string) => `Paid · ${amount}`,
     checkoutPending: 'Opening checkout…',
@@ -102,7 +111,22 @@ const COPY = {
  * and visitors should see it presented clearly, not buried as a side
  * button. See /handoff for the full narrative this mirrors.
  */
-export function PaymentActions({ session, lang }: { session: SessionRow; lang: Lang }) {
+export function PaymentActions({
+  session,
+  lang,
+  variant = 'full',
+}: {
+  session: SessionRow
+  lang: Lang
+  /** 'full' (default): sectioned block with test banner, project section,
+   *  custodian section with explainer copy. Used on /session/:id.
+   * 'compact': just the primary Pay button (or paid pill / pending hint) and
+   *  a single-line custodian status pill if relevant. No section headings,
+   *  no explainer text. Used on /me cards to avoid a wall of repeated copy
+   *  across multiple sessions.
+   */
+  variant?: 'compact' | 'full'
+}) {
   const copy = COPY[lang]
   const langPrefix = lang === 'en' ? '/en' : ''
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
@@ -162,7 +186,14 @@ export function PaymentActions({ session, lang }: { session: SessionRow; lang: L
       payButton = { label: copy.payTier2Final, kind: 'tier2-final' }
     }
   } else if (session.tier === 3 && !summary.hasPaidDeposit) {
-    payButton = { label: copy.payTier3, kind: 'tier3' }
+    // Tier 3 has no canonical price — admin quotes via SessionPage's Tier3
+    // amount input, persisted as tier3_amount_cents. Show the actual amount
+    // in the button label when quoted; suppress the button when not (a
+    // "quote pending" hint renders in its place below).
+    if (session.tier3_amount_cents != null) {
+      const formatted = formatCadCents(session.tier3_amount_cents, lang)
+      payButton = { label: copy.payTier3Quoted(formatted), kind: 'tier3' }
+    }
   }
 
   const custodianState: 'none' | 'active' | 'past_due' | 'ended' =
@@ -185,18 +216,82 @@ export function PaymentActions({ session, lang }: { session: SessionRow; lang: L
   const paidLabel =
     paidOneTimeCents > 0 ? copy.paidAmount(formatCadCents(paidOneTimeCents, lang)) : copy.paid
 
-  // Decide whether to render the project-payment section.
-  //   'pay'    — payButton is set (tier 1/2/3, work owing)
-  //   'paid'   — at least one one-time row paid (any tier)
-  //   'hidden' — tier not set (null) OR tier 0 (free engagement)
-  // The custodian section is independent and can render below regardless.
-  const projectState: 'pay' | 'paid' | 'hidden' =
-    session.tier === null || session.tier === 0 ? 'hidden' : payButton ? 'pay' : 'paid'
+  // Decide what to render in the project-payment section.
+  //   'pay'           — payButton is set (tier 1/2/3, work owing)
+  //   'paid'          — at least one one-time row paid (any tier)
+  //   'pending-quote' — tier 3, admin hasn't set tier3_amount_cents yet,
+  //                     no payment yet. Show a "quote pending" hint instead
+  //                     of a Pay button or a misleading "Paid" pill.
+  //   'hidden'        — tier not set (null) OR tier 0 (free engagement)
+  // The custodian section is gated separately below.
+  const projectState: 'pay' | 'paid' | 'pending-quote' | 'hidden' =
+    session.tier === null || session.tier === 0
+      ? 'hidden'
+      : payButton
+        ? 'pay'
+        : session.tier === 3 && session.tier3_amount_cents == null && !summary.hasPaidDeposit
+          ? 'pending-quote'
+          : 'paid'
 
-  // Don't render the whole block when there is literally nothing to show.
-  // (Tier-0 free engagement with no custodian sub — clean card.)
-  if (projectState === 'hidden' && custodianState === 'none') {
+  // Gate the custodian section. The decision is post-engagement per /handoff
+  // ("at the end of each engagement, two modes possible"), so don't surface
+  // the upsell to visitors who haven't bought work yet — that reads as
+  // pressure. Show when:
+  //   - the visitor has paid for any one-time work (engagement underway), OR
+  //   - a custodian state already exists on the session (active / past_due /
+  //     ended — surface management or re-subscribe regardless of project state)
+  // Tier-0 free engagements with no sub history: silent.
+  const showCustodianSection = summary.hasPaidDeposit || custodianState !== 'none'
+
+  // Don't render the whole block when there's literally nothing to show.
+  if (projectState === 'hidden' && !showCustodianSection) {
     return null
+  }
+
+  // Compact variant: /me cards. Show just the essentials so a visitor with
+  // 5 sessions doesn't see 5 walls of identical explainer copy. The full
+  // explainer lives on /session/:id; we link there for the custodian
+  // decision when relevant.
+  if (variant === 'compact') {
+    return (
+      <div className="me-portal__card-payments me-portal__card-payments--compact">
+        {summary.stripeMode === 'test' && (
+          <span
+            className="me-portal__pay-test-chip mono"
+            title={copy.testModeBody}
+            aria-label={copy.testModeBody}
+          >
+            {copy.testModeBadge}
+          </span>
+        )}
+        {projectState === 'pay' && payButton && (
+          <button
+            type="button"
+            className="me-portal__pay-btn"
+            onClick={() => onPay(payButton!.kind)}
+            disabled={pending !== 'idle'}
+          >
+            {pending === 'checkout' ? copy.checkoutPending : payButton.label}
+          </button>
+        )}
+        {projectState === 'paid' && <span className="me-portal__pay-paid">{paidLabel}</span>}
+        {projectState === 'pending-quote' && (
+          <span className="me-portal__pay-muted">{copy.tier3PendingQuote}</span>
+        )}
+        {showCustodianSection && (
+          <span
+            className={`me-portal__pay-cust-pill me-portal__pay-cust-pill--${custodianState} mono`}
+          >
+            {copy.custodianHeading}
+            {' · '}
+            {custodianState === 'active' && copy.custodianActive}
+            {custodianState === 'past_due' && copy.custodianPastDueLabel}
+            {custodianState === 'ended' && copy.custodianEnded}
+            {custodianState === 'none' && copy.custodianOptional}
+          </span>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -225,67 +320,77 @@ export function PaymentActions({ session, lang }: { session: SessionRow; lang: L
               </button>
             )}
             {projectState === 'paid' && <span className="me-portal__pay-paid">{paidLabel}</span>}
+            {projectState === 'pending-quote' && (
+              <span className="me-portal__pay-muted">{copy.tier3PendingQuote}</span>
+            )}
           </div>
+          {projectState === 'pay' && (
+            <a href="#thread" className="me-portal__pay-ask-link mono">
+              {copy.askFirst}
+            </a>
+          )}
         </section>
       )}
 
-      <section
-        className={`me-portal__pay-section me-portal__pay-custodian me-portal__pay-custodian--${custodianState}`}
-        aria-labelledby={`pay-cust-${session.id}`}
-      >
-        <header className="me-portal__pay-section-head">
-          <h3 className="me-portal__pay-section-title mono" id={`pay-cust-${session.id}`}>
-            {copy.custodianHeading}{' '}
-            <span className="me-portal__pay-section-tag mono">
-              {custodianState === 'active' && copy.custodianActive}
-              {custodianState === 'past_due' && copy.custodianPastDueLabel}
-              {custodianState === 'ended' && copy.custodianEnded}
-              {custodianState === 'none' && copy.custodianOptional}
-            </span>
-          </h3>
-          <a className="me-portal__pay-details-link mono" href={`${langPrefix}/handoff`}>
-            {copy.custodianDetailsLink}
-          </a>
-        </header>
-        <p className="me-portal__pay-custodian-body">
-          {custodianState === 'active' && copy.custodianActiveBody}
-          {custodianState === 'past_due' && copy.custodianPastDueBody}
-          {custodianState === 'ended' && copy.custodianEndedBody}
-          {custodianState === 'none' && copy.custodianPitch}
-        </p>
-        <div className="me-portal__pay-section-body">
-          {custodianState === 'none' && (
-            <button
-              type="button"
-              className="me-portal__pay-btn"
-              onClick={() => onPay('custodian-sub')}
-              disabled={pending !== 'idle'}
-            >
-              {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribe}
-            </button>
-          )}
-          {custodianState === 'ended' && (
-            <button
-              type="button"
-              className="me-portal__pay-btn"
-              onClick={() => onPay('custodian-sub')}
-              disabled={pending !== 'idle'}
-            >
-              {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribeAgain}
-            </button>
-          )}
-          {(custodianState === 'active' || custodianState === 'past_due') && (
-            <button
-              type="button"
-              className="me-portal__pay-portal link-btn"
-              onClick={onPortal}
-              disabled={pending !== 'idle'}
-            >
-              {custodianState === 'past_due' ? copy.manageSubPastDue : copy.manageSub}
-            </button>
-          )}
-        </div>
-      </section>
+      {showCustodianSection && (
+        <section
+          className={`me-portal__pay-section me-portal__pay-custodian me-portal__pay-custodian--${custodianState}`}
+          aria-labelledby={`pay-cust-${session.id}`}
+        >
+          <header className="me-portal__pay-section-head">
+            <h3 className="me-portal__pay-section-title mono" id={`pay-cust-${session.id}`}>
+              {copy.custodianHeading}{' '}
+              <span className="me-portal__pay-section-tag mono">
+                {custodianState === 'active' && copy.custodianActive}
+                {custodianState === 'past_due' && copy.custodianPastDueLabel}
+                {custodianState === 'ended' && copy.custodianEnded}
+                {custodianState === 'none' && copy.custodianOptional}
+              </span>
+            </h3>
+            <a className="me-portal__pay-details-link mono" href={`${langPrefix}/handoff`}>
+              {copy.custodianDetailsLink}
+            </a>
+          </header>
+          <p className="me-portal__pay-custodian-body">
+            {custodianState === 'active' && copy.custodianActiveBody}
+            {custodianState === 'past_due' && copy.custodianPastDueBody}
+            {custodianState === 'ended' && copy.custodianEndedBody}
+            {custodianState === 'none' && copy.custodianPitch}
+          </p>
+          <div className="me-portal__pay-section-body">
+            {custodianState === 'none' && (
+              <button
+                type="button"
+                className="me-portal__pay-btn"
+                onClick={() => onPay('custodian-sub')}
+                disabled={pending !== 'idle'}
+              >
+                {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribe}
+              </button>
+            )}
+            {custodianState === 'ended' && (
+              <button
+                type="button"
+                className="me-portal__pay-btn"
+                onClick={() => onPay('custodian-sub')}
+                disabled={pending !== 'idle'}
+              >
+                {pending === 'checkout' ? copy.checkoutPending : copy.paySubscribeAgain}
+              </button>
+            )}
+            {(custodianState === 'active' || custodianState === 'past_due') && (
+              <button
+                type="button"
+                className="me-portal__pay-portal link-btn"
+                onClick={onPortal}
+                disabled={pending !== 'idle'}
+              >
+                {custodianState === 'past_due' ? copy.manageSubPastDue : copy.manageSub}
+              </button>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

@@ -1,0 +1,17 @@
+-- Tier 3 ("sur devis") quoted amount, persisted on the session.
+--
+-- Tier 3 has no canonical price — admin quotes per project after triage.
+-- Until this column existed, admin had two bad options:
+--   1) Mint a Checkout URL via curl with amountCadOverride and email it
+--   2) Let the visitor pay the baseline $3000, then issue an invoice/refund
+--
+-- Storing the quote on the session makes the visitor's "Payer (sur devis)"
+-- button just work — checkout.ts reads tier3_amount_cents when kind='tier3'
+-- and the row has tier=3. Falls back to baseline if NULL (admin hasn't
+-- quoted yet) — visitor sees the button greyed/hinted on the client.
+--
+-- Validation lives in functions/api/sessions/[id].ts:
+--   - admin-only PATCH field
+--   - cents value, 10000 (100 CAD) .. 10000000 (100000 CAD)
+--   - NULL clears
+ALTER TABLE sessions ADD COLUMN tier3_amount_cents INTEGER;

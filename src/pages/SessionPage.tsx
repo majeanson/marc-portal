@@ -119,6 +119,13 @@ const COPY = {
     statusHint: 'Clique une étape pour changer le statut de la session.',
     tierHint:
       'Tier de la session — détermine le bouton « Payer » côté visiteur. T0 = gratuit, pas de bouton.',
+    tier3AmountLabel: 'Montant Tier 3 (CAD)',
+    tier3AmountHint:
+      'Saisis le montant convenu en dollars canadiens. Le bouton « Payer (sur devis) » apparaît côté visiteur quand cette valeur est définie. Laisse vide pour cacher le bouton (pas de devis encore).',
+    tier3AmountPlaceholder: 'ex. 4500',
+    tier3AmountSave: 'Enregistrer',
+    tier3AmountClear: 'Effacer',
+    tier3AmountInvalid: 'Entre un montant entre 100 et 100 000 $.',
     statusConfirmReject: (id: string) =>
       `Marquer la session ${id} comme refusée ? Le visiteur le verra. Continue ?`,
     statusConfirmShip: (id: string) =>
@@ -138,7 +145,7 @@ const COPY = {
     saveError: 'Échec de l’enregistrement — réessaie.',
     editHint: 'Clique un champ pour le modifier, puis clique ailleurs pour enregistrer.',
     staleConflict:
-      'Cette session a été modifiée ailleurs. On l’a rechargée — ré-applique ton changement.',
+      'Cette session a été modifiée ailleurs. Elle a été rechargée — ré-applique ton changement.',
     requiredEmptyConfirm: 'Ce champ est requis. Le vider quand même ?',
     typeChangeWarn: 'Changer le type peut rendre tes autres réponses invalides. Continuer ?',
     withdrawCta: 'Retirer cette session',
@@ -177,6 +184,13 @@ const COPY = {
     changeStatus: 'Change status',
     statusHint: 'Click a stage to change the session status.',
     tierHint: 'Session tier — drives the visitor-side "Pay" button. T0 = free, no button.',
+    tier3AmountLabel: 'Tier 3 amount (CAD)',
+    tier3AmountHint:
+      'Enter the agreed-upon dollar amount. The visitor\'s "Pay (quoted)" button appears once this is set. Leave blank to hide the button (no quote yet).',
+    tier3AmountPlaceholder: 'e.g. 4500',
+    tier3AmountSave: 'Save',
+    tier3AmountClear: 'Clear',
+    tier3AmountInvalid: 'Enter an amount between $100 and $100,000.',
     statusConfirmReject: (id: string) =>
       `Mark session ${id} as rejected? The visitor will see this. Continue?`,
     statusConfirmShip: (id: string) =>
@@ -196,7 +210,7 @@ const COPY = {
     saveError: 'Save failed — try again.',
     editHint: 'Click any field to edit, then click outside to save.',
     staleConflict:
-      'This session was changed somewhere else. We reloaded it — re-apply your change.',
+      'This session was changed somewhere else. It’s been reloaded — re-apply your change.',
     requiredEmptyConfirm: 'This field is required. Clear it anyway?',
     typeChangeWarn: 'Changing the type may invalidate your other answers. Continue?',
     withdrawCta: 'Withdraw this session',
@@ -447,6 +461,25 @@ export function SessionPage({ lang }: { lang: Lang }) {
     }
   }
 
+  // Admin-only tier-3 quoted amount setter. Pass cents or null. Validated
+  // server-side (10000..10000000); ifUpdatedAt enforces optimistic concurrency.
+  const onTier3AmountChange = async (cents: number | null) => {
+    if (!id || !session) return
+    try {
+      const r = await patchSession(id, {
+        tier3AmountCents: cents,
+        ifUpdatedAt: session.updated_at,
+      })
+      setSession(r.session)
+      setStaleConflict(false)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setStaleConflict(true)
+        await refresh()
+      }
+    }
+  }
+
   // Optimistic intake save. IntakeSummary updates its visible value
   // optimistically via local input state; here we mirror that by writing
   // intake_json before the request. On 409 (concurrent edit) we refresh
@@ -662,6 +695,19 @@ export function SessionPage({ lang }: { lang: Lang }) {
               </>
             )}
 
+            {isAdmin && session.tier === 3 && (
+              <Tier3AmountInput
+                // key resets local draft when the persisted value changes
+                // (post-save, post-409 reload). Avoids an effect+setState
+                // pattern the lint rule rejects.
+                key={String(session.tier3_amount_cents ?? '')}
+                lang={lang}
+                copy={t}
+                cents={session.tier3_amount_cents}
+                onSave={onTier3AmountChange}
+              />
+            )}
+
             {session.status === 'active' && <PaymentActions session={session} lang={lang} />}
 
             <SessionHeader
@@ -873,7 +919,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
               onDeleted={onAdvDeleted}
             />
 
-            <section className="intake__step session-frame__panel">
+            <section id="thread" className="intake__step session-frame__panel">
               <h2>{t.threadHeading}</h2>
               {threadItems.length === 0 ? (
                 <p className="thread__empty">{t.none}</p>
@@ -1098,5 +1144,108 @@ function NapkinSection({ lang, napkin }: { lang: Lang; napkin: ParsedNapkin }) {
         />
       </div>
     </div>
+  )
+}
+
+/**
+ * Admin-only input for the Tier 3 quoted amount. Local state tracks the
+ * draft (in dollars, as the admin types); commit on Save translates to cents
+ * and PATCHes. Clear sends null which both removes the value AND hides the
+ * visitor's "Payer (sur devis)" button.
+ *
+ * Validation: 100..100000 dollars (matches server-side cents range). Invalid
+ * input shows an inline error and keeps the draft.
+ */
+function Tier3AmountInput({
+  lang: _lang,
+  copy,
+  cents,
+  onSave,
+}: {
+  lang: Lang
+  copy: (typeof COPY)[Lang]
+  cents: number | null
+  onSave: (cents: number | null) => Promise<void>
+}) {
+  // Parent passes key={String(cents)} so when the persisted value changes
+  // (post-save, post-409 reload), React unmounts and this state re-initializes
+  // from the new prop — no effect+setState dance.
+  const initial = cents != null ? String(Math.round(cents / 100)) : ''
+  const [draft, setDraft] = useState(initial)
+  const [error, setError] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = draft.trim()
+    if (trimmed === '') {
+      // Empty submit = clear (same as the dedicated Clear button).
+      setSaving(true)
+      await onSave(null)
+      setSaving(false)
+      return
+    }
+    const dollars = Number(trimmed)
+    if (
+      !Number.isFinite(dollars) ||
+      !Number.isInteger(dollars) ||
+      dollars < 100 ||
+      dollars > 100_000
+    ) {
+      setError(true)
+      return
+    }
+    setError(false)
+    setSaving(true)
+    await onSave(dollars * 100)
+    setSaving(false)
+  }
+
+  const onClear = async () => {
+    setSaving(true)
+    setDraft('')
+    await onSave(null)
+    setSaving(false)
+  }
+
+  return (
+    <form className="session-frame__tier3" onSubmit={onSubmit}>
+      <label className="field__label">
+        {copy.tier3AmountLabel}
+        <div className="session-frame__tier3-row">
+          <span className="session-frame__tier3-prefix mono">$</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={100}
+            max={100000}
+            step={1}
+            value={draft}
+            placeholder={copy.tier3AmountPlaceholder}
+            onChange={(e) => {
+              setDraft(e.target.value)
+              if (error) setError(false)
+            }}
+            disabled={saving}
+            className="session-frame__tier3-input mono"
+          />
+          <button
+            type="submit"
+            className="link-btn mono"
+            disabled={saving || draft.trim() === initial}
+          >
+            {copy.tier3AmountSave}
+          </button>
+          {cents != null && (
+            <button type="button" className="link-btn mono" onClick={onClear} disabled={saving}>
+              {copy.tier3AmountClear}
+            </button>
+          )}
+        </div>
+      </label>
+      <p className="field__hint session-frame__strip-hint">
+        {error ? copy.tier3AmountInvalid : copy.tier3AmountHint}
+      </p>
+    </form>
   )
 }

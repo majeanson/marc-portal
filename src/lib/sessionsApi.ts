@@ -32,6 +32,10 @@ export interface SessionRow {
   showcase_title: string | null
   showcase_tagline: string | null
   tier: SessionTier | null
+  /** Tier-3 admin-quoted amount in CAD cents. NULL when the admin hasn't
+   * yet set a quote. PaymentActions disables the "Payer (sur devis)" button
+   * client-side when this is NULL on a tier-3 session. */
+  tier3_amount_cents: number | null
 }
 
 export interface AttachmentRow {
@@ -88,6 +92,8 @@ export function patchSession(
     showcase?: ShowcasePatch
     /** Admin-only tier classification. Pass null to clear. */
     tier?: SessionTier | null
+    /** Admin-only tier-3 quoted amount in CAD cents. Pass null to clear. */
+    tier3AmountCents?: number | null
   },
 ): Promise<{ session: SessionRow }> {
   return api(`/api/sessions/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch })

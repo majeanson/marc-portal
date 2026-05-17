@@ -121,6 +121,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     showcase_title: null,
     showcase_tagline: null,
     tier: null,
+    tier3_amount_cents: null,
   }
   return ok({ session: row })
 }

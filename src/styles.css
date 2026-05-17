@@ -3033,6 +3033,50 @@ button.intake__progress-step:focus-visible {
   outline: none;
 }
 
+/* Compact PaymentActions variant — single-row layout used on /me cards
+   (one per session). Inline pill row instead of stacked sections. The
+   full version with section headings + explainer copy lives on
+   /session/:id where there's room to breathe. */
+.me-portal__card-payments--compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.me-portal__pay-test-chip {
+  border: 1px solid #c33;
+  color: #c33;
+  background: #fff5f5;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: help;
+}
+.me-portal__pay-cust-pill {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-app);
+  color: var(--text-soft);
+}
+.me-portal__pay-cust-pill--active {
+  background: #eaf5ec;
+  color: #2a6d3a;
+  border-color: #cfe6d4;
+}
+.me-portal__pay-cust-pill--past_due {
+  background: #fff4e0;
+  color: #8a5a00;
+  border-color: #f1d8a0;
+}
+
 /* Payment block — appears below the /me card link on active sessions and
    inside the /session/:id page. Stacks up to three sections: TEST MODE
    banner, "Project payment", "Custodian mode". Sits inside the
@@ -3104,6 +3148,21 @@ button.intake__progress-step:focus-visible {
 .me-portal__pay-muted {
   color: var(--text-soft);
   font-style: italic;
+}
+/* Quiet "ask before paying" link below the primary Pay button. Same color
+   as the details-link in the custodian section — the visitor's attention
+   stays on the Pay button; this is the safety valve, not a competing CTA. */
+.me-portal__pay-ask-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-soft);
+  text-decoration: none;
+}
+.me-portal__pay-ask-link:hover,
+.me-portal__pay-ask-link:focus-visible {
+  color: var(--text);
+  text-decoration: underline;
 }
 .me-portal__pay-custodian-body {
   margin: 0 0 10px;
@@ -4703,6 +4762,35 @@ button:focus-visible,
   margin: -6px 2px 18px;
   font-size: 11px;
   color: var(--text-soft);
+}
+/* Tier-3 quoted-amount admin input. Sits between the tier strip and the
+   PaymentActions block, only when isAdmin && session.tier===3. */
+.session-frame__tier3 {
+  margin: 4px 2px 18px;
+}
+.session-frame__tier3-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.session-frame__tier3-prefix {
+  color: var(--text-soft);
+  font-size: 14px;
+}
+.session-frame__tier3-input {
+  flex: 0 0 auto;
+  width: 110px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  border-radius: 4px;
+  font-size: 14px;
+}
+.session-frame__tier3-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
 }
 .session-frame__panel {
   margin-bottom: 28px;
