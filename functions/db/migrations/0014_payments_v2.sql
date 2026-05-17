@@ -1,6 +1,11 @@
 -- Payments hardening: partial-refund accounting, webhook event dedupe,
--- admin_alerts fallback channel. Lands after 0015_session_tier3_amount.sql
--- with no data migration needed — defaults cover all existing rows.
+-- admin_alerts fallback channel. Lands after 0013_payments.sql with no data
+-- migration needed — defaults cover all existing rows.
+--
+-- File-numbering note: this migration was applied to prod by hand under the
+-- name 0014 BEFORE 0015_session_tier3_amount.sql was merged. Wrangler
+-- records by filename, so the numbering reflects the prod d1_migrations
+-- log, not the strict chronological order in this repo's git history.
 
 -- Partial-refund accounting. Stripe sends amount_refunded on charge.refunded;
 -- store it so a $100 refund on a $1500 payment is not indistinguishable from
