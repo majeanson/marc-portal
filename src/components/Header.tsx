@@ -2,26 +2,13 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
+import { swapLangPath } from '../lib/swapLangPath'
 import { ThemeToggle } from './ThemeToggle'
 
 // Feature-detect View Transitions API for the language swap. Firefox lacks
 // it today; on those browsers the navigate runs without the dissolve.
 type DocumentWithViewTransition = Document & {
   startViewTransition?: (cb: () => void) => unknown
-}
-
-/**
- * Compute the target path on the *other* language for the current location.
- * Keeps the path stable across the swap so visitors land on the same page
- * (e.g. /projects ↔ /en/projects, not /projects → /en).
- */
-function swapLangPath(pathname: string, search: string, hash: string, toEn: boolean): string {
-  // Normalise the trailing slash so we don't end up with "/en/".
-  const clean = pathname.replace(/\/+$/, '') || '/'
-  const isOnEn = clean === '/en' || clean.startsWith('/en/')
-  const base = isOnEn ? clean.replace(/^\/en/, '') || '/' : clean
-  const next = toEn ? (base === '/' ? '/en' : `/en${base}`) : base
-  return `${next}${search}${hash}`
 }
 
 export function Header({ lang }: { lang: Lang }) {
