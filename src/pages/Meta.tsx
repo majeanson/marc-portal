@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PageMast } from '../components/PageMast'
 import manifest from '../data/lac-features.json'
 import { formatDate } from '../lib/format'
 
@@ -138,11 +139,12 @@ export function Meta({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section">
           <div className="section__inner privacy meta-page">
-            <a className="showcase-page__back" href={lang === 'fr' ? '/' : '/en'}>
-              {t.backHome}
-            </a>
-
-            <header className="meta-page__hero">
+            <PageMast
+              folio={lang === 'fr' ? '№ 05 — sous le capot' : '№ 05 — under the hood'}
+              stampLabel="LAC"
+              stampSub={lang === 'fr' ? 'LIFE · AS · CODE' : 'LIFE · AS · CODE'}
+              back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}
+            >
               <div className="section__eyebrow">{t.eyebrow}</div>
               <h1>{t.title}</h1>
               <p className="privacy__intro">{t.lead}</p>
@@ -150,7 +152,7 @@ export function Meta({ lang }: { lang: Lang }) {
               <p className="mono privacy__asof">
                 {t.countLabel(m.features.length)} · {t.asOf(m.generatedAt)}
               </p>
-            </header>
+            </PageMast>
 
             <ul className="meta-features">
               {m.features.map((f) => {

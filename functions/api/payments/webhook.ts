@@ -29,11 +29,12 @@
 // should NOT be retried.
 
 import { randomTokenB64url } from '../../_lib/bytes'
-import { sendTier2DepositReceiptAndFinalPrompt } from '../../_lib/email'
+import { sendAdminAlert, sendTier2DepositReceiptAndFinalPrompt } from '../../_lib/email'
 import type { Env } from '../../_lib/env'
 import { ok, unauthorized } from '../../_lib/json'
 import { primaryAdminEmail } from '../../_lib/sessions'
 import { type StripeEvent, type StripeObject, verifyWebhookSignature } from '../../_lib/stripe'
+import { getLang, getLangExplicit, isValidLang } from '../../_lib/userPrefs'
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!env.STRIPE_WEBHOOK_SECRET) {
@@ -90,10 +91,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         await handleInvoicePaid(env, event.data.object)
         break
       case 'invoice.payment_failed':
-        await handleInvoiceFailed(env, event.data.object)
+        await handleInvoiceFailed(env, request, event.data.object)
         break
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(env, event.data.object)
+        await handleSubscriptionDeleted(env, request, event.data.object)
         break
       case 'customer.subscription.updated':
         // Logged for visibility; no D1 mutation. The terminal event
@@ -182,7 +183,17 @@ async function handleCheckoutCompleted(env: Env, obj: StripeObject, origin: stri
         .bind(sessionId)
         .first<{ email: string }>()
       if (session?.email) {
-        const lang: 'fr' | 'en' = obj.metadata?.lang === 'en' ? 'en' : 'fr'
+        // Resolution order:
+        //   1. Explicit account pref (user_prefs row OR session intake_json
+        //      that says fr/en) — wins unconditionally so a visitor who
+        //      picked FR after browsing the EN-Checkout still gets FR.
+        //   2. Checkout-time metadata.lang — the language they were
+        //      browsing in at the moment they clicked Pay. Used only when
+        //      no explicit account-level signal exists.
+        //   3. 'fr' default.
+        const explicit = await getLangExplicit(env.DB, session.email)
+        const metaLang = obj.metadata?.lang
+        const lang: 'fr' | 'en' = explicit ?? (isValidLang(metaLang) ? metaLang : 'fr')
         await sendTier2DepositReceiptAndFinalPrompt(
           env.RESEND_API_KEY,
           session.email,
@@ -272,7 +283,7 @@ async function handleInvoicePaid(env: Env, obj: StripeObject): Promise<void> {
   }
 }
 
-async function handleInvoiceFailed(env: Env, obj: StripeObject): Promise<void> {
+async function handleInvoiceFailed(env: Env, request: Request, obj: StripeObject): Promise<void> {
   const subscriptionId = obj.subscription ?? null
   if (!subscriptionId) return
   await env.DB.prepare(
@@ -281,10 +292,18 @@ async function handleInvoiceFailed(env: Env, obj: StripeObject): Promise<void> {
     .bind(subscriptionId)
     .run()
   // Tell Marc so he can email the client before Stripe gives up retrying.
-  await maybeNotifyAdmin(env, `Custodian sub renewal failed (subscription ${subscriptionId})`)
+  await maybeNotifyAdmin(
+    env,
+    request,
+    `Custodian sub renewal failed (subscription ${subscriptionId})`,
+  )
 }
 
-async function handleSubscriptionDeleted(env: Env, obj: StripeObject): Promise<void> {
+async function handleSubscriptionDeleted(
+  env: Env,
+  request: Request,
+  obj: StripeObject,
+): Promise<void> {
   const subscriptionId = obj.id
   // Per /handoff: a canceled sub auto-switches the engagement back to "Tout
   // à toi" — same effect as the visitor choosing it from day 1. We mark it
@@ -299,6 +318,7 @@ async function handleSubscriptionDeleted(env: Env, obj: StripeObject): Promise<v
     .run()
   await maybeNotifyAdmin(
     env,
+    request,
     `Custodian sub canceled (subscription ${subscriptionId}) — initiate transfer to 'Tout à toi'`,
   )
 }
@@ -355,28 +375,14 @@ async function handleChargeRefunded(env: Env, obj: StripeObject): Promise<void> 
  * losing one of these to a transient outage means the auto-switch-to-
  * tout-a-toi happens silently. The alerts table is the safety net.
  */
-async function maybeNotifyAdmin(env: Env, body: string): Promise<void> {
+async function maybeNotifyAdmin(env: Env, request: Request, body: string): Promise<void> {
   const to = primaryAdminEmail(env.ADMIN_EMAILS)
   let emailDelivered = false
   if (to && env.RESEND_API_KEY) {
     try {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Marc Portal <noreply@marcportal.com>',
-          to,
-          subject: '[marc-portal] Stripe alert',
-          text: body,
-        }),
-      })
-      emailDelivered = res.ok
-      if (!res.ok) {
-        console.error('admin notify: resend non-2xx', res.status)
-      }
+      const lang = await getLang(env.DB, to)
+      const origin = new URL(request.url).origin
+      emailDelivered = await sendAdminAlert(env.RESEND_API_KEY, to, origin, body, lang)
     } catch (err) {
       console.error('admin notify failed', err)
     }

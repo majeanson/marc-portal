@@ -17,12 +17,8 @@ import {
   unauthorized,
 } from '../../../_lib/json'
 import { rateLimitCheck, rateLimitSweep } from '../../../_lib/ratelimit'
-import {
-  canAccessSession,
-  loadSession,
-  primaryAdminEmail,
-  visitorLang,
-} from '../../../_lib/sessions'
+import { canAccessSession, loadSession, primaryAdminEmail } from '../../../_lib/sessions'
+import { getLang } from '../../../_lib/userPrefs'
 import type { MessageRow } from '../../../_lib/sessions'
 import {
   listAttachmentsForMessages,
@@ -161,6 +157,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   if (author === 'visitor') {
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     if (marc) {
+      const marcLang = await getLang(env.DB, marc)
       await sendVisitorMessageNotification(
         env.RESEND_API_KEY,
         marc,
@@ -168,17 +165,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
         id,
         origin,
         body,
+        marcLang,
       )
     }
   } else {
     // author === 'marc' → email the visitor with the preview + link.
+    const visitorPrefLang = await getLang(env.DB, session.email)
     await sendMarcMessageNotification(
       env.RESEND_API_KEY,
       session.email,
       id,
       origin,
       body,
-      visitorLang(session),
+      visitorPrefLang,
     )
   }
 

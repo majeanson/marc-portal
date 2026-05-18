@@ -188,19 +188,3 @@ export function isTriageAtCap(c: CapacityCounts): boolean {
 export function isActiveAtCap(c: CapacityCounts): boolean {
   return c.active >= ACTIVE_CAP
 }
-
-/**
- * Best-effort lookup of the visitor's preferred language from the stored
- * intake payload. Falls back to 'fr' (the canonical language of the app)
- * when the row was created without intake_json or it is malformed.
- */
-export function visitorLang(session: SessionRow): 'fr' | 'en' {
-  if (!session.intake_json) return 'fr'
-  try {
-    const obj = JSON.parse(session.intake_json) as { lang?: unknown }
-    if (obj.lang === 'en' || obj.lang === 'fr') return obj.lang
-  } catch {
-    // fall through
-  }
-  return 'fr'
-}

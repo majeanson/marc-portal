@@ -1,27 +1,45 @@
-// Resend wrapper. Free tier: 100/day, 3000/mo. Errors here are logged and
-// swallowed so a transient Resend outage doesn't 500 user-facing endpoints
-// — the magic link still gets stored.
+// Resend wrapper + shared bilingual email shell. Free Resend tier: 100/day,
+// 3000/mo. Send errors are logged and swallowed so a transient Resend
+// outage doesn't 500 user-facing endpoints — the underlying mutation
+// (magic-link token stored, message persisted, etc.) succeeds either way.
 //
-// Sender: noreply@marcportal.com. PREREQUISITE before deploying this constant:
+// Voice & visual:
+//   - Warm, terse, written in Marc's own voice ("Bonjour", "Tu", small
+//     signature, "— Marc, depuis Montréal").
+//   - Cream paper, sage-green accent, terracotta orange for the primary
+//     CTA. Mirrors the portal's styles.css palette so the email feels
+//     like a postcard from the same world.
+//   - Mobile-first single-column layout. No tables, no images embedded —
+//     the wordmark is a CSS gradient block that degrades to bold text in
+//     ancient clients. Dark-mode tested via `prefers-color-scheme`.
+//
+// Bilingual:
+//   - Every email accepts a `lang: 'fr' | 'en'` parameter. Subjects,
+//     leads, CTAs, footer copy are all looked up in renderEmail().
+//   - Recipient language is resolved upstream via getLang() in
+//     functions/_lib/userPrefs.ts (user_prefs table → session.intake_json
+//     fallback → 'fr'). Callers pass whatever lang getLang() returned.
+//
+// Sender: noreply@marcportal.com. PREREQUISITE before deploying this
+// constant:
 //   1. Add marcportal.com on Resend Dashboard → Domains → Add.
 //   2. Add the 4 records Resend lists into Cloudflare DNS:
 //        TXT  resend._domainkey   p=MIGfMA…QIDAQAB
 //        MX   send                feedback-smtp.us-east-1.amazonses.com (pri 10)
 //        TXT  send                v=spf1 include:amazonses.com ~all
 //        TXT  _dmarc              v=DMARC1; p=none;
-//      Resend uses the `send` subdomain pattern for bounce handling, so the
-//      SPF and MX records do NOT collide with CF Email Routing's records at
-//      the apex (different names = no merge required). DKIM selector
-//      `resend._domainkey` similarly doesn't collide with CF's
-//      `cf2024-1._domainkey`.
-//   3. Wait for Resend to flip the domain status to "verified" (typically
-//      2–10 min on Cloudflare's nameservers).
-// Until verified, every send via this FROM fails with 403. If you need to
-// deploy code BEFORE Resend verification finishes, temporarily revert to
+//      Resend uses the `send` subdomain pattern for bounce handling, so
+//      the SPF and MX records do NOT collide with CF Email Routing's
+//      records at the apex.
+//   3. Wait for Resend to flip the domain status to "verified" (2–10 min).
+// Until verified, every send via this FROM fails with 403. To deploy
+// BEFORE verification finishes, temporarily revert to
 // 'Marc Portal <onboarding@resend.dev>' (Resend's shared domain, no DNS
 // required — degrades deliverability but doesn't break sends).
-const RESEND_FROM = 'Marc Portal <noreply@marcportal.com>'
+const RESEND_FROM = 'Marc <noreply@marcportal.com>'
 const RESEND_URL = 'https://api.resend.com/emails'
+
+export type Lang = 'fr' | 'en'
 
 interface ResendPayload {
   from: string
@@ -52,30 +70,258 @@ async function send(apiKey: string, payload: ResendPayload): Promise<boolean> {
   }
 }
 
+// =============================================================================
+// Shared template
+// =============================================================================
+
+interface CtaInput {
+  href: string
+  label: string
+  /** Visual tone of the button. 'primary' = sage green (default for visitor
+   *  emails); 'accent' = terracotta orange (login + payments — moments
+   *  where the button IS the email). */
+  tone?: 'primary' | 'accent'
+}
+
+interface RenderEmailInput {
+  lang: Lang
+  /** Small uppercase eyebrow above the headline. e.g. "session · triage". */
+  eyebrow?: string
+  /** The headline. Short, in the recipient's language. */
+  headline: string
+  /** One or more paragraphs of body copy (HTML allowed — caller is
+   *  responsible for escaping user-supplied strings via escapeHtml). */
+  paragraphs: string[]
+  /** Optional pull-quote block. Rendered with a sage left-rule on cream.
+   *  Used for message previews, vouch bodies, etc. */
+  quote?: string
+  /** Optional primary call-to-action. Omit for purely informational
+   *  notifications. */
+  cta?: CtaInput
+  /** Optional secondary inline link below the CTA (small grey). Usually
+   *  the URL itself, so the recipient can copy/paste if their client
+   *  strips buttons. */
+  altLink?: string
+  /** Sign-off variant. 'marc' = "— Marc, depuis Montréal" (default for
+   *  visitor-facing emails); 'system' = no signature (admin internal
+   *  digests, where Marc IS the recipient). */
+  signoff?: 'marc' | 'system'
+}
+
+const FOOTER_COPY = {
+  fr: {
+    tagline: 'Marc — un projet, fini en une fin de semaine.',
+    sentTo: 'Envoyé à',
+    why: 'Tu reçois ce message parce que tu as un compte ou une session ouverte sur le portail.',
+    prefs: 'Changer ma langue ou mes préférences',
+    privacy: 'Confidentialité',
+    location: 'depuis Montréal',
+    signoffMarc: '— Marc',
+    altLinkLabel: 'Si le bouton ne fonctionne pas, copie ce lien :',
+  },
+  en: {
+    tagline: 'Marc — one project, shipped in a weekend.',
+    sentTo: 'Sent to',
+    why: "You're getting this because you have an account or an open session on the portal.",
+    prefs: 'Change my language or preferences',
+    privacy: 'Privacy',
+    location: 'from Montréal',
+    signoffMarc: '— Marc',
+    altLinkLabel: "If the button doesn't work, copy this link:",
+  },
+} as const
+
+/**
+ * Build the recipient-facing public origin from any function context. Falls
+ * back to the production URL if not provided.
+ */
+function prefsUrl(origin: string, lang: Lang): string {
+  return `${origin}${lang === 'en' ? '/en' : ''}/me#prefs`
+}
+
+function privacyUrl(origin: string, lang: Lang): string {
+  return `${origin}${lang === 'fr' ? '/confidentialite' : '/en/privacy'}`
+}
+
+/**
+ * Pure helper. Composes a Marc-flavoured HTML email and a matching plain
+ * text body. Same input → same output. Callers don't touch HTML or
+ * <style> blocks.
+ */
+function renderEmail(
+  toEmail: string,
+  origin: string,
+  input: RenderEmailInput,
+): { html: string; text: string } {
+  const fc = FOOTER_COPY[input.lang]
+  const tone = input.cta?.tone ?? 'primary'
+  const btnBg = tone === 'accent' ? '#d97706' : '#3d6e4e'
+  const btnShadow =
+    tone === 'accent' ? '0 6px 18px rgba(217,118,6,0.28)' : '0 6px 18px rgba(61,110,78,0.24)'
+
+  const eyebrowBlock = input.eyebrow
+    ? `<div class="mc-eyebrow" style="text-transform:uppercase;letter-spacing:0.14em;font-size:11px;font-weight:600;color:#7a7568;margin:0 0 14px 0;">${escapeHtml(
+        input.eyebrow,
+      )}</div>`
+    : ''
+
+  const paragraphsBlock = input.paragraphs
+    .map(
+      (p) => `<p style="margin:0 0 14px 0;color:#1f1d1a;font-size:16px;line-height:1.55;">${p}</p>`,
+    )
+    .join('\n')
+
+  const quoteBlock = input.quote
+    ? `<blockquote class="mc-quote" style="margin:18px 0;padding:14px 18px;border-left:3px solid #3d6e4e;background:#fbf7ec;color:#3f3c34;font-size:15px;line-height:1.55;border-radius:0 6px 6px 0;font-style:italic;">${input.quote}</blockquote>`
+    : ''
+
+  const ctaBlock = input.cta
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+        <tr><td style="border-radius:8px;background:${btnBg};box-shadow:${btnShadow};">
+          <a href="${escapeAttr(input.cta.href)}" style="display:inline-block;padding:14px 26px;background:${btnBg};color:#fffaf2;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;letter-spacing:0.01em;">${escapeHtml(input.cta.label)}</a>
+        </td></tr>
+      </table>`
+    : ''
+
+  const altLinkBlock = input.altLink
+    ? `<p class="mc-alt" style="margin:0 0 4px 0;color:#8a8478;font-size:12px;line-height:1.5;">${escapeHtml(
+        fc.altLinkLabel,
+      )}</p>
+<p class="mc-alt" style="margin:0 0 14px 0;color:#8a8478;font-size:12px;line-height:1.5;word-break:break-all;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;">${escapeHtml(
+        input.altLink,
+      )}</p>`
+    : ''
+
+  const signoffBlock =
+    input.signoff === 'system'
+      ? ''
+      : `<p style="margin:28px 0 0 0;color:#3f3c34;font-size:15px;line-height:1.5;">${fc.signoffMarc}<br><span style="color:#8a8478;font-size:13px;">${fc.location}</span></p>`
+
+  // The header is a hand-built wordmark (no images). The gradient is a
+  // sunset across cream → terracotta → sage so the email feels like a
+  // place rather than a form. Dark-mode clients invert the cream
+  // automatically and the gradient still reads.
+  const headerBlock = `
+    <div style="background:linear-gradient(135deg,#fbf7ec 0%,#fadfb8 45%,#cfdfd1 100%);padding:28px 28px 22px 28px;border-radius:14px 14px 0 0;">
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;letter-spacing:-0.01em;color:#2a2a26;">marc<span style="color:#d97706;">.</span></div>
+      <div style="margin-top:6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#7a7568;font-weight:600;">${escapeHtml(
+        fc.tagline,
+      )}</div>
+    </div>`
+
+  const footerBlock = `
+    <div class="mc-foot" style="margin-top:32px;padding-top:18px;border-top:1px dashed #d8d2c4;color:#8a8478;font-size:12px;line-height:1.55;">
+      <p style="margin:0 0 6px 0;">${fc.why}</p>
+      <p style="margin:0;">
+        ${fc.sentTo} <span style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#5a554b;">${escapeHtml(toEmail)}</span>
+        · <a href="${escapeAttr(prefsUrl(origin, input.lang))}" style="color:#3d6e4e;text-decoration:underline;">${escapeHtml(fc.prefs)}</a>
+        · <a href="${escapeAttr(privacyUrl(origin, input.lang))}" style="color:#3d6e4e;text-decoration:underline;">${escapeHtml(fc.privacy)}</a>
+      </p>
+    </div>`
+
+  const html = `<!doctype html>
+<html lang="${input.lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>${escapeHtml(input.headline)}</title>
+<style>
+  @media (prefers-color-scheme: dark) {
+    /* Body wrapper too — without this the card looks like it's floating on
+       a bright shelf in dark-mode clients. */
+    body.mc-body-bg { background:#15130f !important; }
+    .mc-card { background:#1c1a17 !important; color:#f3eede !important; }
+    .mc-body { color:#f3eede !important; }
+    .mc-eyebrow { color:#bdb5a3 !important; }
+    .mc-card p, .mc-card h1 { color:#f3eede !important; }
+    .mc-quote { background:#241f17 !important; color:#e2dac6 !important; }
+    .mc-alt   { color:#8a8478 !important; }
+    .mc-foot  { color:#8a8478 !important; border-top-color:#3a3530 !important; }
+  }
+  @media (max-width: 520px) {
+    .mc-shell { padding:12px !important; }
+    .mc-card  { padding:0 !important; }
+    .mc-inner { padding:22px !important; }
+  }
+</style>
+</head>
+<body class="mc-body-bg" style="margin:0;padding:0;background:#f5efe3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;">
+  <div class="mc-shell" style="max-width:560px;margin:0 auto;padding:24px;">
+    <div class="mc-card" style="background:#fffaf2;border-radius:14px;overflow:hidden;box-shadow:0 12px 30px rgba(36,30,20,0.08);">
+      ${headerBlock}
+      <div class="mc-inner" style="padding:28px;">
+        ${eyebrowBlock}
+        <h1 class="mc-body" style="margin:0 0 16px 0;color:#1f1d1a;font-size:22px;font-weight:700;line-height:1.3;letter-spacing:-0.01em;">${escapeHtml(input.headline)}</h1>
+        ${paragraphsBlock}
+        ${quoteBlock}
+        ${ctaBlock}
+        ${altLinkBlock}
+        ${signoffBlock}
+        ${footerBlock}
+      </div>
+    </div>
+  </div>
+</body>
+</html>`
+
+  // Plain-text version. Hand-shaped so it reads like a note, not a
+  // stripped-HTML dump. Includes the bullet-pointed footer at the end.
+  const textParagraphs = input.paragraphs
+    .map((p) => stripHtml(p))
+    .filter(Boolean)
+    .join('\n\n')
+  const textQuote = input.quote ? `\n\n  « ${stripHtml(input.quote)} »\n` : ''
+  const textCta = input.cta ? `\n\n${input.cta.label}:\n${input.cta.href}` : ''
+  const textSignoff = input.signoff === 'system' ? '' : `\n\n${fc.signoffMarc}\n${fc.location}`
+  const textFooter = `\n\n— — —\n${fc.why}\n${fc.prefs}: ${prefsUrl(origin, input.lang)}\n${fc.privacy}: ${privacyUrl(origin, input.lang)}`
+
+  const text = `${input.headline}\n\n${textParagraphs}${textQuote}${textCta}${textSignoff}${textFooter}`
+
+  return { html, text }
+}
+
+// =============================================================================
+// Magic link
+// =============================================================================
+
 export async function sendMagicLink(
   apiKey: string,
   email: string,
   url: string,
-  lang: 'fr' | 'en',
+  lang: Lang,
 ): Promise<boolean> {
-  const subject = lang === 'fr' ? 'Ton lien de connexion' : 'Your sign-in link'
-  const intro =
+  const origin = new URL(url).origin
+  const headline = lang === 'fr' ? 'Ton lien de connexion' : 'Your sign-in link'
+  const p1 =
     lang === 'fr'
-      ? 'Clique ce lien pour te connecter au portail de Marc. Il expire dans 30 minutes.'
-      : "Click this link to sign in to Marc's portal. It expires in 30 minutes."
-  const ignore =
+      ? 'Clique le bouton ci-dessous pour entrer dans ton espace. Aucun mot de passe — le lien fait toute la job.'
+      : 'Hit the button below to walk into your space. No password — the link does the work.'
+  const p2 =
     lang === 'fr'
-      ? "Tu n'as pas demandé ce courriel ? Ignore-le."
-      : "Didn't request this email? Ignore it."
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-<p>${intro}</p>
-<p><a href="${url}" style="display:inline-block;padding:12px 18px;background:#d97706;color:#fff;text-decoration:none;border-radius:6px">${lang === 'fr' ? 'Se connecter' : 'Sign in'}</a></p>
-<p style="color:#666;font-size:14px;word-break:break-all">${url}</p>
-<p style="color:#999;font-size:12px;margin-top:32px">${ignore}</p>
-</body></html>`
-  const text = `${intro}\n\n${url}\n\n${ignore}`
-  return send(apiKey, { from: RESEND_FROM, to: email, subject, html, text })
+      ? 'Le lien expire dans <strong>30 minutes</strong>. Si tu n’as rien demandé, ignore ce courriel et il disparaîtra de lui-même.'
+      : 'The link expires in <strong>30 minutes</strong>. If you didn’t ask for this, ignore the email and it’ll fade away on its own.'
+  const { html, text } = renderEmail(email, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'connexion' : 'sign-in',
+    headline,
+    paragraphs: [p1, p2],
+    cta: { href: url, label: lang === 'fr' ? 'Se connecter' : 'Sign in', tone: 'accent' },
+    altLink: url,
+  })
+  return send(apiKey, {
+    from: RESEND_FROM,
+    to: email,
+    subject: headline,
+    html,
+    text,
+  })
 }
+
+// =============================================================================
+// Visitor → Marc: someone posted in their session
+// =============================================================================
 
 export async function sendVisitorMessageNotification(
   apiKey: string,
@@ -84,54 +330,69 @@ export async function sendVisitorMessageNotification(
   sessionId: string,
   origin: string,
   preview: string,
+  lang: Lang,
 ): Promise<boolean> {
-  // Loi 25 / lock-screen privacy: keep the visitor's email out of the subject
-  // line so a glance at Marc's notifications doesn't leak which client is
-  // talking. The body still carries the full identifying info.
-  const subject = 'New message in the portal'
+  // Loi 25 / lock-screen privacy: keep the visitor's email out of the
+  // subject line so a glance at Marc's notifications doesn't leak which
+  // client is talking. The body still carries the full identifying info.
+  const subject = lang === 'fr' ? 'Nouveau message dans le portail' : 'New message in the portal'
   const url = `${origin}/admin/inbox/${sessionId}`
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-<p><strong>${visitorEmail}</strong> posted in their session:</p>
-<blockquote style="border-left:3px solid #d97706;padding:8px 12px;color:#444;background:#faf7f2">${escapeHtml(preview).slice(0, 400)}</blockquote>
-<p><a href="${url}">Open in admin inbox</a></p>
-</body></html>`
-  const text = `${visitorEmail} posted: ${preview.slice(0, 400)}\n\n${url}`
+  const headline =
+    lang === 'fr' ? 'Quelqu’un t’a écrit dans une session' : 'Someone wrote to you in a session'
+  const p1 =
+    lang === 'fr'
+      ? `<strong>${escapeHtml(visitorEmail)}</strong> a posté un message dans son fil.`
+      : `<strong>${escapeHtml(visitorEmail)}</strong> just posted in their thread.`
+  const { html, text } = renderEmail(marcEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'inbox · visiteur' : 'inbox · visitor',
+    headline,
+    paragraphs: [p1],
+    quote: clip(preview, 400),
+    cta: {
+      href: url,
+      label: lang === 'fr' ? 'Ouvrir dans l’inbox' : 'Open in inbox',
+    },
+    signoff: 'system',
+  })
   return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
 }
 
-/**
- * Marc replied in the visitor's session thread. Visitor gets an email with a
- * preview and a link to the session page (where they can read + reply).
- */
+// =============================================================================
+// Marc → visitor: Marc replied in the session thread
+// =============================================================================
+
 export async function sendMarcMessageNotification(
   apiKey: string,
   visitorEmail: string,
   sessionId: string,
   origin: string,
   preview: string,
-  lang: 'fr' | 'en',
+  lang: Lang,
 ): Promise<boolean> {
   const subject = lang === 'fr' ? 'Marc a répondu à ta session' : 'Marc replied to your session'
-  const intro =
+  const url = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
+  const headline = lang === 'fr' ? 'J’ai répondu à ta session' : 'I replied to your session'
+  const p1 =
     lang === 'fr'
-      ? 'Marc a posté un message dans ta session :'
-      : 'Marc posted a message in your session:'
-  const cta = lang === 'fr' ? 'Ouvrir la session' : 'Open the session'
-  const url = `${origin}${lang === 'fr' ? '' : '/en'}/session/${sessionId}`
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-<p>${intro}</p>
-<blockquote style="border-left:3px solid #3d6e4e;padding:8px 12px;color:#444;background:#fbf7ec">${escapeHtml(preview).slice(0, 400)}</blockquote>
-<p><a href="${url}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">${cta}</a></p>
-<p style="color:#999;font-size:12px;word-break:break-all">${url}</p>
-</body></html>`
-  const text = `${intro}\n\n${preview.slice(0, 400)}\n\n${cta}: ${url}`
+      ? 'Voici l’essentiel — le fil complet vit sur la page de ta session.'
+      : 'Here’s the gist — the full thread lives on your session page.'
+  const { html, text } = renderEmail(visitorEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'session · message' : 'session · message',
+    headline,
+    paragraphs: [p1],
+    quote: clip(preview, 400),
+    cta: { href: url, label: lang === 'fr' ? 'Ouvrir la session' : 'Open the session' },
+    altLink: url,
+  })
   return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
 }
 
-/**
- * Status of the visitor's session changed. They get a short email in their
- * own language with the new status and a deep link to the session.
- */
+// =============================================================================
+// Status change
+// =============================================================================
+
 export async function sendStatusChangeNotification(
   apiKey: string,
   visitorEmail: string,
@@ -139,167 +400,176 @@ export async function sendStatusChangeNotification(
   fromStatus: string,
   toStatus: string,
   origin: string,
-  lang: 'fr' | 'en',
+  lang: Lang,
 ): Promise<boolean> {
-  const langPrefix = lang === 'en' ? '/en' : ''
-  const url = `${origin}${langPrefix}/session/${sessionId}`
+  const url = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const fromLabel = statusLabel(fromStatus, lang)
   const toLabel = statusLabel(toStatus, lang)
   const subject =
     lang === 'fr' ? `Ta session est maintenant : ${toLabel}` : `Your session is now: ${toLabel}`
-  const lead =
+  const headline =
+    lang === 'fr' ? `Ta session passe à « ${toLabel} »` : `Your session moved to “${toLabel}”`
+  const p1 =
     lang === 'fr'
-      ? `Marc a déplacé ta session de <code>${escapeHtml(fromLabel)}</code> à <code>${escapeHtml(toLabel)}</code>.`
-      : `Marc moved your session from <code>${escapeHtml(fromLabel)}</code> to <code>${escapeHtml(toLabel)}</code>.`
-  const sub =
-    lang === 'fr' ? 'Ouvre la session pour voir la suite.' : "Open the session to see what's next."
-  const cta = lang === 'fr' ? 'Voir ma session' : 'Open my session'
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-<p><strong>${lead}</strong></p>
-<p style="color:#444">${sub}</p>
-<p><a href="${url}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">${cta}</a></p>
-<p style="color:#999;font-size:12px;word-break:break-all">${url}</p>
-</body></html>`
-  const text =
-    lang === 'fr'
-      ? `Marc a déplacé ta session de ${fromLabel} à ${toLabel}.\n\n${url}`
-      : `Marc moved your session from ${fromLabel} to ${toLabel}.\n\n${url}`
+      ? `J’ai déplacé ta session de <strong>${escapeHtml(fromLabel)}</strong> à <strong>${escapeHtml(toLabel)}</strong>.`
+      : `I moved your session from <strong>${escapeHtml(fromLabel)}</strong> to <strong>${escapeHtml(toLabel)}</strong>.`
+  const p2 = statusSubcopy(toStatus, lang)
+  const { html, text } = renderEmail(visitorEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? `session · ${toLabel}` : `session · ${toLabel}`,
+    headline,
+    paragraphs: [p1, p2],
+    cta: { href: url, label: lang === 'fr' ? 'Voir ma session' : 'Open my session' },
+    altLink: url,
+  })
   return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
 }
 
-/**
- * Visitor edited their own intake mid-flight. Marc gets a heads-up so he can
- * re-read before triaging — small change, possibly large reframe of the ask.
- */
+// =============================================================================
+// Visitor → Marc: visitor edited their intake mid-flight
+// =============================================================================
+
 export async function sendIntakeEditedNotification(
   apiKey: string,
   marcEmail: string,
   visitorEmail: string,
   sessionId: string,
   origin: string,
+  lang: Lang,
 ): Promise<boolean> {
-  // Generic subject — body carries the identifying info. See the lock-screen
-  // privacy comment in sendVisitorMessageNotification.
-  const subject = 'A visitor edited their intake'
+  // Generic subject — body carries the identifying info. See the
+  // lock-screen privacy comment in sendVisitorMessageNotification.
+  const subject =
+    lang === 'fr' ? 'Un visiteur a modifié son intake' : 'A visitor edited their intake'
   const url = `${origin}/admin/inbox/${sessionId}`
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-<p><strong>${escapeHtml(visitorEmail)}</strong> updated their intake answers.</p>
-<p style="color:#444">Re-read before triaging — they may have reframed the ask.</p>
-<p><a href="${url}">Open in admin inbox</a></p>
-</body></html>`
-  const text = `${visitorEmail} updated their intake answers.\n\n${url}`
+  const headline = lang === 'fr' ? 'Un intake vient d’être réécrit' : 'An intake was just rewritten'
+  const p1 =
+    lang === 'fr'
+      ? `<strong>${escapeHtml(visitorEmail)}</strong> a mis à jour ses réponses d’intake.`
+      : `<strong>${escapeHtml(visitorEmail)}</strong> updated their intake answers.`
+  const p2 =
+    lang === 'fr'
+      ? 'Relis avant le triage — la demande s’est peut-être déplacée.'
+      : 'Give it another read before triage — the ask may have shifted.'
+  const { html, text } = renderEmail(marcEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'inbox · intake' : 'inbox · intake',
+    headline,
+    paragraphs: [p1, p2],
+    cta: { href: url, label: lang === 'fr' ? 'Ouvrir dans l’inbox' : 'Open in inbox' },
+    signoff: 'system',
+  })
   return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
 }
 
-/**
- * Symmetric counterparty notification on session withdrawal:
- *   - visitor self-withdrew → Marc gets the heads-up
- *   - admin force-withdrew → visitor gets a courtesy note
- * Both share copy: "session was withdrawn" + actor + link.
- */
+// =============================================================================
+// Withdrawal — symmetric (admin-side or visitor-side audience)
+// =============================================================================
+
 export async function sendWithdrawalNotification(
   apiKey: string,
   toEmail: string,
   byEmail: string,
   sessionId: string,
   origin: string,
-  lang: 'fr' | 'en',
+  lang: Lang,
   audience: 'admin' | 'visitor',
 ): Promise<boolean> {
-  // Generic admin subject (no email leak on lock screen); the visitor-side
-  // subject is already non-identifying.
+  // Subjects: admin side is generic (no email leak on lock screen); visitor
+  // side is already non-identifying.
   const subject =
     audience === 'admin'
-      ? 'A session was withdrawn'
+      ? lang === 'fr'
+        ? 'Une session a été retirée'
+        : 'A session was withdrawn'
       : lang === 'fr'
         ? 'Ta session a été retirée du portail'
         : 'Your session was withdrawn from the portal'
+
   const url =
     audience === 'admin'
       ? `${origin}/admin/inbox/${sessionId}`
       : `${origin}${lang === 'en' ? '/en' : ''}/me`
-  const lead =
+
+  const headline =
     audience === 'admin'
-      ? `<strong>${escapeHtml(byEmail)}</strong> withdrew their session. The row is soft-deleted but still visible in the admin trash.`
+      ? lang === 'fr'
+        ? 'Une session vient d’être retirée'
+        : 'A session just got withdrawn'
       : lang === 'fr'
-        ? `Marc a retiré une session du portail. Si c'est une erreur, écris-lui — la session existe encore en arrière-plan.`
-        : `Marc withdrew a session from the portal. If this was a mistake, reach out — the session still exists in the background.`
-  const cta =
+        ? 'Ta session a été retirée'
+        : 'Your session was withdrawn'
+
+  const p1 =
     audience === 'admin'
-      ? 'Open in admin'
+      ? lang === 'fr'
+        ? `<strong>${escapeHtml(byEmail)}</strong> a retiré sa session. La ligne est en corbeille — visible dans le trash admin si tu veux la restaurer.`
+        : `<strong>${escapeHtml(byEmail)}</strong> withdrew their session. The row is soft-deleted but still visible in the admin trash.`
       : lang === 'fr'
-        ? 'Voir mes sessions'
-        : 'Open my sessions'
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-<p>${lead}</p>
-<p><a href="${url}">${cta}</a></p>
-</body></html>`
-  const text = `${lead.replace(/<[^>]+>/g, '')}\n\n${url}`
+        ? 'J’ai retiré une de tes sessions du portail. Si c’est une erreur, écris-moi — la session existe encore en arrière-plan, je peux la remettre en ligne.'
+        : 'I withdrew one of your sessions from the portal. If that was a mistake, write back — the session still exists behind the scenes and I can put it back.'
+
+  const { html, text } = renderEmail(toEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'session · retirée' : 'session · withdrawn',
+    headline,
+    paragraphs: [p1],
+    cta: {
+      href: url,
+      label:
+        audience === 'admin'
+          ? lang === 'fr'
+            ? 'Ouvrir dans l’admin'
+            : 'Open in admin'
+          : lang === 'fr'
+            ? 'Voir mes sessions'
+            : 'Open my sessions',
+    },
+    signoff: audience === 'admin' ? 'system' : 'marc',
+  })
   return send(apiKey, { from: RESEND_FROM, to: toEmail, subject, html, text })
 }
 
-/**
- * Tier-2 deposit just cleared — visitor gets a short transactional note
- * confirming receipt and pointing them back to /me where the "Pay final
- * balance" button is now active. The button itself is already wired in
- * PaymentActions.tsx; this is purely a nudge so the visitor doesn't wait
- * for Marc's manual follow-up.
- *
- * Called from the webhook handler on the FIRST transition of a
- * tier2-deposit payment row to status='paid'. Idempotency is enforced by
- * the caller (a re-delivered webhook must not re-send the email).
- */
+// =============================================================================
+// Tier 2 deposit cleared
+// =============================================================================
+
 export async function sendTier2DepositReceiptAndFinalPrompt(
   apiKey: string,
   visitorEmail: string,
   sessionId: string,
   origin: string,
-  lang: 'fr' | 'en',
+  lang: Lang,
 ): Promise<boolean> {
-  const langPrefix = lang === 'en' ? '/en' : ''
-  const sessionUrl = `${origin}${langPrefix}/session/${sessionId}`
+  const sessionUrl = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const subject =
     lang === 'fr'
       ? 'Dépôt Tier 2 reçu — solde final disponible'
       : 'Tier 2 deposit received — final balance available'
-  const lead =
+  const headline = lang === 'fr' ? 'Ton dépôt est rentré, merci' : 'Your deposit landed — thank you'
+  const p1 =
     lang === 'fr'
-      ? 'Ton dépôt (50 %) pour le projet Tier 2 est confirmé. Merci.'
-      : 'Your Tier 2 deposit (50%) is confirmed. Thank you.'
-  const body =
+      ? 'Le 50 % d’ouverture est confirmé du côté de Stripe et du portail. Je démarre le build.'
+      : 'The 50% opening payment is confirmed on Stripe and in the portal. I’m starting the build.'
+  const p2 =
     lang === 'fr'
-      ? 'Quand tu es prêt à payer le solde final (50 % restants), retourne sur la page de ta session — le bouton est maintenant actif.'
-      : "When you're ready to pay the final balance (the remaining 50%), head back to your session page — the button is now active."
-  const cta = lang === 'fr' ? 'Ouvrir ma session' : 'Open my session'
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-<p><strong>${lead}</strong></p>
-<p style="color:#444">${body}</p>
-<p><a href="${sessionUrl}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">${cta}</a></p>
-<p style="color:#999;font-size:12px;word-break:break-all">${sessionUrl}</p>
-</body></html>`
-  const text = `${lead}\n\n${body}\n\n${cta}: ${sessionUrl}`
+      ? 'Quand tu seras prêt à régler le solde (les 50 % restants), retourne sur la page de ta session — le bouton est déjà actif et t’attend.'
+      : 'When you’re ready to pay the balance (the remaining 50%), head back to your session page — the button is already live and waiting.'
+  const { html, text } = renderEmail(visitorEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'paiement · tier 2' : 'payment · tier 2',
+    headline,
+    paragraphs: [p1, p2],
+    cta: { href: sessionUrl, label: lang === 'fr' ? 'Ouvrir ma session' : 'Open my session' },
+    altLink: sessionUrl,
+  })
   return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
 }
 
-/**
- * Marc assigned a tier to the visitor's session (or set the Tier-3 quote
- * amount for the first time on a tier-3 row). Visitor gets a short email
- * pointing them to the session page where the "Pay" button now lives.
- *
- * Called from PATCH /api/sessions/:id when:
- *   - tier transitions from null to a non-null value (any tier), OR
- *   - tier3_amount_cents transitions from null to a value on a tier=3 row
- *     (i.e. the quote that unlocks the visitor's self-pay button).
- *
- * Tier 0 still sends an email — it's the "free, here's the patron" outcome,
- * and the visitor needs to know Marc decided + where to look. The body
- * differs per tier so each path reads as the right kind of news.
- *
- * `amountCadCents` is the canonical billed amount (300 / 1500 / quote) used
- * to render an at-a-glance price line; null for tier 0 and for tier 3 when
- * no quote has been set yet (in which case this function shouldn't be
- * called — the caller is responsible).
- */
+// =============================================================================
+// Tier assigned (or first Tier-3 quote landed)
+// =============================================================================
+
 export async function sendTierAssignedNotification(
   apiKey: string,
   visitorEmail: string,
@@ -307,125 +577,277 @@ export async function sendTierAssignedNotification(
   tier: 0 | 1 | 2 | 3,
   amountCadCents: number | null,
   origin: string,
-  lang: 'fr' | 'en',
+  lang: Lang,
   /** True when this email fires from a Tier-3 *quote* that landed AFTER the
-   *  session was already active (admin set tier=3 silently first, then the
-   *  amount later). Lets the subject read "Quote ready" instead of
-   *  "Marc accepted", since acceptance happened earlier. Ignored for
-   *  tier 0/1/2 and for tier-3-with-quote-set-at-same-time. */
+   *  session was already active. Lets the subject read "Quote ready" rather
+   *  than "Marc accepted." */
   isLateQuote: boolean = false,
 ): Promise<boolean> {
-  const langPrefix = lang === 'en' ? '/en' : ''
-  const sessionUrl = `${origin}${langPrefix}/session/${sessionId}`
+  const sessionUrl = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const priceLine = amountCadCents != null ? formatCadCents(amountCadCents, lang) : null
 
-  // Per-tier subject + lead. Tier 0 is the "redirect to patron" exit; the
-  // other three are paid engagements.
   let subject: string
-  let lead: string
-  let body: string
-  let cta: string
+  let headline: string
+  let eyebrow: string
+  let paragraphs: string[]
+
   if (tier === 0) {
-    subject = lang === 'fr' ? 'Marc t’a répondu — Tier 0 (gratuit)' : 'Marc replied — Tier 0 (free)'
-    lead =
+    subject = lang === 'fr' ? 'Réponse de Marc — Tier 0 (gratuit)' : 'Marc replied — Tier 0 (free)'
+    eyebrow = lang === 'fr' ? 'tier 0 · gratuit' : 'tier 0 · free'
+    headline = lang === 'fr' ? 'Ton problème tient en Tier 0' : 'Your problem fits Tier 0'
+    paragraphs =
       lang === 'fr'
-        ? 'Ton problème entre dans le Tier 0 : trop petit pour engager un dev.'
-        : 'Your problem fits Tier 0: too small to hire a dev for.'
-    body =
+        ? [
+            'C’est trop petit pour engager un dev — et c’est une bonne nouvelle. Je te redirige vers un patron prêt-à-l’emploi ou un template.',
+            'Les détails sont dans le fil de ta session. Lis, applique, garde le portail ouvert si tu veux que je regarde le résultat.',
+          ]
+        : [
+            'Too small to hire a dev for — and that’s good news. I’m pointing you at a ready-made pattern or template.',
+            'The details are in your session thread. Read, apply, keep the portal open if you’d like me to glance at the result.',
+          ]
+  } else if (tier === 1) {
+    subject =
       lang === 'fr'
-        ? 'Marc te redirige vers un patron prêt-à-utiliser ou un template — détails dans le fil de la session.'
-        : 'Marc redirects you to a ready-made pattern or template — details in the session thread.'
-    cta = lang === 'fr' ? 'Voir la suite' : "See what's next"
+        ? `J’embarque — Tier 1${priceLine ? ` (${priceLine})` : ''}`
+        : `I’m in — Tier 1${priceLine ? ` (${priceLine})` : ''}`
+    eyebrow = lang === 'fr' ? 'tier 1 · accepté' : 'tier 1 · accepted'
+    headline =
+      lang === 'fr'
+        ? `J’ai accepté ton projet en Tier 1${priceLine ? ` (${priceLine})` : ''}`
+        : `I accepted your project at Tier 1${priceLine ? ` (${priceLine})` : ''}`
+    paragraphs =
+      lang === 'fr'
+        ? [
+            'Le bouton <strong>Payer Tier 1</strong> est actif sur la page de ta session. Dès que le paiement rentre, j’ouvre la boîte à outils.',
+            'Si tu as une question avant de payer, écris-la dans le fil — je réponds là.',
+          ]
+        : [
+            'The <strong>Pay Tier 1</strong> button is live on your session page. The moment payment lands, I open the toolbox.',
+            'If you have a question before paying, drop it in the thread — that’s where I answer.',
+          ]
   } else if (tier === 2) {
-    // Tier 2 is split — call out the 50/50 explicitly so the visitor
-    // doesn't think the deposit IS the total.
     const halfLine = priceLine
       ? lang === 'fr'
         ? `Dépôt de ${formatCadCents(amountCadCents! / 2, lang)} pour démarrer (50 %), solde à la livraison.`
-        : `Deposit of ${formatCadCents(amountCadCents! / 2, lang)} to start (50%), balance at delivery.`
+        : `${formatCadCents(amountCadCents! / 2, lang)} deposit to start (50%), balance at delivery.`
       : ''
     subject =
       lang === 'fr'
-        ? 'Marc accepte — Tier 2 (~1 500 $) · paie le dépôt pour démarrer'
-        : 'Marc accepted — Tier 2 (~$1,500) · pay the deposit to start'
-    lead =
+        ? `J’embarque — Tier 2 (~1 500 $) · dépôt pour démarrer`
+        : `I’m in — Tier 2 (~$1,500) · deposit to start`
+    eyebrow = lang === 'fr' ? 'tier 2 · accepté' : 'tier 2 · accepted'
+    headline =
       lang === 'fr'
-        ? `Marc a accepté ton projet en Tier 2${priceLine ? ` (≈ ${priceLine})` : ''}.`
-        : `Marc accepted your project at Tier 2${priceLine ? ` (≈ ${priceLine})` : ''}.`
-    body =
+        ? `J’ai accepté ton projet en Tier 2${priceLine ? ` (≈ ${priceLine})` : ''}`
+        : `I accepted your project at Tier 2${priceLine ? ` (≈ ${priceLine})` : ''}`
+    paragraphs =
       lang === 'fr'
-        ? `${halfLine} Le bouton « Payer le dépôt » est maintenant actif sur la page de ta session.`
-        : `${halfLine} The "Pay the deposit" button is now live on your session page.`
-    cta = lang === 'fr' ? 'Ouvrir ma session' : 'Open my session'
-  } else if (tier === 3) {
+        ? [
+            halfLine,
+            'Le bouton <strong>Payer le dépôt</strong> est actif sur la page de ta session. Le solde s’ouvre à la livraison.',
+          ]
+        : [
+            halfLine,
+            'The <strong>Pay the deposit</strong> button is live on your session page. The balance unlocks at delivery.',
+          ]
+  } else {
+    // tier 3
     if (isLateQuote) {
-      // Acceptance happened earlier; this email is specifically the
-      // quote landing. Subject + lead reflect that to avoid sounding like
-      // a second acceptance.
       subject =
         lang === 'fr'
-          ? `Devis Tier 3 prêt${priceLine ? ` (${priceLine})` : ''} · paie pour démarrer`
-          : `Tier 3 quote ready${priceLine ? ` (${priceLine})` : ''} · pay to start`
-      lead =
+          ? `Devis Tier 3 prêt${priceLine ? ` (${priceLine})` : ''}`
+          : `Tier 3 quote ready${priceLine ? ` (${priceLine})` : ''}`
+      eyebrow = lang === 'fr' ? 'tier 3 · devis prêt' : 'tier 3 · quote ready'
+      headline =
         lang === 'fr'
           ? priceLine
-            ? `Marc a fixé le montant de ton projet Tier 3 à ${priceLine}.`
-            : 'Marc a fixé le montant de ton projet Tier 3.'
+            ? `Devis Tier 3 fixé à ${priceLine}`
+            : 'Devis Tier 3 fixé'
           : priceLine
-            ? `Marc set the amount for your Tier 3 project to ${priceLine}.`
-            : 'Marc set the amount for your Tier 3 project.'
+            ? `Tier 3 quote set at ${priceLine}`
+            : 'Tier 3 quote set'
+      paragraphs =
+        lang === 'fr'
+          ? [
+              'Le bouton <strong>Payer (sur devis)</strong> est maintenant actif sur ta session.',
+              'Des questions avant de régler ? Écris-les dans le fil — je réponds là, pas par courriel.',
+            ]
+          : [
+              'The <strong>Pay (quoted)</strong> button is now live on your session.',
+              'Questions before you settle? Drop them in the thread — I answer there, not by email.',
+            ]
     } else {
       subject =
         lang === 'fr'
-          ? `Marc accepte — devis Tier 3${priceLine ? ` (${priceLine})` : ''}`
-          : `Marc accepted — Tier 3 quote${priceLine ? ` (${priceLine})` : ''}`
-      lead =
+          ? `J’embarque — devis Tier 3${priceLine ? ` (${priceLine})` : ''}`
+          : `I’m in — Tier 3 quote${priceLine ? ` (${priceLine})` : ''}`
+      eyebrow = lang === 'fr' ? 'tier 3 · accepté' : 'tier 3 · accepted'
+      headline =
         lang === 'fr'
           ? priceLine
-            ? `Marc a accepté ton projet en Tier 3 et a fixé le montant à ${priceLine}.`
-            : 'Marc a accepté ton projet en Tier 3.'
+            ? `J’ai accepté ton projet en Tier 3, fixé à ${priceLine}`
+            : 'J’ai accepté ton projet en Tier 3'
           : priceLine
-            ? `Marc accepted your project at Tier 3 and set the amount to ${priceLine}.`
-            : 'Marc accepted your project at Tier 3.'
+            ? `I accepted your project at Tier 3, set at ${priceLine}`
+            : 'I accepted your project at Tier 3'
+      paragraphs =
+        lang === 'fr'
+          ? [
+              'Le bouton <strong>Payer (sur devis)</strong> est actif sur ta session.',
+              'Si tu veux clarifier un détail du devis, écris dans le fil — c’est là que ça se passe.',
+            ]
+          : [
+              'The <strong>Pay (quoted)</strong> button is live on your session.',
+              'If a detail of the quote needs clarifying, write in the thread — that’s where it happens.',
+            ]
     }
-    body =
-      lang === 'fr'
-        ? 'Le bouton « Payer (sur devis) » est actif sur la page de ta session. Si tu as des questions, écris dans le fil — Marc répond là.'
-        : 'The "Pay (quoted)" button is live on your session page. If you have questions, drop them in the thread — Marc replies there.'
-    cta = lang === 'fr' ? 'Ouvrir ma session' : 'Open my session'
-  } else {
-    // Tier 1
-    subject =
-      lang === 'fr'
-        ? `Marc accepte — Tier 1${priceLine ? ` (${priceLine})` : ''} · paie pour démarrer`
-        : `Marc accepted — Tier 1${priceLine ? ` (${priceLine})` : ''} · pay to start`
-    lead =
-      lang === 'fr'
-        ? `Marc a accepté ton projet en Tier 1${priceLine ? ` (${priceLine})` : ''}.`
-        : `Marc accepted your project at Tier 1${priceLine ? ` (${priceLine})` : ''}.`
-    body =
-      lang === 'fr'
-        ? 'Le bouton « Payer Tier 1 » est maintenant actif sur la page de ta session. Une fois le paiement reçu, je démarre.'
-        : 'The "Pay Tier 1" button is now live on your session page. Once the payment lands, I start.'
-    cta = lang === 'fr' ? 'Ouvrir ma session' : 'Open my session'
   }
 
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-<p><strong>${lead}</strong></p>
-<p style="color:#444">${body}</p>
-<p><a href="${sessionUrl}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">${cta}</a></p>
-<p style="color:#999;font-size:12px;word-break:break-all">${sessionUrl}</p>
-</body></html>`
-  const text = `${lead}\n\n${body}\n\n${cta}: ${sessionUrl}`
+  const { html, text } = renderEmail(visitorEmail, origin, {
+    lang,
+    eyebrow,
+    headline,
+    paragraphs,
+    cta: { href: sessionUrl, label: lang === 'fr' ? 'Ouvrir ma session' : 'Open my session' },
+    altLink: sessionUrl,
+  })
   return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
 }
 
+// =============================================================================
+// New vouch awaiting moderation (admin-side)
+// =============================================================================
+
+export async function sendNewVouchNotification(
+  apiKey: string,
+  marcEmail: string,
+  vouchId: string,
+  authorName: string,
+  authorEmail: string,
+  relationship: string,
+  bodyPreview: string,
+  origin: string,
+  lang: Lang,
+): Promise<boolean> {
+  const subject =
+    lang === 'fr' ? 'Un nouveau vouch attend la modération' : 'A new vouch is awaiting moderation'
+  const url = `${origin}/admin/vouches`
+  const headline =
+    lang === 'fr' ? 'Quelqu’un vient de te recommander' : 'Someone just vouched for you'
+  const p1 =
+    lang === 'fr'
+      ? `<strong>${escapeHtml(authorName)}</strong> <span style="color:#7a7568;">(${escapeHtml(
+          relationship,
+        )})</span> a soumis un vouch.`
+      : `<strong>${escapeHtml(authorName)}</strong> <span style="color:#7a7568;">(${escapeHtml(
+          relationship,
+        )})</span> just submitted a vouch.`
+  const meta =
+    lang === 'fr'
+      ? `De <code style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#5a554b;">${escapeHtml(
+          authorEmail,
+        )}</code> · id <code style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#5a554b;">${escapeHtml(
+          vouchId,
+        )}</code>`
+      : `From <code style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#5a554b;">${escapeHtml(
+          authorEmail,
+        )}</code> · id <code style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#5a554b;">${escapeHtml(
+          vouchId,
+        )}</code>`
+  const { html, text } = renderEmail(marcEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'vouches · modération' : 'vouches · moderation',
+    headline,
+    paragraphs: [p1, meta],
+    quote: clip(bodyPreview, 280),
+    cta: { href: url, label: lang === 'fr' ? 'Modérer' : 'Moderate' },
+    signoff: 'system',
+  })
+  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+}
+
+// =============================================================================
+// Generic admin alert (Stripe sub-cancel, invoice-failed, etc.). Returns
+// true on successful Resend delivery so the caller can fall back to
+// admin_alerts when the network is unhappy.
+// =============================================================================
+
+export async function sendAdminAlert(
+  apiKey: string,
+  marcEmail: string,
+  origin: string,
+  body: string,
+  lang: Lang,
+): Promise<boolean> {
+  const subject =
+    lang === 'fr'
+      ? 'Alerte Stripe — quelque chose mérite ton attention'
+      : 'Stripe alert — something needs your eyes'
+  const headline =
+    lang === 'fr' ? 'Une alerte Stripe vient d’arriver' : 'A Stripe alert just landed'
+  const p1 = escapeHtml(body)
+  const p2 =
+    lang === 'fr'
+      ? 'Si ce n’est pas livré et marqué non résolu, le digest quotidien va te le rappeler. Tu peux aussi marquer comme résolu via D1.'
+      : 'If this isn’t delivered and stays unresolved, the daily digest will re-surface it. You can also mark it resolved via D1.'
+  const url = `${origin}/admin`
+  const { html, text } = renderEmail(marcEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'alerte · stripe' : 'alert · stripe',
+    headline,
+    paragraphs: [p1, p2],
+    cta: { href: url, label: lang === 'fr' ? 'Ouvrir l’admin' : 'Open admin' },
+    signoff: 'system',
+  })
+  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+}
+
+// =============================================================================
+// Visitor confirmed "Tout à toi" (opted out of Custodian) — admin heads-up
+// =============================================================================
+
+export async function sendAllYoursAckNotification(
+  apiKey: string,
+  marcEmail: string,
+  visitorEmail: string,
+  sessionId: string,
+  origin: string,
+  lang: Lang,
+): Promise<boolean> {
+  const subject =
+    lang === 'fr'
+      ? 'Visiteur a confirmé « Tout à toi »'
+      : "Visitor confirmed 'All yours' (opted out of Custodian)"
+  const url = `${origin}/admin/inbox/${sessionId}`
+  const headline =
+    lang === 'fr' ? 'Tout à toi : confirmation reçue' : 'All yours: confirmation received'
+  const p1 =
+    lang === 'fr'
+      ? `<strong>${escapeHtml(visitorEmail)}</strong> a coché la checklist des compétences et a confirmé Tout à toi.`
+      : `<strong>${escapeHtml(visitorEmail)}</strong> ticked the skills checklist and confirmed All yours.`
+  const p2 =
+    lang === 'fr'
+      ? 'Ils prennent les commandes du stack ops à la livraison. Planifie le transfert des accès en conséquence.'
+      : 'They take ownership of the ops stack at handoff. Plan the asset transfer accordingly.'
+  const { html, text } = renderEmail(marcEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'handoff · tout à toi' : 'handoff · all yours',
+    headline,
+    paragraphs: [p1, p2],
+    cta: { href: url, label: lang === 'fr' ? 'Ouvrir dans l’admin' : 'Open in admin' },
+    signoff: 'system',
+  })
+  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+}
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
 /** Format CAD cents per OQLF (FR) / standard locale (EN). Mirrors the
- *  client-side formatter in PaymentActions.tsx — duplicated here because
- *  Workers Intl.NumberFormat supports CAD currency formatting at runtime.
- *  Round-dollar amounts drop the cents portion so subjects/bodies read as
- *  "$300" / "300 $" rather than "$300.00" / "300,00 $". */
-function formatCadCents(cents: number, lang: 'fr' | 'en'): string {
+ *  client-side formatter in PaymentActions.tsx. Round amounts drop cents
+ *  so subjects read "$300" / "300 $" rather than "$300.00" / "300,00 $". */
+function formatCadCents(cents: number, lang: Lang): string {
   const isRound = cents % 100 === 0
   return new Intl.NumberFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', {
     style: 'currency',
@@ -436,60 +858,7 @@ function formatCadCents(cents: number, lang: 'fr' | 'en'): string {
   }).format(cents / 100)
 }
 
-/**
- * A new vouch was just submitted. Marc gets a heads-up so he can
- * moderate (approve / reject / edit) in /admin/vouches. Visitor doesn't
- * get an email back — the UI tells them "Marc relit avant que ça
- * paraisse." Matches the async-no-calls voice.
- */
-export async function sendNewVouchNotification(
-  apiKey: string,
-  marcEmail: string,
-  vouchId: string,
-  authorName: string,
-  authorEmail: string,
-  relationship: string,
-  bodyPreview: string,
-  origin: string,
-): Promise<boolean> {
-  const subject = 'A new vouch is awaiting moderation'
-  const url = `${origin}/admin/vouches`
-  const preview = bodyPreview.length > 240 ? bodyPreview.slice(0, 237) + '…' : bodyPreview
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:520px;margin:auto;padding:24px;color:#1a1a1a">
-<p><strong>${escapeHtml(authorName)}</strong> <span style="color:#7a7568">(${escapeHtml(relationship)})</span> just submitted a vouch.</p>
-<blockquote style="margin:14px 0;padding:10px 14px;background:#fbf7ec;border-left:3px solid #3d6e4e;color:#3f3c34;font-size:14px;line-height:1.5;">${escapeHtml(preview)}</blockquote>
-<p style="color:#444;font-size:13px">From <code>${escapeHtml(authorEmail)}</code> · id <code>${escapeHtml(vouchId)}</code></p>
-<p><a href="${url}" style="display:inline-block;padding:10px 16px;background:#3d6e4e;color:#fff;text-decoration:none;border-radius:6px">Moderate</a></p>
-</body></html>`
-  const text = `${authorName} (${relationship}) submitted a vouch:\n\n${preview}\n\nFrom ${authorEmail} · id ${vouchId}\n\n${url}`
-  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
-}
-
-/**
- * The visitor just explicitly confirmed "Tout à toi" / "All yours" — they
- * opted OUT of Custodian. Marc gets a heads-up so he can plan the handoff
- * accordingly. Visitor doesn't get an email back; the UI confirms it
- * on /session/:id.
- */
-export async function sendAllYoursAckNotification(
-  apiKey: string,
-  marcEmail: string,
-  visitorEmail: string,
-  sessionId: string,
-  origin: string,
-): Promise<boolean> {
-  const subject = "Visitor confirmed 'All yours' (opted out of Custodian)"
-  const url = `${origin}/admin/inbox/${sessionId}`
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-<p><strong>${escapeHtml(visitorEmail)}</strong> ticked the skills checklist and confirmed Tout à toi.</p>
-<p style="color:#444">They take ownership of the ops stack at handoff. Plan the asset transfer accordingly.</p>
-<p><a href="${url}">Open in admin</a></p>
-</body></html>`
-  const text = `${visitorEmail} confirmed Tout à toi (opted out of Custodian).\n\n${url}`
-  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
-}
-
-function statusLabel(status: string, lang: 'fr' | 'en'): string {
+function statusLabel(status: string, lang: Lang): string {
   const FR: Record<string, string> = {
     draft: 'brouillon',
     triage: 'en triage',
@@ -507,6 +876,37 @@ function statusLabel(status: string, lang: 'fr' | 'en'): string {
   return (lang === 'fr' ? FR[status] : EN[status]) ?? status
 }
 
+/** Per-status second paragraph for the status-change email. Keeps the tone
+ *  warm even when the news is "refusée." */
+function statusSubcopy(toStatus: string, lang: Lang): string {
+  switch (toStatus) {
+    case 'triage':
+      return lang === 'fr'
+        ? 'Je lis et je te reviens dans les 72 heures — oui, non, ou raconte-moi plus.'
+        : "I'll read and reply within 72 hours — yes, no, or tell-me-more."
+    case 'active':
+      return lang === 'fr'
+        ? 'On embarque. Le fil de la session devient le poste de commande.'
+        : 'We’re on. The session thread is our command post.'
+    case 'shipped':
+      return lang === 'fr'
+        ? 'Livrée. Va voir — si quelque chose grince, écris-le dans le fil de ta session.'
+        : 'Shipped. Go take a look — if anything creaks, drop it in your session thread.'
+    case 'rejected':
+      return lang === 'fr'
+        ? 'Pas un fit ce coup-ci. J’ai laissé un mot dans le fil pour expliquer pourquoi.'
+        : 'Not a fit this time. I left a note in the thread explaining why.'
+    case 'draft':
+      return lang === 'fr'
+        ? 'Je l’ai remise en brouillon le temps d’en regarder une autre.'
+        : 'I moved it back to draft while I look at another one.'
+    default:
+      return lang === 'fr'
+        ? 'Ouvre la session pour voir la suite.'
+        : "Open the session to see what's next."
+  }
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -514,4 +914,36 @@ function escapeHtml(s: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
+}
+
+/**
+ * Escape a URL for an HTML attribute (href, src). Same primitive as
+ * escapeHtml — `&` becomes `&amp;` so spec-strict parsers (and some
+ * spam filters) don't choke on raw ampersands in query strings like
+ * `?token=X&lang=fr`. The browser/email client URL-decodes the entity
+ * when navigating, so the destination is unchanged.
+ */
+function escapeAttr(url: string): string {
+  return url.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+}
+
+/**
+ * Trim a user-supplied preview to a length cap, then escape. Doing the
+ * slice BEFORE escapeHtml guarantees we never cut inside an HTML entity
+ * (e.g., chopping `&am` out of `&amp;` would produce broken HTML).
+ */
+function clip(s: string, max: number): string {
+  return escapeHtml(s.length > max ? s.slice(0, max - 1) + '…' : s)
+}
+
+/** Drop tags from a fragment for the plain-text rendering. Not a security
+ *  primitive — only used on copy we built ourselves. */
+function stripHtml(s: string): string {
+  return s
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
 }

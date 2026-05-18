@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PageMast } from '../components/PageMast'
 
 /**
  * The full journey — a visual, phased walkthrough from "stranger lands on the
@@ -45,56 +46,66 @@ export function Journey({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section journey">
           <div className="section__inner">
-            <a className="showcase-page__back" href={homeHref}>
-              {j.backHome}
-            </a>
-
-            <header className="journey__head">
+            <PageMast
+              folio={lang === 'fr' ? '№ 04 — le parcours' : '№ 04 — the journey'}
+              stampLabel={lang === 'fr' ? 'XII ÉTAPES' : 'XII STEPS'}
+              stampSub={lang === 'fr' ? 'TOI · MOI · NOUS' : 'YOU · ME · BOTH'}
+              back={{ href: homeHref, label: j.backHome }}
+            >
               <div className="section__eyebrow">{j.eyebrow}</div>
               <h1 className="journey__title">{j.title}</h1>
               <p className="journey__sub">{j.sub}</p>
+              {/* Stats + legend sit inside the masthead block as a small
+                  centered intermezzo (max-width 720px, auto-margin). Keeps
+                  the whole top of the page reading as one editorial unit
+                  instead of "left-mast, centered-stats, alternating-cards". */}
+              <div className="journey__head journey__head--in-mast">
+                <dl className="journey__stats" aria-label={j.eyebrow}>
+                  <div className="journey__stat journey__stat--you">
+                    <dt className="journey__stat-label">{j.statYou}</dt>
+                    <dd className="journey__stat-val">
+                      <span className="journey__stat-num">{j.statYouVal}</span>
+                      <span className="journey__stat-unit">{j.statYouUnit}</span>
+                    </dd>
+                  </div>
+                  <div className="journey__stat journey__stat--time">
+                    <dt className="journey__stat-label">{j.statTime}</dt>
+                    <dd className="journey__stat-val">
+                      <span className="journey__stat-num">{j.statTimeVal}</span>
+                      <span className="journey__stat-unit">{j.statTimeUnit}</span>
+                    </dd>
+                  </div>
+                  <div className="journey__stat journey__stat--calls">
+                    <dt className="journey__stat-label">{j.statCalls}</dt>
+                    <dd className="journey__stat-val">
+                      <span className="journey__stat-num">{j.statCallsVal}</span>
+                      <span className="journey__stat-unit">{j.statCallsUnit}</span>
+                    </dd>
+                  </div>
+                </dl>
 
-              <dl className="journey__stats" aria-label={j.eyebrow}>
-                <div className="journey__stat journey__stat--you">
-                  <dt className="journey__stat-label">{j.statYou}</dt>
-                  <dd className="journey__stat-val">
-                    <span className="journey__stat-num">{j.statYouVal}</span>
-                    <span className="journey__stat-unit">{j.statYouUnit}</span>
-                  </dd>
-                </div>
-                <div className="journey__stat journey__stat--time">
-                  <dt className="journey__stat-label">{j.statTime}</dt>
-                  <dd className="journey__stat-val">
-                    <span className="journey__stat-num">{j.statTimeVal}</span>
-                    <span className="journey__stat-unit">{j.statTimeUnit}</span>
-                  </dd>
-                </div>
-                <div className="journey__stat journey__stat--calls">
-                  <dt className="journey__stat-label">{j.statCalls}</dt>
-                  <dd className="journey__stat-val">
-                    <span className="journey__stat-num">{j.statCallsVal}</span>
-                    <span className="journey__stat-unit">{j.statCallsUnit}</span>
-                  </dd>
-                </div>
-              </dl>
-
-              <ul className="journey__legend mono" aria-label={j.legendTitle}>
-                <li className="journey__legend-item journey__legend-item--you">
-                  <span className="journey__legend-dot" aria-hidden="true" />
-                  {j.legendYou}
-                </li>
-                <li className="journey__legend-item journey__legend-item--me">
-                  <span className="journey__legend-dot" aria-hidden="true" />
-                  {j.legendMe}
-                </li>
-                <li className="journey__legend-item journey__legend-item--both">
-                  <span className="journey__legend-dot" aria-hidden="true" />
-                  {j.legendBoth}
-                </li>
-              </ul>
-            </header>
+                <ul className="journey__legend mono" aria-label={j.legendTitle}>
+                  <li className="journey__legend-item journey__legend-item--you">
+                    <span className="journey__legend-dot" aria-hidden="true" />
+                    {j.legendYou}
+                  </li>
+                  <li className="journey__legend-item journey__legend-item--me">
+                    <span className="journey__legend-dot" aria-hidden="true" />
+                    {j.legendMe}
+                  </li>
+                  <li className="journey__legend-item journey__legend-item--both">
+                    <span className="journey__legend-dot" aria-hidden="true" />
+                    {j.legendBoth}
+                  </li>
+                </ul>
+              </div>
+            </PageMast>
 
             <div className="journey__path">
+              {/* Animated sage spine — draws in as the visitor scrolls the
+                  path through the viewport. Decorative, paired with the
+                  dashed ::before pseudo as the static base layer. */}
+              <div className="journey__spine" aria-hidden="true" />
               {j.phases.map((phase) => (
                 <section
                   key={phase.roman}

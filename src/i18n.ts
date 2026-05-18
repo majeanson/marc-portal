@@ -125,7 +125,7 @@ const FR = {
     galleryCard: {
       eyebrow: 'tu veux tout lire ?',
       title: 'Tous les témoignages, sur une seule page',
-      body: 'Au-delà des trois ci-dessus, la liste complète vit sur /vouches — chronologique, sans filtre.',
+      body: 'La liste complète vit sur /vouches — chronologique, sans filtre, avec le nom et le lien de chaque personne.',
       cta: 'Voir tous les témoignages →',
     },
   },
@@ -837,6 +837,7 @@ const FR = {
         'Je relis dans les prochains jours. Si c’est bon tel quel, ça paraît sans autre étape. Si je veux resserrer un mot, je t’écris.',
       submitAnother: 'Soumettre un autre témoignage',
       backHome: '← Retour à l’accueil',
+      backToProject: '← Retour au projet',
       fields: {
         nameLabel: 'Ton nom',
         namePlaceholder: 'Alex Tremblay',
@@ -1004,7 +1005,7 @@ const EN: Copy = {
     galleryCard: {
       eyebrow: 'want to read everything?',
       title: 'All vouches, on one page',
-      body: 'Beyond the three above, the full list lives on /vouches — chronological, unfiltered.',
+      body: 'The full list lives on /vouches — chronological, unfiltered, with each person’s name and link.',
       cta: 'See all vouches →',
     },
   },
@@ -1710,6 +1711,7 @@ const EN: Copy = {
         'I read in the next few days. If it’s good as-is, it ships without another step. If I want to tighten a word, I’ll email you.',
       submitAnother: 'Submit another vouch',
       backHome: '← Back home',
+      backToProject: '← Back to project',
       fields: {
         nameLabel: 'Your name',
         namePlaceholder: 'Alex Smith',

@@ -34,7 +34,44 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
     <>
       <Header lang={lang} />
       <main className="page">
-        <section className="page__panel">
+        <section className="page__panel magic-link">
+          {/* Hand-drawn envelope mark that "lands" once on mount — celebrates
+              the moment the link is in flight without being corny. Decorative,
+              aria-hidden. Pairs with a 6-particle confetti burst keyframe. */}
+          <div className="magic-link__mark" aria-hidden="true">
+            <svg viewBox="0 0 80 64" className="magic-link__envelope" focusable="false">
+              <rect
+                x="6"
+                y="12"
+                width="68"
+                height="44"
+                rx="4"
+                fill="var(--bg-card)"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              />
+              <path
+                d="M6 14 L40 38 L74 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M6 56 L30 34 M74 56 L50 34"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="magic-link__spark magic-link__spark--1" />
+            <span className="magic-link__spark magic-link__spark--2" />
+            <span className="magic-link__spark magic-link__spark--3" />
+            <span className="magic-link__spark magic-link__spark--4" />
+            <span className="magic-link__spark magic-link__spark--5" />
+            <span className="magic-link__spark magic-link__spark--6" />
+          </div>
           <h1>{t.title}</h1>
           <p>{t.intro(email)}</p>
           <p style={{ color: 'var(--text-soft, #888)' }}>{t.fallback}</p>

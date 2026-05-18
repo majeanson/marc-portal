@@ -1,7 +1,16 @@
 import type { Lang } from '../i18n'
 
+/** Visual tone used by Tier0 cards to differentiate pattern categories at a
+ *  glance — coloured left-border + matching tag pill. Sage/warm/sand/navy
+ *  cycle through the brand palette without overpowering it. */
+export type PatternTone = 'sage' | 'warm' | 'sand' | 'navy'
+
 export interface SelfServicePattern {
   id: string
+  /** One-word category shown as an eyebrow pill on the card. */
+  tag: { fr: string; en: string }
+  /** Brand-palette accent for left-border + tag chip. */
+  tone: PatternTone
   title: { fr: string; en: string }
   problem: { fr: string; en: string }
   recipe: { fr: string; en: string }
@@ -11,6 +20,8 @@ export interface SelfServicePattern {
 export const PATTERNS: SelfServicePattern[] = [
   {
     id: 'snow-rotation',
+    tag: { fr: 'rotation', en: 'rotation' },
+    tone: 'sage',
     title: {
       fr: 'Rotation de pelletage de la rue',
       en: 'Street snow-shoveling rotation',
@@ -33,6 +44,8 @@ export const PATTERNS: SelfServicePattern[] = [
   },
   {
     id: 'rsvp',
+    tag: { fr: 'sondage', en: 'poll' },
+    tone: 'warm',
     title: {
       fr: 'RSVP pour un événement à 20-50 personnes',
       en: 'RSVP for a 20-50 person event',
@@ -52,6 +65,8 @@ export const PATTERNS: SelfServicePattern[] = [
   },
   {
     id: 'hours-tracker',
+    tag: { fr: 'registre', en: 'log' },
+    tone: 'sand',
     title: {
       fr: "Suivi d'heures pour 1-3 employés",
       en: 'Hours tracker for 1-3 employees',
@@ -67,6 +82,8 @@ export const PATTERNS: SelfServicePattern[] = [
   },
   {
     id: 'lending-board',
+    tag: { fr: 'inventaire partagé', en: 'shared inventory' },
+    tone: 'navy',
     title: {
       fr: 'Tableau de prêts entre voisins (perceuse, échelle…)',
       en: 'Neighbourhood lending board (drill, ladder…)',

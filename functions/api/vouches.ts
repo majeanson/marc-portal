@@ -31,6 +31,7 @@ import type { Env } from '../_lib/env'
 import { badRequest, ok, tooManyRequests } from '../_lib/json'
 import { clientIp, rateLimitCheck, rateLimitSweep } from '../_lib/ratelimit'
 import { primaryAdminEmail } from '../_lib/sessions'
+import { getLang } from '../_lib/userPrefs'
 import { isValidRelationship, validateLinkUrl, VOUCH_LIMITS } from '../_lib/vouches'
 
 interface SubmitBody {
@@ -117,6 +118,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (marc && env.RESEND_API_KEY) {
     const origin = new URL(request.url).origin
     try {
+      const marcLang = await getLang(env.DB, marc)
       await sendNewVouchNotification(
         env.RESEND_API_KEY,
         marc,
@@ -126,6 +128,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         relationship,
         body,
         origin,
+        marcLang,
       )
     } catch (err) {
       console.error('vouch notify failed', err)

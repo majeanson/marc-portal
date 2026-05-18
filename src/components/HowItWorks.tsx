@@ -1,5 +1,6 @@
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
+import { cssVars } from '../lib/styleVars'
 
 export function HowItWorks({ lang }: { lang: Lang }) {
   const t = DICT[lang].how
@@ -15,8 +16,8 @@ export function HowItWorks({ lang }: { lang: Lang }) {
           <h2 className="section__display">{t.title}</h2>
         </header>
         <ol className="steps steps--editorial">
-          {t.steps.map((s) => (
-            <li key={s.num} className="step step--editorial">
+          {t.steps.map((s, i) => (
+            <li key={s.num} className="step step--editorial" style={cssVars({ '--i': i })}>
               <div className="step__numeral" aria-hidden="true">
                 {s.num}
               </div>

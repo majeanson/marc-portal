@@ -20,9 +20,9 @@ import {
   isValidStatus,
   loadSession,
   primaryAdminEmail,
-  visitorLang,
 } from '../../_lib/sessions'
 import type { StatusHistoryEntry } from '../../_lib/sessions'
+import { getLang } from '../../_lib/userPrefs'
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
@@ -306,6 +306,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   // Best-effort notifications. Failures are logged but don't fail the PATCH —
   // the data is in D1; emails are nudges.
   if (statusChanged && fresh) {
+    const visitorPrefLang = await getLang(env.DB, fresh.email)
     await sendStatusChangeNotification(
       env.RESEND_API_KEY,
       fresh.email,
@@ -313,7 +314,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
       statusChanged.from,
       statusChanged.to,
       origin,
-      visitorLang(fresh),
+      visitorPrefLang,
     )
   }
   // Visitor edited their own intake → notify Marc. Admin self-editing on
@@ -321,7 +322,15 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   if (intakeEdited && !admin && fresh) {
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     if (marc) {
-      await sendIntakeEditedNotification(env.RESEND_API_KEY, marc, fresh.email, id, origin)
+      const marcLang = await getLang(env.DB, marc)
+      await sendIntakeEditedNotification(
+        env.RESEND_API_KEY,
+        marc,
+        fresh.email,
+        id,
+        origin,
+        marcLang,
+      )
     }
   }
 
@@ -330,7 +339,8 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   if (allYoursJustAcked && !admin && fresh) {
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     if (marc) {
-      await sendAllYoursAckNotification(env.RESEND_API_KEY, marc, fresh.email, id, origin)
+      const marcLang = await getLang(env.DB, marc)
+      await sendAllYoursAckNotification(env.RESEND_API_KEY, marc, fresh.email, id, origin, marcLang)
     }
   }
 
@@ -364,6 +374,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
       // this PATCH) AND the quote is what just landed. Subject reads as
       // "quote ready" rather than "Marc accepted".
       const isLateQuote = t === 3 && tierAssigned !== 3 && tier3QuoteJustSet
+      const visitorPrefLang = await getLang(env.DB, fresh.email)
       await sendTierAssignedNotification(
         env.RESEND_API_KEY,
         fresh.email,
@@ -371,7 +382,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
         t,
         cents,
         origin,
-        visitorLang(fresh),
+        visitorPrefLang,
         isLateQuote,
       )
     }
@@ -403,19 +414,29 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params
   // source of truth.
   const origin = new URL(request.url).origin
   if (admin && session.email !== email) {
+    const visitorPrefLang = await getLang(env.DB, session.email)
     await sendWithdrawalNotification(
       env.RESEND_API_KEY,
       session.email,
       email,
       id,
       origin,
-      visitorLang(session),
+      visitorPrefLang,
       'visitor',
     )
   } else {
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     if (marc && marc.toLowerCase() !== email.toLowerCase()) {
-      await sendWithdrawalNotification(env.RESEND_API_KEY, marc, email, id, origin, 'en', 'admin')
+      const marcLang = await getLang(env.DB, marc)
+      await sendWithdrawalNotification(
+        env.RESEND_API_KEY,
+        marc,
+        email,
+        id,
+        origin,
+        marcLang,
+        'admin',
+      )
     }
   }
 

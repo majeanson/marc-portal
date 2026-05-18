@@ -6,7 +6,7 @@ import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 import { ProjectCardPreview } from './ProjectCardPreview'
 
-const FEATURED_LIMIT = 3
+export const FEATURED_LIMIT = 3
 
 export function FeaturedProjects({ lang }: { lang: Lang }) {
   const t = DICT[lang].featured

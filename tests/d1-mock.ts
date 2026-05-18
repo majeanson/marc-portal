@@ -113,6 +113,12 @@ interface VouchRowMock {
   deleted_at: number | null
 }
 
+interface UserPrefRowMock {
+  email: string
+  lang: string
+  updated_at: number
+}
+
 export class D1Mock {
   sessions = new Map<string, SessionRowMock>()
   messages = new Map<string, MessageRowMock>()
@@ -123,6 +129,7 @@ export class D1Mock {
   webhook_events = new Map<string, WebhookEventRowMock>()
   admin_alerts = new Map<string, AdminAlertRowMock>()
   vouches = new Map<string, VouchRowMock>()
+  user_prefs = new Map<string, UserPrefRowMock>()
 
   prepare(sql: string): MockPreparedStatement {
     return new MockPreparedStatement(this, sql, [])
@@ -547,6 +554,27 @@ class MockPreparedStatement {
     if (sql.startsWith('SELECT') && sql.includes('FROM vouches ORDER BY created_at DESC')) {
       const rows = [...this.db.vouches.values()].sort((x, y) => y.created_at - x.created_at)
       return rows.map((v) => ({ ...v }))
+    }
+
+    // SELECT lang FROM user_prefs WHERE email = ?
+    if (sql.includes('FROM user_prefs WHERE email = ?')) {
+      const row = this.db.user_prefs.get((a[0] as string).toLowerCase())
+      return row ? [{ lang: row.lang }] : []
+    }
+
+    // Fallback: SELECT intake_json FROM sessions WHERE email = ? AND deleted_at IS NULL
+    //          ORDER BY updated_at DESC LIMIT 1
+    if (
+      sql.includes('FROM sessions') &&
+      sql.includes('SELECT intake_json') &&
+      sql.includes('WHERE email = ? AND deleted_at IS NULL')
+    ) {
+      const email = a[0] as string
+      const rows = [...this.db.sessions.values()]
+        .filter((s) => s.email === email && s.deleted_at === null)
+        .sort((x, y) => y.updated_at - x.updated_at)
+      const first = rows[0]
+      return first ? [{ intake_json: first.intake_json }] : []
     }
 
     return []
@@ -1031,6 +1059,30 @@ class MockPreparedStatement {
       const v = this.db.vouches.get(id)
       if (v) v.deleted_at = null
       return v ? 1 : 0
+    }
+
+    // INSERT INTO user_prefs (email, lang, updated_at) VALUES (?, ?, ?)
+    //   ON CONFLICT(email) DO UPDATE SET lang = excluded.lang, updated_at = excluded.updated_at
+    if (sql.startsWith('INSERT INTO user_prefs') && sql.includes('ON CONFLICT(email)')) {
+      const email = (a[0] as string).toLowerCase()
+      this.db.user_prefs.set(email, {
+        email,
+        lang: a[1] as string,
+        updated_at: a[2] as number,
+      })
+      return 1
+    }
+
+    // INSERT OR IGNORE INTO user_prefs (email, lang, updated_at) VALUES (?, ?, ?)
+    if (sql.startsWith('INSERT OR IGNORE INTO user_prefs')) {
+      const email = (a[0] as string).toLowerCase()
+      if (this.db.user_prefs.has(email)) return 0
+      this.db.user_prefs.set(email, {
+        email,
+        lang: a[1] as string,
+        updated_at: a[2] as number,
+      })
+      return 1
     }
 
     // Generic vouches UPDATE: parse the SET clause so admin/vouches/[id] can

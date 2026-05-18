@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PageMast } from '../components/PageMast'
 import { listPatterns, localizedPattern } from '../lib/patterns'
 
 /**
@@ -27,18 +28,27 @@ export function Tier0({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section">
           <div className="section__inner">
-            <a className="showcase-page__back" href={lang === 'fr' ? '/' : '/en'}>
-              {t.tier0.backHome}
-            </a>
-            <div className="section__eyebrow">{t.tier0.eyebrow}</div>
-            <h1>{t.tier0.title}</h1>
-            <p>{t.tier0.intro}</p>
-            <p>{t.tier0.principle}</p>
+            <PageMast
+              folio={lang === 'fr' ? '№ 00 — libre-service' : '№ 00 — self-serve'}
+              stampLabel={lang === 'fr' ? 'GRATUIT' : 'FREE'}
+              stampSub={lang === 'fr' ? 'AUCUN COMPTE' : 'NO ACCOUNT'}
+              back={{ href: lang === 'fr' ? '/' : '/en', label: t.tier0.backHome }}
+            >
+              <div className="section__eyebrow">{t.tier0.eyebrow}</div>
+              <h1>{t.tier0.title}</h1>
+              <p>{t.tier0.intro}</p>
+              <p>{t.tier0.principle}</p>
+            </PageMast>
 
             <ul className="patterns">
               {patterns.map((p) => (
-                <li key={p.id} className="pattern">
-                  <h2 className="pattern__title">{localizedPattern(p.title, lang)}</h2>
+                <li key={p.id} className={`pattern pattern--${p.tone}`}>
+                  <div className="pattern__head">
+                    <span className={`pattern__tag pattern__tag--${p.tone} mono`}>
+                      {localizedPattern(p.tag, lang)}
+                    </span>
+                    <h2 className="pattern__title">{localizedPattern(p.title, lang)}</h2>
+                  </div>
                   <div className="pattern__block">
                     <div className="pattern__label mono">{t.tier0.problemLabel}</div>
                     <p className="pattern__body">{localizedPattern(p.problem, lang)}</p>

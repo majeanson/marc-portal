@@ -174,6 +174,17 @@ export function Vouch({ lang }: { lang: Lang }) {
               </button>
             </p>
             <p>
+              {/* If the visitor arrived via /vouch?for=:id, the natural
+                  next destination is the project page they were just
+                  vouching about — surface it ahead of "back home". */}
+              {sessionFor && (
+                <>
+                  <Link to={`${langPrefix}/share/${encodeURIComponent(sessionFor)}`}>
+                    {ts.backToProject}
+                  </Link>
+                  {' · '}
+                </>
+              )}
               <Link to={langPrefix || '/'}>{ts.backHome}</Link>
             </p>
           </section>

@@ -12,6 +12,7 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
+import { LangPrefCard } from '../components/LangPrefCard'
 
 const COPY = {
   fr: {
@@ -302,6 +303,8 @@ export function AdminHub({ lang }: { lang: Lang }) {
           </ul>
         </section>
       ))}
+
+      <LangPrefCard lang={lang} />
     </article>
   )
 }

@@ -3,6 +3,7 @@ import { Link, useSearchParams, useViewTransitionState } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { MobileStickyCta } from '../components/MobileStickyCta'
+import { PageMast } from '../components/PageMast'
 import { ProjectCardPreview } from '../components/ProjectCardPreview'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
@@ -94,9 +95,15 @@ export function Projects({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section projects">
           <div className="section__inner">
-            <div className="section__eyebrow">{t.eyebrow}</div>
-            <h1 className="projects__title">{t.heading}</h1>
-            <p className="projects__intro">{t.intro}</p>
+            <PageMast
+              folio={lang === 'fr' ? '№ 02 — la galerie' : '№ 02 — the gallery'}
+              stampLabel={lang === 'fr' ? 'LIVRÉ' : 'SHIPPED'}
+              stampSub="QUÉBEC · ASYNC"
+            >
+              <div className="section__eyebrow">{t.eyebrow}</div>
+              <h1 className="projects__title">{t.heading}</h1>
+              <p className="projects__intro">{t.intro}</p>
+            </PageMast>
 
             {projects && projects.length > 0 && (
               <ProjectsFilterBar

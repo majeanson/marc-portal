@@ -95,3 +95,26 @@ export function patchAdminVouch(
 export function deleteAdminVouch(id: string): Promise<{ ok: true }> {
   return api(`/api/admin/vouches/${encodeURIComponent(id)}`, { method: 'DELETE' })
 }
+
+export type AdminVouchSection = 'pending' | 'approved' | 'rejected' | 'trash'
+
+/**
+ * Group a flat AdminVouch list into the four moderation buckets used by
+ * /admin/vouches. A soft-deleted row goes to `trash` regardless of its
+ * `status` value — the operator sees it under Trash, not under whatever
+ * status it had when deleted. Status `pending` rows are surfaced first
+ * because that's the active queue.
+ */
+export function partitionAdminVouches(all: AdminVouch[]): Record<AdminVouchSection, AdminVouch[]> {
+  const pending: AdminVouch[] = []
+  const approved: AdminVouch[] = []
+  const rejected: AdminVouch[] = []
+  const trash: AdminVouch[] = []
+  for (const v of all) {
+    if (v.deleted_at) trash.push(v)
+    else if (v.status === 'pending') pending.push(v)
+    else if (v.status === 'approved') approved.push(v)
+    else if (v.status === 'rejected') rejected.push(v)
+  }
+  return { pending, approved, rejected, trash }
+}

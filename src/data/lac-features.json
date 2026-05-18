@@ -24,7 +24,12 @@
       "title": "Custom Domain Onboarding — automate Cloudflare Pages domain attach + SSL polling",
       "status": "active",
       "domain": "marc-portal/onboarding",
-      "tags": ["onboarding", "cloudflare-pages-api", "custom-domain", "ssl"],
+      "tags": [
+        "onboarding",
+        "cloudflare-pages-api",
+        "custom-domain",
+        "ssl"
+      ],
       "problem": "Each buyer wants their app at their own domain (e.g. roger-voice-truck.com). Cloudflare Pages supports unlimited custom domains per project via the HTTP API. To keep onboarding under 5 minutes of operator time, this feature wraps the CF API in: (a) a one-call domain-attach when a tenant is provisioned, (b) generated C…",
       "decisionsCount": 3,
       "lastTransitionDate": "2026-05-07"
@@ -53,7 +58,14 @@
       "title": "Engagement Runtime — Magic-Link Sessions, Persistence & Marc/Visitor Interaction",
       "status": "active",
       "domain": "portal/runtime",
-      "tags": ["dynamic-surface", "auth", "magic-link", "persistence", "engagement", "admin-inbox"],
+      "tags": [
+        "dynamic-surface",
+        "auth",
+        "magic-link",
+        "persistence",
+        "engagement",
+        "admin-inbox"
+      ],
       "problem": "The portal is fully static. A visitor who fills the intake form and leaves loses everything; if they return, they restart from zero. Marc cannot reply on the same surface; he has no inbox of in-flight engagements; there is no asynchronous message thread between the two parties. The engagement-canvas page renders featu…",
       "decisionsCount": 5,
       "lastTransitionDate": "2026-05-07"
@@ -82,7 +94,13 @@
       "title": "Platform Spine — extract shared template primitives after Phase 2",
       "status": "active",
       "domain": "marc-portal/platform",
-      "tags": ["platform", "spine", "refactor", "template-primitives", "phase-3"],
+      "tags": [
+        "platform",
+        "spine",
+        "refactor",
+        "template-primitives",
+        "phase-3"
+      ],
       "problem": "Two templates (SND + Volunteer Roster) shipped on top of feat-fleet-foundation in Phase 1 + 2. Now we can observe what actually duplicated between them and extract the shared spine deliberately, instead of guessing. The duplications worth extracting: (1) the auth/tenant gate boilerplate at the top of every API handler…",
       "decisionsCount": 3,
       "lastTransitionDate": "2026-05-07"
@@ -93,7 +111,13 @@
       "title": "SND as a Tenanted Package — productize the demo into the first sellable template",
       "status": "active",
       "domain": "marc-portal/templates",
-      "tags": ["template", "snd", "tenanted-app", "voice", "invoicing"],
+      "tags": [
+        "template",
+        "snd",
+        "tenanted-app",
+        "voice",
+        "invoicing"
+      ],
       "problem": "SND today is a static interactive demo at /demo/sunday-night-dread, with composite voice clips and a parser that runs entirely in the browser. To sell it as Roger Voice Truck's actual app, it needs to become a tenanted template: real D1-backed data (voice clips uploaded by end-users, parsed entries, invoice drafts, en…",
       "decisionsCount": 3,
       "lastTransitionDate": "2026-05-07"
@@ -104,7 +128,13 @@
       "title": "Volunteer Roster — second sellable template (Phase 2 abstraction stress-test)",
       "status": "active",
       "domain": "marc-portal/templates",
-      "tags": ["template", "volunteer-roster", "scheduling", "second-template", "abstraction-test"],
+      "tags": [
+        "template",
+        "volunteer-roster",
+        "scheduling",
+        "second-template",
+        "abstraction-test"
+      ],
       "problem": "App #2 of the package shop. Built deliberately on a different domain shape than SND (no voice, no invoicing, no append-only event log) so the platform spine (tenants, theming, auth, admin shell, custom domains) gets pressure-tested against a second use case before we extract it. Volunteer Roster targets community orga…",
       "decisionsCount": 3,
       "lastTransitionDate": "2026-05-07"
@@ -137,7 +167,14 @@
       "title": "SND itération — Synchronisation comptable (QuickBooks / Acomba)",
       "status": "draft",
       "domain": "sunday-night-dread/iteration",
-      "tags": ["iteration", "roadmap", "sunday-night-dread", "accounting", "quickbooks", "acomba"],
+      "tags": [
+        "iteration",
+        "roadmap",
+        "sunday-night-dread",
+        "accounting",
+        "quickbooks",
+        "acomba"
+      ],
       "problem": "Une fois le brouillon de facture généré par le MVP et révisé, le tradesperson doit le ressaisir dans son logiciel comptable (QuickBooks ou Acomba — les deux dominants au Québec) pour produire la vraie facture officielle, payer la TPS/TVQ, et tenir la comptabilité. Cette double saisie est exactement le type de friction…",
       "decisionsCount": 0,
       "lastTransitionDate": null
@@ -148,7 +185,14 @@
       "title": "SND itération — Documentation as-built (PDF client final)",
       "status": "draft",
       "domain": "sunday-night-dread/iteration",
-      "tags": ["iteration", "roadmap", "sunday-night-dread", "as-built", "pdf", "post-mvp"],
+      "tags": [
+        "iteration",
+        "roadmap",
+        "sunday-night-dread",
+        "as-built",
+        "pdf",
+        "post-mvp"
+      ],
       "problem": "Les clients finaux (propriétaires, gestionnaires de bâtiment, syndicats de copropriété) demandent souvent un récapitulatif documenté des travaux : matériaux installés, heures travaillées, décisions techniques notées en cours de chantier. Faire ce document à la main = encore une tâche du dimanche soir. Cette itération…",
       "decisionsCount": 0,
       "lastTransitionDate": null
@@ -159,7 +203,13 @@
       "title": "SND itération — Inventaire lié par chantier",
       "status": "draft",
       "domain": "sunday-night-dread/iteration",
-      "tags": ["iteration", "roadmap", "sunday-night-dread", "inventory", "post-mvp"],
+      "tags": [
+        "iteration",
+        "roadmap",
+        "sunday-night-dread",
+        "inventory",
+        "post-mvp"
+      ],
       "problem": "Au-delà de la facture, le tradesperson veut savoir combien de matériaux ont été utilisés sur chaque chantier — utile pour les soumissions futures, le suivi de pertes, et les commandes de réapprovisionnement. Cette itération relie les notes vocales (déjà parsées par le MVP) à un compteur de matériaux par chantier. Aucu…",
       "decisionsCount": 0,
       "lastTransitionDate": null
@@ -170,7 +220,13 @@
       "title": "SND itération — Versionnage par chantier",
       "status": "draft",
       "domain": "sunday-night-dread/iteration",
-      "tags": ["iteration", "roadmap", "sunday-night-dread", "versioning", "post-mvp"],
+      "tags": [
+        "iteration",
+        "roadmap",
+        "sunday-night-dread",
+        "versioning",
+        "post-mvp"
+      ],
       "problem": "Le MVP Sunday Night Dread mélange toutes les notes vocales d'une semaine dans une seule boîte de réception. Mais le tradesperson travaille sur plusieurs chantiers en parallèle — quand il dicte « 2 heures chez Tremblay et 1 heure chez Côté », ces lignes appartiennent à des factures différentes. Cette itération introdui…",
       "decisionsCount": 0,
       "lastTransitionDate": null
@@ -228,7 +284,14 @@
       "title": "Case Study Renderer (primitive)",
       "status": "frozen",
       "domain": "primitive/showcase",
-      "tags": ["case-study", "seo", "long-tail", "compounding", "tier-reference", "redaction-safe"],
+      "tags": [
+        "case-study",
+        "seo",
+        "long-tail",
+        "compounding",
+        "tier-reference",
+        "redaction-safe"
+      ],
       "problem": "Every shipped engagement is potential SEO + portfolio compounding, but only if it is published as a public page in the client's natural language. Most consultants treat case studies as marketing fluff bolted on after delivery. This primitive treats them as primary acquisition infrastructure: takes a structured engagem…",
       "decisionsCount": 3,
       "lastTransitionDate": "2026-05-07"
@@ -321,5 +384,5 @@
       "lastTransitionDate": "2026-05-07"
     }
   ],
-  "generatedAt": "2026-05-17T19:35:13.279Z"
+  "generatedAt": "2026-05-18T22:56:06.152Z"
 }

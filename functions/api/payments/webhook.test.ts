@@ -22,6 +22,11 @@ vi.mock('../../_lib/stripe', async () => {
 
 vi.mock('../../_lib/email', () => ({
   sendTier2DepositReceiptAndFinalPrompt: vi.fn().mockResolvedValue(true),
+  // sendAdminAlert resolves to true by default so the "email delivered →
+  // skip admin_alerts" path is the default. Individual tests override the
+  // resolved value (e.g. false → falls through to admin_alerts) using
+  // vi.mocked(email.sendAdminAlert).mockResolvedValueOnce(false).
+  sendAdminAlert: vi.fn().mockResolvedValue(true),
 }))
 
 import * as email from '../../_lib/email'
@@ -459,7 +464,7 @@ describe('POST /api/payments/webhook — charge.refunded', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('POST /api/payments/webhook — admin_alerts fallback', () => {
-  it('writes to admin_alerts when Resend returns non-2xx', async () => {
+  it('writes to admin_alerts when sendAdminAlert reports a failure', async () => {
     const env = buildEnv()
     // Seed a session with the soon-to-be-canceled sub so the handler finds it.
     env._db.sessions.set('sess_cancel', {
@@ -477,10 +482,8 @@ describe('POST /api/payments/webhook — admin_alerts fallback', () => {
       custodian_subscription_id: 'sub_xyz',
     })
 
-    // Resend 503 → fall back to admin_alerts.
-    const fetchSpy = vi
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response('upstream error', { status: 503 }))
+    // sendAdminAlert → false simulates Resend non-2xx / network outage.
+    ;(email.sendAdminAlert as ReturnType<typeof vi.fn>).mockResolvedValueOnce(false)
 
     await onRequestPost({
       request: buildWebhookRequest({
@@ -498,11 +501,9 @@ describe('POST /api/payments/webhook — admin_alerts fallback', () => {
     expect(alert.kind).toBe('stripe')
     expect(alert.body).toContain('sub_xyz')
     expect(alert.resolved_at).toBeNull()
-
-    fetchSpy.mockRestore()
   })
 
-  it('does NOT write to admin_alerts when Resend returns 200 (email delivered)', async () => {
+  it('does NOT write to admin_alerts when sendAdminAlert succeeds', async () => {
     const env = buildEnv()
     env._db.sessions.set('sess_ok', {
       id: 'sess_ok',
@@ -519,9 +520,7 @@ describe('POST /api/payments/webhook — admin_alerts fallback', () => {
       custodian_subscription_id: 'sub_ok',
     })
 
-    const fetchSpy = vi
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response('{}', { status: 200 }))
+    // sendAdminAlert default mock returns true → no fallback row.
 
     await onRequestPost({
       request: buildWebhookRequest({
@@ -535,7 +534,5 @@ describe('POST /api/payments/webhook — admin_alerts fallback', () => {
     } as never)
 
     expect(env._db.admin_alerts.size).toBe(0)
-
-    fetchSpy.mockRestore()
   })
 })

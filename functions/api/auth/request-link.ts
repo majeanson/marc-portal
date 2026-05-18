@@ -11,6 +11,7 @@ import type { Env } from '../../_lib/env'
 import { ok, badRequest } from '../../_lib/json'
 import { sendMagicLink } from '../../_lib/email'
 import { randomTokenB64url, sha256B64url } from '../../_lib/bytes'
+import { setLangIfAbsent } from '../../_lib/userPrefs'
 
 const TOKEN_TTL_SECONDS = 30 * 60
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60
@@ -92,6 +93,17 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   const origin = new URL(request.url).origin
   const verifyUrl = `${origin}/api/auth/verify?token=${encodeURIComponent(plaintextToken)}&lang=${lang}`
+
+  // First-touch language seeding. setLangIfAbsent is INSERT OR IGNORE — so
+  // a user who has already picked a language via /me/prefs keeps their
+  // explicit choice, while a fresh visitor's chosen request-time language
+  // becomes the default for all future emails. Best-effort: if it fails,
+  // we still send the magic link and the user can change the pref later.
+  try {
+    await setLangIfAbsent(env.DB, email, lang)
+  } catch (err) {
+    console.warn('user_prefs seed failed (continuing)', err)
+  }
 
   // Fire-and-forget: even if Resend is down we return 200. The token is in
   // D1; visitor can request another link. Error is logged inside sendMagicLink.

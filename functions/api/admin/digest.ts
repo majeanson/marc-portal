@@ -18,13 +18,46 @@ import type { Env } from '../../_lib/env'
 import { primaryAdminEmail } from '../../_lib/sessions'
 import type { SessionRow } from '../../_lib/sessions'
 import { ok, serverError, unauthorized } from '../../_lib/json'
+import { getLang } from '../../_lib/userPrefs'
 
 interface DigestEnv extends Env {
   DIGEST_TOKEN?: string
 }
 
-const FROM = 'Marc Portal <noreply@marcportal.com>'
+const FROM = 'Marc <noreply@marcportal.com>'
 const SLA_THRESHOLD_SECONDS = 48 * 3600
+
+// Tiny FR/EN copy bank — the digest doesn't go through renderEmail()
+// because it's the one place where the body is a dynamically-sized list,
+// not a static layout. The copy still matches the warm voice.
+const COPY = {
+  fr: {
+    triageHeading: 'En triage depuis plus de 48h',
+    triageOne: 'session',
+    triageMany: 'sessions',
+    triageOpen: 'ouvrir',
+    alertsHeading: 'Alertes opérateur (fallback webhook)',
+    alertOne: 'alerte non résolue',
+    alertMany: 'alertes non résolues',
+    alertResolveHelp: 'Marque comme résolue via D1 :',
+    subjectPrefix: 'Digest',
+    subjectTriage: (n: number) => `${n} en triage`,
+    subjectAlerts: (n: number) => `${n} alerte${n === 1 ? '' : 's'}`,
+  },
+  en: {
+    triageHeading: 'In triage for more than 48h',
+    triageOne: 'session',
+    triageMany: 'sessions',
+    triageOpen: 'open',
+    alertsHeading: 'Operator alerts (webhook fallbacks)',
+    alertOne: 'unresolved alert',
+    alertMany: 'unresolved alerts',
+    alertResolveHelp: 'Mark resolved via D1:',
+    subjectPrefix: 'Digest',
+    subjectTriage: (n: number) => `${n} in triage`,
+    subjectAlerts: (n: number) => `${n} alert${n === 1 ? '' : 's'}`,
+  },
+} as const
 
 export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) => {
   const supplied = request.headers.get('X-Digest-Token') ?? ''
@@ -175,6 +208,9 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
   }
 
   const origin = new URL(request.url).origin
+  const lang = await getLang(env.DB, marc)
+  const t = COPY[lang]
+
   const triageLines = rows.map((r) => {
     const ageH = Math.floor((now - r.created_at) / 3600)
     return `• ${ageH}h · ${r.email} · ${origin}/admin/inbox/${r.id}`
@@ -185,49 +221,64 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
   })
   const triageBlock =
     rows.length > 0
-      ? `${rows.length} session${rows.length === 1 ? '' : 's'} en triage depuis plus de 48h:\n\n${triageLines.join('\n')}\n`
+      ? `${rows.length} ${rows.length === 1 ? t.triageOne : t.triageMany} — ${t.triageHeading}:\n\n${triageLines.join('\n')}\n`
       : ''
   const alertsBlock =
     alerts.length > 0
-      ? `${alerts.length} alerte${alerts.length === 1 ? '' : 's'} opérateur non résolue${alerts.length === 1 ? '' : 's'} (fallback webhook):\n\n${alertLines.join('\n')}\n\nMarque comme résolue via D1: UPDATE admin_alerts SET resolved_at = unixepoch() WHERE id = '...';\n`
+      ? `${alerts.length} ${alerts.length === 1 ? t.alertOne : t.alertMany} (${t.alertsHeading}):\n\n${alertLines.join('\n')}\n\n${t.alertResolveHelp} UPDATE admin_alerts SET resolved_at = unixepoch() WHERE id = '...';\n`
       : ''
   const text = [triageBlock, alertsBlock].filter(Boolean).join('\n')
 
   const triageHtml =
     rows.length > 0
-      ? `<p><strong>${rows.length} session${rows.length === 1 ? '' : 's'}</strong> en triage depuis plus de 48h.</p>
-<ul>
+      ? `<h2 style="margin:0 0 12px 0;color:#1f1d1a;font-size:18px;">${t.triageHeading}</h2>
+<p style="margin:0 0 12px 0;color:#1f1d1a;"><strong>${rows.length}</strong> ${rows.length === 1 ? t.triageOne : t.triageMany}.</p>
+<ul style="margin:0 0 18px 0;padding-left:20px;color:#3f3c34;line-height:1.7;">
 ${rows
   .map((r) => {
     const ageH = Math.floor((now - r.created_at) / 3600)
-    return `<li>${ageH}h · ${escapeHtml(r.email)} · <a href="${origin}/admin/inbox/${r.id}">ouvrir</a></li>`
+    return `<li>${ageH}h · ${escapeHtml(r.email)} · <a href="${origin}/admin/inbox/${r.id}" style="color:#3d6e4e;">${t.triageOpen}</a></li>`
   })
   .join('\n')}
 </ul>`
       : ''
   const alertsHtml =
     alerts.length > 0
-      ? `<p><strong>${alerts.length} alerte${alerts.length === 1 ? '' : 's'} opérateur</strong> non résolue${alerts.length === 1 ? '' : 's'} (fallback webhook Stripe → admin_alerts).</p>
-<ul>
+      ? `<h2 style="margin:18px 0 12px 0;color:#1f1d1a;font-size:18px;">${t.alertsHeading}</h2>
+<p style="margin:0 0 12px 0;color:#1f1d1a;"><strong>${alerts.length}</strong> ${alerts.length === 1 ? t.alertOne : t.alertMany}.</p>
+<ul style="margin:0 0 18px 0;padding-left:20px;color:#3f3c34;line-height:1.7;">
 ${alerts
   .map((a) => {
     const ageH = Math.floor((now - a.created_at) / 3600)
-    return `<li>${ageH}h · <code>${escapeHtml(a.kind)}</code> · ${escapeHtml(a.body)}</li>`
+    return `<li>${ageH}h · <code style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#5a554b;">${escapeHtml(a.kind)}</code> · ${escapeHtml(a.body)}</li>`
   })
   .join('\n')}
 </ul>
-<p style="color:#666;font-size:13px">Marque comme résolue via D1 : <code>UPDATE admin_alerts SET resolved_at = unixepoch() WHERE id = '…';</code></p>`
+<p style="color:#8a8478;font-size:13px;line-height:1.5;">${t.alertResolveHelp} <code style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;">UPDATE admin_alerts SET resolved_at = unixepoch() WHERE id = '…';</code></p>`
       : ''
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px;color:#1a1a1a">
-${triageHtml}
-${alertsHtml}
-</body></html>`
+  const html = `<!doctype html>
+<html lang="${lang}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f5efe3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;padding:24px;">
+    <div style="background:#fffaf2;border-radius:14px;overflow:hidden;box-shadow:0 12px 30px rgba(36,30,20,0.08);">
+      <div style="background:linear-gradient(135deg,#fbf7ec 0%,#fadfb8 45%,#cfdfd1 100%);padding:24px 28px;">
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#2a2a26;">marc<span style="color:#d97706;">.</span></div>
+        <div style="margin-top:6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#7a7568;font-weight:600;">${t.subjectPrefix}</div>
+      </div>
+      <div style="padding:24px 28px;">
+        ${triageHtml}
+        ${alertsHtml}
+      </div>
+    </div>
+  </div>
+</body>
+</html>`
 
   const subjectParts: string[] = []
-  if (rows.length > 0) subjectParts.push(`${rows.length} en triage`)
-  if (alerts.length > 0)
-    subjectParts.push(`${alerts.length} alerte${alerts.length === 1 ? '' : 's'}`)
-  const subject = `Digest — ${subjectParts.join(' · ')}`
+  if (rows.length > 0) subjectParts.push(t.subjectTriage(rows.length))
+  if (alerts.length > 0) subjectParts.push(t.subjectAlerts(alerts.length))
+  const subject = `${t.subjectPrefix} — ${subjectParts.join(' · ')}`
 
   // Best-effort send. If Resend is down we still return 200 so the cron job
   // sees the call as successful and doesn't retry into a backoff loop.

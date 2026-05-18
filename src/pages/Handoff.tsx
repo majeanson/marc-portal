@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PageMast } from '../components/PageMast'
 
 /**
  * Bilingual page explaining the two ownership modes offered at engagement close
@@ -354,16 +355,17 @@ export function Handoff({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section">
           <div className="section__inner privacy handoff">
-            <a className="showcase-page__back" href={lang === 'fr' ? '/' : '/en'}>
-              {t.backHome}
-            </a>
-
-            <header className="handoff__hero">
+            <PageMast
+              folio={lang === 'fr' ? '№ 06 — comment ça finit' : '№ 06 — how it ends'}
+              stampLabel={lang === 'fr' ? 'PASSATION' : 'HANDOFF'}
+              stampSub={lang === 'fr' ? 'SANS PIÈGE' : 'NO LOCK-IN'}
+              back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}
+            >
               <div className="section__eyebrow">{t.eyebrow}</div>
               <h1>{t.title}</h1>
               <p className="privacy__intro">{t.lead}</p>
               <p className="mono privacy__asof">{t.asOf}</p>
-            </header>
+            </PageMast>
 
             <section className="handoff__modes">
               <h2>{t.modes.title}</h2>

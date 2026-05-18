@@ -6,6 +6,14 @@ interface RailItem {
   label: string
 }
 
+/** Cheap order-insensitive set equality check — we only ever store a few
+ *  short string ids in here, so size + every-membership is plenty. */
+function sameIds(a: Set<string>, b: Set<string>): boolean {
+  if (a.size !== b.size) return false
+  for (const v of a) if (!b.has(v)) return false
+  return true
+}
+
 const ITEMS: Record<Lang, RailItem[]> = {
   fr: [
     { id: 'featured', label: 'Projets' },
@@ -64,11 +72,17 @@ export function SectionRail({ lang }: { lang: Lang }) {
     // idempotent for the same target, but tracking lets us cleanly
     // disconnect on unmount.
     const observed = new Set<string>()
+    // Last computed set, kept outside React state so the MutationObserver
+    // can short-circuit when the answer hasn't changed (typing in any
+    // input on the page triggers a body mutation, so this is hot).
+    let lastPresent: Set<string> = new Set()
 
-    // Rescan the DOM, update the visible-rail items, and observe any
-    // newly-mounted section. Some sections (Testimonials) self-mount
-    // asynchronously after a network call, so we re-run on every body
-    // mutation in addition to mount.
+    // Rescan the DOM, observe any newly-mounted section, and update
+    // presentIds — but only when the set of present ids actually changed.
+    // Section presence is rare-event (Testimonials toggles once when its
+    // network call resolves); cheap getElementById lookups are fine, but
+    // a setState on every body mutation would force a re-render of the
+    // rail on every keystroke.
     const sync = () => {
       const present = new Set<string>()
       for (const it of allItems) {
@@ -81,14 +95,27 @@ export function SectionRail({ lang }: { lang: Lang }) {
           }
         }
       }
-      // setState with the same shape is a re-render no-op in React only
-      // when the reference matches — we always pass a fresh Set, but the
-      // diff is cheap and the rail re-render is rare.
-      setPresentIds(present)
+      if (!sameIds(present, lastPresent)) {
+        lastPresent = present
+        setPresentIds(present)
+      }
+    }
+
+    // Coalesce bursts of mutations into a single rAF-aligned sync. A long
+    // input session emits dozens of childList mutations per second; we
+    // only need one check per frame at most.
+    let scheduled = false
+    const scheduleSync = () => {
+      if (scheduled) return
+      scheduled = true
+      requestAnimationFrame(() => {
+        scheduled = false
+        sync()
+      })
     }
 
     sync()
-    const mo = new MutationObserver(sync)
+    const mo = new MutationObserver(scheduleSync)
     mo.observe(document.body, { childList: true, subtree: true })
 
     return () => {

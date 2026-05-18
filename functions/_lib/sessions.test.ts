@@ -11,7 +11,6 @@ import {
   isValidStatus,
   parseStatusHistory,
   primaryAdminEmail,
-  visitorLang,
   type SessionRow,
   type StatusHistoryEntry,
 } from './sessions'
@@ -157,24 +156,5 @@ describe('countActiveAndTriage + isActiveAtCap + isTriageAtCap', () => {
     expect(isActiveAtCap({ active: ACTIVE_CAP - 1, triage: 0 })).toBe(false)
     expect(isTriageAtCap({ active: 0, triage: TRIAGE_CAP })).toBe(true)
     expect(isTriageAtCap({ active: 0, triage: TRIAGE_CAP - 1 })).toBe(false)
-  })
-})
-
-describe('visitorLang', () => {
-  it('returns fr when intake_json is null', () => {
-    expect(visitorLang(makeSession({ intake_json: null }))).toBe('fr')
-  })
-
-  it('returns lang from intake payload', () => {
-    expect(visitorLang(makeSession({ intake_json: JSON.stringify({ lang: 'en' }) }))).toBe('en')
-    expect(visitorLang(makeSession({ intake_json: JSON.stringify({ lang: 'fr' }) }))).toBe('fr')
-  })
-
-  it('falls back to fr when payload lang is invalid', () => {
-    expect(visitorLang(makeSession({ intake_json: JSON.stringify({ lang: 'pt' }) }))).toBe('fr')
-  })
-
-  it('falls back to fr for malformed JSON', () => {
-    expect(visitorLang(makeSession({ intake_json: '{not json' }))).toBe('fr')
   })
 })

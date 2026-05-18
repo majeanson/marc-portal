@@ -29,9 +29,11 @@ import {
   VOUCH_RELATIONSHIPS,
   deleteAdminVouch,
   listAdminVouches,
+  partitionAdminVouches,
   patchAdminVouch,
   type AdminPatchInput,
   type AdminVouch,
+  type AdminVouchSection,
   type VouchRelationship,
   type VouchStatus,
 } from '../lib/vouchesApi'
@@ -49,6 +51,7 @@ interface Copy {
   refresh: string
   section: Record<Section, string>
   sectionEmpty: Record<Section, string>
+  allEmpty: string
   relationshipLabels: Record<VouchRelationship, string>
   statusLabels: Record<VouchStatus, string>
   submittedOn: string
@@ -75,7 +78,7 @@ interface Copy {
   errorGeneric: string
 }
 
-type Section = 'pending' | 'approved' | 'rejected' | 'trash'
+type Section = AdminVouchSection
 
 const COPY: Record<Lang, Copy> = {
   fr: {
@@ -99,6 +102,8 @@ const COPY: Record<Lang, Copy> = {
       rejected: 'Rien dans les rejetés.',
       trash: 'Corbeille vide.',
     },
+    allEmpty:
+      'Aucun témoignage reçu pour l’instant. Ils apparaîtront ici dès la première soumission.',
     relationshipLabels: {
       client: 'Client',
       colleague: 'Collègue',
@@ -129,7 +134,7 @@ const COPY: Record<Lang, Copy> = {
     fieldRelationship: 'Lien',
     fieldBody: 'Texte',
     fieldLink: 'Lien (optionnel)',
-    bodyCount: (n: number) => `${n} / ${VOUCH_LIMITS.bodyMax}`,
+    bodyCount: (n: number) => `${n} / ${VOUCH_LIMITS.bodyMin}–${VOUCH_LIMITS.bodyMax}`,
     confirmDelete: 'Supprimer ce témoignage (récupérable depuis la corbeille) ?',
     errorGeneric: 'L’opération a échoué — réessaie ?',
   },
@@ -154,6 +159,7 @@ const COPY: Record<Lang, Copy> = {
       rejected: 'Nothing rejected.',
       trash: 'Trash is empty.',
     },
+    allEmpty: 'No vouches submitted yet. They’ll show up here on the first submission.',
     relationshipLabels: {
       client: 'Client',
       colleague: 'Colleague',
@@ -184,7 +190,7 @@ const COPY: Record<Lang, Copy> = {
     fieldRelationship: 'Relationship',
     fieldBody: 'Body',
     fieldLink: 'Link (optional)',
-    bodyCount: (n: number) => `${n} / ${VOUCH_LIMITS.bodyMax}`,
+    bodyCount: (n: number) => `${n} / ${VOUCH_LIMITS.bodyMin}–${VOUCH_LIMITS.bodyMax}`,
     confirmDelete: 'Soft-delete this vouch (recoverable from trash)?',
     errorGeneric: 'That failed — try again?',
   },
@@ -326,7 +332,7 @@ export function AdminVouches({ lang }: { lang: Lang }) {
   // Partition once, render four sections in the operator-friendly order:
   // active work (pending) first, then the published list (so Marc can spot-
   // check), then rejected and trash for recovery.
-  const grouped = partition(vouches ?? [])
+  const grouped = partitionAdminVouches(vouches ?? [])
 
   return (
     <>
@@ -351,6 +357,11 @@ export function AdminVouches({ lang }: { lang: Lang }) {
 
           {vouches === null ? (
             <p>{t.loading}</p>
+          ) : vouches.length === 0 ? (
+            // Fresh install / zero submissions ever. Rendering four empty
+            // section scaffolds reads as broken — show a single quiet line
+            // until at least one vouch has landed.
+            <p className="field__hint admin-vouches__zero">{t.allEmpty}</p>
           ) : (
             <>
               <VouchSection
@@ -433,20 +444,6 @@ export function AdminVouches({ lang }: { lang: Lang }) {
       <Footer lang={lang} />
     </>
   )
-}
-
-function partition(all: AdminVouch[]): Record<Section, AdminVouch[]> {
-  const pending: AdminVouch[] = []
-  const approved: AdminVouch[] = []
-  const rejected: AdminVouch[] = []
-  const trash: AdminVouch[] = []
-  for (const v of all) {
-    if (v.deleted_at) trash.push(v)
-    else if (v.status === 'pending') pending.push(v)
-    else if (v.status === 'approved') approved.push(v)
-    else if (v.status === 'rejected') rejected.push(v)
-  }
-  return { pending, approved, rejected, trash }
 }
 
 interface SectionProps {
@@ -650,20 +647,39 @@ function VouchEditForm({
   const [body, setBody] = useState(v.body)
   const [linkUrl, setLinkUrl] = useState(v.link_url ?? '')
 
+  // Mirror server-side length rules so the save button greys out before a
+  // 400 round-trip happens. Server is still authoritative; these just
+  // catch the obvious cases inline.
+  const trimmedName = name.trim()
+  const trimmedBody = body.trim()
+  const nameValid =
+    trimmedName.length >= VOUCH_LIMITS.nameMin && trimmedName.length <= VOUCH_LIMITS.nameMax
+  const bodyValid =
+    trimmedBody.length >= VOUCH_LIMITS.bodyMin && trimmedBody.length <= VOUCH_LIMITS.bodyMax
+  const bodyTooShort = trimmedBody.length < VOUCH_LIMITS.bodyMin
+
   // Build a minimal PATCH — only include fields the operator actually
   // touched. Keeps the server's validation surface tight and the diff log
-  // readable.
+  // readable. If nothing changed, skip the round-trip entirely and just
+  // close the edit form (server would no-op anyway).
   function submit(e: React.FormEvent) {
     e.preventDefault()
+    if (!nameValid || !bodyValid) return
     const input: AdminPatchInput = {}
-    if (name.trim() !== v.author_name) input.authorName = name.trim()
+    if (trimmedName !== v.author_name) input.authorName = trimmedName
     if (rel !== v.author_relationship) input.authorRelationship = rel
-    if (body.trim() !== v.body) input.body = body.trim()
+    if (trimmedBody !== v.body) input.body = trimmedBody
     const nextLink = linkUrl.trim()
     const prevLink = v.link_url ?? ''
     if (nextLink !== prevLink) input.linkUrl = nextLink || null
+    if (Object.keys(input).length === 0) {
+      onCancel()
+      return
+    }
     void onSave(input)
   }
+
+  const canSave = nameValid && bodyValid && !isPending
 
   return (
     <form onSubmit={submit} className="admin-vouches__edit">
@@ -711,7 +727,9 @@ function VouchEditForm({
           maxLength={VOUCH_LIMITS.bodyMax}
           required
         />
-        <p className="field__hint mono">{t.bodyCount(body.trim().length)}</p>
+        <p className={`field__hint mono${bodyTooShort ? ' field__hint--error' : ''}`}>
+          {t.bodyCount(trimmedBody.length)}
+        </p>
       </div>
       <div className="field">
         <label htmlFor={`v-link-${v.id}`} className="field__label">
@@ -727,7 +745,7 @@ function VouchEditForm({
         />
       </div>
       <div className="admin-vouches__edit-actions">
-        <button type="submit" className="link-btn mono" disabled={isPending}>
+        <button type="submit" className="link-btn mono" disabled={!canSave}>
           {isPending ? t.saving : t.save}
         </button>
         <button type="button" className="link-btn mono" onClick={onCancel} disabled={isPending}>
