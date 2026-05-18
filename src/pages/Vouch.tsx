@@ -8,7 +8,7 @@
 // rate-limit copy; on anything else fall back to the generic error.
 
 import { type FormEvent, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
 import { DICT, type Lang } from '../i18n'
@@ -32,6 +32,14 @@ export function Vouch({ lang }: { lang: Lang }) {
   const t = DICT[lang].vouches
   const ts = t.submit
   const langPrefix = lang === 'en' ? '/en' : ''
+
+  // Optional session attribution via `?for=<id>`. When present, we ship it
+  // with the submission and surface a contextual hint above the form so
+  // the visitor knows what project this vouch is being filed under. Server
+  // validates the session exists; an invalid id 400s and gets mapped to
+  // the generic error.
+  const [searchParams] = useSearchParams()
+  const sessionFor = searchParams.get('for') || ''
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -113,6 +121,7 @@ export function Vouch({ lang }: { lang: Lang }) {
         relationship: relationship as VouchRelationship,
         body: body.trim(),
         linkUrl: linkUrl.trim() || undefined,
+        sessionId: sessionFor || undefined,
       })
       setSubmitted(true)
     } catch (err) {
@@ -181,6 +190,15 @@ export function Vouch({ lang }: { lang: Lang }) {
         <section className="page__panel">
           <h1>{ts.heading}</h1>
           <p>{ts.lead}</p>
+          {sessionFor && (
+            <p className="field__hint vouch-form__for-project">
+              {ts.forProjectPrefix}{' '}
+              <Link to={`${langPrefix}/share/${encodeURIComponent(sessionFor)}`}>
+                {ts.forProjectLink}
+              </Link>
+              {ts.forProjectSuffix}
+            </p>
+          )}
           <p className="field__hint">{ts.privacy}</p>
           {globalError && (
             <p role="alert" className="form__error">

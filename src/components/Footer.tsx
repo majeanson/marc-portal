@@ -34,6 +34,8 @@ export function Footer({ lang }: { lang: Lang }) {
   const handoffLabel = lang === 'fr' ? 'Comment ça finit' : 'How it ends'
   const metaHref = lang === 'fr' ? '/meta' : '/en/meta'
   const metaLabel = lang === 'fr' ? 'Sous le capot' : 'Under the hood'
+  const vouchesHref = lang === 'fr' ? '/vouches' : '/en/vouches'
+  const vouchesLabel = lang === 'fr' ? 'Témoignages' : 'Vouches'
   return (
     <footer className="site-footer">
       <div className="site-footer__flourish" aria-hidden="true" />
@@ -41,7 +43,8 @@ export function Footer({ lang }: { lang: Lang }) {
         <p className="site-footer__line">{t.contact}</p>
         <p className="site-footer__line">
           {t.legal} · <a href={privacyHref}>{privacyLabel}</a> · <a href={piaHref}>{piaLabel}</a> ·{' '}
-          <a href={handoffHref}>{handoffLabel}</a> · <a href={metaHref}>{metaLabel}</a>
+          <a href={handoffHref}>{handoffLabel}</a> · <a href={metaHref}>{metaLabel}</a> ·{' '}
+          <a href={vouchesHref}>{vouchesLabel}</a>
         </p>
         <p className="site-footer__line site-footer__line--meta">
           <span>{t.copyright}</span>

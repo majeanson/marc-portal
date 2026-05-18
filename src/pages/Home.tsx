@@ -17,6 +17,7 @@ import { PullQuote } from '../components/PullQuote'
 import { MobileStickyCta } from '../components/MobileStickyCta'
 import { InlineIntakeTeaser } from '../components/InlineIntakeTeaser'
 import { FAQ } from '../components/FAQ'
+import { Testimonials } from '../components/Testimonials'
 
 export function Home({ lang }: { lang: Lang }) {
   const t = DICT[lang]
@@ -67,6 +68,12 @@ export function Home({ lang }: { lang: Lang }) {
         <PullQuote lang={lang} />
         {/* 6 — About: short bio near the end (visitors who care, scroll) */}
         <About lang={lang} />
+        {/* 6½ — Testimonials: social proof just before objections (FAQ).
+              Component self-hides when zero approved vouches exist, so the
+              section only appears once /vouches has something to show.
+              SectionRail filters its index by element presence, so the
+              rail entry hides in lockstep. */}
+        <Testimonials lang={lang} />
         {/* 6b — FAQ: handles common objections before the final CTA. JSON-LD
               FAQPage schema is injected for SEO rich results. */}
         <FAQ lang={lang} />

@@ -117,6 +117,19 @@ const FR = {
     errorBody: 'Tu peux toujours ouvrir la galerie complète, ou écrire via le portail.',
   },
 
+  featuredTestimonials: {
+    eyebrow: 'preuves sociales',
+    title: 'Quelques mots de gens qui ont travaillé avec moi',
+    sub: 'Témoignages courts, soumis par les vrais collaborateurs. Je relis, je peux resserrer la formulation — mais le contenu reste leur voix.',
+    writeOne: 'Tu as travaillé avec moi ? Écris un témoignage →',
+    galleryCard: {
+      eyebrow: 'tu veux tout lire ?',
+      title: 'Tous les témoignages, sur une seule page',
+      body: 'Au-delà des trois ci-dessus, la liste complète vit sur /vouches — chronologique, sans filtre.',
+      cta: 'Voir tous les témoignages →',
+    },
+  },
+
   vibe: {
     eyebrow: 'attrape mon vibe',
     title: 'Ce que je fais, ce que je ne fais pas',
@@ -561,6 +574,15 @@ const FR = {
       ariaTrack: 'Frise des étapes',
       keyboardHint: 'Flèches ← / → pour naviguer, Espace pour lecture/pause.',
     },
+    testimonials: {
+      eyebrow: 'témoignages',
+      heading: 'Mots de gens qui ont touché ce projet',
+      empty: 'Pas encore de témoignages pour ce projet.',
+      ctaTitle: 'Tu as touché à ce projet ?',
+      ctaBody:
+        'Si Marc t’a aidé sur ce projet précis, dis-le en quelques phrases — ça paraîtra ici.',
+      ctaButton: 'Écrire un témoignage →',
+    },
   },
 
   projects: {
@@ -805,6 +827,9 @@ const FR = {
       pageTitle: 'Écrire un témoignage',
       heading: 'Tu as déjà travaillé avec moi ? Dis-le en quelques phrases.',
       lead: 'Court, honnête, à ta voix. Je relis avant que ça paraisse — coquilles, longueur, ton. Ton courriel reste en privé : c’est seulement pour pouvoir te recontacter si je dois ajuster un mot.',
+      forProjectPrefix: 'Tu témoignes à propos du projet ',
+      forProjectLink: 'ouvrir le projet',
+      forProjectSuffix: ' — il sera affiché sur sa page une fois approuvé.',
       privacy:
         'Ton nom et tes mots seront visibles publiquement. Ton courriel ne sera jamais affiché.',
       successHeading: 'Reçu — merci.',
@@ -969,6 +994,19 @@ const EN: Copy = {
     emptyCta: 'Describe your problem →',
     errorTitle: 'Can’t load the projects right now.',
     errorBody: 'You can still open the full gallery, or write through the portal.',
+  },
+
+  featuredTestimonials: {
+    eyebrow: 'social proof',
+    title: 'A few words from people who worked with me',
+    sub: 'Short vouches, submitted by actual collaborators. I read before they ship and may tighten the wording — but the substance is their voice.',
+    writeOne: 'Worked with me? Write a vouch →',
+    galleryCard: {
+      eyebrow: 'want to read everything?',
+      title: 'All vouches, on one page',
+      body: 'Beyond the three above, the full list lives on /vouches — chronological, unfiltered.',
+      cta: 'See all vouches →',
+    },
   },
 
   vibe: {
@@ -1411,6 +1449,15 @@ const EN: Copy = {
       ariaTrack: 'Step timeline',
       keyboardHint: 'Arrows ← / → to step, Space to play/pause.',
     },
+    testimonials: {
+      eyebrow: 'vouches',
+      heading: 'Words from people who touched this project',
+      empty: 'No vouches for this project yet.',
+      ctaTitle: 'Did you touch this project?',
+      ctaBody:
+        'If Marc helped on this specific project, say it in a few sentences — it’ll appear here.',
+      ctaButton: 'Write a vouch →',
+    },
   },
 
   projects: {
@@ -1654,6 +1701,9 @@ const EN: Copy = {
       pageTitle: 'Write a vouch',
       heading: 'Worked with me before? Say it in a few sentences.',
       lead: "Short, honest, in your voice. I read before it ships — typos, length, tone. Your email stays private: it's only so I can reach back out if I need to tweak a word.",
+      forProjectPrefix: 'You’re vouching about the project ',
+      forProjectLink: 'open the project',
+      forProjectSuffix: ' — it’ll appear on the project page once approved.',
       privacy: 'Your name and your words will be public. Your email will never be displayed.',
       successHeading: 'Got it — thanks.',
       successBody:

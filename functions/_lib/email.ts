@@ -453,9 +453,7 @@ export async function sendNewVouchNotification(
   origin: string,
 ): Promise<boolean> {
   const subject = 'A new vouch is awaiting moderation'
-  // No dedicated /admin/vouches page yet — link to the hub so Marc lands
-  // somewhere live. Replace with /admin/vouches once that surface ships.
-  const url = `${origin}/admin`
+  const url = `${origin}/admin/vouches`
   const preview = bodyPreview.length > 240 ? bodyPreview.slice(0, 237) + '…' : bodyPreview
   const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;max-width:520px;margin:auto;padding:24px;color:#1a1a1a">
 <p><strong>${escapeHtml(authorName)}</strong> <span style="color:#7a7568">(${escapeHtml(relationship)})</span> just submitted a vouch.</p>

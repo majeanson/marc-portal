@@ -9750,3 +9750,218 @@ button.intake__progress-step:disabled {
 .vouch-card__name a:hover {
   border-bottom-color: var(--accent);
 }
+
+/* Home-page testimonials section (#testimonials). Three cards in a single
+   column for readability — quoting is best read sequentially, not as a
+   grid. The drill-card at the bottom mirrors #featured and #how. */
+.home .testimonials-section__list {
+  margin-bottom: 8px;
+}
+.home .testimonials-section__write {
+  margin: 20px 0 0;
+  text-align: right;
+}
+.home .testimonials-section__write-link {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--accent-warm);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.home .testimonials-section__write-link:hover,
+.home .testimonials-section__write-link:focus-visible {
+  border-bottom-color: var(--accent-warm);
+}
+@media (max-width: 720px) {
+  .home .testimonials-section__write {
+    text-align: left;
+  }
+}
+
+/* Per-project testimonials block on /share/:id. Sits below the time-
+   travel scrubber. List is hidden when zero approved vouches exist; the
+   CTA aside is always visible so every project page invites a new vouch
+   from day one. */
+.share-testimonials {
+  margin: 48px 0 0;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-soft);
+}
+.share-testimonials__heading {
+  margin: 8px 0 18px;
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--text);
+}
+.share-testimonials__empty {
+  margin: 0 0 24px;
+}
+.share-testimonials__list {
+  margin-bottom: 24px;
+}
+.share-testimonials__cta {
+  background: var(--bg-section);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent-warm);
+  padding: 18px 22px;
+  border-radius: var(--radius);
+  margin-top: 16px;
+}
+.share-testimonials__cta-title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--text);
+}
+.share-testimonials__cta-body {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+.share-testimonials__cta-link {
+  display: inline-block;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--accent-warm);
+  border-bottom: 1px solid var(--accent-warm);
+  padding-bottom: 2px;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.share-testimonials__cta-link:hover,
+.share-testimonials__cta-link:focus-visible {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+
+/* Vouch form — project-attribution hint shown when /vouch?for=:id is
+   present. Pulls the eye with a left border so the visitor reads "this
+   testimonial will be filed under that specific project" before they
+   start typing. */
+.vouch-form__for-project {
+  border-left: 3px solid var(--accent);
+  padding: 8px 12px;
+  background: var(--bg-section);
+  margin: 12px 0 18px;
+}
+.vouch-form__for-project a {
+  color: var(--accent-warm);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Admin moderation list for /admin/vouches. Sections (pending / approved /
+   rejected / trash) stack; each row gets a status pill + an inline edit
+   form when expanded. Action buttons sit on their own row and use the
+   shared .link-btn styling. */
+.admin-vouches__section {
+  margin: 28px 0;
+}
+.admin-vouches__section-title {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 6px;
+  margin: 0 0 14px;
+}
+.admin-vouches__section-count {
+  color: var(--text-faint);
+  font-weight: 400;
+  margin-left: 6px;
+}
+.admin-vouches__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.admin-vouches__row {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+}
+.admin-vouches__row-head {
+  margin-bottom: 12px;
+}
+.admin-vouches__row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.admin-vouches__row-date,
+.admin-vouches__row-session {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.admin-vouches__row-session a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--border);
+}
+.admin-vouches__row-session a:hover {
+  border-bottom-color: var(--accent);
+}
+.admin-vouches__row-body {
+  margin: 0 0 12px;
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.admin-vouches__row-body p {
+  margin: 0;
+}
+.admin-vouches__row-attribution {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--text-soft);
+  word-break: break-word;
+}
+.admin-vouches__row-attribution code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-mid);
+}
+.admin-vouches__row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 10px;
+}
+.admin-vouches__edit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.admin-vouches__edit-actions {
+  display: flex;
+  gap: 16px;
+  padding-top: 6px;
+}
+/* Destructive variant of .link-btn — used for soft-delete in the admin
+   vouch list. Same shape, just a warmer color so it reads as caution
+   without shouting. */
+.link-btn--danger {
+  color: var(--warm);
+}
+.link-btn--danger:hover {
+  color: var(--warm);
+  text-decoration: underline;
+}

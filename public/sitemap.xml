@@ -60,4 +60,16 @@
   <url>
     <loc>https://marcportal.com/en/meta</loc>
   </url>
+  <url>
+    <loc>https://marcportal.com/vouches</loc>
+  </url>
+  <url>
+    <loc>https://marcportal.com/en/vouches</loc>
+  </url>
+  <url>
+    <loc>https://marcportal.com/vouch</loc>
+  </url>
+  <url>
+    <loc>https://marcportal.com/en/vouch</loc>
+  </url>
 </urlset>

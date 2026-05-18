@@ -13,6 +13,7 @@ const ITEMS: Record<Lang, RailItem[]> = {
     { id: 'pricing', label: 'Prix' },
     { id: 'vibe', label: 'Je fais / Je fais pas' },
     { id: 'about', label: 'À propos' },
+    { id: 'testimonials', label: 'Témoignages' },
     { id: 'cta', label: 'Décris ton problème' },
   ],
   en: [
@@ -21,6 +22,7 @@ const ITEMS: Record<Lang, RailItem[]> = {
     { id: 'pricing', label: 'Pricing' },
     { id: 'vibe', label: 'What I do / don’t' },
     { id: 'about', label: 'About' },
+    { id: 'testimonials', label: 'Vouches' },
     { id: 'cta', label: 'Describe your problem' },
   ],
 }
@@ -29,17 +31,20 @@ const ITEMS: Record<Lang, RailItem[]> = {
  * Fixed right-edge vertical index — magazine-style table-of-contents that
  * stays pinned through scroll. The active item is the section whose top
  * crosses the viewport's 35% line.
+ *
+ * Items whose target element isn't present on the page (e.g. Testimonials
+ * self-hides when zero approved vouches exist) are dropped from the
+ * rendered list, so a click never points at a missing anchor.
  */
 export function SectionRail({ lang }: { lang: Lang }) {
-  const items = ITEMS[lang]
-  const [activeId, setActiveId] = useState<string>(items[0]?.id ?? '')
+  const allItems = ITEMS[lang]
+  // Filter the rail to items whose section actually rendered. Start empty
+  // so SSR/first paint don't flash links that would 404 on click; populate
+  // after mount once the DOM is queryable.
+  const [presentIds, setPresentIds] = useState<Set<string>>(new Set())
+  const [activeId, setActiveId] = useState<string>(allItems[0]?.id ?? '')
 
   useEffect(() => {
-    const targets = items
-      .map((it) => document.getElementById(it.id))
-      .filter((el): el is HTMLElement => el !== null)
-    if (targets.length === 0) return
-
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -53,9 +58,46 @@ export function SectionRail({ lang }: { lang: Lang }) {
         threshold: 0,
       },
     )
-    targets.forEach((t) => observer.observe(t))
-    return () => observer.disconnect()
-  }, [items])
+
+    // Track which section ids are observed so we don't double-observe the
+    // same element when sync() runs again. IntersectionObserver.observe is
+    // idempotent for the same target, but tracking lets us cleanly
+    // disconnect on unmount.
+    const observed = new Set<string>()
+
+    // Rescan the DOM, update the visible-rail items, and observe any
+    // newly-mounted section. Some sections (Testimonials) self-mount
+    // asynchronously after a network call, so we re-run on every body
+    // mutation in addition to mount.
+    const sync = () => {
+      const present = new Set<string>()
+      for (const it of allItems) {
+        const el = document.getElementById(it.id)
+        if (el) {
+          present.add(it.id)
+          if (!observed.has(it.id)) {
+            observer.observe(el)
+            observed.add(it.id)
+          }
+        }
+      }
+      // setState with the same shape is a re-render no-op in React only
+      // when the reference matches — we always pass a fresh Set, but the
+      // diff is cheap and the rail re-render is rare.
+      setPresentIds(present)
+    }
+
+    sync()
+    const mo = new MutationObserver(sync)
+    mo.observe(document.body, { childList: true, subtree: true })
+
+    return () => {
+      observer.disconnect()
+      mo.disconnect()
+    }
+  }, [allItems])
+
+  const items = allItems.filter((it) => presentIds.has(it.id))
 
   return (
     <nav className="section-rail" aria-label={lang === 'fr' ? 'Index de la page' : 'Page index'}>

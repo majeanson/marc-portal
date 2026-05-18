@@ -78,6 +78,12 @@ function buildSections(lang: Lang): Section[] {
             desc: 'Active "I handle it" subscriptions, past-due failures, ended/switched history. MRR at a glance.',
             badge: '/admin/custodians',
           },
+          {
+            href: `${langPrefix}/admin/vouches`,
+            title: 'Vouches',
+            desc: 'Moderation queue for visitor-submitted testimonials. Approve, reject, edit, soft-delete.',
+            badge: '/admin/vouches',
+          },
         ],
       },
       {
@@ -174,6 +180,12 @@ function buildSections(lang: Lang): Section[] {
           title: 'Dépositaires',
           desc: 'Abonnements « Je m’en occupe » actifs, paiements en retard, historique des bascules. MRR d’un coup d’œil.',
           badge: '/admin/custodians',
+        },
+        {
+          href: `${langPrefix}/admin/vouches`,
+          title: 'Témoignages',
+          desc: 'File de modération des témoignages visiteurs. Approuver, rejeter, éditer, supprimer.',
+          badge: '/admin/vouches',
         },
       ],
     },
