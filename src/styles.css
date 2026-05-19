@@ -12683,27 +12683,30 @@ a.map-node:focus-visible {
   color: var(--text);
 }
 .map-vision__bubble-sub {
-  font-size: 11px;
-  line-height: 1.45;
-  letter-spacing: 0.02em;
-  color: var(--text-soft);
+  /* Sub is one short sentence — what the user gets — not a list of pages.
+     Sans-serif (not mono) so it reads as prose, not metadata. */
+  font-family: var(--sans);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-mid);
   max-width: 100%;
-  /* The sub-list is a single string of items joined by " · ". Word-break
-     lets it wrap inside the bubble instead of overflowing the foreignObject. */
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  /* Italic gives the sentence a "subtitle" feel without competing with the
+     bubble label above. */
+  font-style: italic;
 }
 .map-vision__bubble--lg .map-vision__bubble-label {
   font-size: 22px;
   color: var(--accent-warm);
 }
 .map-vision__bubble--lg .map-vision__bubble-sub {
-  font-size: 12px;
+  font-size: 13.5px;
 }
 .map-vision__bubble--sm .map-vision__bubble-label {
   font-size: 15px;
 }
 .map-vision__bubble--sm .map-vision__bubble-sub {
-  font-size: 10.5px;
+  font-size: 12px;
 }
 
 /* Page layer canvas bumped to match the new node sizes (260 wide × 3 cols

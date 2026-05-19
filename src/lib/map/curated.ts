@@ -740,113 +740,93 @@ const JOURNEYS: MapJourney[] = [
 
 // ─── Vision — the “big picture” layer ────────────────────────────────────────
 //
-// Six bubbles around the SIX CORE FEATURES of the app. Bubbles are the entry
-// point; sub-items name the concrete pieces inside each feature. Clicking a
-// bubble navigates to its most representative page.
+// Six bubbles that each answer one question a curious visitor naturally asks,
+// in that order. Sub is ONE SENTENCE — what the user gets or can do — not a
+// list of internal pages (page names mean nothing to a first-time visitor).
 //
-// Layout is a clean 2-column × 3-row grid so each row is one mental hop:
-//   row 1 — Intake     | Discussion      (the visitor's two doors)
-//   row 2 — Pricing    | Portfolio       (what's behind the doors)
-//   row 3 — Privacy    | Handoff         (the trust + exit terms)
+//   1. What do I bring?       → Apporte un projet
+//   2. How does it work?      → Discussion async
+//   3. Will I see it work?    → Tu vois chaque build
+//   4. What does it cost?     → Tarification claire
+//   5. What after delivery?   → Tu gardes les clés
+//   6. Has this shipped?      → Voir le déjà-fait
+//
+// Privacy / Loi 25 is intentionally NOT a bubble — it's table-stakes, not a
+// selling point. The /confidentialite + /pia pages still exist and still live
+// in the Pages layer; they just don't headline the user-facing vision.
 
 const VISION: VisionBubble[] = [
   {
     id: 'vision.intake',
     label: bi('Apporte un projet', 'Bring a project'),
-    desc: bi(
-      "La porte d'entrée : tu décris, je triage, on continue ensemble.",
-      'The front door: you describe, I triage, we continue together.',
+    sub: bi(
+      'Un problème du quotidien — pas besoin de cahier des charges. Je triage en 72 h.',
+      'An everyday problem — no spec sheet needed. I triage within 72 hours.',
     ),
-    sub: [
-      bi('Intake', 'Intake'),
-      bi('Napperon', 'Napkin'),
-      bi('Tier 0 (gratuit)', 'Tier 0 (free)'),
-    ],
     size: 'lg',
-    pos: { x: 24, y: 20 },
+    pos: { x: 24, y: 18 },
     index: 1,
     href: bi('/intake', '/en/intake'),
   },
   {
     id: 'vision.conversation',
-    label: bi('Discussion', 'Conversation'),
-    desc: bi(
-      'Échange async par fil de session. Pas de mot de passe, pas de réunion.',
-      'Async session threads. No password, no meeting.',
+    label: bi('Discussion async', 'Async conversation'),
+    sub: bi(
+      'Tout par écrit, à ton rythme. Pas de meetings — un fil par projet.',
+      'All in writing, at your pace. No meetings — one thread per project.',
     ),
-    sub: [
-      bi('Lien magique', 'Magic link'),
-      bi('Mes sessions', 'My sessions'),
-      bi('Fil de session', 'Session thread'),
-    ],
     size: 'md',
-    pos: { x: 64, y: 20 },
+    pos: { x: 64, y: 18 },
     index: 2,
-    href: bi('/me', '/en/me'),
+    href: bi('/parcours', '/en/journey'),
   },
   {
-    id: 'vision.pricing',
-    label: bi('Tarification', 'Pricing'),
-    desc: bi(
-      "Trois tiers de projet + un abonnement « je m'en occupe ». Tout est transparent.",
-      'Three project tiers plus an "I handle it" subscription. All transparent.',
+    id: 'vision.iterative',
+    label: bi('Tu vois chaque build', 'You see every build'),
+    sub: bi(
+      'Aperçu en direct à chaque livraison. Partage par lien quand tu veux montrer.',
+      'Live preview at every revision. Shareable link when you want to show it.',
     ),
-    sub: [
-      bi('Tier 0 — gratuit', 'Tier 0 — free'),
-      bi('Tier 1–3', 'Tier 1–3'),
-      bi('Custodian (200 $/an)', 'Custodian ($200/yr)'),
-    ],
     size: 'md',
-    pos: { x: 24, y: 52 },
+    pos: { x: 24, y: 50 },
     index: 3,
-    href: bi('/tier-0', '/en/tier-0'),
-  },
-  {
-    id: 'vision.portfolio',
-    label: bi('Portfolio', 'Portfolio'),
-    desc: bi(
-      'Projets livrés, témoignages publics, partage de progrès par lien.',
-      'Shipped projects, public vouches, shareable progress links.',
-    ),
-    sub: [
-      bi('Projets', 'Projects'),
-      bi('Témoignages', 'Vouches'),
-      bi('Partage public', 'Public share'),
-    ],
-    size: 'md',
-    pos: { x: 64, y: 52 },
-    index: 4,
     href: bi('/projects', '/en/projects'),
   },
   {
-    id: 'vision.privacy',
-    label: bi('Vie privée', 'Privacy'),
-    desc: bi(
-      'Loi 25, hébergement canadien, PIA publié, donnée minimale.',
-      'Loi 25, Canadian hosting, published PIA, minimal data collection.',
+    id: 'vision.pricing',
+    label: bi('Tarification claire', 'Clear pricing'),
+    sub: bi(
+      'Tier 0 gratuit pour jaser. Trois tiers fixes ensuite. Custodian optionnel.',
+      'Free Tier 0 chat. Three fixed tiers after that. Optional Custodian.',
     ),
-    sub: [bi('Loi 25', 'Loi 25'), bi('PIA', 'PIA'), bi('Donnée minimale', 'Minimal data')],
-    size: 'sm',
-    pos: { x: 24, y: 84 },
-    index: 5,
-    href: bi('/confidentialite', '/en/privacy'),
+    size: 'md',
+    pos: { x: 64, y: 50 },
+    index: 4,
+    href: bi('/tier-0', '/en/tier-0'),
   },
   {
-    id: 'vision.handoff',
-    label: bi('Reprise', 'Handoff'),
-    desc: bi(
-      "À la livraison : « je m'en occupe » ou « tout à toi ». Tu choisis.",
-      'At delivery: "I handle it" or "all yours". You pick.',
+    id: 'vision.keys',
+    label: bi('Tu gardes les clés', 'You keep the keys'),
+    sub: bi(
+      "À la livraison : « je m'en occupe » ou « tout à toi ». Tu peux changer d'avis.",
+      "At delivery: 'I handle it' or 'all yours'. You can switch any time.",
     ),
-    sub: [
-      bi("« Je m'en occupe »", '"I handle it"'),
-      bi('« Tout à toi »', '"All yours"'),
-      bi('Checklist', 'Checklist'),
-    ],
     size: 'md',
-    pos: { x: 64, y: 84 },
-    index: 6,
+    pos: { x: 24, y: 82 },
+    index: 5,
     href: bi('/handoff', '/en/handoff'),
+  },
+  {
+    id: 'vision.shipped',
+    label: bi('Voir le déjà-fait', "See what's shipped"),
+    sub: bi(
+      'Projets livrés en vrai, avec témoignages de personnes vraies.',
+      'Real shipped projects, with vouches from real people.',
+    ),
+    size: 'md',
+    pos: { x: 64, y: 82 },
+    index: 6,
+    href: bi('/vouches', '/en/vouches'),
   },
 ]
 

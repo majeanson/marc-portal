@@ -110,10 +110,10 @@ export interface VisionBubble {
   label: Bi
   /** Optional one-line elaboration shown on hover (SVG <title>). */
   desc?: Bi
-  /** Concrete sub-features that live under this bubble. Rendered as small
-   *  mono text inside the bubble, separated by " · ". 3–4 items reads best;
-   *  longer lists wrap awkwardly inside the circle. */
-  sub?: Bi[]
+  /** One short sentence describing what the user gets / can do — not a list
+   *  of internal pages. Keep under ~85 characters so it wraps to ≤ 3 lines
+   *  inside a md bubble. The "what's in it for me" promise. */
+  sub?: Bi
   /** Visual emphasis (drives bubble radius). 'lg' for the headline idea. */
   size: 'sm' | 'md' | 'lg'
   /** Position in 0–100 percent of the canvas, so the same layout reads on any

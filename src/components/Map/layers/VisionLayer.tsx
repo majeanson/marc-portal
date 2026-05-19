@@ -1,8 +1,10 @@
 /**
- * Vision layer — the “big picture” bubbles. Each bubble is one product
- * feature; the sub-items inside name the concrete pieces of that feature.
- * Hand-positioned in normalized 0–100 coordinates (curated.ts) and
- * projected into a 1280×800 SVG canvas here.
+ * Vision layer — the “big picture” bubbles. Each bubble answers one
+ * question a curious visitor asks; the sub is ONE SENTENCE describing
+ * what they get or can do (NOT a list of internal pages — page names
+ * mean nothing to a first-time visitor). Hand-positioned in normalized
+ * 0–100 coordinates (curated.ts) and projected into a 1280×980 SVG
+ * canvas here.
  *
  * Bubbles with an `href` become real navigation. We use useNavigate +
  * onClick/onKeyDown on the <g> (with role="link", cursor:pointer) so the
@@ -22,24 +24,24 @@ interface Props {
 }
 
 // Logical canvas. CSS scales the SVG to fit any width via preserveAspectRatio.
-// Taller than wide-ratio because we lay out 2 columns × 3 rows of bubbles with
-// sub-item lists inside; height ~= width × 0.625 keeps each row breathable.
+// Each bubble now hosts a full sentence (not a middot list), so radii are
+// bumped and the canvas is taller to give the 2×3 grid room without rows
+// overlapping.
 const W = 1280
-const H = 800
+const H = 980
 
 const RADIUS: Record<VisionBubble['size'], number> = {
-  sm: 96,
-  md: 116,
-  lg: 136,
+  sm: 110,
+  md: 128,
+  lg: 148,
 }
 
 // Inset for the label's foreignObject — how much smaller than the diameter,
-// so text doesn't crowd the circle edge. Smaller bubbles need a tighter inset
-// because their absolute padding shouldn't scale linearly.
+// so text doesn't crowd the circle edge.
 const LABEL_INSET: Record<VisionBubble['size'], number> = {
   sm: 22,
-  md: 28,
-  lg: 34,
+  md: 26,
+  lg: 30,
 }
 
 export function VisionLayer({ data, lang }: Props) {
@@ -93,12 +95,15 @@ export function VisionLayer({ data, lang }: Props) {
           const labelW = r * 2 - inset * 2
           const labelH = r * 1.85
           const label = b.label[lang]
+          const sub = b.sub?.[lang]
           const desc = b.desc?.[lang]
-          const subItems = b.sub?.map((s) => s[lang]) ?? []
           const href = b.href?.[lang]
           const interactive = !!href
 
           const onActivate = href ? () => navigate(href) : undefined
+          // Hover/screen-reader tooltip prefers the user-facing sub sentence;
+          // desc is a fallback for bubbles that lack a sub.
+          const tooltip = sub ?? desc ?? label
 
           return (
             <g
@@ -120,15 +125,9 @@ export function VisionLayer({ data, lang }: Props) {
                     }
                   : undefined
               }
-              aria-label={
-                interactive
-                  ? `${b.index}. ${label}${
-                      subItems.length ? ` — ${subItems.join(' · ')}` : ''
-                    }${desc ? ` — ${desc}` : ''}`
-                  : undefined
-              }
+              aria-label={interactive ? `${b.index}. ${label}${sub ? ` — ${sub}` : ''}` : undefined}
             >
-              <title>{desc ? `${label} — ${desc}` : label}</title>
+              <title>{tooltip === label ? label : `${label} — ${tooltip}`}</title>
               <circle className="map-vision__bubble-bg" r={r} />
               <text className="map-vision__bubble-index mono" x={-r + inset - 2} y={-r + inset + 6}>
                 {b.index}
@@ -136,9 +135,7 @@ export function VisionLayer({ data, lang }: Props) {
               <foreignObject x={-labelW / 2} y={-labelH / 2} width={labelW} height={labelH}>
                 <div className="map-vision__bubble-content">
                   <div className="map-vision__bubble-label">{label}</div>
-                  {subItems.length > 0 && (
-                    <div className="map-vision__bubble-sub mono">{subItems.join(' · ')}</div>
-                  )}
+                  {sub && <div className="map-vision__bubble-sub">{sub}</div>}
                 </div>
               </foreignObject>
             </g>
