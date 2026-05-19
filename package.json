@@ -11,7 +11,7 @@
     "prepare": "node scripts/install-hooks.mjs",
     "dev": "vite",
     "dev:cf": "wrangler pages dev --proxy 5180 --port 8788",
-    "prebuild": "node scripts/build-sitemap.mjs && node scripts/check-og-image.mjs && node scripts/build-lac-meta.mjs",
+    "prebuild": "node scripts/build-sitemap.mjs && node scripts/check-og-image.mjs && node scripts/build-lac-meta.mjs && node scripts/build-map-skeleton.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",

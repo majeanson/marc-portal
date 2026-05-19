@@ -75,8 +75,7 @@ export function Runbook({
 }
 
 function ProgressChip({ done, total, lang }: { done: number; total: number; lang: Lang }) {
-  const label =
-    lang === 'fr' ? `${done} / ${total} fait` : `${done} of ${total} done`
+  const label = lang === 'fr' ? `${done} / ${total} fait` : `${done} of ${total} done`
   return (
     <div className="runbook-chip mono" aria-live="polite">
       {label}
@@ -129,8 +128,7 @@ function RunbookStep({ step, lang, forcedOpen, showDependencies }: StepRowProps)
   const [open, setOpen] = useState(false)
   const isOpen = forcedOpen || open
   const [checked, toggle] = useStepProgress(step.id)
-  const depBroken =
-    showDependencies && step.dependsOn ? !readStepProgress(step.dependsOn) : false
+  const depBroken = showDependencies && step.dependsOn ? !readStepProgress(step.dependsOn) : false
 
   return (
     <li
@@ -266,12 +264,7 @@ function StepLink({ step, lang }: { step: Step; lang: Lang }) {
   const label = bi(step.link.label, lang)
   if (step.link.external) {
     return (
-      <a
-        className="runbook-step__link"
-        href={href}
-        target="_blank"
-        rel="noreferrer"
-      >
+      <a className="runbook-step__link" href={href} target="_blank" rel="noreferrer">
         ↗ {label}
       </a>
     )

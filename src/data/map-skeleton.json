@@ -1,0 +1,936 @@
+{
+  "routes": [
+    {
+      "path": "/",
+      "component": "RootByTemplate",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en",
+      "component": "RootByTemplate",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/intake",
+      "component": "Intake",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/intake",
+      "component": "Intake",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/napkin",
+      "component": "Napkin",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/napkin",
+      "component": "Napkin",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/tier-0",
+      "component": "Tier0",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/parcours",
+      "component": "Journey",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/journey",
+      "component": "Journey",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/tier-0",
+      "component": "Tier0",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/demo/sunday-night-dread",
+      "component": "SndDemo",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/demo/sunday-night-dread",
+      "component": "SndDemo",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/confidentialite",
+      "component": "Privacy",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/privacy",
+      "component": "Privacy",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/pia",
+      "component": "Pia",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/pia",
+      "component": "Pia",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/handoff",
+      "component": "Handoff",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/handoff",
+      "component": "Handoff",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/meta",
+      "component": "Meta",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/meta",
+      "component": "Meta",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/carte",
+      "component": "MapPage",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/map",
+      "component": "MapPage",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/engagement/:slug",
+      "component": "Engagement",
+      "lang": "fr",
+      "dynamic": true,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/engagement/:slug",
+      "component": "Engagement",
+      "lang": "en",
+      "dynamic": true,
+      "inAdminShell": false
+    },
+    {
+      "path": "/login",
+      "component": "Login",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/login",
+      "component": "Login",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/me",
+      "component": "MePortal",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/me",
+      "component": "MePortal",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/session/:id",
+      "component": "SessionPage",
+      "lang": "fr",
+      "dynamic": true,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/session/:id",
+      "component": "SessionPage",
+      "lang": "en",
+      "dynamic": true,
+      "inAdminShell": false
+    },
+    {
+      "path": "/share/:id",
+      "component": "PublicAdvancements",
+      "lang": "fr",
+      "dynamic": true,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/share/:id",
+      "component": "PublicAdvancements",
+      "lang": "en",
+      "dynamic": true,
+      "inAdminShell": false
+    },
+    {
+      "path": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/projects",
+      "component": "Projects",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/vouches",
+      "component": "Vouches",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/vouch",
+      "component": "Vouch",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/vouch",
+      "component": "Vouch",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/admin/inbox",
+      "component": "AdminInbox",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/inbox",
+      "component": "AdminInbox",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/trash",
+      "component": "AdminTrash",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/trash",
+      "component": "AdminTrash",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/custodians",
+      "component": "AdminCustodians",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/custodians",
+      "component": "AdminCustodians",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/vouches",
+      "component": "AdminVouches",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/vouches",
+      "component": "AdminVouches",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/inbox/:id",
+      "component": "SessionPage",
+      "lang": "fr",
+      "dynamic": true,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/inbox/:id",
+      "component": "SessionPage",
+      "lang": "en",
+      "dynamic": true,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin",
+      "component": "Admin",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin",
+      "component": "AdminHub",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/apparence",
+      "component": "AdminAppearance",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/equipe",
+      "component": "AdminTeam",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/facturation",
+      "component": "AdminBilling",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/fleet",
+      "component": "AdminFleet",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/fleet/new",
+      "component": "AdminFleetNew",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/audit",
+      "component": "AdminAudit",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/showcase",
+      "component": "AdminShowcase",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/admin/runbook",
+      "component": "AdminRunbook",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin",
+      "component": "Admin",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin",
+      "component": "AdminHub",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/apparence",
+      "component": "AdminAppearance",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/equipe",
+      "component": "AdminTeam",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/facturation",
+      "component": "AdminBilling",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/fleet",
+      "component": "AdminFleet",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/fleet/new",
+      "component": "AdminFleetNew",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/audit",
+      "component": "AdminAudit",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/showcase",
+      "component": "AdminShowcase",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/runbook",
+      "component": "AdminRunbook",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
+    }
+  ],
+  "endpoints": [
+    {
+      "id": "api.admin.audit",
+      "path": "/api/admin/audit",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": true,
+      "file": "functions/api/admin/audit.ts"
+    },
+    {
+      "id": "api.admin.digest",
+      "path": "/api/admin/digest",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": true,
+      "file": "functions/api/admin/digest.ts"
+    },
+    {
+      "id": "api.admin.fleet",
+      "path": "/api/admin/fleet",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "adminOnly": true,
+      "file": "functions/api/admin/fleet.ts"
+    },
+    {
+      "id": "api.admin.vouches",
+      "path": "/api/admin/vouches",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": true,
+      "file": "functions/api/admin/vouches.ts"
+    },
+    {
+      "id": "api.admin.vouches.id",
+      "path": "/api/admin/vouches/:id",
+      "methods": [
+        "DELETE",
+        "PATCH"
+      ],
+      "adminOnly": true,
+      "file": "functions/api/admin/vouches/[id].ts"
+    },
+    {
+      "id": "api.auth.logout",
+      "path": "/api/auth/logout",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/auth/logout.ts"
+    },
+    {
+      "id": "api.auth.request-link",
+      "path": "/api/auth/request-link",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/auth/request-link.ts"
+    },
+    {
+      "id": "api.auth.verify",
+      "path": "/api/auth/verify",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/auth/verify.ts"
+    },
+    {
+      "id": "api.capacity",
+      "path": "/api/capacity",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/capacity.ts"
+    },
+    {
+      "id": "api.health",
+      "path": "/api/health",
+      "methods": [
+        "ANY"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/health.ts"
+    },
+    {
+      "id": "api.intake-drafts",
+      "path": "/api/intake-drafts",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/intake-drafts.ts"
+    },
+    {
+      "id": "api.me",
+      "path": "/api/me",
+      "methods": [
+        "GET",
+        "DELETE"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/me.ts"
+    },
+    {
+      "id": "api.me.prefs",
+      "path": "/api/me/prefs",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/me/prefs.ts"
+    },
+    {
+      "id": "api.payments.checkout",
+      "path": "/api/payments/checkout",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/payments/checkout.ts"
+    },
+    {
+      "id": "api.payments.index",
+      "path": "/api/payments",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/payments/index.ts"
+    },
+    {
+      "id": "api.payments.portal",
+      "path": "/api/payments/portal",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/payments/portal.ts"
+    },
+    {
+      "id": "api.payments.webhook",
+      "path": "/api/payments/webhook",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/payments/webhook.ts"
+    },
+    {
+      "id": "api.public.projects",
+      "path": "/api/public/projects",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/public/projects.ts"
+    },
+    {
+      "id": "api.public.sessions.id.advancements",
+      "path": "/api/public/sessions/:id/advancements",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/public/sessions/[id]/advancements.ts"
+    },
+    {
+      "id": "api.public.vouches",
+      "path": "/api/public/vouches",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/public/vouches.ts"
+    },
+    {
+      "id": "api.sessions.id",
+      "path": "/api/sessions/:id",
+      "methods": [
+        "GET",
+        "DELETE",
+        "PATCH"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/sessions/[id].ts"
+    },
+    {
+      "id": "api.sessions.id.advancements.advId",
+      "path": "/api/sessions/:id/advancements/:advId",
+      "methods": [
+        "DELETE",
+        "PATCH"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/sessions/[id]/advancements/[advId].ts"
+    },
+    {
+      "id": "api.sessions.id.advancements.index",
+      "path": "/api/sessions/:id/advancements",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/sessions/[id]/advancements/index.ts"
+    },
+    {
+      "id": "api.sessions.id.attachments.attId",
+      "path": "/api/sessions/:id/attachments/:attId",
+      "methods": [
+        "GET",
+        "DELETE"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/sessions/[id]/attachments/[attId].ts"
+    },
+    {
+      "id": "api.sessions.id.attachments.index",
+      "path": "/api/sessions/:id/attachments",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/sessions/[id]/attachments/index.ts"
+    },
+    {
+      "id": "api.sessions.id.messages",
+      "path": "/api/sessions/:id/messages",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/sessions/[id]/messages.ts"
+    },
+    {
+      "id": "api.sessions.index",
+      "path": "/api/sessions",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/sessions/index.ts"
+    },
+    {
+      "id": "api.snd.clips",
+      "path": "/api/snd/clips",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/snd/clips.ts"
+    },
+    {
+      "id": "api.tenant",
+      "path": "/api/tenant",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/tenant.ts"
+    },
+    {
+      "id": "api.tenant.theme",
+      "path": "/api/tenant/theme",
+      "methods": [
+        "PATCH"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/tenant/theme.ts"
+    },
+    {
+      "id": "api.volunteer.shifts",
+      "path": "/api/volunteer/shifts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/volunteer/shifts.ts"
+    },
+    {
+      "id": "api.volunteer.signups",
+      "path": "/api/volunteer/signups",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/volunteer/signups.ts"
+    },
+    {
+      "id": "api.vouches",
+      "path": "/api/vouches",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/vouches.ts"
+    }
+  ],
+  "tables": [
+    {
+      "id": "table.admin_alerts",
+      "name": "admin_alerts",
+      "firstMigration": "0014_payments_v2.sql"
+    },
+    {
+      "id": "table.attachments",
+      "name": "attachments",
+      "firstMigration": "0007_attachments.sql"
+    },
+    {
+      "id": "table.audit_log",
+      "name": "audit_log",
+      "firstMigration": "0002_tenants.sql"
+    },
+    {
+      "id": "table.intake_drafts",
+      "name": "intake_drafts",
+      "firstMigration": "0008_intake_drafts.sql"
+    },
+    {
+      "id": "table.magic_link_tokens",
+      "name": "magic_link_tokens",
+      "firstMigration": "0001_initial.sql"
+    },
+    {
+      "id": "table.messages",
+      "name": "messages",
+      "firstMigration": "0001_initial.sql"
+    },
+    {
+      "id": "table.payments",
+      "name": "payments",
+      "firstMigration": "0013_payments.sql"
+    },
+    {
+      "id": "table.rate_limits",
+      "name": "rate_limits",
+      "firstMigration": "0006_rate_limits.sql"
+    },
+    {
+      "id": "table.session_advancements",
+      "name": "session_advancements",
+      "firstMigration": "0009_session_advancements.sql"
+    },
+    {
+      "id": "table.sessions",
+      "name": "sessions",
+      "firstMigration": "0001_initial.sql"
+    },
+    {
+      "id": "table.snd_voice_clips",
+      "name": "snd_voice_clips",
+      "firstMigration": "0003_snd.sql"
+    },
+    {
+      "id": "table.tenant_domains",
+      "name": "tenant_domains",
+      "firstMigration": "0002_tenants.sql"
+    },
+    {
+      "id": "table.tenants",
+      "name": "tenants",
+      "firstMigration": "0002_tenants.sql"
+    },
+    {
+      "id": "table.user_prefs",
+      "name": "user_prefs",
+      "firstMigration": "0018_user_prefs.sql"
+    },
+    {
+      "id": "table.vouches",
+      "name": "vouches",
+      "firstMigration": "0017_vouches.sql"
+    },
+    {
+      "id": "table.vr_shifts",
+      "name": "vr_shifts",
+      "firstMigration": "0004_volunteer.sql"
+    },
+    {
+      "id": "table.vr_signups",
+      "name": "vr_signups",
+      "firstMigration": "0004_volunteer.sql"
+    },
+    {
+      "id": "table.webhook_events",
+      "name": "webhook_events",
+      "firstMigration": "0014_payments_v2.sql"
+    }
+  ],
+  "bindings": [
+    {
+      "id": "binding.DB",
+      "kind": "d1",
+      "binding": "DB",
+      "name": "marc-portal-db"
+    },
+    {
+      "id": "binding.MEDIA",
+      "kind": "r2",
+      "binding": "MEDIA",
+      "name": "marc-portal-media"
+    },
+    {
+      "id": "binding.STRIPE_CUSTODIAN_PRICE_ID",
+      "kind": "var",
+      "binding": "STRIPE_CUSTODIAN_PRICE_ID"
+    }
+  ]
+}

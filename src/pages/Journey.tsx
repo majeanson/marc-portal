@@ -127,34 +127,48 @@ export function Journey({ lang }: { lang: Lang }) {
                   <span>{lang === 'fr' ? 'MARC.PORTAIL' : 'MARC.PORTAL'}</span>
                 </div>
               </div>
-              <svg
-                className="journey__compass"
-                viewBox="0 0 80 80"
-                aria-hidden="true"
-              >
-                <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" strokeWidth="1.4" opacity="0.45" />
-                <circle cx="40" cy="40" r="27" fill="none" stroke="currentColor" strokeWidth="0.7" opacity="0.35" />
+              <svg className="journey__compass" viewBox="0 0 80 80" aria-hidden="true">
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="34"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  opacity="0.45"
+                />
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="27"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="0.7"
+                  opacity="0.35"
+                />
                 <path d="M 40 8 L 44 38 L 40 40 L 36 38 Z" fill="currentColor" opacity="0.78" />
                 <path d="M 40 72 L 44 42 L 40 40 L 36 42 Z" fill="currentColor" opacity="0.32" />
                 <path d="M 8 40 L 38 36 L 40 40 L 38 44 Z" fill="currentColor" opacity="0.32" />
                 <path d="M 72 40 L 42 36 L 40 40 L 42 44 Z" fill="currentColor" opacity="0.32" />
                 <circle cx="40" cy="40" r="2" fill="currentColor" opacity="0.8" />
-                <text x="40" y="6" textAnchor="middle" fontSize="6" fontFamily="serif" fontStyle="italic" fill="currentColor">N</text>
+                <text
+                  x="40"
+                  y="6"
+                  textAnchor="middle"
+                  fontSize="6"
+                  fontFamily="serif"
+                  fontStyle="italic"
+                  fill="currentColor"
+                >
+                  N
+                </text>
               </svg>
-              <svg
-                className="journey__boat"
-                viewBox="0 0 36 38"
-                aria-hidden="true"
-              >
+              <svg className="journey__boat" viewBox="0 0 36 38" aria-hidden="true">
                 {/* Colors set via CSS (.journey__boat-*) so the sprite
                     adapts to night mode — hardcoded fills were leaving the
                     dark sage hull + dark mast invisible on the night surface. */}
                 <path className="journey__boat-hull" d="M 4 26 L 32 26 L 28 34 L 8 34 Z" />
-                <path
-                  className="journey__boat-rigging"
-                  d="M 4 26 L 32 26"
-                  strokeWidth="0.8"
-                />
+                <path className="journey__boat-rigging" d="M 4 26 L 32 26" strokeWidth="0.8" />
                 <path
                   className="journey__boat-rigging"
                   d="M 18 6 L 18 26"

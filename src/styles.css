@@ -3694,30 +3694,22 @@ button.intake__progress-step:focus-visible {
 /* Night-mode tag colors — deeper backgrounds + brighter foregrounds keep
    each state's semantic hue (sage / amber / blue) readable on ink. Mirror
    pattern of the admin attention-pill night overrides above. */
-:root[data-theme='night']
-  .me-portal__pay-custodian--active
-  .me-portal__pay-section-tag {
+:root[data-theme='night'] .me-portal__pay-custodian--active .me-portal__pay-section-tag {
   background: #1a3322;
   color: #98c4a5;
   border-color: #2a553a;
 }
-:root[data-theme='night']
-  .me-portal__pay-custodian--past_due
-  .me-portal__pay-section-tag {
+:root[data-theme='night'] .me-portal__pay-custodian--past_due .me-portal__pay-section-tag {
   background: #2e2515;
   color: #e8b96b;
   border-color: #5e4623;
 }
-:root[data-theme='night']
-  .me-portal__pay-custodian--ended
-  .me-portal__pay-section-tag {
+:root[data-theme='night'] .me-portal__pay-custodian--ended .me-portal__pay-section-tag {
   background: var(--bg-section);
   color: var(--text-mid);
   border-color: var(--border);
 }
-:root[data-theme='night']
-  .me-portal__pay-tout-a-toi
-  .me-portal__pay-section-tag,
+:root[data-theme='night'] .me-portal__pay-tout-a-toi .me-portal__pay-section-tag,
 :root[data-theme='night'] .me-portal__pay-cust-pill--tout {
   background: #1b262e;
   color: #92a7b8;
@@ -11535,13 +11527,40 @@ button.intake__progress-step:disabled {
 /* Approximate scroll-Y positions, picked by section landmark. Real Y will
    drift slightly with content but doodles always sit in the gutter, so
    they never collide with text. */
-.napperon__circle    { top: 220px;  right: -36px;  transform: rotate(-6deg); }
-.napperon__check     { top: 980px;  left:  -28px;  transform: rotate(-12deg); }
-.napperon__coffee    { top: 1900px; right: -44px;  transform: rotate(8deg); }
-.napperon__squiggle  { top: 2620px; left:  -26px;  transform: rotate(-3deg); }
-.napperon__star      { top: 3300px; right: -10px;  transform: rotate(14deg); }
-.napperon__blot      { top: 3880px; left:  -6px;   }
-.napperon__arrow     { top: 4480px; right: -16px;  transform: rotate(-10deg) scaleX(-1); }
+.napperon__circle {
+  top: 220px;
+  right: -36px;
+  transform: rotate(-6deg);
+}
+.napperon__check {
+  top: 980px;
+  left: -28px;
+  transform: rotate(-12deg);
+}
+.napperon__coffee {
+  top: 1900px;
+  right: -44px;
+  transform: rotate(8deg);
+}
+.napperon__squiggle {
+  top: 2620px;
+  left: -26px;
+  transform: rotate(-3deg);
+}
+.napperon__star {
+  top: 3300px;
+  right: -10px;
+  transform: rotate(14deg);
+}
+.napperon__blot {
+  top: 3880px;
+  left: -6px;
+}
+.napperon__arrow {
+  top: 4480px;
+  right: -16px;
+  transform: rotate(-10deg) scaleX(-1);
+}
 
 /* Scroll-driven "drawing in" — opacity from 0 to 1 as the doodle's scroll-Y
    crosses the viewport. The asymmetric range (entry 5% → cover 30%) means
@@ -12098,8 +12117,8 @@ button.intake__progress-step:disabled {
   border-color: var(--border-soft);
 }
 .runbook-step--done {
-  background: linear-gradient(0deg, rgba(61, 110, 78, 0.04), rgba(61, 110, 78, 0.04)),
-    var(--bg-card);
+  background:
+    linear-gradient(0deg, rgba(61, 110, 78, 0.04), rgba(61, 110, 78, 0.04)), var(--bg-card);
   border-color: var(--accent-soft);
 }
 .runbook-step--done .runbook-step__title {
@@ -12110,8 +12129,7 @@ button.intake__progress-step:disabled {
 }
 .runbook-step--dep-broken {
   border-left: 3px solid #c75b3a;
-  background: linear-gradient(0deg, rgba(199, 91, 58, 0.05), rgba(199, 91, 58, 0.05))
-    var(--bg-card);
+  background: linear-gradient(0deg, rgba(199, 91, 58, 0.05), rgba(199, 91, 58, 0.05)) var(--bg-card);
 }
 .runbook-step__row {
   display: grid;
@@ -12317,12 +12335,11 @@ button.intake__progress-step:disabled {
 
 /* ── Dark mode adjustments ─────────────────────────────────────────────── */
 :root[data-theme='night'] .runbook-step--done {
-  background: linear-gradient(0deg, rgba(106, 155, 120, 0.08), rgba(106, 155, 120, 0.08)),
-    var(--bg-card);
+  background:
+    linear-gradient(0deg, rgba(106, 155, 120, 0.08), rgba(106, 155, 120, 0.08)), var(--bg-card);
 }
 :root[data-theme='night'] .runbook-step--dep-broken {
-  background: linear-gradient(0deg, rgba(199, 91, 58, 0.1), rgba(199, 91, 58, 0.1))
-    var(--bg-card);
+  background: linear-gradient(0deg, rgba(199, 91, 58, 0.1), rgba(199, 91, 58, 0.1)) var(--bg-card);
 }
 :root[data-theme='night'] .runbook-step__dep--broken {
   background: rgba(199, 91, 58, 0.28);
@@ -12373,5 +12390,425 @@ button.intake__progress-step:disabled {
   }
   .runbook-toggle--shared {
     align-self: flex-start;
+  }
+}
+
+/* MAP — /carte (fr) + /en/map (en). Layered atlas of every route, data
+   path, journey, and admin surface. Four togglable layers share one
+   page; visitor vs admin filtering happens client-side in filter.ts. */
+.map-page {
+  padding: 0 0 40px;
+  max-width: 1280px;
+}
+.map-page__head {
+  margin-bottom: 20px;
+}
+.map-page__title {
+  font-family: var(--display);
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: -0.015em;
+  margin: 6px 0 6px;
+  color: var(--text);
+}
+.map-page__sub {
+  color: var(--text-mid);
+  font-size: 14.5px;
+  max-width: 72ch;
+  margin: 0;
+}
+.map-page__canvas {
+  margin-top: 24px;
+  background: var(--bg-section);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  overflow-x: auto;
+}
+.map-legend {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.map-legend__layers {
+  display: inline-flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+.map-legend__chip {
+  border: 0;
+  background: transparent;
+  color: var(--text-mid);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+.map-legend__chip:hover {
+  color: var(--text);
+}
+.map-legend__chip--active {
+  background: var(--accent-soft);
+  color: var(--accent-warm);
+  font-weight: 600;
+}
+.map-legend__journey {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-soft);
+}
+.map-legend__journey select {
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 4px 8px;
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.map-legend__preview {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-mid);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    border-color 140ms ease;
+}
+.map-legend__preview:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.map-legend__preview--on {
+  background: var(--warm-soft);
+  border-color: var(--warm);
+  color: var(--warm);
+}
+.map-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+.map-group__bg {
+  fill: var(--bg-card);
+  stroke: var(--border-soft);
+  stroke-width: 1;
+}
+.map-group__bg--dim {
+  opacity: 0.55;
+}
+.map-group__label {
+  fill: var(--text-soft);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.map-edge {
+  stroke: var(--text-faint);
+  stroke-width: 1.4;
+  opacity: 0.75;
+  transition:
+    stroke 140ms ease,
+    opacity 140ms ease;
+}
+.map-edge:hover {
+  stroke: var(--accent);
+  opacity: 1;
+}
+.map-edge--writes {
+  stroke: var(--warm);
+  opacity: 0.65;
+}
+.map-edge--calls {
+  stroke: var(--cool);
+  opacity: 0.65;
+}
+.map-edge--navigates {
+  stroke-dasharray: 4 4;
+}
+.map-arrow {
+  fill: var(--text-faint);
+}
+.map-arrow--journey {
+  fill: var(--accent);
+}
+.map-node {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 1.3;
+  position: relative;
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+  overflow: hidden;
+}
+a.map-node:hover,
+a.map-node:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 8px 16px -12px rgba(31, 29, 24, 0.18);
+  transform: translateY(-1px);
+  outline: none;
+}
+.map-node__folio {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+.map-node__badge {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+}
+.map-node__label {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  letter-spacing: -0.005em;
+}
+.map-node__desc {
+  font-size: 11.5px;
+  color: var(--text-soft);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.map-node--endpoint,
+.map-node--table,
+.map-node--binding {
+  background: var(--bg-section);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.map-node--endpoint .map-node__label,
+.map-node--table .map-node__label,
+.map-node--binding .map-node__label {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 12.5px;
+  color: var(--text-mid);
+  letter-spacing: 0;
+}
+.map-node--service {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.map-node--service .map-node__label {
+  color: var(--accent-warm);
+}
+.map-node--teaser {
+  opacity: 0.55;
+  font-style: italic;
+}
+.map-nodes--dim {
+  opacity: 0.45;
+}
+.map-journey__path {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  fill: none;
+  stroke-dasharray: 8 6;
+  animation: map-journey-march 1.4s linear infinite;
+}
+@keyframes map-journey-march {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+.map-journey__step-bg {
+  fill: var(--accent);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+.map-journey__step-num {
+  fill: var(--bg);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+.map-admin {
+  padding: 8px 0;
+}
+.map-admin__section {
+  margin-bottom: 22px;
+}
+.map-admin__section-title {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin: 0 0 10px;
+}
+.map-admin__grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.map-admin__tile {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+.map-admin__tile:hover,
+.map-admin__tile:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 12px 24px -16px rgba(31, 29, 24, 0.18);
+  transform: translateY(-1px);
+}
+.map-admin__tile-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+.map-admin__tile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.map-admin__tile-title {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+.map-admin__tile-badge {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 55%;
+}
+.map-admin__tile-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-mid);
+}
+.map-admin--locked {
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+}
+.map-admin__lock {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-soft);
+  margin: 0 0 10px;
+  letter-spacing: 0.02em;
+}
+.map-admin__hint a {
+  color: var(--accent-warm);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 13px;
+  border-bottom: 1px solid transparent;
+  transition: border-color 140ms ease;
+}
+.map-admin__hint a:hover {
+  border-bottom-color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-journey__path {
+    animation: none;
+  }
+}
+@media (max-width: 720px) {
+  .map-legend {
+    gap: 10px;
+  }
+  .map-legend__preview {
+    margin-left: 0;
+  }
+  .map-page__canvas {
+    padding: 8px;
+  }
+}
+
+.map-page__preview-banner {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: var(--warm-soft);
+  border: 1px solid var(--warm);
+  border-radius: var(--radius-sm);
+  color: var(--warm);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.map-page__journey-title {
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  color: var(--text-mid);
+}
+.map-page__journey-title .mono {
+  color: var(--text-soft);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-right: 6px;
+}
+
+/* On narrow screens, let the SVG keep its design width and scroll
+   horizontally rather than crushing every node label to 7px. */
+@media (max-width: 720px) {
+  .map-canvas {
+    min-width: 720px;
   }
 }

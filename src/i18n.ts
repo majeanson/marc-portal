@@ -198,7 +198,8 @@ const FR = {
         price: 'Gratuit',
         scope:
           'Ton problème est trop petit pour engager un dev. Je te redirige vers un patron (modèle prêt-à-utiliser) ou un template no-code.',
-        example: 'Ex. la rotation de pelletage du voisinage, ou le RSVP d’un party — un patron, et tu pars avec.',
+        example:
+          'Ex. la rotation de pelletage du voisinage, ou le RSVP d’un party — un patron, et tu pars avec.',
         after: 'auto-service',
       },
       {
@@ -206,7 +207,8 @@ const FR = {
         price: '≈ 300 $',
         scope:
           'Petit projet simple. Petit script, portfolio, automatisation, formulaire qui marche.',
-        example: 'Ex. un formulaire web qui rentre direct dans ton chiffrier — pas besoin de retaper.',
+        example:
+          'Ex. un formulaire web qui rentre direct dans ton chiffrier — pas besoin de retaper.',
         after: '0 retouches après livraison',
       },
       {
@@ -214,7 +216,8 @@ const FR = {
         price: '≈ 1 500 $',
         scope:
           'Projet de quelques semaines. Outil interne qui dure. Projets de communauté. Payé en deux temps : 750 $ au démarrage, 750 $ à la livraison.',
-        example: 'Ex. tes notes vocales du truck transformées en brouillon de facture le dimanche matin.',
+        example:
+          'Ex. tes notes vocales du truck transformées en brouillon de facture le dimanche matin.',
         after: '1 ronde de retouches incluse',
         anchor: true,
       },
@@ -222,7 +225,8 @@ const FR = {
         name: 'Niveau 3',
         price: '≈ 3 000 $+',
         scope: 'Projet plus gros. Sur devis après triage (l’étape où je lis et je décide).',
-        example: 'Ex. un outil de gestion sur mesure pour ta petite équipe, ou une plateforme pour une coopérative.',
+        example:
+          'Ex. un outil de gestion sur mesure pour ta petite équipe, ou une plateforme pour une coopérative.',
         after: 'devis post-triage',
       },
     ],
@@ -377,7 +381,7 @@ const FR = {
     },
     thread: {
       title: "Le fil de l'engagement",
-      body: "Pas de courriels, pas de meetings. Toute la communication vit ici, en ordre chronologique.",
+      body: 'Pas de courriels, pas de meetings. Toute la communication vit ici, en ordre chronologique.',
       label: 'Messages chronologiques entre Marc et le client',
       authors: { marc: 'Marc', client: 'Client', system: 'Système' },
       types: {
@@ -416,7 +420,7 @@ const FR = {
     eyebrow: 'démo · voix → brouillon de facture',
     title: 'Sunday Night Dread',
     intro:
-      "Démo d’un outil que j’ai bâti pour un plombier — pour te montrer ce que je veux dire par « régler un problème du quotidien ». Pendant la semaine, il dicte ses notes vocales dans le truck. Ici, tu peux « jouer » 3 notes composites pour voir comment elles deviennent un brouillon de facture le dimanche matin.",
+      'Démo d’un outil que j’ai bâti pour un plombier — pour te montrer ce que je veux dire par « régler un problème du quotidien ». Pendant la semaine, il dicte ses notes vocales dans le truck. Ici, tu peux « jouer » 3 notes composites pour voir comment elles deviennent un brouillon de facture le dimanche matin.',
     clipsTitle: '1. Notes vocales de la semaine',
     clipsHint: "Clique pour 'jouer' chaque note. Tu peux en jouer une, deux ou les trois.",
     play: 'Jouer',
@@ -1117,7 +1121,8 @@ const EN: Copy = {
         price: 'Free',
         scope:
           'Your problem is too small to hire a dev. I redirect you to a similar pattern (a ready-made recipe) or a no-code template.',
-        example: 'e.g. neighbourhood snow-shovel rotation, or a party RSVP — pick a recipe, you’re done.',
+        example:
+          'e.g. neighbourhood snow-shovel rotation, or a party RSVP — pick a recipe, you’re done.',
         after: 'self-service',
       },
       {
@@ -1238,7 +1243,7 @@ const EN: Copy = {
       },
       {
         q: "I don't know exactly what I want. Is that ok?",
-        a: "It's expected. Describe it the way it comes, in your own words — don't pre-filter. If it sounds too small, too weird, or not \"professional enough,\" write it anyway. I decide what fits. My job is to ask the right questions and put a concrete version in front of you to react to.",
+        a: 'It\'s expected. Describe it the way it comes, in your own words — don\'t pre-filter. If it sounds too small, too weird, or not "professional enough," write it anyway. I decide what fits. My job is to ask the right questions and put a concrete version in front of you to react to.',
       },
       {
         q: 'Who owns the code at the end?',
@@ -1331,7 +1336,7 @@ const EN: Copy = {
     eyebrow: 'demo · voice → draft invoice',
     title: 'Sunday Night Dread',
     intro:
-      "Demo of a tool I built for a plumber — to show what I mean by ‘solve an everyday problem.’ During the week, he dictates voice notes from his truck. Here you can ‘play’ 3 composite notes to see how they become a draft invoice on Sunday morning.",
+      'Demo of a tool I built for a plumber — to show what I mean by ‘solve an everyday problem.’ During the week, he dictates voice notes from his truck. Here you can ‘play’ 3 composite notes to see how they become a draft invoice on Sunday morning.',
     clipsTitle: '1. Voice notes from the week',
     clipsHint: "Click to 'play' each note. You can play one, two, or all three.",
     play: 'Play',

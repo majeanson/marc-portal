@@ -46,8 +46,14 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
               "← back to sessions" link so the header stays out of the way
               on a product surface (especially mobile). */}
           {variant === 'session' ? (
-            <nav className="site-header__sections site-header__sections--session" aria-label={t.nav.mySessions}>
-              <a href={sessionsHref} className="site-header__section-link site-header__section-link--back">
+            <nav
+              className="site-header__sections site-header__sections--session"
+              aria-label={t.nav.mySessions}
+            >
+              <a
+                href={sessionsHref}
+                className="site-header__section-link site-header__section-link--back"
+              >
                 ← {t.nav.mySessions}
               </a>
             </nav>

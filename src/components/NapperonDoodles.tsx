@@ -125,12 +125,7 @@ function Squiggle() {
 
 function ArrowScribble() {
   return (
-    <svg
-      className="napperon__doodle napperon__arrow"
-      viewBox="0 0 140 80"
-      width="140"
-      height="80"
-    >
+    <svg className="napperon__doodle napperon__arrow" viewBox="0 0 140 80" width="140" height="80">
       {/* Arched line ending in a quick arrowhead, pointing toward something */}
       <path
         d="M 8 14 Q 36 0 76 18 Q 102 30 114 60"
@@ -155,12 +150,7 @@ function ArrowScribble() {
 
 function CheckMark() {
   return (
-    <svg
-      className="napperon__doodle napperon__check"
-      viewBox="0 0 80 64"
-      width="80"
-      height="64"
-    >
+    <svg className="napperon__doodle napperon__check" viewBox="0 0 80 64" width="80" height="64">
       {/* Big confident check — the "oui ça" mark */}
       <path
         d="M 6 36 L 28 56 L 74 8"
@@ -177,12 +167,7 @@ function CheckMark() {
 
 function Asterisk() {
   return (
-    <svg
-      className="napperon__doodle napperon__star"
-      viewBox="0 0 60 60"
-      width="60"
-      height="60"
-    >
+    <svg className="napperon__doodle napperon__star" viewBox="0 0 60 60" width="60" height="60">
       {/* Six-stroke asterisk like a footnote drawn fast */}
       <path
         d="M 30 6 L 30 54 M 9 18 L 51 42 M 9 42 L 51 18"
@@ -198,12 +183,7 @@ function Asterisk() {
 
 function InkBlot() {
   return (
-    <svg
-      className="napperon__doodle napperon__blot"
-      viewBox="0 0 80 80"
-      width="80"
-      height="80"
-    >
+    <svg className="napperon__doodle napperon__blot" viewBox="0 0 80 80" width="80" height="80">
       {/* Faint ink stain with two scattered droplets */}
       <path
         d="M 22 38 Q 14 24 28 18 Q 40 12 50 20 Q 64 28 60 44 Q 56 58 44 60 Q 28 60 22 50 Q 18 44 22 38 Z"

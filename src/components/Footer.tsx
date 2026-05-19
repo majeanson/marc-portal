@@ -118,10 +118,7 @@ export function Footer({ lang }: { lang: Lang }) {
           </span>
           {/* Live Quebec wall clock — updates every minute. A small handmade
               touch that says "this site is tended to, not just shipped". */}
-          <span
-            className="site-footer__qctime"
-            aria-label={`${qcTimeLabel} — ${qcTime}`}
-          >
+          <span className="site-footer__qctime" aria-label={`${qcTimeLabel} — ${qcTime}`}>
             <span className="site-footer__qctime-label">{qcTimeLabel}</span>{' '}
             <span className="site-footer__qctime-value mono">{qcTime}</span>
           </span>
@@ -134,9 +131,7 @@ export function Footer({ lang }: { lang: Lang }) {
             href={otherLangHref}
             onClick={(e) => onLangSwitch(e, otherLangCode)}
             className="site-footer__lang"
-            aria-label={
-              lang === 'fr' ? 'Read this site in English' : 'Lire ce site en français'
-            }
+            aria-label={lang === 'fr' ? 'Read this site in English' : 'Lire ce site en français'}
           >
             <svg
               className="site-footer__lang-arrow"

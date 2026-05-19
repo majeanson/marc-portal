@@ -110,12 +110,12 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'Sugar shack — who brings what',
     },
     problem: {
-      fr: "25 personnes vont à la cabane à sucre familiale. Sans coordination, on arrive avec 4 tartes au sucre et zéro salade.",
+      fr: '25 personnes vont à la cabane à sucre familiale. Sans coordination, on arrive avec 4 tartes au sucre et zéro salade.',
       en: '25 people are heading to the family sugar shack. Without coordination, you end up with 4 maple-sugar pies and zero salad.',
     },
     recipe: {
       fr: "Google Sheets : colonne A = plat à apporter (tarte, salade, jambon, chaudière de sirop), colonne B = qui (vide au début). Tout le monde a le lien, chacun se met sur ce qu'il apporte. Premier arrivé, premier servi. Tu peux geler la liste 3 jours avant.",
-      en: "Google Sheets: column A = dish to bring (pie, salad, ham, bucket of syrup), column B = who (empty at first). Everyone has the link, each person signs up for what they bring. First-come, first-served. Freeze the list 3 days before.",
+      en: 'Google Sheets: column A = dish to bring (pie, salad, ham, bucket of syrup), column B = who (empty at first). Everyone has the link, each person signs up for what they bring. First-come, first-served. Freeze the list 3 days before.',
     },
     template: {
       label: {
@@ -155,8 +155,8 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'Kids clothing exchange (parent group)',
     },
     problem: {
-      fr: "Huit familles avec des enfants de 2 à 8 ans. Vous voulez vous échanger les vêtements trop petits sans rien acheter. Personne ne se rappelle qui a la combinaison de neige 4T cette année.",
-      en: "Eight families with kids aged 2 to 8. You want to swap outgrown clothes without buying anything new. Nobody remembers who has the 4T snowsuit this year.",
+      fr: 'Huit familles avec des enfants de 2 à 8 ans. Vous voulez vous échanger les vêtements trop petits sans rien acheter. Personne ne se rappelle qui a la combinaison de neige 4T cette année.',
+      en: 'Eight families with kids aged 2 to 8. You want to swap outgrown clothes without buying anything new. Nobody remembers who has the 4T snowsuit this year.',
     },
     recipe: {
       fr: "Un groupe Facebook privé ou un canal Signal. Format de post fixe : taille + item + dispo/cherche + photo. Premier arrivé, premier servi. Pas besoin d'app dédiée — la simplicité du fil chronologique fait la job.",
@@ -193,7 +193,7 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'Shared wedding task list',
     },
     problem: {
-      fr: "Vous vous mariez dans 4 mois. La belle-mère veut aider mais sait pas où, ton chum oublie la moitié des courriels, et toi tu veux pas tout porter toute seule.",
+      fr: 'Vous vous mariez dans 4 mois. La belle-mère veut aider mais sait pas où, ton chum oublie la moitié des courriels, et toi tu veux pas tout porter toute seule.',
       en: "You're getting married in 4 months. Your mother-in-law wants to help but doesn't know where, your partner forgets half the emails, and you don't want to carry it all alone.",
     },
     recipe: {
@@ -214,12 +214,12 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'Monthly neighborhood newsletter',
     },
     problem: {
-      fr: "Tu es bénévole pour ton association de quartier. Tu veux envoyer un bulletin une fois par mois à 80 voisins sans payer un service de courriel.",
-      en: "You volunteer for your neighborhood association. You want to send a monthly newsletter to 80 neighbors without paying for an email service.",
+      fr: 'Tu es bénévole pour ton association de quartier. Tu veux envoyer un bulletin une fois par mois à 80 voisins sans payer un service de courriel.',
+      en: 'You volunteer for your neighborhood association. You want to send a monthly newsletter to 80 neighbors without paying for an email service.',
     },
     recipe: {
       fr: "Brevo (anciennement Sendinblue, gratuit jusqu'à 300 envois/jour). Importe ta liste, écris ton bulletin dans l'éditeur, envoie. Tu vois qui ouvre, qui clique. Si ta liste grossit au-delà de 500 personnes, là on en reparle — c'est rendu Tier 1.",
-      en: 'Brevo (formerly Sendinblue, free up to 300 sends/day). Import your list, write the newsletter in the editor, send. See who opens, who clicks. If your list grows past 500 people, then come back — that\'s Tier 1.',
+      en: "Brevo (formerly Sendinblue, free up to 300 sends/day). Import your list, write the newsletter in the editor, send. See who opens, who clicks. If your list grows past 500 people, then come back — that's Tier 1.",
     },
     template: {
       label: { fr: 'Brevo (gratuit)', en: 'Brevo (free)' },
@@ -235,12 +235,12 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'Boat log (engine hours, maintenance)',
     },
     problem: {
-      fr: "Ton bateau a un moteur qui demande une vidange à chaque 100 heures. Tu te souviens jamais où tu en es, et le mécanicien te le demande à chaque printemps.",
+      fr: 'Ton bateau a un moteur qui demande une vidange à chaque 100 heures. Tu te souviens jamais où tu en es, et le mécanicien te le demande à chaque printemps.',
       en: 'Your boat has a motor that needs an oil change every 100 hours. You never remember where you stand, and the mechanic asks you every spring.',
     },
     recipe: {
       fr: "Un carnet papier dans le bateau, OU une note Apple Notes / Google Keep. À chaque sortie : date / heures au départ / heures au retour / ce que tu as fait (vidange, hélice changée, plein d'essence). C'est tout. Pas besoin de logiciel dédié.",
-      en: 'A paper logbook in the boat, OR an Apple Notes / Google Keep note. Each trip: date / hours at start / hours at end / what you did (oil change, propeller swap, refuel). That\'s it. No dedicated software needed.',
+      en: "A paper logbook in the boat, OR an Apple Notes / Google Keep note. Each trip: date / hours at start / hours at end / what you did (oil change, propeller swap, refuel). That's it. No dedicated software needed.",
     },
   },
   {
@@ -252,7 +252,7 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'Dog-sitting during vacations (friend group)',
     },
     problem: {
-      fr: "Quatre amis avec des chiens. Chacun part en vacances 2-3 fois par an. Vous voulez vous garder mutuellement les chiens sans payer une pension à 50 $/jour.",
+      fr: 'Quatre amis avec des chiens. Chacun part en vacances 2-3 fois par an. Vous voulez vous garder mutuellement les chiens sans payer une pension à 50 $/jour.',
       en: 'Four friends with dogs. Each one goes on vacation 2-3 times a year. You want to dog-sit for each other instead of paying a kennel at $50/day.',
     },
     recipe: {

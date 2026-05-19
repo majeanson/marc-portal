@@ -69,9 +69,7 @@ export function Vouches({ lang }: { lang: Lang }) {
                   …
                 </p>
               )}
-              {vouches !== null && vouches.length === 0 && (
-                <p className="field__hint">{t.empty}</p>
-              )}
+              {vouches !== null && vouches.length === 0 && <p className="field__hint">{t.empty}</p>}
               {vouches !== null && vouches.length > 0 && (
                 <ul className="vouches-list__items">
                   {vouches.map((v, i) => (

@@ -41,6 +41,8 @@ const urls = [
   urlEntry('/en/handoff/checklist'),
   urlEntry('/meta'),
   urlEntry('/en/meta'),
+  urlEntry('/carte'),
+  urlEntry('/en/map'),
   urlEntry('/vouches'),
   urlEntry('/en/vouches'),
   urlEntry('/vouch'),

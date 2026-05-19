@@ -9,8 +9,7 @@ const COPY = {
     title: 'Vérifie ton courriel',
     intro: (e: string) =>
       `On a envoyé un lien à ${e}. Ouvre-le pour te connecter — il expire dans 30 minutes.`,
-    reassure:
-      'Tu peux en redemander un à tout moment, c’est gratuit et instantané.',
+    reassure: 'Tu peux en redemander un à tout moment, c’est gratuit et instantané.',
     fallback: 'Pas reçu ? Vérifie tes pourriels, ou recommence avec un autre courriel.',
     again: 'Renvoyer un lien',
   },
@@ -18,8 +17,7 @@ const COPY = {
     title: 'Check your email',
     intro: (e: string) =>
       `A sign-in link was sent to ${e}. Open it to sign in — it expires in 30 minutes.`,
-    reassure:
-      'You can request a new one anytime, free and instant.',
+    reassure: 'You can request a new one anytime, free and instant.',
     fallback: "Didn't get it? Check your spam folder, or try again with a different email.",
     again: 'Send another link',
   },

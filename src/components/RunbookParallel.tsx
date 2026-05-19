@@ -62,19 +62,8 @@ export function RunbookParallel({ lang }: { lang: Lang }) {
         {/* `key={view}` remount is intentional: it forces the child Runbook
             to re-initialize its internal view state to the shared one. Cost:
             per-step expand collapses on toggle. Worth it for the shared bar. */}
-        <Runbook
-          key={`A-${view}`}
-          track={trackA}
-          lang={lang}
-          initialView={view}
-        />
-        <Runbook
-          key={`B-${view}`}
-          track={trackB}
-          lang={lang}
-          initialView={view}
-          showDependencies
-        />
+        <Runbook key={`A-${view}`} track={trackA} lang={lang} initialView={view} />
+        <Runbook key={`B-${view}`} track={trackB} lang={lang} initialView={view} showDependencies />
       </div>
     </div>
   )

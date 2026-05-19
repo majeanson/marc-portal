@@ -72,9 +72,7 @@ export function SessionSubHeader({ lang }: { lang: Lang }) {
       (entries) => {
         const visible = entries
           .filter((e) => e.isIntersecting)
-          .sort(
-            (a, b) => (a.boundingClientRect.top ?? 0) - (b.boundingClientRect.top ?? 0),
-          )
+          .sort((a, b) => (a.boundingClientRect.top ?? 0) - (b.boundingClientRect.top ?? 0))
         if (visible[0]) {
           setActiveId(visible[0].target.id)
         }
