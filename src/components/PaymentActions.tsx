@@ -460,7 +460,11 @@ export function PaymentActions({
       )}
 
       {projectState !== 'hidden' && (
-        <section className="me-portal__pay-section" aria-labelledby={`pay-proj-${session.id}`}>
+        <section
+          id="session-paiement"
+          className="me-portal__pay-section"
+          aria-labelledby={`pay-proj-${session.id}`}
+        >
           <h3 className="me-portal__pay-section-title mono" id={`pay-proj-${session.id}`}>
             {copy.projectHeading}
           </h3>
@@ -526,6 +530,7 @@ export function PaymentActions({
         const custodianSection = showCustodianSection ? (
           <section
             key="cust"
+            id="session-livraison"
             className={`me-portal__pay-section me-portal__pay-custodian me-portal__pay-custodian--${custodianState}${decisionPending ? ' me-portal__pay-custodian--recommended' : ''}`}
             aria-labelledby={`pay-cust-${session.id}`}
           >

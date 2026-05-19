@@ -231,6 +231,96 @@ p {
   -webkit-backdrop-filter: saturate(140%) blur(8px);
   border-bottom: 1px solid var(--border-soft);
 }
+
+/* Session sub-header — sticky tab bar that sits directly below the main
+   header on /session/:id. Tabs anchor to the six major sections of the
+   page (Statut, Conversation, Builds, Paiement, Livraison, Intake); active
+   tab is computed via IntersectionObserver in SessionSubHeader.tsx. Tabs
+   for sections that aren't on the page (e.g. Builds before any
+   advancement is posted) are filtered out automatically. */
+.session-subheader {
+  position: sticky;
+  /* Sit immediately below the main header — its height varies with the
+     mobile/desktop row wrapping but ~56px is the tightest single-row
+     case; the backdrop overlap is invisible. */
+  top: 56px;
+  z-index: 9;
+  background: rgba(251, 247, 236, 0.92);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid var(--border-soft);
+}
+.session-subheader__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.session-subheader__inner::-webkit-scrollbar {
+  display: none;
+}
+.session-subheader__tab {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  padding: 14px 14px 12px;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+.session-subheader__tab:hover,
+.session-subheader__tab:focus-visible {
+  color: var(--text-mid);
+  outline: none;
+}
+.session-subheader__tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.session-subheader__tab--active:hover,
+.session-subheader__tab--active:focus-visible {
+  color: var(--accent-warm);
+}
+
+:root[data-theme='night'] .session-subheader {
+  background: rgba(24, 22, 19, 0.86);
+}
+
+@media (max-width: 1180px) {
+  /* When the main header wraps to two rows on tablets, lift the sub-header
+     down so it doesn't overlap. The wrap happens at the same breakpoint
+     as the marketing nav row; on session pages with variant="session"
+     the main header is single-row so this padding is harmless extra space. */
+  .session-subheader {
+    top: 60px;
+  }
+}
+@media (max-width: 640px) {
+  .session-subheader__inner {
+    padding: 0 12px;
+  }
+  .session-subheader__tab {
+    padding: 12px 10px 10px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+  /* Soft fade on the right edge hints "more to swipe" — same pattern as
+     the marketing-nav second-row strip on the home header. */
+  .session-subheader__inner {
+    mask-image: linear-gradient(to right, black calc(100% - 20px), transparent);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent);
+  }
+}
 .site-header__inner {
   /* Wider than --max-w (which sizes content to a reading column). Brand +
      5-link section nav + admin chrome (Mes sessions · Déconnexion · VOIR

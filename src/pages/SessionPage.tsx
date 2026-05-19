@@ -27,6 +27,7 @@ import { SessionStatusStrip } from '../components/intake/SessionStatusStrip'
 import { SessionTierStrip } from '../components/intake/SessionTierStrip'
 import { PaymentActions } from '../components/PaymentActions'
 import { SessionWhatsNext } from '../components/SessionWhatsNext'
+import { SessionSubHeader } from '../components/SessionSubHeader'
 import { getPaymentSummary, type PaymentSummary } from '../lib/paymentsApi'
 import { SessionHeader } from '../components/intake/SessionHeader'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
@@ -701,6 +702,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
   return (
     <div className="app">
       <Header lang={lang} variant="session" />
+      <SessionSubHeader lang={lang} />
       <main id="main-content">
         <article className="section intake session-frame">
           <div className="section__inner">
@@ -708,37 +710,42 @@ export function SessionPage({ lang }: { lang: Lang }) {
               {backLabel}
             </a>
 
-            <SessionStatusStrip
-              lang={lang}
-              status={session.status}
-              onPick={isAdmin ? onStatusChange : undefined}
-            />
-            {isAdmin && <p className="field__hint session-frame__strip-hint">{t.statusHint}</p>}
-            {isAdmin && (
-              <>
-                <SessionTierStrip lang={lang} tier={session.tier} onPick={onTierChange} />
-                <p className="field__hint session-frame__strip-hint">{t.tierHint}</p>
-              </>
-            )}
-
-            {isAdmin && session.tier === 3 && (
-              <Tier3AmountInput
-                // key resets local draft when the persisted value changes
-                // (post-save, post-409 reload). Avoids an effect+setState
-                // pattern the lint rule rejects.
-                key={String(session.tier3_amount_cents ?? '')}
+            <div id="session-statut">
+              <SessionStatusStrip
                 lang={lang}
-                copy={t}
-                cents={session.tier3_amount_cents}
-                onSave={onTier3AmountChange}
+                status={session.status}
+                onPick={isAdmin ? onStatusChange : undefined}
               />
-            )}
+              {isAdmin && <p className="field__hint session-frame__strip-hint">{t.statusHint}</p>}
+              {isAdmin && (
+                <>
+                  <SessionTierStrip lang={lang} tier={session.tier} onPick={onTierChange} />
+                  <p className="field__hint session-frame__strip-hint">{t.tierHint}</p>
+                </>
+              )}
 
-            <SessionWhatsNext session={session} summary={summary} isAdmin={isAdmin} lang={lang} />
+              {isAdmin && session.tier === 3 && (
+                <Tier3AmountInput
+                  // key resets local draft when the persisted value changes
+                  // (post-save, post-409 reload). Avoids an effect+setState
+                  // pattern the lint rule rejects.
+                  key={String(session.tier3_amount_cents ?? '')}
+                  lang={lang}
+                  copy={t}
+                  cents={session.tier3_amount_cents}
+                  onSave={onTier3AmountChange}
+                />
+              )}
+
+              <SessionWhatsNext session={session} summary={summary} isAdmin={isAdmin} lang={lang} />
+            </div>
 
             {/* Render PaymentActions for active *and* shipped sessions: the
                 ownership-decision (All yours vs Custodian) sections live
-                inside the component and need the shipped state to surface. */}
+                inside the component and need the shipped state to surface.
+                The component internally emits id="session-paiement" and
+                id="session-livraison" anchors that the sub-header
+                navigates to. */}
             {(session.status === 'active' || session.status === 'shipped') && (
               <PaymentActions session={session} lang={lang} />
             )}
@@ -786,7 +793,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
               }
             />
 
-            <section className="intake__step session-frame__panel">
+            <section id="session-intake" className="intake__step session-frame__panel">
               <header className="session-page__intake-head">
                 <h2>{t.intakeHeading}</h2>
                 <div className="session-page__intake-actions">
@@ -940,19 +947,21 @@ export function SessionPage({ lang }: { lang: Lang }) {
               />
             )}
 
-            <SessionAdvancements
-              sessionId={session.id}
-              isAdmin={isAdmin}
-              lang={lang}
-              repoUrl="https://github.com/majeanson/marc-portal"
-              items={advancements}
-              loading={advancementsLoading}
-              onCreated={onAdvCreated}
-              onPatched={onAdvPatched}
-              onDeleted={onAdvDeleted}
-            />
+            <div id="session-builds">
+              <SessionAdvancements
+                sessionId={session.id}
+                isAdmin={isAdmin}
+                lang={lang}
+                repoUrl="https://github.com/majeanson/marc-portal"
+                items={advancements}
+                loading={advancementsLoading}
+                onCreated={onAdvCreated}
+                onPatched={onAdvPatched}
+                onDeleted={onAdvDeleted}
+              />
+            </div>
 
-            <section id="thread" className="intake__step session-frame__panel">
+            <section id="session-conversation" className="intake__step session-frame__panel">
               <h2>{t.threadHeading}</h2>
               {threadItems.length === 0 ? (
                 <p className="thread__empty">{t.none}</p>
