@@ -49,18 +49,26 @@ export function Pricing({ lang }: { lang: Lang }) {
                   <p className="tier__scope">{tier.scope}</p>
                   <div className="tier__after mono">{tier.after}</div>
                 </a>
-                {isAnchor && (
-                  <p className="tier__addendum">
-                    {t.tier2Note}{' '}
-                    <a href={`${langPrefix}/handoff`} className="tier__addendum-cta mono">
-                      {t.tier2NoteCta}
-                    </a>
-                  </p>
-                )}
               </li>
             )
           })}
         </ol>
+        {/* Custodian-mode mini-section. Previously rendered only under the
+            Tier-2 card via tier2Note, which falsely implied custodian was a
+            Tier-2-only option. It applies to every paid tier (1, 2, 3) by
+            default, so it lives below the tier list now as a single shared
+            note instead of a per-card addendum. */}
+        <aside className="tier__custodian-note" aria-labelledby="tier-custodian-heading">
+          <h3 id="tier-custodian-heading" className="tier__custodian-heading mono">
+            {t.custodianNoteHeading}
+          </h3>
+          <p className="tier__custodian-body">
+            {t.custodianNote}{' '}
+            <a href={`${langPrefix}/handoff`} className="tier__custodian-cta mono">
+              {t.custodianNoteCta}
+            </a>
+          </p>
+        </aside>
         <p className="tier__disclaimer">{t.disclaimer}</p>
       </div>
     </section>

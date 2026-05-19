@@ -183,9 +183,10 @@ const FR = {
     asOf: 'Prix publics, en vigueur depuis 2026-05-15.',
     disclaimer:
       'Les prix peuvent bouger d’une saison à l’autre. Toujours négociables avant qu’on démarre, jamais de surprise après.',
-    tier2Note:
-      'Par défaut à la livraison : mode dépositaire (200 $/an) — Marc opère le site. Tu peux choisir « Tout à toi » à la place si tu gères déjà tes outils.',
-    tier2NoteCta: 'Comment ça finit →',
+    custodianNote:
+      'Mode dépositaire (200 $/an) — applicable à tous les tiers payants. Par défaut à la livraison, Marc opère le site (DNS, certificats, petites retouches jusqu’à 2 h/mois). Tu peux choisir « Tout à toi » à la place si tu gères déjà tes outils.',
+    custodianNoteHeading: 'Et après la livraison ?',
+    custodianNoteCta: 'Comment ça finit →',
     tiers: [
       {
         name: 'Tier 0',
@@ -1085,9 +1086,10 @@ const EN: Copy = {
     asOf: 'Public prices, effective 2026-05-15.',
     disclaimer:
       'Prices may move between seasons. Always negotiable before we start, never a surprise after.',
-    tier2Note:
-      'Default at delivery: custodian mode ($200/yr) — Marc operates the site. You can opt for "All yours" instead if you already manage your stack.',
-    tier2NoteCta: 'How it ends →',
+    custodianNote:
+      'Custodian mode ($200/yr) — applies to every paid tier. By default at delivery, Marc operates the site (DNS, certificates, small tweaks up to 2 h/mo). You can opt for "All yours" instead if you already manage your tools.',
+    custodianNoteHeading: 'After delivery, then what?',
+    custodianNoteCta: 'How it ends →',
     tiers: [
       {
         name: 'Tier 0',
