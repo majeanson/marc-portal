@@ -54,7 +54,6 @@ const AdminHub = lazy(() => import('./pages/AdminHub').then((m) => ({ default: m
 const AdminRunbook = lazy(() =>
   import('./pages/AdminRunbook').then((m) => ({ default: m.AdminRunbook })),
 )
-const Template = lazy(() => import('./pages/Template').then((m) => ({ default: m.Template })))
 const PublicAdvancements = lazy(() =>
   import('./pages/PublicAdvancements').then((m) => ({ default: m.PublicAdvancements })),
 )
@@ -213,22 +212,6 @@ export const router = createBrowserRouter(
         element={
           <L>
             <Handoff lang="en" />
-          </L>
-        }
-      />
-      <Route
-        path="/template"
-        element={
-          <L>
-            <Template lang="fr" />
-          </L>
-        }
-      />
-      <Route
-        path="/en/template"
-        element={
-          <L>
-            <Template lang="en" />
           </L>
         }
       />

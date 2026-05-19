@@ -1,13 +1,12 @@
 /**
- * Shared types for the Runbook surface (/admin/runbook + /template).
+ * Shared types for the Runbook surface (/admin/runbook).
  *
- * The runbook surfaces three parallel timelines:
+ * Two parallel timelines:
  *   - Track A: dev handoff (taking over Marc's instance)
  *   - Track B: user journey (a visitor's path under new ownership)
- *   - Track C: template buyer (someone forking the portal as a product)
  *
- * Each track shares the same Step shape so a single renderer can present all
- * three. Bilingual copy lives inline on each step to keep i18n.ts from
+ * Both tracks share the same Step shape so a single renderer can present
+ * either. Bilingual copy lives inline on each step to keep i18n.ts from
  * ballooning further — runbook copy is operator-facing and dense, not the
  * marketing copy i18n.ts was designed for.
  */
@@ -74,36 +73,16 @@ export interface Step {
 
 /** A whole track — metadata + ordered steps. */
 export interface Track {
-  /** "A", "B", "C". */
-  id: 'A' | 'B' | 'C'
+  /** "A" (dev handoff) or "B" (user journey). */
+  id: 'A' | 'B'
   /** Short eyebrow ("dev · handoff" etc.). */
   eyebrow: Bi
-  /** Track title ("Dev handoff", "User journey", "Template buyer"). */
+  /** Track title ("Dev handoff", "User journey"). */
   title: Bi
   /** One-line description for the track header. */
   sub: Bi
   /** Ordered list of steps. */
   steps: Step[]
-}
-
-/**
- * A strategic question on the Decisions tab. Unlike steps, decisions don't
- * have a fixed shape — they're open prompts with a free-text answer field.
- * The "unlocks" field surfaces what answering this enables downstream.
- */
-export interface Decision {
-  /** Stable id, e.g. "D-pricing". */
-  id: string
-  /** "1", "2", … for visual ordering. */
-  num: string
-  /** Short question (10 words or less). */
-  question: Bi
-  /** Why this matters — load-bearing context for the operator. */
-  context: Bi
-  /** Concrete options to consider. Rendered as a bullet list. */
-  options: BiList
-  /** What answering this unlocks ("the price line on /template's sales card"). */
-  unlocks: Bi
 }
 
 /** Picks the right side of a Bi based on the active language. */

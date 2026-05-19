@@ -21,7 +21,6 @@ const COPY = {
     sections: {
       working: 'Surfaces de travail',
       brand: 'Carte de marque',
-      onboarding: 'Onboarding & vente',
       diag: 'Diagnostics',
       external: 'Tableaux externes',
     },
@@ -32,7 +31,6 @@ const COPY = {
     sections: {
       working: 'Working surfaces',
       brand: 'Brand check',
-      onboarding: 'Onboarding & sale',
       diag: 'Diagnostics',
       external: 'External dashboards',
     },
@@ -87,6 +85,12 @@ function buildSections(lang: Lang): Section[] {
             desc: 'Moderation queue for visitor-submitted testimonials. Approve, reject, edit, soft-delete.',
             badge: '/admin/vouches',
           },
+          {
+            href: `${langPrefix}/admin/runbook`,
+            title: 'Runbook',
+            desc: 'Two-track operator memory: dev-handoff steps in parallel with the user journey they unblock. Progress saved in this browser.',
+            badge: '/admin/runbook',
+          },
         ],
       },
       {
@@ -104,29 +108,6 @@ function buildSections(lang: Lang): Section[] {
             title: 'Home OG preview',
             desc: 'Open the live home unfurl PNG in a new tab. ?debug=1 for the JSON payload.',
             badge: '/og/home',
-          },
-        ],
-      },
-      {
-        title: t.sections.onboarding,
-        tiles: [
-          {
-            href: `${langPrefix}/admin/runbook`,
-            title: 'Runbook',
-            desc: 'Three tracks: dev handoff, user journey under new ownership, template-as-product. Progress saved in this browser.',
-            badge: '/admin/runbook',
-          },
-          {
-            href: `${langPrefix}/template`,
-            title: 'Template (public)',
-            desc: 'The buyer-facing page mirroring Track C. Open this when you want to see what a template buyer sees.',
-            badge: '/template',
-          },
-          {
-            href: `${langPrefix}/admin/runbook?tab=decisions`,
-            title: 'Decisions',
-            desc: 'Eight strategic questions to answer before selling the template. Open answers persist locally.',
-            badge: '?tab=decisions',
           },
         ],
       },
@@ -213,6 +194,12 @@ function buildSections(lang: Lang): Section[] {
           desc: 'File de modération des témoignages visiteurs. Approuver, rejeter, éditer, supprimer.',
           badge: '/admin/vouches',
         },
+        {
+          href: `${langPrefix}/admin/runbook`,
+          title: 'Runbook',
+          desc: 'Mémoire opérateur en deux pistes : étapes de handoff dev en parallèle avec le parcours visiteur qu’elles débloquent. Progression sauvée dans ce navigateur.',
+          badge: '/admin/runbook',
+        },
       ],
     },
     {
@@ -230,29 +217,6 @@ function buildSections(lang: Lang): Section[] {
           title: 'Aperçu OG accueil',
           desc: 'Ouvre la PNG d’accueil dans un nouvel onglet. ?debug=1 pour le JSON.',
           badge: '/og/home',
-        },
-      ],
-    },
-    {
-      title: t.sections.onboarding,
-      tiles: [
-        {
-          href: `${langPrefix}/admin/runbook`,
-          title: 'Runbook',
-          desc: 'Trois pistes : handoff dev, parcours visiteur sous nouvelle direction, template à vendre. Progression sauvée dans ce navigateur.',
-          badge: '/admin/runbook',
-        },
-        {
-          href: `${langPrefix}/template`,
-          title: 'Template (public)',
-          desc: 'Page acheteur miroir de Track C. À ouvrir quand tu veux voir ce qu’un acheteur du template voit.',
-          badge: '/template',
-        },
-        {
-          href: `${langPrefix}/admin/runbook?tab=decisions`,
-          title: 'Décisions',
-          desc: 'Huit questions stratégiques à trancher avant de vendre le template. Réponses libres persistées localement.',
-          badge: '?tab=decisions',
         },
       ],
     },

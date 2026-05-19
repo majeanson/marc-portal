@@ -1,16 +1,15 @@
 /**
- * localStorage-backed step progress + decision answers for the Runbook.
+ * localStorage-backed step progress for the Runbook.
  *
  * Why localStorage (not D1): the runbook is a per-operator memo, not data
  * that needs to survive a device swap. Browser-scoped is the right scope —
- * each new dev or template buyer starts with a fresh checklist when they
- * land on the page from their own machine. If we ever need cross-device
- * sync we can swap the backing store without touching renderers.
+ * checking off "Get access" in one place doesn't need to follow you to
+ * another machine. If we ever need cross-device sync we can swap the backing
+ * store without touching renderers.
  *
- * Storage keys are namespaced under "runbook:" so a future "clear runbook
- * progress" button can match-and-delete cleanly. Each progress-checkbox key
- * is the step's stable id (e.g. "A-07"); each decision-answer key is the
- * decision's stable id prefixed with "decision:" (e.g. "decision:D-pricing").
+ * Storage keys are namespaced under "runbook:" so the "reset progress"
+ * button can match-and-delete cleanly. Each progress-checkbox key is the
+ * step's stable id (e.g. "A-07").
  */
 
 import { useCallback, useEffect, useState } from 'react'
@@ -33,14 +32,6 @@ function readBool(id: string): boolean {
   }
 }
 
-function readString(id: string): string {
-  try {
-    return window.localStorage.getItem(storageKey(id)) ?? ''
-  } catch {
-    return ''
-  }
-}
-
 function writeBool(id: string, value: boolean): void {
   try {
     if (value) window.localStorage.setItem(storageKey(id), '1')
@@ -48,15 +39,6 @@ function writeBool(id: string, value: boolean): void {
   } catch {
     // Storage unavailable — fail silently. The in-memory state still tracks
     // the toggle within the session, so the page remains usable.
-  }
-}
-
-function writeString(id: string, value: string): void {
-  try {
-    if (value) window.localStorage.setItem(storageKey(id), value)
-    else window.localStorage.removeItem(storageKey(id))
-  } catch {
-    // Same posture as writeBool.
   }
 }
 
@@ -88,35 +70,6 @@ export function useStepProgress(stepId: string): [boolean, () => void] {
   }, [stepId])
 
   return [checked, toggle]
-}
-
-/**
- * Free-text answer for a decision card. Same persistence posture as the
- * step checkbox. Returns `[value, setValue]`.
- */
-export function useDecisionAnswer(decisionId: string): [string, (v: string) => void] {
-  const key = `decision:${decisionId}`
-  const [value, setValue] = useState<string>(() => readString(key))
-
-  useEffect(() => {
-    function onStorage(e: StorageEvent) {
-      if (e.key === storageKey(key)) {
-        setValue(e.newValue ?? '')
-      }
-    }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, [key])
-
-  const update = useCallback(
-    (v: string) => {
-      setValue(v)
-      writeString(key, v)
-    },
-    [key],
-  )
-
-  return [value, update]
 }
 
 /**
