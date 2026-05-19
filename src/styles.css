@@ -230,6 +230,22 @@ p {
   backdrop-filter: saturate(140%) blur(8px);
   -webkit-backdrop-filter: saturate(140%) blur(8px);
   border-bottom: 1px solid var(--border-soft);
+  /* Hide-on-scroll-down, slide-back-on-scroll-up. Triggered by
+     [data-scroll-direction="down"] on <html> (set by lib/scrollDirection.ts).
+     Reduced-motion users keep both headers pinned. */
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+:root[data-scroll-direction='down'] .site-header {
+  transform: translateY(-100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    transition: none;
+  }
+  :root[data-scroll-direction='down'] .site-header {
+    transform: none;
+  }
 }
 
 /* Session sub-header — sticky tab bar that sits directly below the main
@@ -249,6 +265,46 @@ p {
   backdrop-filter: saturate(140%) blur(8px);
   -webkit-backdrop-filter: saturate(140%) blur(8px);
   border-bottom: 1px solid var(--border-soft);
+  /* Hide-on-scroll-down — slides up further than the main header
+     (translateY -200%) so it goes fully off-screen even when the main
+     header has already moved up. Both slide back together on scroll-up. */
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+:root[data-scroll-direction='down'] .session-subheader {
+  transform: translateY(-200%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .session-subheader {
+    transition: none;
+  }
+  :root[data-scroll-direction='down'] .session-subheader {
+    transform: none;
+  }
+}
+
+/* Scroll offset for sub-header tab anchors. scrollIntoView({block:'start'})
+   parks the target at viewport top, but the sticky main header + sticky
+   sub-header (combined ~104 px on desktop, ~96 px on mobile) cover that
+   area — so the section title was landing behind the chrome. scroll-margin
+   tells the browser to leave that much room above when scrolling. */
+#session-statut,
+#session-conversation,
+#session-builds,
+#session-paiement,
+#session-livraison,
+#session-intake {
+  scroll-margin-top: 112px;
+}
+@media (max-width: 640px) {
+  #session-statut,
+  #session-conversation,
+  #session-builds,
+  #session-paiement,
+  #session-livraison,
+  #session-intake {
+    scroll-margin-top: 96px;
+  }
 }
 .session-subheader__inner {
   max-width: 1280px;
@@ -1352,6 +1408,20 @@ button.intake__progress-step:focus-visible {
     100% {
       box-shadow: 0 0 0 0 rgba(31, 29, 24, 0);
     }
+  }
+}
+/* Tighten the status pills on small viewports — the 4-step strip
+   (BROUILLON / TRIAGE / EN COURS / LIVRÉ) was right at the edge of
+   wrapping on a 360-px phone with the default padding. Smaller font +
+   shorter horizontal padding keeps all four on one row cleanly. */
+@media (max-width: 480px) {
+  .intake__progress {
+    gap: 4px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+  .intake__progress-step {
+    padding: 4px 9px;
   }
 }
 /* Draft-resume prompt — shown once-per-tab when /intake mounts with a
@@ -3414,6 +3484,7 @@ button.intake__progress-step:focus-visible {
   margin-bottom: 0;
 }
 .me-portal__pay-section-tag {
+  display: inline-block;
   margin-left: 4px;
   padding: 2px 7px;
   border-radius: 999px;
@@ -3423,6 +3494,16 @@ button.intake__progress-step:focus-visible {
   background: var(--bg-app);
   color: var(--text-soft);
   border: 1px solid var(--border-soft);
+  /* Keep the tag content on one line — long tags like "à la place du
+     dépositaire" were breaking mid-pill into two ragged lines on phones.
+     The whole pill wraps to a new line below the heading instead, which
+     reads cleanly when the heading width is constrained. */
+  white-space: nowrap;
+  /* iOS double-tap selection highlight on the pill looked like a UI bug.
+     Pure decoration — no reason to allow selection. */
+  user-select: none;
+  -webkit-user-select: none;
+  vertical-align: baseline;
 }
 .me-portal__pay-details-link {
   font-size: 12px;
@@ -3467,7 +3548,9 @@ button.intake__progress-step:focus-visible {
   line-height: 1.5;
 }
 
-/* Custodian state coloring — section tag picks up the state vibe. */
+/* Custodian state coloring — section tag picks up the state vibe.
+   Day-mode pastels are hardcoded; night-mode equivalents follow below
+   so the pills don't read as bright clashes on the dark surface. */
 .me-portal__pay-custodian--active .me-portal__pay-section-tag {
   background: #eaf5ec;
   color: #2a6d3a;
@@ -3494,6 +3577,39 @@ button.intake__progress-step:focus-visible {
   background: #eef2f5;
   color: #3a5160;
   border-color: #d8e0e7;
+}
+
+/* Night-mode tag colors — deeper backgrounds + brighter foregrounds keep
+   each state's semantic hue (sage / amber / blue) readable on ink. Mirror
+   pattern of the admin attention-pill night overrides above. */
+:root[data-theme='night']
+  .me-portal__pay-custodian--active
+  .me-portal__pay-section-tag {
+  background: #1a3322;
+  color: #98c4a5;
+  border-color: #2a553a;
+}
+:root[data-theme='night']
+  .me-portal__pay-custodian--past_due
+  .me-portal__pay-section-tag {
+  background: #2e2515;
+  color: #e8b96b;
+  border-color: #5e4623;
+}
+:root[data-theme='night']
+  .me-portal__pay-custodian--ended
+  .me-portal__pay-section-tag {
+  background: var(--bg-section);
+  color: var(--text-mid);
+  border-color: var(--border);
+}
+:root[data-theme='night']
+  .me-portal__pay-tout-a-toi
+  .me-portal__pay-section-tag,
+:root[data-theme='night'] .me-portal__pay-cust-pill--tout {
+  background: #1b262e;
+  color: #92a7b8;
+  border-color: #2a3a48;
 }
 
 /* Recommended/decision-pending styling — Custodian gets accent-tinted
