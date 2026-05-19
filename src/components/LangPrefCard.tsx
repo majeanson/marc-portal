@@ -22,7 +22,7 @@ const COPY = {
     eyebrow: 'préférences',
     title: 'Langue des courriels',
     description:
-      'Quelle langue je devrais parler dans ton inbox ? Tu peux changer d’avis quand tu veux.',
+      'Quelle langue je devrais parler dans ton inbox ? Tu peux changer d’idée quand tu veux.',
     fr: 'Français',
     frHint: 'Tu / OQLF / 1 500 $',
     en: 'English',

@@ -29,7 +29,7 @@ const COPY = {
   fr: {
     eyebrow: 'cette semaine',
     title: 'Notes vocales',
-    sub: 'Vos notes dictées de la semaine. Cliquez sur + pour en ajouter une.',
+    sub: 'Tes notes dictées de la semaine. Clique sur + pour en ajouter une.',
     add: '+ Ajouter une note',
     cancel: 'Annuler',
     save: 'Enregistrer',
@@ -40,8 +40,8 @@ const COPY = {
     transcript: 'Transcription (ce qui a été dicté)',
     transcriptPh:
       'Ex. : Lundi 8h12 chez Bélanger. 3h de soudure, deux coudes en T 1/2 pouce, joint silicone.',
-    empty: 'Aucune note encore. Ajoutez la première en cliquant sur +.',
-    error: 'Hmm, ça n’a pas marché. Réessayez.',
+    empty: 'Aucune note encore. Ajoute la première en cliquant sur +.',
+    error: 'Hmm, ça n’a pas marché. Réessaie.',
     by: 'par',
     settings: 'Réglages',
     signin: 'Se connecter pour commencer →',

@@ -76,12 +76,12 @@ const COPY = {
       'Admin GitHub (collaborateurs, branches, déploiements)',
     ],
     toutAToiAckCheckbox:
-      'Je confirme. Je prends la responsabilité de la stack. Marc ne gère plus rien après la livraison.',
+      'Je confirme. Je prends la responsabilité des outils. Marc ne gère plus rien après la livraison.',
     toutAToiConfirm: 'Confirmer « Tout à toi »',
     toutAToiAcking: 'Confirmation…',
     toutAToiAckedOn: (date: string) => `Confirmé le ${date}`,
     toutAToiAckedBody:
-      'Tu as pris la responsabilité de la stack. Marc te transfère les comptes à la livraison ; au-delà, c’est à toi.',
+      'Tu as pris la responsabilité des outils. Marc te transfère les comptes à la livraison ; au-delà, c’est à toi.',
     toutAToiSwitchToCustodian: 'Activer le mode dépositaire à la place →',
     toutAToiAckError: 'Échec — réessaie. La décision peut aussi être prise plus tard.',
 

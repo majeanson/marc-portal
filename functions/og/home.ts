@@ -84,7 +84,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
     eyebrow: 'SIDE-GIG · QUÉBEC · ASYNC',
     brand: 'marc.portal',
     headline: ['Dev québécois.', 'Job de jour.', 'Le soir, j’aide.'],
-    shippedLabel: (n) => (n === 1 ? '1 PROJET EXPÉDIÉ' : `${n} PROJETS EXPÉDIÉS`),
+    shippedLabel: (n) => (n === 1 ? '1 PROJET LIVRÉ' : `${n} PROJETS LIVRÉS`),
     activeLabel: 'EN COURS',
     noActiveLabel: 'PROCHAIN CRÉNEAU OUVERT',
     responseLabel: 'RÉPONSE 72H',
@@ -97,7 +97,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
     shippedLabel: (n) => (n === 1 ? '1 PROJECT SHIPPED' : `${n} PROJECTS SHIPPED`),
     activeLabel: 'IN PROGRESS',
     noActiveLabel: 'NEXT SLOT OPEN',
-    responseLabel: 'REPLY < 72H',
+    responseLabel: 'REPLY IN 72H',
     footerHost: 'marcportal.com',
   },
 }

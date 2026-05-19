@@ -296,7 +296,7 @@ export async function sendMagicLink(
   const headline = lang === 'fr' ? 'Ton lien de connexion' : 'Your sign-in link'
   const p1 =
     lang === 'fr'
-      ? 'Clique le bouton ci-dessous pour entrer dans ton espace. Aucun mot de passe — le lien fait toute la job.'
+      ? 'Clique sur le bouton ci-dessous pour entrer dans ton espace. Aucun mot de passe — le lien fait toute la job.'
       : 'Hit the button below to walk into your space. No password — the link does the work.'
   const p2 =
     lang === 'fr'
@@ -598,7 +598,7 @@ export async function sendTierAssignedNotification(
     paragraphs =
       lang === 'fr'
         ? [
-            'C’est trop petit pour engager un dev — et c’est une bonne nouvelle. Je te redirige vers un patron prêt-à-l’emploi ou un template.',
+            'C’est trop petit pour engager un dev — et c’est une bonne nouvelle. Je te redirige vers un patron prêt à utiliser ou un template.',
             'Les détails sont dans le fil de ta session. Lis, applique, garde le portail ouvert si tu veux que je regarde le résultat.',
           ]
         : [

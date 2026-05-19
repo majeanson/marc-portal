@@ -20,7 +20,7 @@ const COPY = {
     backHome: "← Retour à l'accueil",
     eyebrow: 'comment ça finit',
     title: "Tu n'es jamais pris au piège",
-    lead: "À la fin de chaque engagement, deux modes possibles. Par défaut, je m'en occupe (mode dépositaire, 200 $/an) — c'est ce qui me permet de te livrer sans avoir à t'expliquer DNS, Cloudflare et Resend. Tu peux opter pour « Tout à toi » à la place, si tu maîtrises déjà ta stack. Et tu peux changer d'avis n'importe quand, gratuit, en environ une semaine.",
+    lead: "À la fin de chaque engagement, deux modes possibles. Par défaut, je m'en occupe (mode dépositaire, 200 $/an) — c'est ce qui me permet de te livrer sans avoir à t'expliquer DNS, Cloudflare et Resend. Tu peux choisir « Tout à toi » à la place, si tu maîtrises déjà tes outils. Et tu peux changer d'idée n'importe quand, gratuit, en environ une semaine.",
     asOf: 'En vigueur : 2026-05-15.',
 
     modes: {

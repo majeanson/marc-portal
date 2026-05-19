@@ -137,7 +137,7 @@ const FR = {
     do: {
       title: 'Je fais',
       items: [
-        'Tout simplement votre idée',
+        'Tout simplement ton idée',
         'Automatisation de tout genre',
         'Coordination de petites équipes ou de bénévoles',
         'Portfolios, sites découvertes',
@@ -162,7 +162,7 @@ const FR = {
     disclaimer:
       'Les prix peuvent bouger d’une saison à l’autre. Toujours négociables avant qu’on démarre, jamais de surprise après.',
     tier2Note:
-      'Par défaut à la livraison : mode dépositaire (200 $/an) — Marc opère le site. Tu peux opter pour « Tout à toi » à la place si tu gères déjà ta stack.',
+      'Par défaut à la livraison : mode dépositaire (200 $/an) — Marc opère le site. Tu peux choisir « Tout à toi » à la place si tu gères déjà tes outils.',
     tier2NoteCta: 'Comment ça finit →',
     tiers: [
       {
@@ -229,7 +229,7 @@ const FR = {
     saving: 'Préparation…',
     blankErr: 'Trace au moins une chose ou écris une phrase avant d’envoyer.',
     loadingCanvas: 'Chargement du tableau blanc…',
-    homeTeaser: 'Préfères dessiner? Essaie le napperon →',
+    homeTeaser: 'Tu préfères dessiner ? Essaie le napperon →',
     pillAttached: 'Napperon attaché',
     pillRemove: 'Retirer',
     pillView: 'Voir le dessin',
@@ -310,7 +310,7 @@ const FR = {
   },
 
   footer: {
-    contact: 'Contact : via le portail uniquement (pas d’email, pas de téléphone).',
+    contact: 'Contact : via le portail uniquement (pas de courriel, pas de téléphone).',
     legal: 'Hébergé au Canada · Loi 25 · OQLF',
     copyright: '© Marc 2026',
   },
@@ -340,7 +340,7 @@ const FR = {
     },
     thread: {
       title: "Le fil de l'engagement",
-      body: "Pas d'email, pas de meetings. Toute la communication vit ici, en ordre chronologique.",
+      body: "Pas de courriels, pas de meetings. Toute la communication vit ici, en ordre chronologique.",
       label: 'Messages chronologiques entre Marc et le client',
       authors: { marc: 'Marc', client: 'Client', system: 'Système' },
       types: {
@@ -405,7 +405,7 @@ const FR = {
     total: 'Total',
     invoiceSign: '— Brouillon généré · à réviser et envoyer manuellement.',
     disclaimer:
-      'Démo statique avec voix-clients composites. Le code et le parser sont vrais. Aucune donnée réelle, aucun email envoyé.',
+      'Démo statique avec voix-clients composites. Le code et le parser sont vrais. Aucune donnée réelle, aucun courriel envoyé.',
   },
 
   intake: {
@@ -466,7 +466,7 @@ const FR = {
       continue: 'Soumettre →',
       handoffMode: {
         label: 'Préférence de gestion (optionnel)',
-        hint: "À la livraison, qui détient les clés? Par défaut Marc s'en occupe (200 $/an) — c'est ce qui te dispense de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
+        hint: "À la livraison, qui détient les clés? Par défaut Marc s'en occupe (200 $/an) — c'est ce qui t'évite de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
         learnMore: 'Voir comment ça finit →',
         optionJe: "Je m'en occupe — Marc garde les clés (200 $/an, mode recommandé)",
         optionTout: 'Tout à toi — je gère DNS, Cloudflare, Resend moi-même',
@@ -599,8 +599,8 @@ const FR = {
     openCta: 'Voir les avancées →',
     openBuild: 'Ouvrir le build ↗',
     tierPrefix: 'Tier',
-    placeholderEyebrow: 'votre projet ici',
-    placeholderHeading: 'Une place vous attend',
+    placeholderEyebrow: 'ton projet ici',
+    placeholderHeading: 'Une place t’attend',
     placeholderIntro: 'Peu importe le tier — un point de départ.',
     placeholderT0Cta: 'Voir Tier 0 →',
     placeholderIntakeCta: "Démarrer l'intake →",
@@ -814,7 +814,7 @@ const FR = {
   vouches: {
     pageTitle: 'Recommandations',
     heading: 'Quelques mots de gens qui ont travaillé avec moi',
-    lead: "Le portail est rapide à essayer ; ces témoignages aident à savoir si le contact me va. Marc lit, peut resserrer le texte avant qu'il paraisse — et ton courriel n'apparaît jamais ici.",
+    lead: "Le portail est rapide à essayer ; ces témoignages aident à savoir si on va cliquer ensemble. Marc lit, peut resserrer le texte avant qu'il paraisse — et ton courriel n'apparaît jamais ici.",
     empty: 'Pas encore de témoignages publiés. Reviens dans quelques semaines.',
     relationshipLabels: {
       client: 'Client',

@@ -34,7 +34,7 @@ const COPY = {
   fr: {
     eyebrow: 'flotte',
     title: 'Tous les clients',
-    sub: 'Vue d’ensemble de chaque instance que tu opères. Cliquez sur une ligne pour voir les détails.',
+    sub: 'Vue d’ensemble de chaque instance que tu opères. Clique sur une ligne pour voir les détails.',
     provision: 'Provisionner un nouveau client →',
     cols: { tenant: 'Client', template: 'App', domain: 'Domaine', status: 'État', age: 'Créé' },
     statusActive: 'Actif',
