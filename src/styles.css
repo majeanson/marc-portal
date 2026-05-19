@@ -12208,9 +12208,12 @@ button.intake__progress-step:disabled {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   font-size: 11px;
   letter-spacing: 0.04em;
   color: var(--text-soft);
+}
+.runbook-step__meta > span {
   white-space: nowrap;
 }
 .runbook-step__tag {
@@ -12348,7 +12351,11 @@ button.intake__progress-step:disabled {
   grid-template-columns: 1fr;
   gap: 24px;
 }
-@media (min-width: 1100px) {
+/* 1280px ≈ admin sidebar (260px) + ~1000px main area → two columns get ~470px
+   each before gutters, which holds the title + meta + summary without ugly
+   wrapping. Below that we stack so each track keeps a comfortable column
+   width. */
+@media (min-width: 1280px) {
   .runbook-parallel__grid {
     grid-template-columns: 1fr 1fr;
     gap: 28px;
@@ -12381,7 +12388,11 @@ button.intake__progress-step:disabled {
   gap: 16px;
   grid-template-columns: 1fr;
 }
-@media (min-width: 900px) {
+/* Same threshold as the parallel grid: keep decision cards single-column
+   until the admin shell has enough room for two roomy columns. Going 2-col
+   at 900px viewport leaves each card at ~280px after the sidebar — the
+   textarea looks pinched. */
+@media (min-width: 1200px) {
   .runbook-decisions__list {
     grid-template-columns: 1fr 1fr;
   }
@@ -12404,6 +12415,7 @@ button.intake__progress-step:disabled {
   display: flex;
   align-items: baseline;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .runbook-decision__num {
   font-size: 13px;
@@ -12637,4 +12649,68 @@ button.intake__progress-step:disabled {
 }
 :root[data-theme='night'] .runbook-detail--gotcha {
   background: rgba(199, 156, 58, 0.12);
+}
+
+/* ── Mobile (≤ 600px) ──────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .admin-runbook__head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  /* Reset button stretches full-width on phones so the tap target reads
+     as a deliberate action, not a tucked-away link. */
+  .runbook-reset {
+    align-self: flex-start;
+  }
+  /* Tab labels — "Template-as-product" is the longest; keep it from
+     pushing the tab strip wider than the viewport by shrinking padding. */
+  .admin-runbook__tab {
+    padding: 10px 12px;
+    font-size: 13.5px;
+  }
+  /* Steps get a tighter inner grid on phones — the body column is the
+     only flexible one and benefits from every pixel below 380px-wide. */
+  .runbook-step {
+    padding: 10px 12px;
+  }
+  .runbook-step__row {
+    grid-template-columns: 20px 22px 1fr;
+    gap: 8px;
+  }
+  .runbook-step__check input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+  }
+  /* Track header — title block + chip/toggle stack into a single column
+     so the toggle doesn't render off-screen when the chip is also visible. */
+  .runbook-track__head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .runbook-track__head-side {
+    justify-content: flex-start;
+  }
+  /* Parallel bar — collapse the shared toggle below the lede on phones. */
+  .runbook-parallel__bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .runbook-toggle--shared {
+    align-self: flex-start;
+  }
+  /* Template page — give the sales card a bit more breathing room on
+     phones; the default 22px x-padding works but feels cramped under the
+     PageMast stamp. */
+  .template-sales {
+    padding: 18px 16px;
+  }
+  .template-sales__meta-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .template-sales__meta-row dt {
+    min-width: 0;
+  }
 }
