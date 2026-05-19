@@ -16,6 +16,17 @@ const SECONDARY_CTA: Record<Lang, { label: string; href: string }> = {
   en: { label: 'See a project in progress →', href: '/en/projects' },
 }
 
+// Greeting that swaps with the visitor's local clock. Late-night gets a
+// dry "encore là?" because Marc is a side-gig dev — most of the page's
+// honest traffic happens after 22h anyway.
+function pickSalut(lang: Lang): string {
+  const h = new Date().getHours()
+  if (h >= 22 || h < 5) return lang === 'fr' ? 'Encore là?' : 'Still up?'
+  if (h < 11) return lang === 'fr' ? 'Bon matin.' : 'Good morning.'
+  if (h < 18) return lang === 'fr' ? 'Salut.' : 'Hi.'
+  return lang === 'fr' ? 'Bonsoir.' : 'Good evening.'
+}
+
 // In-hero ToC removed per §2.2 — duplicated by SectionRail (the sticky
 // side rail on /). Anchor list now lives in SectionRail.tsx as the
 // single source of truth.
@@ -63,6 +74,10 @@ export function Hero({ lang }: { lang: Lang }) {
   const shippedThisYear = (projects ?? []).filter(
     (p) => p.status === 'shipped' && new Date(p.showcasedAt * 1000).getFullYear() === currentYear,
   ).length
+
+  // Re-picked every render — cheap (single Date.getHours()) and lets the
+  // greeting follow a language switch without an extra effect.
+  const salut = pickSalut(lang)
 
   return (
     <section className="section hero hero--editorial" aria-labelledby="hero-title">
@@ -125,6 +140,9 @@ export function Hero({ lang }: { lang: Lang }) {
       </svg>
 
       <div className="section__inner hero__inner">
+        {/* Clock-aware greeting — opens the page like a real letter. Picked
+            from the visitor's local clock, so late-night gets "Encore là?". */}
+        <p className="hero__salut">{salut}</p>
         <h1 id="hero-title" className="hero__display">
           <span className="hero__display-line hero__display-line--pre">{t.display.pre}</span>
           <span className="hero__display-line hero__display-line--lead">{t.display.lead}</span>
@@ -183,6 +201,35 @@ export function Hero({ lang }: { lang: Lang }) {
         </ul>
 
         <div className="hero__bilingual mono">{t.bilingual}</div>
+
+        {/* Signed sign-off — italic serif text with a hand-drawn flourish
+            that draws itself on first paint. Reduced-motion users see the
+            flourish already drawn. The SVG <text> is naturally announced
+            by screenreaders, so no explicit aria-label needed. */}
+        <div className="hero__signature">
+          <svg viewBox="0 0 220 44" focusable="false">
+            <text
+              x="0"
+              y="24"
+              fontFamily="var(--sans), serif"
+              fontStyle="italic"
+              fontSize="22"
+              fontWeight="500"
+              fill="currentColor"
+            >
+              {t.signature}
+            </text>
+            <path
+              className="hero__signature-flourish"
+              d="M 4 36 Q 32 42 64 36 Q 100 30 138 38 Q 172 44 210 35"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              aria-hidden="true"
+            />
+          </svg>
+        </div>
 
         <CapacityCounter lang={lang} />
       </div>

@@ -1,16 +1,9 @@
-import { useNavigate, useLocation } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
-import { swapLangPath } from '../lib/swapLangPath'
+import { useLangSwitch } from '../lib/useLangSwitch'
 import { SessionSubHeader } from './SessionSubHeader'
 import { ThemeToggle } from './ThemeToggle'
-
-// Feature-detect View Transitions API for the language swap. Firefox lacks
-// it today; on those browsers the navigate runs without the dissolve.
-type DocumentWithViewTransition = Document & {
-  startViewTransition?: (cb: () => void) => unknown
-}
 
 /**
  * variant:
@@ -27,37 +20,12 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
   const t = DICT[lang]
   const { email, isAdmin, realIsAdmin, previewAsUser, setPreviewAsUser, loading, logout } =
     useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
   const langPrefix = lang === 'en' ? '/en' : ''
   const sessionsHref = `${langPrefix}${isAdmin ? '/admin/inbox' : '/me'}`
   const adminHref = `${langPrefix}/admin`
   const loginHref = `${langPrefix}/login`
 
-  const frHref = swapLangPath(location.pathname, location.search, location.hash, false)
-  const enHref = swapLangPath(location.pathname, location.search, location.hash, true)
-
-  function onLangSwitch(e: React.MouseEvent<HTMLAnchorElement>, to: 'fr' | 'en') {
-    if (lang === to) {
-      e.preventDefault()
-      return
-    }
-    // Let cmd/ctrl/middle-click open in a new tab unhampered.
-    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
-    e.preventDefault()
-    // Remember the explicit choice for future visits — read by the locale
-    // redirect in functions/_middleware.ts on `/` hits. 1-year horizon is
-    // long enough that nobody re-toggles weekly; cleared on logout via the
-    // browser if needed (not session-tied).
-    document.cookie = `mp_lang=${to}; Path=/; Max-Age=31536000; SameSite=Lax`
-    const href = to === 'en' ? enHref : frHref
-    const doc = document as DocumentWithViewTransition
-    if (typeof doc.startViewTransition === 'function') {
-      doc.startViewTransition(() => navigate(href))
-    } else {
-      navigate(href)
-    }
-  }
+  const { frHref, enHref, onLangSwitch } = useLangSwitch(lang)
 
   return (
     <>

@@ -17,9 +17,23 @@ export function VibeFilter({ lang }: { lang: Lang }) {
         </header>
         <div className="vibe vibe--ledger">
           <div className="vibe__col vibe__col--do">
-            <div className="vibe__mark vibe__mark--do" aria-hidden="true">
-              ✓
-            </div>
+            {/* Hand-drawn red-pen check, intentionally wobbly. Decorative —
+                the real labels live in the h3 + ul below. */}
+            <svg
+              className="vibe__mark vibe__mark--do"
+              viewBox="0 0 100 100"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M 12 54 Q 26 70 38 78 Q 46 82 54 72 Q 72 48 92 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
             <h3>{t.do.title}</h3>
             <ul>
               {t.do.items.map((it) => (
@@ -29,9 +43,29 @@ export function VibeFilter({ lang }: { lang: Lang }) {
           </div>
           <div className="vibe__rule" aria-hidden="true" />
           <div className="vibe__col vibe__col--dont">
-            <div className="vibe__mark vibe__mark--dont" aria-hidden="true">
-              ✗
-            </div>
+            {/* Hand-drawn charcoal cross, two strokes with a slight curve so
+                it reads as drawn rather than typeset. */}
+            <svg
+              className="vibe__mark vibe__mark--dont"
+              viewBox="0 0 100 100"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M 18 22 Q 50 48 84 80"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="10"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 84 22 Q 52 50 18 80"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="10"
+                strokeLinecap="round"
+              />
+            </svg>
             <h3>{t.dont.title}</h3>
             <ul>
               {t.dont.items.map((it) => (

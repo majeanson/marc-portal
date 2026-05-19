@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Lang } from '../i18n'
+import { HOME_FOLIOS } from '../lib/folios'
 
 interface RailItem {
   id: string
@@ -12,6 +13,21 @@ function sameIds(a: Set<string>, b: Set<string>): boolean {
   if (a.size !== b.size) return false
   for (const v of a) if (!b.has(v)) return false
   return true
+}
+
+/** Folio glyph for a given rail item id. For sections that have a real
+ *  HOME_FOLIOS entry (featured/how/pricing/vibe/about/testimonials) the
+ *  rail mirrors the masthead's Roman numeral so a glance at the rail
+ *  shows the same issue mark the section header carries. The final CTA
+ *  doesn't have a section folio — it gets a destination arrow instead. */
+const RAIL_FOLIO: Record<string, string> = {
+  featured: HOME_FOLIOS.featured,
+  how: HOME_FOLIOS.how,
+  pricing: HOME_FOLIOS.pricing,
+  vibe: HOME_FOLIOS.vibe,
+  about: HOME_FOLIOS.about,
+  testimonials: HOME_FOLIOS.testimonials,
+  cta: '→',
 }
 
 const ITEMS: Record<Lang, RailItem[]> = {
@@ -43,14 +59,22 @@ const ITEMS: Record<Lang, RailItem[]> = {
  * Items whose target element isn't present on the page (e.g. Testimonials
  * self-hides when zero approved vouches exist) are dropped from the
  * rendered list, so a click never points at a missing anchor.
+ *
+ * Per-item progress is tracked alongside active state: each link gets a
+ * `--rail-progress` custom property (0–1) reflecting how much of that
+ * section has scrolled past the viewport's anchor line. The CSS uses it
+ * to grow the tick width, so already-read sections carry a longer ruler
+ * mark than not-yet-reached ones. A handmade reading meter, basically.
  */
 export function SectionRail({ lang }: { lang: Lang }) {
   const allItems = ITEMS[lang]
-  // Filter the rail to items whose section actually rendered. Start empty
-  // so SSR/first paint don't flash links that would 404 on click; populate
-  // after mount once the DOM is queryable.
   const [presentIds, setPresentIds] = useState<Set<string>>(new Set())
   const [activeId, setActiveId] = useState<string>(allItems[0]?.id ?? '')
+  const [progress, setProgress] = useState<Record<string, number>>({})
+  // Last-emitted progress map, kept outside state so the rAF loop can
+  // short-circuit when nothing changed by more than 1% (avoids re-renders
+  // on every scroll event during a long page).
+  const lastProgress = useRef<Record<string, number>>({})
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -67,22 +91,9 @@ export function SectionRail({ lang }: { lang: Lang }) {
       },
     )
 
-    // Track which section ids are observed so we don't double-observe the
-    // same element when sync() runs again. IntersectionObserver.observe is
-    // idempotent for the same target, but tracking lets us cleanly
-    // disconnect on unmount.
     const observed = new Set<string>()
-    // Last computed set, kept outside React state so the MutationObserver
-    // can short-circuit when the answer hasn't changed (typing in any
-    // input on the page triggers a body mutation, so this is hot).
     let lastPresent: Set<string> = new Set()
 
-    // Rescan the DOM, observe any newly-mounted section, and update
-    // presentIds — but only when the set of present ids actually changed.
-    // Section presence is rare-event (Testimonials toggles once when its
-    // network call resolves); cheap getElementById lookups are fine, but
-    // a setState on every body mutation would force a re-render of the
-    // rail on every keystroke.
     const sync = () => {
       const present = new Set<string>()
       for (const it of allItems) {
@@ -101,9 +112,6 @@ export function SectionRail({ lang }: { lang: Lang }) {
       }
     }
 
-    // Coalesce bursts of mutations into a single rAF-aligned sync. A long
-    // input session emits dozens of childList mutations per second; we
-    // only need one check per frame at most.
     let scheduled = false
     const scheduleSync = () => {
       if (scheduled) return
@@ -124,23 +132,67 @@ export function SectionRail({ lang }: { lang: Lang }) {
     }
   }, [allItems])
 
+  // Per-section scroll progress. Same rAF-throttle pattern as the rest of
+  // the page's scroll listeners. Runs alongside the IO above — IO is great
+  // for "what's active right now", scroll is the right tool for continuous
+  // 0→1 progress within a single section.
+  useEffect(() => {
+    let ticking = false
+    const compute = () => {
+      ticking = false
+      const anchorY = window.innerHeight * 0.35
+      const next: Record<string, number> = {}
+      let anyChanged = false
+      for (const it of allItems) {
+        const el = document.getElementById(it.id)
+        if (!el) continue
+        const rect = el.getBoundingClientRect()
+        const p = Math.min(1, Math.max(0, (anchorY - rect.top) / Math.max(1, rect.height)))
+        next[it.id] = p
+        // Coalesce to 1% steps — any finer just burns React reconciliation
+        // for changes that aren't visible.
+        const prev = lastProgress.current[it.id] ?? -1
+        if (Math.abs(p - prev) > 0.01) anyChanged = true
+      }
+      if (anyChanged) {
+        lastProgress.current = next
+        setProgress(next)
+      }
+    }
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(compute)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    compute()
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [allItems])
+
   const items = allItems.filter((it) => presentIds.has(it.id))
 
   return (
     <nav className="section-rail" aria-label={lang === 'fr' ? 'Index de la page' : 'Page index'}>
       <ol className="section-rail__list">
-        {items.map((it, i) => {
+        {items.map((it) => {
           const isActive = it.id === activeId
+          const p = progress[it.id] ?? 0
+          const folio = RAIL_FOLIO[it.id] ?? ''
           return (
             <li key={it.id} className="section-rail__item">
               <a
                 href={`#${it.id}`}
                 className={`section-rail__link${isActive ? ' is-active' : ''}`}
                 aria-current={isActive ? 'true' : undefined}
+                style={{ ['--rail-progress' as string]: p.toFixed(2) }}
               >
                 <span className="section-rail__label">{it.label}</span>
                 <span className="section-rail__tick" aria-hidden="true" />
-                <span className="section-rail__num mono">{String(i + 1).padStart(2, '0')}</span>
+                <span className="section-rail__num mono">{folio}</span>
               </a>
             </li>
           )

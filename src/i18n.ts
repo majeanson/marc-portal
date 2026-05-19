@@ -237,6 +237,11 @@ const FR = {
     label: 'Démarrer une session',
     short: 'Démarrer →',
     ariaLabel: 'Démarrer une session — ouvrir le formulaire',
+    // Swapped in once the visitor scrolls past most of the page — same
+    // destination, different mood.
+    farLabel: 'T’es rendu loin →',
+    dismissLabel: 'Cacher',
+    pebbleAriaLabel: 'Reprendre — démarrer une session',
   },
 
   themeToggle: {
@@ -1139,6 +1144,9 @@ const EN: Copy = {
     label: 'Start a session',
     short: 'Start →',
     ariaLabel: 'Start a session — open the form',
+    farLabel: 'Almost there →',
+    dismissLabel: 'Hide',
+    pebbleAriaLabel: 'Resume — start a session',
   },
 
   themeToggle: {

@@ -87,7 +87,7 @@ export function Home({ lang }: { lang: Lang }) {
 
   return (
     <div className="app">
-      <ScrollProgress />
+      <ScrollProgress lang={lang} />
       <Header lang={lang} />
       <SectionRail lang={lang} />
       <main id="main-content" className="home">
