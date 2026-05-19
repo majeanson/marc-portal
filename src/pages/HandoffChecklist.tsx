@@ -2,7 +2,9 @@ import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { FeatureFolioLink } from '../components/FeatureFolioLink'
 import { PAGE_FOLIOS } from '../lib/folios'
+import { PAGE_FEATURE } from '../lib/features'
 
 /**
  * Public operational checklist. Companion to /handoff.
@@ -311,7 +313,7 @@ export function HandoffChecklist({ lang }: { lang: Lang }) {
   }, [lang, t])
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.handoff-checklist']}>
       <Header lang={lang} />
       <main id="main-content">
         <article className="section">
@@ -322,9 +324,9 @@ export function HandoffChecklist({ lang }: { lang: Lang }) {
 
             <header className="handoff__hero">
               <div className="section__eyebrow">{t.eyebrow}</div>
-              <p className="page-folio-mark mono" aria-hidden="true">
+              <FeatureFolioLink feature={PAGE_FEATURE['page.handoff-checklist']} lang={lang}>
                 № {PAGE_FOLIOS.handoffChecklist}
-              </p>
+              </FeatureFolioLink>
               <h1>{t.title}</h1>
               <p className="privacy__intro">{t.lead}</p>
               <p className="mono privacy__asof">{t.asOf}</p>

@@ -9,6 +9,7 @@ import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 import { PAGE_FOLIOS } from '../lib/folios'
+import { PAGE_FEATURE } from '../lib/features'
 
 type TierFilter = '0' | '1' | '2' | '3'
 type StatusFilter = 'active' | 'shipped' | 'draft' | 'triage' | 'rejected'
@@ -91,7 +92,7 @@ export function Projects({ lang }: { lang: Lang }) {
   }
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.projects']}>
       <Header lang={lang} />
       <main id="main-content">
         <article className="section projects">
@@ -104,6 +105,8 @@ export function Projects({ lang }: { lang: Lang }) {
               }
               stampLabel={lang === 'fr' ? 'LIVRÉ' : 'SHIPPED'}
               stampSub="QUÉBEC · ASYNC"
+              feature={PAGE_FEATURE['page.projects']}
+              lang={lang}
             >
               <div className="section__eyebrow">{t.eyebrow}</div>
               <h1 className="projects__title">{t.heading}</h1>

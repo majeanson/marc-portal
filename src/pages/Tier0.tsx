@@ -6,6 +6,7 @@ import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
 import { listPatterns, localizedPattern } from '../lib/patterns'
 import { PAGE_FOLIOS } from '../lib/folios'
+import { PAGE_FEATURE } from '../lib/features'
 
 /**
  * Tier 0 self-service redirect (feat-2026-008). Curated free patterns + no-code
@@ -24,7 +25,7 @@ export function Tier0({ lang }: { lang: Lang }) {
   }, [t])
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.tier0']}>
       <Header lang={lang} />
       <main id="main-content">
         <article className="section">
@@ -38,6 +39,8 @@ export function Tier0({ lang }: { lang: Lang }) {
               stampLabel={lang === 'fr' ? 'GRATUIT' : 'FREE'}
               stampSub={lang === 'fr' ? 'AUCUN COMPTE' : 'NO ACCOUNT'}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.tier0.backHome }}
+              feature={PAGE_FEATURE['page.tier0']}
+              lang={lang}
             >
               <div className="section__eyebrow">{t.tier0.eyebrow}</div>
               <h1>{t.tier0.title}</h1>

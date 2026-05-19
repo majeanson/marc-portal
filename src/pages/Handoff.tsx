@@ -4,6 +4,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
 import { PAGE_FOLIOS } from '../lib/folios'
+import { PAGE_FEATURE } from '../lib/features'
 
 /**
  * Bilingual page explaining the two ownership modes offered at engagement close
@@ -351,7 +352,7 @@ export function Handoff({ lang }: { lang: Lang }) {
   }, [lang, t])
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.handoff']}>
       <Header lang={lang} />
       <main id="main-content">
         <article className="section">
@@ -365,6 +366,8 @@ export function Handoff({ lang }: { lang: Lang }) {
               stampLabel={lang === 'fr' ? 'PASSATION' : 'HANDOFF'}
               stampSub={lang === 'fr' ? 'SANS PIÈGE' : 'NO LOCK-IN'}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}
+              feature={PAGE_FEATURE['page.handoff']}
+              lang={lang}
             >
               <div className="section__eyebrow">{t.eyebrow}</div>
               <h1>{t.title}</h1>

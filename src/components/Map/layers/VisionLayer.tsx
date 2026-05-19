@@ -16,11 +16,14 @@
 
 import { useNavigate } from 'react-router-dom'
 import type { Lang } from '../../../i18n'
+import type { FeatureId } from '../../../lib/features'
 import type { MapData, VisionBubble } from '../../../lib/map/types'
 
 interface Props {
   data: MapData
   lang: Lang
+  /** When set, bubbles that don't belong to this feature are dimmed. */
+  activeFeature: FeatureId | null
 }
 
 // Logical canvas. CSS scales the SVG to fit any width via preserveAspectRatio.
@@ -44,7 +47,7 @@ const LABEL_INSET: Record<VisionBubble['size'], number> = {
   lg: 30,
 }
 
-export function VisionLayer({ data, lang }: Props) {
+export function VisionLayer({ data, lang, activeFeature }: Props) {
   const navigate = useNavigate()
   const bubbles = data.vision.slice().sort((a, b) => a.index - b.index)
 
@@ -110,7 +113,11 @@ export function VisionLayer({ data, lang }: Props) {
               key={b.id}
               className={`map-vision__bubble map-vision__bubble--${b.size}${
                 interactive ? ' map-vision__bubble--link' : ''
-              }`}
+              }${activeFeature && activeFeature !== b.feature ? ' map-vision__bubble--dim' : ''}`}
+              // data-feature drives the accent color via CSS custom-property
+              // overrides in styles.css (.map-vision__bubble[data-feature=...]).
+              // Children inside foreignObject inherit the custom properties.
+              data-feature={b.feature}
               transform={`translate(${cx} ${cy})`}
               role={interactive ? 'link' : undefined}
               tabIndex={interactive ? 0 : undefined}

@@ -14,6 +14,7 @@
  */
 
 import type { Lang } from '../../i18n'
+import type { FeatureId } from '../features'
 
 export type { Lang }
 
@@ -62,6 +63,10 @@ export interface MapNode {
   /** Layers this node appears on. Empty array hides it from the map entirely
    *  while keeping the id reachable for edges (rare). */
   layers: LayerId[]
+  /** Cross-cutting feature accent (sage/cool/ochre/...). Stamped by data.ts
+   *  from group membership — never set by hand on a node. Nodes whose group
+   *  isn't a feat-* group (e.g. transparency, operator console) have none. */
+  feature?: FeatureId
 }
 
 export interface MapEdge {
@@ -84,6 +89,10 @@ export interface MapGroup {
   /** Node ids in render order. Curated supplies this; nodes not listed here
    *  fall into a trailing "Other" bucket per layer. */
   nodeIds: string[]
+  /** Cross-cutting feature accent — derived by data.ts from the group's id
+   *  (matches `group.feat-{id}` against FEATURE_IDS). Groups outside the
+   *  feature taxonomy (transparency, operator console) have none. */
+  feature?: FeatureId
 }
 
 export interface MapJourney {
@@ -126,6 +135,10 @@ export interface VisionBubble {
    *  path on the FR side, EN path on the EN side. Validated by the map test:
    *  every href must match a real route in the skeleton. */
   href?: Bi
+  /** The feature this bubble represents — one bubble per FeatureId. Drives
+   *  the bubble's accent color via --feat-{feature}-color / -soft tokens
+   *  and ties the bubble to the matching Pages-layer group. */
+  feature: FeatureId
 }
 
 export interface MapData {

@@ -11,6 +11,7 @@ import { PageMast } from '../components/PageMast'
 import { DICT, type Lang } from '../i18n'
 import { cssVars } from '../lib/styleVars'
 import { PAGE_FOLIOS } from '../lib/folios'
+import { PAGE_FEATURE } from '../lib/features'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
 
 export function Vouches({ lang }: { lang: Lang }) {
@@ -39,7 +40,7 @@ export function Vouches({ lang }: { lang: Lang }) {
   }, [])
 
   return (
-    <>
+    <div className="app" data-feature={PAGE_FEATURE['page.vouches']}>
       <Header lang={lang} />
       <main id="main-content">
         <article className="section">
@@ -52,6 +53,8 @@ export function Vouches({ lang }: { lang: Lang }) {
               }
               stampLabel={lang === 'fr' ? 'VOUCHÉ' : 'VOUCHED'}
               stampSub={lang === 'fr' ? 'PAR DES VRAIS' : 'BY REAL PEOPLE'}
+              feature={PAGE_FEATURE['page.vouches']}
+              lang={lang}
             >
               <h1>{t.heading}</h1>
               <p>{t.lead}</p>
@@ -82,7 +85,7 @@ export function Vouches({ lang }: { lang: Lang }) {
         </article>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }
 

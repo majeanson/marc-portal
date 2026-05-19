@@ -18,6 +18,7 @@ import skeleton from '../../data/map-skeleton.json'
 import { buildMapData } from './data'
 import { filterForViewer } from './filter'
 import { CURATED } from './curated'
+import { FEATURE_IDS, PAGE_FEATURE, isFeatureId } from '../features'
 
 describe('map skeleton', () => {
   it('has at least the load-bearing route components', () => {
@@ -146,6 +147,64 @@ describe('curated overlay coherence', () => {
     const indexes = data.vision.map((b) => b.index).sort((a, b) => a - b)
     for (let i = 0; i < indexes.length; i++) {
       expect(indexes[i]).toBe(i + 1)
+    }
+  })
+
+  it('every Vision bubble carries a valid FeatureId', () => {
+    for (const b of data.vision) {
+      expect(
+        isFeatureId(b.feature),
+        `vision ${b.id} feature ${b.feature} is not a real FeatureId`,
+      ).toBe(true)
+    }
+  })
+
+  it('Vision bubbles cover every FeatureId exactly once', () => {
+    const features = new Set(data.vision.map((b) => b.feature))
+    expect(features.size).toBe(FEATURE_IDS.length)
+    for (const fid of FEATURE_IDS) {
+      expect(features, `FeatureId ${fid} has no Vision bubble`).toContain(fid)
+    }
+  })
+
+  it('every group.feat-{FeatureId} group inherits the matching FeatureId', () => {
+    for (const g of data.groups) {
+      if (g.layer !== 'pages') continue
+      const m = /^group\.feat-(\w+)$/.exec(g.id)
+      // group.feat-{realFeatureId} should match its FeatureId; group.feat-operator
+      // (admin console — not a feature) and group.transparency stay unfeatured.
+      if (m && isFeatureId(m[1])) {
+        expect(g.feature, `${g.id} should have feature ${m[1]}`).toBe(m[1])
+      } else {
+        expect(g.feature, `${g.id} should not carry a feature accent`).toBeUndefined()
+      }
+    }
+  })
+
+  it('page nodes inherit feature from their group via data.ts merge', () => {
+    const groupsByFeature = new Map<string, Set<string>>()
+    for (const g of data.groups) {
+      if (!g.feature) continue
+      groupsByFeature.set(g.feature, new Set(g.nodeIds))
+    }
+    for (const n of data.nodes) {
+      if (n.kind !== 'page') continue
+      // Find which featured group (if any) this node belongs to.
+      let expected: string | undefined
+      for (const [fid, ids] of groupsByFeature) {
+        if (ids.has(n.id)) {
+          expected = fid
+          break
+        }
+      }
+      expect(n.feature, `${n.id} should have feature ${expected ?? '(none)'}`).toBe(expected)
+    }
+  })
+
+  it('every PAGE_FEATURE entry resolves to a real page node', () => {
+    const pageIds = new Set(data.nodes.filter((n) => n.kind === 'page').map((n) => n.id))
+    for (const [pageId] of Object.entries(PAGE_FEATURE)) {
+      expect(pageIds, `PAGE_FEATURE has ${pageId} but no such page node exists`).toContain(pageId)
     }
   })
 

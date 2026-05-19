@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+import type { Lang } from '../i18n'
+import { FEATURES, type FeatureId } from '../lib/features'
 
 /**
  * Editorial masthead used at the top of public subpages. Ports the same
@@ -50,6 +53,8 @@ export function PageMast({
   stampLabel,
   stampSub,
   back,
+  feature,
+  lang,
   children,
 }: {
   /** Mono text rendered top-right. Matches the home hero pattern,
@@ -61,8 +66,31 @@ export function PageMast({
   stampSub?: string
   /** Optional "back" link rendered above the eyebrow. */
   back?: { href: string; label: string }
+  /** When both feature + lang are set, the folio renders as a Link to
+   *  /carte?feature=X (fr) or /en/map?feature=X (en) so the cross-cutting
+   *  feature accent doubles as cross-site navigation. */
+  feature?: FeatureId
+  lang?: Lang
   children: ReactNode
 }) {
+  const folioContent =
+    feature && lang ? (
+      <Link
+        className="page-mast__folio mono"
+        to={lang === 'en' ? `/en/map?feature=${feature}` : `/carte?feature=${feature}`}
+        aria-label={
+          lang === 'en'
+            ? `Filter the site map to ${FEATURES[feature].label.en}`
+            : `Filtrer la carte du site sur ${FEATURES[feature].label.fr}`
+        }
+      >
+        {folio}
+      </Link>
+    ) : (
+      <div className="page-mast__folio mono" aria-hidden="true">
+        {folio}
+      </div>
+    )
   return (
     <header className="page-mast">
       {back && (
@@ -70,9 +98,7 @@ export function PageMast({
           {back.label}
         </a>
       )}
-      <div className="page-mast__folio mono" aria-hidden="true">
-        {folio}
-      </div>
+      {folioContent}
       <svg className="page-mast__stamp" viewBox="0 0 260 100" aria-hidden="true" focusable="false">
         <g transform="translate(130 50) rotate(-7)">
           <rect

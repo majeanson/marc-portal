@@ -5,6 +5,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
 import { PAGE_FOLIOS } from '../lib/folios'
+import { PAGE_FEATURE } from '../lib/features'
 
 /**
  * The full journey — a visual, phased walkthrough from "stranger lands on the
@@ -42,7 +43,7 @@ export function Journey({ lang }: { lang: Lang }) {
   }
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.journey']}>
       <Header lang={lang} />
       <main id="main-content">
         <article className="section journey">
@@ -56,6 +57,8 @@ export function Journey({ lang }: { lang: Lang }) {
               stampLabel={lang === 'fr' ? 'XII ÉTAPES' : 'XII STEPS'}
               stampSub={lang === 'fr' ? 'TOI · MOI · NOUS' : 'YOU · ME · BOTH'}
               back={{ href: homeHref, label: j.backHome }}
+              feature={PAGE_FEATURE['page.journey']}
+              lang={lang}
             >
               <div className="section__eyebrow">{j.eyebrow}</div>
               <h1 className="journey__title">{j.title}</h1>

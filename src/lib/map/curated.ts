@@ -127,7 +127,7 @@ const PAGE_PATCHES = [
       'Lien public partageable pour les avancements d’une session.',
       'Shareable public link for a session’s advancements.',
     ),
-    group: 'group.feat-conversation',
+    group: 'group.feat-iterative',
   },
 
   // 3 — Pricing
@@ -146,7 +146,7 @@ const PAGE_PATCHES = [
       'Galerie publique des projets livrés et en cours.',
       'Public gallery of shipped + in-flight projects.',
     ),
-    group: 'group.feat-portfolio',
+    group: 'group.feat-shipped',
   },
   {
     id: 'page.engagement',
@@ -155,13 +155,13 @@ const PAGE_PATCHES = [
       'Page dynamique d’un engagement spécifique.',
       'Dynamic page for a specific engagement.',
     ),
-    group: 'group.feat-portfolio',
+    group: 'group.feat-shipped',
   },
   {
     id: 'page.vouches',
     label: bi('Témoignages', 'Vouches'),
     desc: bi('Témoignages publics modérés.', 'Public moderated testimonials.'),
-    group: 'group.feat-portfolio',
+    group: 'group.feat-shipped',
   },
   {
     id: 'page.vouch',
@@ -170,7 +170,7 @@ const PAGE_PATCHES = [
       'Formulaire pour soumettre un témoignage (modéré avant publication).',
       'Form to submit a testimonial (moderated before going live).',
     ),
-    group: 'group.feat-portfolio',
+    group: 'group.feat-shipped',
   },
 
   // 5 — Privacy
@@ -181,7 +181,7 @@ const PAGE_PATCHES = [
       'Politique de confidentialité — version visiteur de la Loi 25.',
       'Privacy policy — visitor-facing Loi 25 statement.',
     ),
-    group: 'group.feat-privacy',
+    group: 'group.transparency',
   },
   {
     id: 'page.pia',
@@ -190,7 +190,7 @@ const PAGE_PATCHES = [
       'Évaluation d’impact relative à la vie privée (Loi 25).',
       'Privacy impact assessment (Loi 25).',
     ),
-    group: 'group.feat-privacy',
+    group: 'group.transparency',
   },
 
   // 6 — Handoff (+ transparency pages a buyer would consult during takeover)
@@ -201,13 +201,13 @@ const PAGE_PATCHES = [
       'Le guide « acheteur » pour reprendre la pratique au complet.',
       'The “buyer” guide for taking over the whole practice.',
     ),
-    group: 'group.feat-handoff',
+    group: 'group.feat-keys',
   },
   {
     id: 'page.handoff-checklist',
     label: bi('Checklist handoff', 'Handoff checklist'),
     desc: bi('Liste exécutable des étapes de reprise.', 'Executable checklist of takeover steps.'),
-    group: 'group.feat-handoff',
+    group: 'group.feat-keys',
   },
   {
     id: 'page.meta',
@@ -216,7 +216,7 @@ const PAGE_PATCHES = [
       'Manifeste de fonctionnalités LAC — généré depuis feat-*/feature.json.',
       'LAC feature manifest — generated from feat-*/feature.json.',
     ),
-    group: 'group.feat-handoff',
+    group: 'group.transparency',
   },
   {
     id: 'page.map-page',
@@ -225,7 +225,7 @@ const PAGE_PATCHES = [
       'Cette carte — un atlas du site, pages, données, parcours.',
       'This map — an atlas of the site, pages, data, journeys.',
     ),
-    group: 'group.feat-handoff',
+    group: 'group.transparency',
   },
 
   // 7 — Operator console (admin)
@@ -395,9 +395,15 @@ const SERVICE_NODES: MapNode[] = [
 // ─── Groups ───────────────────────────────────────────────────────────────────
 
 const GROUPS: MapGroup[] = [
-  // Pages layer — feature groups, mirroring the 6 Vision bubbles
-  // (intake, conversation, pricing, portfolio, privacy, handoff)
-  // plus operator console as the admin-only seventh group.
+  // Pages layer — feature groups, 1-1 with the SIX Vision bubbles
+  // (intake, conversation, iterative, pricing, keys, shipped) plus a
+  // transparency group (privacy/PIA/meta/map — not features) and the
+  // admin-only operator console.
+  //
+  // Group ids that start with "group.feat-{id}" are recognized by
+  // groupToFeature() in src/lib/features.ts; pages inside inherit that
+  // feature's accent color. "group.transparency" + "group.feat-operator"
+  // intentionally don't carry a feature accent.
   {
     id: 'group.feat-intake',
     label: bi('Apporte un projet', 'Bring a project'),
@@ -408,56 +414,58 @@ const GROUPS: MapGroup[] = [
   },
   {
     id: 'group.feat-conversation',
-    label: bi('Discussion', 'Conversation'),
+    label: bi('Discussion async', 'Async conversation'),
     layer: 'pages',
     visibility: 'public',
     order: 1,
-    nodeIds: [
-      'page.login',
-      'page.magic-link-sent',
-      'page.me-portal',
-      'page.session-page',
-      'page.public-advancements',
-    ],
+    nodeIds: ['page.login', 'page.magic-link-sent', 'page.me-portal', 'page.session-page'],
   },
   {
-    id: 'group.feat-pricing',
-    label: bi('Tarification', 'Pricing'),
+    id: 'group.feat-iterative',
+    label: bi('Tu vois chaque build', 'You see every build'),
     layer: 'pages',
     visibility: 'public',
     order: 2,
-    nodeIds: ['page.tier0'],
+    nodeIds: ['page.public-advancements'],
   },
   {
-    id: 'group.feat-portfolio',
-    label: bi('Portfolio', 'Portfolio'),
+    id: 'group.feat-pricing',
+    label: bi('Tarification claire', 'Clear pricing'),
     layer: 'pages',
     visibility: 'public',
     order: 3,
-    nodeIds: ['page.projects', 'page.engagement', 'page.vouches', 'page.vouch'],
+    nodeIds: ['page.tier0'],
   },
   {
-    id: 'group.feat-privacy',
-    label: bi('Vie privée', 'Privacy'),
+    id: 'group.feat-keys',
+    label: bi('Tu gardes les clés', 'You keep the keys'),
     layer: 'pages',
     visibility: 'public',
     order: 4,
-    nodeIds: ['page.privacy', 'page.pia'],
+    nodeIds: ['page.handoff', 'page.handoff-checklist'],
   },
   {
-    id: 'group.feat-handoff',
-    label: bi('Reprise', 'Handoff'),
+    id: 'group.feat-shipped',
+    label: bi('Voir le déjà-fait', "See what's shipped"),
     layer: 'pages',
     visibility: 'public',
     order: 5,
-    nodeIds: ['page.handoff', 'page.handoff-checklist', 'page.meta', 'page.map-page'],
+    nodeIds: ['page.projects', 'page.engagement', 'page.vouches', 'page.vouch'],
+  },
+  {
+    id: 'group.transparency',
+    label: bi('Transparence & docs', 'Transparency & docs'),
+    layer: 'pages',
+    visibility: 'public',
+    order: 6,
+    nodeIds: ['page.privacy', 'page.pia', 'page.meta', 'page.map-page'],
   },
   {
     id: 'group.feat-operator',
     label: bi('Console opérateur', 'Operator console'),
     layer: 'pages',
     visibility: 'admin',
-    order: 6,
+    order: 7,
     nodeIds: [
       'page.admin-hub',
       'page.admin-inbox',
@@ -758,6 +766,7 @@ const JOURNEYS: MapJourney[] = [
 const VISION: VisionBubble[] = [
   {
     id: 'vision.intake',
+    feature: 'intake',
     label: bi('Apporte un projet', 'Bring a project'),
     sub: bi(
       'Un problème du quotidien — pas besoin de cahier des charges. Je triage en 72 h.',
@@ -770,6 +779,7 @@ const VISION: VisionBubble[] = [
   },
   {
     id: 'vision.conversation',
+    feature: 'conversation',
     label: bi('Discussion async', 'Async conversation'),
     sub: bi(
       'Tout par écrit, à ton rythme. Pas de meetings — un fil par projet.',
@@ -782,6 +792,7 @@ const VISION: VisionBubble[] = [
   },
   {
     id: 'vision.iterative',
+    feature: 'iterative',
     label: bi('Tu vois chaque build', 'You see every build'),
     sub: bi(
       'Aperçu en direct à chaque livraison. Partage par lien quand tu veux montrer.',
@@ -794,6 +805,7 @@ const VISION: VisionBubble[] = [
   },
   {
     id: 'vision.pricing',
+    feature: 'pricing',
     label: bi('Tarification claire', 'Clear pricing'),
     sub: bi(
       'Tier 0 gratuit pour jaser. Trois tiers fixes ensuite. Custodian optionnel.',
@@ -806,6 +818,7 @@ const VISION: VisionBubble[] = [
   },
   {
     id: 'vision.keys',
+    feature: 'keys',
     label: bi('Tu gardes les clés', 'You keep the keys'),
     sub: bi(
       "À la livraison : « je m'en occupe » ou « tout à toi ». Tu peux changer d'avis.",
@@ -818,6 +831,7 @@ const VISION: VisionBubble[] = [
   },
   {
     id: 'vision.shipped',
+    feature: 'shipped',
     label: bi('Voir le déjà-fait', "See what's shipped"),
     sub: bi(
       'Projets livrés en vrai, avec témoignages de personnes vraies.',

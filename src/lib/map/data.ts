@@ -12,11 +12,13 @@
  */
 
 import skeleton from '../../data/map-skeleton.json'
+import { groupToFeature, type FeatureId } from '../features'
 import { PAGE_FOLIOS } from '../folios'
 import { CURATED } from './curated'
 import type {
   CuratedOverlay,
   MapData,
+  MapGroup,
   MapNode,
   OverlayPatch,
   Skeleton,
@@ -173,12 +175,30 @@ export function buildMapData(
     }
   }
 
-  const nodes: MapNode[] = [...patched, ...curated.extras]
+  // Stamp the cross-cutting feature accent onto groups + nodes from group
+  // membership. Group id `group.feat-{id}` carries that feature; pages
+  // inside the group inherit it. Groups outside the feat-* convention
+  // (transparency, operator console) have no feature accent.
+  const groupsWithFeature: MapGroup[] = curated.groups.map((g) => {
+    const feature = groupToFeature(g.id)
+    return feature ? { ...g, feature } : g
+  })
+  const nodeFeature = new Map<string, FeatureId>()
+  for (const g of groupsWithFeature) {
+    if (!g.feature) continue
+    for (const id of g.nodeIds) nodeFeature.set(id, g.feature)
+  }
+  const featuredNodes: MapNode[] = patched.map((n) => {
+    const fid = nodeFeature.get(n.id)
+    return fid ? { ...n, feature: fid } : n
+  })
+
+  const nodes: MapNode[] = [...featuredNodes, ...curated.extras]
 
   return {
     nodes,
     edges: curated.edges,
-    groups: curated.groups,
+    groups: groupsWithFeature,
     journeys: curated.journeys,
     vision: curated.vision,
   }

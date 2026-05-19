@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { FeatureFolioLink } from '../components/FeatureFolioLink'
+import { PAGE_FEATURE } from '../lib/features'
 import { PAGE_FOLIOS } from '../lib/folios'
 
 /**
@@ -55,9 +57,9 @@ export function Pia({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section">
           <div className="section__inner privacy">
-            <p className="page-folio-mark mono" aria-hidden="true">
+            <FeatureFolioLink feature={PAGE_FEATURE['page.pia']} lang={lang}>
               № {PAGE_FOLIOS.pia}
-            </p>
+            </FeatureFolioLink>
             <h1>{t.title}</h1>
             <p className="privacy__intro">{t.intro}</p>
             <p className="mono privacy__asof">{t.asOf}</p>

@@ -16,10 +16,12 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { useAuth } from '../lib/authContext'
+import { FEATURES, isFeatureId, PAGE_FEATURE, type FeatureId } from '../lib/features'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { MAP_DATA } from '../lib/map/data'
 import { filterForViewer } from '../lib/map/filter'
 import type { LayerId } from '../lib/map/types'
+import { FeatureFolioLink } from '../components/FeatureFolioLink'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { MapCanvas } from '../components/Map/MapCanvas'
@@ -34,6 +36,8 @@ const COPY = {
     previewBanner:
       'Aperçu visiteur — tu vois ce que voit un visiteur non connecté. Clique « Quitter aperçu » pour revenir.',
     journeyOn: 'Parcours :',
+    filterShowing: 'Filtre :',
+    filterClear: 'Tout afficher',
   },
   en: {
     eyebrow: 'MAP',
@@ -43,6 +47,8 @@ const COPY = {
     previewBanner:
       'Previewing as visitor — you’re seeing what a signed-out visitor sees. Click “Exit preview” to return.',
     journeyOn: 'Journey:',
+    filterShowing: 'Filter:',
+    filterClear: 'Show all',
   },
 } as const
 
@@ -60,6 +66,24 @@ export function Map({ lang }: { lang: Lang }) {
     return v && VALID_LAYERS.has(v) ? v : 'vision'
   })()
   const activeJourneyId = params.get('journey') ?? undefined
+
+  // Cross-cutting feature filter — set by clicking a feature dot anywhere on
+  // the site. When active, non-matching bubbles/groups/nodes get a "dim"
+  // class so the user sees only their feature's territory. Cleared via the
+  // filter pill.
+  const activeFeatureRaw = params.get('feature')
+  const activeFeature: FeatureId | null = isFeatureId(activeFeatureRaw) ? activeFeatureRaw : null
+
+  const clearFeature = useCallback(() => {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('feature')
+        return next
+      },
+      { replace: true },
+    )
+  }, [setParams])
 
   const setLayer = useCallback(
     (l: LayerId) => {
@@ -114,9 +138,9 @@ export function Map({ lang }: { lang: Lang }) {
         <article className="map-page">
           <header className="map-page__head">
             <div className="section__eyebrow">{t.eyebrow}</div>
-            <p className="page-folio-mark mono" aria-hidden="true">
+            <FeatureFolioLink feature={PAGE_FEATURE['page.map-page']} lang={lang}>
               № {PAGE_FOLIOS.map}
-            </p>
+            </FeatureFolioLink>
             <h1 className="map-page__title">{t.title}</h1>
             <p className="map-page__sub">{t.sub}</p>
           </header>
@@ -124,6 +148,22 @@ export function Map({ lang }: { lang: Lang }) {
           {realIsAdmin && previewAsUser && (
             <div className="map-page__preview-banner" role="status">
               {t.previewBanner}
+            </div>
+          )}
+
+          {activeFeature && (
+            <div
+              className="map-page__filter-pill"
+              data-feature={activeFeature}
+              role="status"
+              aria-live="polite"
+            >
+              <span className="map-page__filter-dot" aria-hidden="true" />
+              <span className="map-page__filter-label mono">{t.filterShowing}</span>
+              <span className="map-page__filter-name">{FEATURES[activeFeature].label[lang]}</span>
+              <button type="button" className="map-page__filter-clear mono" onClick={clearFeature}>
+                {t.filterClear} ×
+              </button>
             </div>
           )}
 
@@ -145,13 +185,14 @@ export function Map({ lang }: { lang: Lang }) {
             </p>
           )}
 
-          <div className="map-page__canvas">
+          <div className="map-page__canvas" data-active-feature={activeFeature ?? undefined}>
             <MapCanvas
               layer={layer}
               data={filtered}
               lang={lang}
               isAdmin={isAdmin}
               activeJourneyId={activeJourneyId}
+              activeFeature={activeFeature}
             />
           </div>
         </article>

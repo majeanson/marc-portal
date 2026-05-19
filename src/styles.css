@@ -43,6 +43,25 @@
      (effectively invisible) — that's what made the active admin filter
      pill show no text. */
   --bg-app: var(--bg);
+
+  /* Feature accents — see src/lib/features.ts for the taxonomy. Each of the
+     six user-facing features gets a "color" + "soft" variant. Use the soft
+     variant for tinted backgrounds; use the color variant for borders, text
+     accents, and the clickable feature dots. Sage/cool/warm reuse the
+     existing accent tokens so the primary feature (intake) keeps the
+     site's familiar voice. */
+  --feat-intake: var(--accent);
+  --feat-intake-soft: var(--accent-soft);
+  --feat-conversation: var(--cool);
+  --feat-conversation-soft: var(--cool-soft);
+  --feat-iterative: #b8893a; /* ochre */
+  --feat-iterative-soft: #f0e2c4;
+  --feat-pricing: #8b4960; /* plum */
+  --feat-pricing-soft: #efd6df;
+  --feat-keys: var(--warm);
+  --feat-keys-soft: var(--warm-soft);
+  --feat-shipped: #2f7068; /* teal */
+  --feat-shipped-soft: #cce4df;
 }
 
 :root[data-theme='night'] {
@@ -65,6 +84,16 @@
   --cool: #6d92ad;
   --cool-soft: #2c3a48;
   --status-active: #6a9b78;
+
+  /* Feature accents — dark-mode pair for each. The "color" values are pushed
+     brighter so they read against the dark paper; "soft" values are deep,
+     desaturated so tinted backgrounds don't muddy the surrounding chrome. */
+  --feat-iterative: #d6ad6e;
+  --feat-iterative-soft: #3a2f1e;
+  --feat-pricing: #c787a0;
+  --feat-pricing-soft: #3d2530;
+  --feat-shipped: #6dada3;
+  --feat-shipped-soft: #1f3633;
   color-scheme: dark;
 }
 /* Sticky header glass — re-tinted in night so the blur doesn't read white. */
@@ -7254,11 +7283,11 @@ button.intake__progress-step:disabled {
 
 /* ── VibeFilter — wall poster ─────────────────────────────────────────────── */
 /* Restyled 2026-05-17 (PLAN_TOMORROW.md §2.2 follow-up) from a ledger
-   into a printed-poster pair. Two columns of the same content, but the
-   "do" side reads with stamped ✓ marks and the "don't" side reads with
-   strikethrough type — like a wall poster of practice rules. Bigger
-   asymmetric type than the ledger; less border-density, more breathing. */
-.home .vibe--ledger {
+   into a printed-poster pair. Two columns of the same content; the "do"
+   side reads with stamped ✓ marks and the "don't" side with ✗ marks —
+   like a wall poster of practice rules. De-scoped from .home so /intake
+   (VibeGate) reuses the same poster treatment without duplication. */
+.vibe--ledger {
   display: grid;
   grid-template-columns: 1fr 1px 1fr;
   gap: 48px;
@@ -7269,33 +7298,34 @@ button.intake__progress-step:disabled {
   padding: 40px 0 44px;
   position: relative;
 }
-.home .vibe--ledger .vibe__rule {
+.vibe--ledger .vibe__rule {
   background: var(--border-soft);
   align-self: stretch;
   width: 1px;
 }
 @media (max-width: 720px) {
-  .home .vibe--ledger {
+  .vibe--ledger {
     grid-template-columns: 1fr;
     gap: 0;
     padding: 32px 0 36px;
   }
-  .home .vibe--ledger .vibe__rule {
+  .vibe--ledger .vibe__rule {
     display: none;
   }
-  .home .vibe--ledger .vibe__col--dont {
+  .vibe--ledger .vibe__col--dont {
     margin-top: 28px;
     padding-top: 28px;
     border-top: 1px solid var(--border-soft);
   }
 }
-.home .vibe__col {
+.vibe--ledger .vibe__col {
   position: relative;
 }
 /* Hand-drawn ledger marks — red-pen check on the "do" side, charcoal cross
    on the "don't" side. SVG paths instead of typographic glyphs so the marks
-   read as wobbly napperon doodles rather than UI chrome. */
-.home .vibe__mark {
+   read as wobbly napperon doodles rather than UI chrome. Marks sit in the
+   corner at low opacity so they never overlap the words. */
+.vibe--ledger .vibe__mark {
   position: absolute;
   top: -14px;
   right: -10px;
@@ -7306,12 +7336,12 @@ button.intake__progress-step:disabled {
   pointer-events: none;
   transform: rotate(-6deg);
 }
-.home .vibe__mark--dont {
+.vibe--ledger .vibe__mark--dont {
   color: #c84242;
   transform: rotate(8deg);
   opacity: 0.26;
 }
-.home .vibe--ledger .vibe__col h3 {
+.vibe--ledger .vibe__col h3 {
   font-family: var(--display);
   font-size: 24px;
   font-weight: 800;
@@ -7320,22 +7350,18 @@ button.intake__progress-step:disabled {
   margin: 0 0 22px;
   color: var(--text);
 }
-.home .vibe__col--do h3 {
+.vibe--ledger .vibe__col--do h3 {
   color: var(--accent-warm);
 }
-.home .vibe__col--dont h3 {
+.vibe--ledger .vibe__col--dont h3 {
   color: #8a2222;
-  text-decoration: line-through;
-  text-decoration-thickness: 2px;
-  text-decoration-color: rgba(138, 34, 34, 0.45);
-  text-underline-offset: 0.1em;
 }
-.home .vibe--ledger .vibe__col ul {
+.vibe--ledger .vibe__col ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-.home .vibe--ledger .vibe__col li {
+.vibe--ledger .vibe__col li {
   padding: 12px 0 12px 36px;
   border-bottom: none;
   position: relative;
@@ -7343,11 +7369,11 @@ button.intake__progress-step:disabled {
   line-height: 1.45;
   color: var(--text);
 }
-.home .vibe--ledger .vibe__col li + li {
+.vibe--ledger .vibe__col li + li {
   border-top: 1px dashed var(--border-soft);
 }
 /* "Do" side — ink-stamped ✓ glyph, accent-warm, slightly tilted. */
-.home .vibe__col--do li::before {
+.vibe--ledger .vibe__col--do li::before {
   content: '✓';
   position: absolute;
   left: 0;
@@ -7359,17 +7385,13 @@ button.intake__progress-step:disabled {
   color: var(--accent);
   transform: rotate(-4deg);
 }
-/* "Don't" side — items get a soft strikethrough so the eye reads
-   "crossed off the list." The color stays readable; the strike does
-   the disqualification work. */
-.home .vibe__col--dont li {
+/* "Don't" side — the ✗ glyph does the disqualification work. We deliberately
+   do NOT strike through the text; words must stay legible so visitors can
+   actually read what's excluded. */
+.vibe--ledger .vibe__col--dont li {
   color: var(--text-mid);
-  text-decoration: line-through;
-  text-decoration-thickness: 1.5px;
-  text-decoration-color: rgba(200, 66, 66, 0.55);
-  text-underline-offset: 0.08em;
 }
-.home .vibe__col--dont li::before {
+.vibe--ledger .vibe__col--dont li::before {
   content: '✗';
   position: absolute;
   left: 2px;
@@ -7379,7 +7401,6 @@ button.intake__progress-step:disabled {
   font-size: 20px;
   line-height: 1;
   color: #c84242;
-  text-decoration: none;
   transform: rotate(5deg);
 }
 
@@ -7886,15 +7907,15 @@ button.intake__progress-step:disabled {
     padding: 3px 8px;
   }
 
-  .home .vibe--ledger {
+  .vibe--ledger {
     padding: 22px 0;
   }
-  .home .vibe__mark {
+  .vibe--ledger .vibe__mark {
     width: 64px;
     height: 64px;
     opacity: 0.22;
   }
-  .home .vibe--ledger .vibe__col li {
+  .vibe--ledger .vibe__col li {
     font-size: 15.5px;
   }
 
@@ -8015,7 +8036,7 @@ button.intake__progress-step:disabled {
   .home .step--editorial p {
     font-size: 16px;
   }
-  .home .vibe__mark {
+  .vibe--ledger .vibe__mark {
     top: -2px;
     width: 52px;
     height: 52px;
@@ -12624,28 +12645,27 @@ a.map-node:focus-visible {
   stroke-dasharray: 2 9;
   opacity: 0.45;
 }
+/* Bubble fill + stroke are feature-driven: --ft-color (stroke) and --ft-soft
+   (fill) come from the bubble's data-feature ancestor via the cascade defined
+   above. Size variants only change stroke-width for emphasis; color is now
+   100% feature-tied. */
 .map-vision__bubble-bg {
-  fill: var(--bg-card);
-  stroke: var(--accent);
+  fill: var(--ft-soft);
+  stroke: var(--ft-color);
   stroke-width: 1.8;
   transition:
-    fill 180ms ease,
-    stroke-width 180ms ease;
+    stroke-width 180ms ease,
+    filter 180ms ease;
 }
 .map-vision__bubble--lg .map-vision__bubble-bg {
-  fill: var(--accent-soft);
-  stroke-width: 2.4;
-}
-.map-vision__bubble--md .map-vision__bubble-bg {
-  fill: var(--bg-card);
+  stroke-width: 2.6;
 }
 .map-vision__bubble--sm .map-vision__bubble-bg {
-  fill: var(--bg-section);
   stroke-width: 1.4;
 }
 .map-vision__bubble:hover .map-vision__bubble-bg {
-  fill: var(--accent-soft);
-  stroke-width: 3;
+  stroke-width: 3.2;
+  filter: brightness(1.05);
 }
 .map-vision__bubble--link {
   cursor: pointer;
@@ -12654,11 +12674,11 @@ a.map-node:focus-visible {
   outline: none;
 }
 .map-vision__bubble--link:focus-visible .map-vision__bubble-bg {
-  stroke: var(--accent-warm);
-  stroke-width: 3.2;
+  stroke-width: 3.4;
+  filter: brightness(1.08);
 }
 .map-vision__bubble-index {
-  fill: var(--accent-warm);
+  fill: var(--ft-color);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -12697,7 +12717,7 @@ a.map-node:focus-visible {
 }
 .map-vision__bubble--lg .map-vision__bubble-label {
   font-size: 22px;
-  color: var(--accent-warm);
+  color: var(--ft-color);
 }
 .map-vision__bubble--lg .map-vision__bubble-sub {
   font-size: 13.5px;
@@ -12731,4 +12751,157 @@ a.map-node:focus-visible {
   font-weight: 600;
   margin: 0 0 6px;
   opacity: 0.85;
+}
+
+/* Feature accent dispatch — any element with data-feature="X" (or any
+   descendant of one) reads --ft-color + --ft-soft from the active feature.
+   The accent dot on a page node, the bubble bg in /carte, the folio-mark
+   on a page header — all read the same two variables. One change point
+   per feature. */
+:root {
+  --ft-color: var(--feat-intake);
+  --ft-soft: var(--feat-intake-soft);
+}
+[data-feature='intake'] {
+  --ft-color: var(--feat-intake);
+  --ft-soft: var(--feat-intake-soft);
+}
+[data-feature='conversation'] {
+  --ft-color: var(--feat-conversation);
+  --ft-soft: var(--feat-conversation-soft);
+}
+[data-feature='iterative'] {
+  --ft-color: var(--feat-iterative);
+  --ft-soft: var(--feat-iterative-soft);
+}
+[data-feature='pricing'] {
+  --ft-color: var(--feat-pricing);
+  --ft-soft: var(--feat-pricing-soft);
+}
+[data-feature='keys'] {
+  --ft-color: var(--feat-keys);
+  --ft-soft: var(--feat-keys-soft);
+}
+[data-feature='shipped'] {
+  --ft-color: var(--feat-shipped);
+  --ft-soft: var(--feat-shipped-soft);
+}
+
+/* Pages-layer group accent — only "featured" groups (those backed by a
+   feat-* id) get the soft fill + colored label. Transparency + operator
+   groups stay neutral. */
+.map-group--featured .map-group__bg {
+  fill: var(--ft-soft);
+  stroke: var(--ft-color);
+  stroke-opacity: 0.45;
+}
+.map-group--featured .map-group__label {
+  fill: var(--ft-color);
+}
+
+/* Tiny feature dot in the corner of every page node that belongs to a
+   feature. Inherits --ft-color from the wrapping SVG <g data-feature=...>. */
+.map-node__feature-dot {
+  position: absolute;
+  top: 9px;
+  left: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ft-color);
+  box-shadow: 0 0 0 1.5px var(--bg-card);
+  pointer-events: none;
+}
+
+/* page-folio-mark adopts the feature color when ANY ancestor carries
+   data-feature. Pages without a feature (privacy, pia, meta, map) keep
+   the default accent-warm. */
+[data-feature] .page-folio-mark {
+  color: var(--ft-color);
+}
+/* PageMast's folio adopts the feature accent too, so Tier0/Projects/Vouches
+   /Journey/Handoff get colored magazine numbers matching their /carte bubble. */
+[data-feature] .page-mast__folio {
+  color: var(--ft-color);
+}
+
+/* ?feature= filter — non-matching items get this dim treatment so the
+   active feature's territory pops while the rest stays present-but-quiet. */
+.map-vision__bubble--dim,
+.map-group--dim,
+.map-node--dim {
+  opacity: 0.22;
+  transition: opacity 200ms ease;
+}
+.map-vision__bubble--dim,
+.map-node--dim {
+  pointer-events: none;
+}
+
+/* Filter pill — sits above the canvas when ?feature= is active. The pill
+   itself carries data-feature so its colors come from --ft-color/--ft-soft. */
+.map-page__filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 8px 10px 8px 14px;
+  background: var(--ft-soft);
+  border: 1px solid var(--ft-color);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 13px;
+  max-width: 100%;
+}
+.map-page__filter-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ft-color);
+  flex-shrink: 0;
+}
+.map-page__filter-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.map-page__filter-name {
+  font-family: var(--display);
+  font-weight: 700;
+  color: var(--ft-color);
+}
+.map-page__filter-clear {
+  margin-left: 6px;
+  border: 1px solid var(--ft-color);
+  background: transparent;
+  color: var(--ft-color);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+.map-page__filter-clear:hover,
+.map-page__filter-clear:focus-visible {
+  background: var(--ft-color);
+  color: var(--bg);
+  outline: none;
+}
+
+/* Make the page-folio-mark clickable when it's a real link (carries
+   feature filter to /carte). The underline only shows on hover, so a
+   non-link folio (plain <p>) and a link folio (<a>) look identical at rest. */
+a.page-folio-mark {
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: border-color 140ms ease;
+}
+a.page-folio-mark:hover,
+a.page-folio-mark:focus-visible {
+  border-bottom-color: currentColor;
+  outline: none;
 }
