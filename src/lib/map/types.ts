@@ -99,7 +99,7 @@ export interface MapJourney {
  *  is intentionally tiny and curated, not derived from anything. */
 export interface VisionBubble {
   id: string
-  /** ≤ 5 words per language. Enforced via reviewer eyes, not the type. */
+  /** ≤ 5 words per language. Enforced by the map.test.ts word-count guard. */
   label: Bi
   /** Optional one-line elaboration shown on hover/click. */
   desc?: Bi
@@ -110,6 +110,11 @@ export interface VisionBubble {
   pos: { x: number; y: number }
   /** Sequence number (1..N) drawn as a small mark next to the bubble. */
   index: number
+  /** Optional in-app navigation target. When set, the bubble becomes a real
+   *  link (cursor pointer, role=link, Enter/Space activates). Use the FR
+   *  path on the FR side, EN path on the EN side. Validated by the map test:
+   *  every href must match a real route in the skeleton. */
+  href?: Bi
 }
 
 export interface MapData {

@@ -16,6 +16,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { useAuth } from '../lib/authContext'
+import { PAGE_FOLIOS } from '../lib/folios'
 import { MAP_DATA } from '../lib/map/data'
 import { filterForViewer } from '../lib/map/filter'
 import type { LayerId } from '../lib/map/types'
@@ -105,6 +106,9 @@ export function Map({ lang }: { lang: Lang }) {
     <article className="map-page">
       <header className="map-page__head">
         <div className="section__eyebrow">{t.eyebrow}</div>
+        <p className="page-folio-mark mono" aria-hidden="true">
+          № {PAGE_FOLIOS.map}
+        </p>
         <h1 className="map-page__title">{t.title}</h1>
         <p className="map-page__sub">{t.sub}</p>
       </header>

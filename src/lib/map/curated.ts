@@ -742,6 +742,8 @@ const VISION: VisionBubble[] = [
     size: 'lg',
     pos: { x: 22, y: 22 },
     index: 1,
+    // The home page is the long-form version of "who I am".
+    href: bi('/', '/en'),
   },
   {
     id: 'vision.deal',
@@ -753,6 +755,8 @@ const VISION: VisionBubble[] = [
     size: 'lg',
     pos: { x: 65, y: 30 },
     index: 2,
+    // "Describe" → the intake form.
+    href: bi('/intake', '/en/intake'),
   },
   {
     id: 'vision.rhythm',
@@ -764,6 +768,8 @@ const VISION: VisionBubble[] = [
     size: 'md',
     pos: { x: 30, y: 55 },
     index: 3,
+    // The journey page explains the rhythm in detail.
+    href: bi('/parcours', '/en/journey'),
   },
   {
     id: 'vision.entry',
@@ -775,6 +781,7 @@ const VISION: VisionBubble[] = [
     size: 'md',
     pos: { x: 72, y: 58 },
     index: 4,
+    href: bi('/tier-0', '/en/tier-0'),
   },
   {
     id: 'vision.privacy',
@@ -786,6 +793,7 @@ const VISION: VisionBubble[] = [
     size: 'sm',
     pos: { x: 24, y: 82 },
     index: 5,
+    href: bi('/confidentialite', '/en/privacy'),
   },
   {
     id: 'vision.exit',
@@ -797,6 +805,7 @@ const VISION: VisionBubble[] = [
     size: 'md',
     pos: { x: 70, y: 82 },
     index: 6,
+    href: bi('/handoff', '/en/handoff'),
   },
 ]
 

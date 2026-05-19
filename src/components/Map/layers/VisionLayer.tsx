@@ -5,12 +5,15 @@
  * connector arcs trace the read order (1 → 2 → ... → N) so the eye knows
  * where to land first.
  *
+ * Bubbles with an `href` become real navigation. We use useNavigate +
+ * onClick/onKeyDown on the <g> (with role="link", cursor:pointer) so the
+ * navigation stays SPA-native — no anchor + full-page-reload trick.
+ *
  * Intentionally low-fi compared to the other layers — this layer wants to
- * read as a napkin sketch, not a UML diagram. No edges from MapData here,
- * no folio system, no descriptions in the bubble itself (they show as a
- * <title> tooltip + an aria-label).
+ * read as a napkin sketch, not a UML diagram.
  */
 
+import { useNavigate } from 'react-router-dom'
 import type { Lang } from '../../../i18n'
 import type { MapData, VisionBubble } from '../../../lib/map/types'
 
@@ -24,12 +27,22 @@ const W = 1280
 const H = 720
 
 const RADIUS: Record<VisionBubble['size'], number> = {
-  sm: 78,
-  md: 96,
-  lg: 116,
+  sm: 92,
+  md: 108,
+  lg: 128,
+}
+
+// Inset for the label's foreignObject — how much smaller than the diameter,
+// so text doesn't crowd the circle edge. Smaller bubbles need a tighter inset
+// because their absolute padding shouldn't scale linearly.
+const LABEL_INSET: Record<VisionBubble['size'], number> = {
+  sm: 22,
+  md: 30,
+  lg: 36,
 }
 
 export function VisionLayer({ data, lang }: Props) {
+  const navigate = useNavigate()
   const bubbles = data.vision.slice().sort((a, b) => a.index - b.index)
 
   // Pencil-style connector arcs between consecutive bubbles. Quadratic curves
@@ -75,20 +88,46 @@ export function VisionLayer({ data, lang }: Props) {
           const cx = (b.pos.x / 100) * W
           const cy = (b.pos.y / 100) * H
           const r = RADIUS[b.size]
+          const inset = LABEL_INSET[b.size]
+          const labelW = r * 2 - inset * 2
+          const labelH = r * 1.6
           const label = b.label[lang]
           const desc = b.desc?.[lang]
+          const href = b.href?.[lang]
+          const interactive = !!href
+
+          const onActivate = href ? () => navigate(href) : undefined
+
           return (
             <g
               key={b.id}
-              className={`map-vision__bubble map-vision__bubble--${b.size}`}
+              className={`map-vision__bubble map-vision__bubble--${b.size}${
+                interactive ? ' map-vision__bubble--link' : ''
+              }`}
               transform={`translate(${cx} ${cy})`}
+              role={interactive ? 'link' : undefined}
+              tabIndex={interactive ? 0 : undefined}
+              onClick={onActivate}
+              onKeyDown={
+                interactive
+                  ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onActivate?.()
+                      }
+                    }
+                  : undefined
+              }
+              aria-label={
+                interactive ? `${b.index}. ${label}${desc ? ` — ${desc}` : ''}` : undefined
+              }
             >
               <title>{desc ? `${label} — ${desc}` : label}</title>
               <circle className="map-vision__bubble-bg" r={r} />
-              <text className="map-vision__bubble-index mono" x={-r + 18} y={-r + 22}>
+              <text className="map-vision__bubble-index mono" x={-r + inset - 4} y={-r + inset + 4}>
                 {b.index}
               </text>
-              <foreignObject x={-r + 14} y={-22} width={r * 2 - 28} height={64}>
+              <foreignObject x={-labelW / 2} y={-labelH / 2} width={labelW} height={labelH}>
                 <div className="map-vision__bubble-label">{label}</div>
               </foreignObject>
             </g>

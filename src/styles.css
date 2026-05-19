@@ -12646,6 +12646,16 @@ a.map-node:focus-visible {
   fill: var(--accent-soft);
   stroke-width: 3;
 }
+.map-vision__bubble--link {
+  cursor: pointer;
+}
+.map-vision__bubble--link:focus-visible {
+  outline: none;
+}
+.map-vision__bubble--link:focus-visible .map-vision__bubble-bg {
+  stroke: var(--accent-warm);
+  stroke-width: 3.2;
+}
 .map-vision__bubble-index {
   fill: var(--accent-warm);
   font-size: 13px;
@@ -12685,4 +12695,16 @@ a.map-node:focus-visible {
   .map-canvas--data {
     min-width: 1080px;
   }
+}
+
+/* Small editorial folio mark for pages that don't use <PageMast> — Privacy,
+   Pia, HandoffChecklist, Map. Sits as a low-key magazine number above the
+   h1 so the page still reads as "issue № NN" without the full mast chrome. */
+.page-folio-mark {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--accent-warm);
+  font-weight: 600;
+  margin: 0 0 6px;
+  opacity: 0.85;
 }
