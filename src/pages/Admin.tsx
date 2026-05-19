@@ -22,6 +22,7 @@ const COPY = {
     fleet: 'Flotte',
     audit: 'Journal',
     showcase: 'Vitrine',
+    runbook: 'Runbook',
     hub: 'Console',
     backToApp: '← Retour à l’app',
     operator: 'Opérateur',
@@ -36,6 +37,7 @@ const COPY = {
     fleet: 'Fleet',
     audit: 'Audit log',
     showcase: 'Showcase',
+    runbook: 'Runbook',
     hub: 'Console',
     backToApp: '← Back to app',
     operator: 'Operator',
@@ -98,6 +100,9 @@ export function Admin({ lang }: { lang: Lang }) {
               </NavLink>
               <NavLink to={`${langPrefix}/admin/audit`} className="admin__link">
                 <span className="admin__link-dot admin__link-dot--operator" /> {t.audit}
+              </NavLink>
+              <NavLink to={`${langPrefix}/admin/runbook`} className="admin__link">
+                <span className="admin__link-dot admin__link-dot--operator" /> {t.runbook}
               </NavLink>
             </>
           )}

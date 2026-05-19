@@ -45,6 +45,8 @@ const urls = [
   urlEntry('/en/vouches'),
   urlEntry('/vouch'),
   urlEntry('/en/vouch'),
+  urlEntry('/template'),
+  urlEntry('/en/template'),
 ]
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

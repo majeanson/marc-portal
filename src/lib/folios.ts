@@ -62,6 +62,7 @@ export const PAGE_FOLIOS = {
   journey: '04',
   meta: '05',
   handoff: '06',
+  template: '07',
 } as const
 
 export type PageFolioKey = keyof typeof PAGE_FOLIOS
