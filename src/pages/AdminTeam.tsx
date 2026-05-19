@@ -23,7 +23,7 @@ const COPY = {
     owner: 'Propriétaire',
     posture: 'Modèle solo',
     postureBody:
-      'Aucune invitation, aucun rôle, aucun partage de compte. Si tu as besoin que quelqu’un voie une session, ouvre-lui simplement la session via un lien magique sur son propre courriel — pas de notion d’équipe interne.',
+      'Aucune invitation, aucun rôle, aucun partage de compte. Si tu as besoin que quelqu’un voie une session, ouvre-lui simplement la session via un lien de connexion sur son propre courriel — pas de notion d’équipe interne.',
   },
   en: {
     eyebrow: 'team',
@@ -32,7 +32,7 @@ const COPY = {
     owner: 'Owner',
     posture: 'Solo model',
     postureBody:
-      'No invitations, no roles, no shared accounts. If someone needs to see a session, simply open it for them via a magic link on their own email — there is no internal team concept.',
+      'No invitations, no roles, no shared accounts. If someone needs to see a session, simply open it for them via a sign-in link on their own email — there is no internal team concept.',
   },
 } as const
 

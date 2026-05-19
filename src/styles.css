@@ -1009,6 +1009,14 @@ p {
   margin: 0;
   max-width: none;
 }
+.tier__example {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  font-style: italic;
+  margin: 6px 0 0;
+  max-width: none;
+}
 .tier__after {
   font-family: var(--mono);
   font-size: 12px;
@@ -2510,6 +2518,23 @@ button.intake__progress-step:focus-visible {
   font-size: 12px;
   color: var(--text-soft);
 }
+/* "Lede" variant — hint that sits above the inputs (privacy/reassurance
+   line read before the visitor starts typing). Bigger and a touch warmer
+   than the default hint so it doesn't read as a tiny disclaimer. */
+.field__hint--lede {
+  font-size: 13.5px;
+  color: var(--text-mid);
+  margin: 4px 0 14px;
+  line-height: 1.5;
+}
+/* Account-step autosave reassurance — small, calm line under the inputs
+   so non-tech visitors don't worry that closing the tab loses their work. */
+.intake__autosave-note {
+  font-size: 12.5px;
+  color: var(--text-soft);
+  margin: 4px 0 14px;
+  letter-spacing: 0.01em;
+}
 .field__hint--error {
   color: var(--warm);
   font-weight: 500;
@@ -2551,6 +2576,20 @@ button.intake__progress-step:focus-visible {
 }
 .checkbox {
   margin: 18px 0 12px;
+}
+/* Quirky little warm-up when the visitor ticks the vibe ack: the label
+   shifts from neutral mid-tone to the warm accent, with a hint of weight. */
+.vibe__ack {
+  transition: color 240ms ease;
+}
+.vibe__ack--checked {
+  color: var(--accent-warm, var(--text));
+  font-weight: 500;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vibe__ack {
+    transition: none;
+  }
 }
 .radio input,
 .checkbox input {
@@ -4491,6 +4530,7 @@ button:focus-visible,
   }
   .tier--anchor .tier__head,
   .tier--anchor .tier__scope,
+  .tier--anchor .tier__example,
   .tier--anchor .tier__after,
   .tier--anchor .tier__stamp {
     position: relative;
@@ -7378,6 +7418,14 @@ button.intake__progress-step:disabled {
   font-size: 17px;
   line-height: 1.55;
   color: var(--text-mid);
+  max-width: 60ch;
+}
+.home .tier--menu .tier__example {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  font-style: italic;
   max-width: 60ch;
 }
 .home .tier--menu .tier__after {
@@ -10956,6 +11004,16 @@ button.intake__progress-step:disabled {
    mount; static under reduced-motion. */
 .magic-link {
   text-align: center;
+}
+.magic-link__reassure {
+  color: var(--text-mid);
+  font-size: 14.5px;
+  margin-top: 4px;
+}
+.magic-link__fallback {
+  color: var(--text-soft);
+  font-size: 14px;
+  margin-top: 14px;
 }
 .magic-link__mark {
   position: relative;

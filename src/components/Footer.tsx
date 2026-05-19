@@ -85,7 +85,7 @@ export function Footer({ lang }: { lang: Lang }) {
   // The PIA is load-bearing for Loi 25 art. 3.3 / 17 compliance — must be
   // reachable without expanding the privacy page body. CAI inspectors look
   // for a footer link.
-  const piaLabel = lang === 'fr' ? 'Évaluation (PIA)' : 'Impact assessment'
+  const piaLabel = lang === 'fr' ? 'Comment je protège tes données' : 'How I protect your data'
   const handoffHref = lang === 'fr' ? '/handoff' : '/en/handoff'
   const handoffLabel = lang === 'fr' ? 'Comment ça finit' : 'How it ends'
   const metaHref = lang === 'fr' ? '/meta' : '/en/meta'

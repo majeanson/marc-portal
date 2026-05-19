@@ -9,6 +9,8 @@ const COPY = {
     title: 'Vérifie ton courriel',
     intro: (e: string) =>
       `On a envoyé un lien à ${e}. Ouvre-le pour te connecter — il expire dans 30 minutes.`,
+    reassure:
+      'Tu peux en redemander un à tout moment, c’est gratuit et instantané.',
     fallback: 'Pas reçu ? Vérifie tes pourriels, ou recommence avec un autre courriel.',
     again: 'Renvoyer un lien',
   },
@@ -16,6 +18,8 @@ const COPY = {
     title: 'Check your email',
     intro: (e: string) =>
       `A sign-in link was sent to ${e}. Open it to sign in — it expires in 30 minutes.`,
+    reassure:
+      'You can request a new one anytime, free and instant.',
     fallback: "Didn't get it? Check your spam folder, or try again with a different email.",
     again: 'Send another link',
   },
@@ -74,7 +78,8 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
           </div>
           <h1>{t.title}</h1>
           <p>{t.intro(email)}</p>
-          <p style={{ color: 'var(--text-soft, #888)' }}>{t.fallback}</p>
+          <p className="magic-link__reassure">{t.reassure}</p>
+          <p className="magic-link__fallback">{t.fallback}</p>
           <p>
             <a href={lang === 'en' ? '/en/login' : '/login'}>{t.again}</a>
           </p>

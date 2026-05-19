@@ -19,12 +19,12 @@ const COPY = {
   fr: {
     eyebrow: 'nouveau client',
     title: 'Provisionner un nouveau client',
-    sub: 'Crée l’instance, l’envoi du lien magique et la suite des opérations.',
+    sub: 'Crée l’instance, l’envoi du lien de connexion et la suite des opérations.',
     slug: 'Slug (interne, immuable)',
     slugHint:
       'Lettres minuscules, chiffres, traits d’union. Apparaît dans les logs et URLs internes.',
     ownerEmail: 'Courriel du propriétaire',
-    ownerEmailHint: 'Personne qui paie + reçoit le lien magique pour gérer son app.',
+    ownerEmailHint: 'Personne qui paie + reçoit le lien de connexion pour gérer son app.',
     domain: 'Domaine (sans https://)',
     domainHint: 'Ex : roger-voice-truck.com — l’acheteur pointera son DNS ici.',
     template: 'App à installer',
@@ -48,11 +48,11 @@ const COPY = {
   en: {
     eyebrow: 'new buyer',
     title: 'Provision a new buyer',
-    sub: 'Creates the instance, sends the magic link, and queues the rest of the steps.',
+    sub: 'Creates the instance, sends the sign-in link, and queues the rest of the steps.',
     slug: 'Slug (internal, immutable)',
     slugHint: 'Lowercase letters, digits, hyphens. Appears in logs and internal URLs.',
     ownerEmail: 'Owner email',
-    ownerEmailHint: 'The person paying + receiving the magic link to manage their app.',
+    ownerEmailHint: 'The person paying + receiving the sign-in link to manage their app.',
     domain: 'Domain (no https://)',
     domainHint: 'e.g. roger-voice-truck.com — the buyer will point DNS here.',
     template: 'App to install',

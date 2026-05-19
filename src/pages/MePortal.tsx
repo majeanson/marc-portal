@@ -108,8 +108,8 @@ const COPY = {
         a: 'Marc s’engage à répondre — oui, non, ou « raconte-moi plus » — dans les 72 heures suivant ta soumission. Tu vois le compte à rebours sur chaque session en triage.',
       },
       {
-        q: 'Lien magique ?',
-        a: 'Pas de mot de passe. Tu reçois un lien par courriel valide 30 minutes. Clique-le pour te connecter. Tu peux en redemander un à tout moment.',
+        q: 'Lien de connexion ?',
+        a: 'Pas de mot de passe. Tu reçois un lien par courriel valide 30 minutes. Clique-le pour te connecter. Tu peux en redemander un à tout moment — c’est gratuit et instantané.',
       },
       {
         q: 'Modifier ou retirer une session ?',
@@ -206,8 +206,8 @@ const COPY = {
         a: "Marc commits to a reply — yes, no, or 'tell me more' — within 72 hours of submission. You'll see the countdown on every session in triage.",
       },
       {
-        q: 'Magic link?',
-        a: 'No password. You get a link by email valid for 30 minutes. Click to sign in. You can request a new one anytime.',
+        q: 'Sign-in link?',
+        a: 'No password. You get a link by email valid for 30 minutes. Click to sign in. You can request a new one anytime — it’s free and instant.',
       },
       {
         q: 'Edit or withdraw a session?',

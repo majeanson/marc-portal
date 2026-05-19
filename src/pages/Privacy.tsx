@@ -29,7 +29,7 @@ const COPY = {
     sections: [
       {
         h: '1. Responsable',
-        p: 'Marc est le responsable de la protection des renseignements personnels de ce portail (DPO de fait). Pour toute question, demande d’accès ou plainte : <a href="mailto:marc@marcportal.com">marc@marcportal.com</a>. Réponse en moins de 30 jours, comme l’exige la Loi 25.',
+        p: 'Marc est le responsable de la protection des renseignements personnels de ce portail — c’est la personne à qui écrire. Pour toute question, demande d’accès ou plainte : <a href="mailto:marc@marcportal.com">marc@marcportal.com</a>. Réponse en moins de 30 jours, comme l’exige la Loi 25.',
       },
       {
         h: '2. Renseignements collectés',
@@ -86,7 +86,7 @@ const COPY = {
     sections: [
       {
         h: '1. Responsible person',
-        p: 'Marc is the personal-information protection officer for this portal (de facto DPO). For any question, access request, or complaint: <a href="mailto:marc@marcportal.com">marc@marcportal.com</a>. Reply within 30 days, as required by Quebec Bill 25.',
+        p: 'Marc is the personal-information protection officer for this portal — the person to write to. For any question, access request, or complaint: <a href="mailto:marc@marcportal.com">marc@marcportal.com</a>. Reply within 30 days, as required by Quebec Bill 25.',
       },
       {
         h: '2. Information collected',

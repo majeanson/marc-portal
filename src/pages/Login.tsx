@@ -10,7 +10,8 @@ const COPY = {
     title: 'Connexion au portail',
     intro:
       'Entre ton courriel - on t’envoie un lien de connexion à usage unique. Pas de mot de passe.',
-    placeholder: 'ton@courriel.com',
+    emailLabel: 'Ton courriel',
+    emailPlaceholder: 'ton@courriel.com',
     submit: 'Envoyer le lien',
     sending: 'Envoi…',
     reasons: {
@@ -25,7 +26,8 @@ const COPY = {
   en: {
     title: 'Sign in',
     intro: "Enter your email — I'll send you a one-time sign-in link. No password.",
-    placeholder: 'you@email.com',
+    emailLabel: 'Your email',
+    emailPlaceholder: 'you@email.com',
     submit: 'Send the link',
     sending: 'Sending…',
     reasons: {
@@ -104,7 +106,7 @@ export function Login({ lang }: { lang: Lang }) {
           )}
           <form onSubmit={onSubmit} className="form">
             <label htmlFor="email" className="form__label">
-              {t.placeholder}
+              {t.emailLabel}
             </label>
             <input
               id="email"
@@ -113,7 +115,7 @@ export function Login({ lang }: { lang: Lang }) {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={t.placeholder}
+              placeholder={t.emailPlaceholder}
               className="form__input"
             />
             <button type="submit" disabled={submitting} className="hero__cta">

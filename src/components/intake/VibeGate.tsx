@@ -28,17 +28,15 @@ export function VibeGate({ lang, onAccept }: { lang: Lang; onAccept: () => void 
           </ul>
         </div>
       </div>
-      <label className="checkbox">
+      {/* Non-blocking ack: the checkbox is a hand-shake, not a gate.
+          When checked, the label swaps to a quirky "thanks for reading"
+          micro-confirmation. The CTA works either way — server-side
+          /triage is the real filter, not this form. */}
+      <label className={`checkbox vibe__ack${agreed ? ' vibe__ack--checked' : ''}`}>
         <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-        <span>{t.intake.vibe.confirm}</span>
+        <span>{agreed ? t.intake.vibe.ackThanks : t.intake.vibe.confirm}</span>
       </label>
-      <button
-        type="button"
-        className="hero__cta"
-        disabled={!agreed}
-        onClick={onAccept}
-        style={{ opacity: agreed ? 1 : 0.4, cursor: agreed ? 'pointer' : 'not-allowed' }}
-      >
+      <button type="button" className="hero__cta" onClick={onAccept}>
         {t.intake.vibe.cta}
       </button>
     </div>

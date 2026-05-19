@@ -93,7 +93,7 @@ export function SndDemo({ lang, embedded = false }: { lang: Lang; embedded?: boo
                   className="snd-clip__btn"
                   onClick={() => togglePlay(clip.id)}
                   aria-pressed={isPlayed}
-                  aria-label={`${isPlayed ? t.transcriptLabel : 'Play'} — ${clip.weekday[lang]} ${clip.client}`}
+                  aria-label={`${isPlayed ? t.transcriptLabel : t.play} — ${clip.weekday[lang]} ${clip.client}`}
                 >
                   <span className="snd-clip__icon mono">{isPlayed ? '⏸' : '▶'}</span>
                   <span className="snd-clip__meta">

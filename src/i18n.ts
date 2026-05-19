@@ -45,7 +45,7 @@ const FR = {
     },
     signature: 'Marc — Québec',
     body1:
-      'Comme side-gig, j’aide les gens à régler des problèmes du quotidien. En asynchrone/différé (pas de calls, pas de meetings). Le tout à travers mon portail, à ton rythme et au mien.',
+      'Le soir et la fin de semaine, j’aide les gens à régler des problèmes du quotidien. Sans appels, sans réunions — tout passe par un site simple, à ton rythme et au mien.',
     body2:
       "Tu as un problème qui revient toujours, paperasse, suivi, coordination? Ton problème n'est pas un enjeu national, mais tout de même irritant ? Décris-le moi via le portail.",
     body3:
@@ -112,7 +112,7 @@ const FR = {
     untitled: 'Projet sans titre',
     currentBuildLabel: 'Build actuel',
     noBuildYet: 'Pas encore de build épinglé',
-    tierPrefix: 'Tier',
+    tierPrefix: 'Niveau',
     emptyTitle: 'Le premier projet atterrit ici très bientôt.',
     emptyBody:
       'Pas encore de projet publié — la galerie est neuve. Tu peux quand même découvrir comment ça marche, ou m’écrire via le portail pour ouvrir le premier dossier.',
@@ -166,6 +166,7 @@ const FR = {
     body: 'Je veux toutes les idées arriver dans ma boîte — petites, weird, à moitié formées, peu importe. Mon job, c’est de filtrer. Le tien, c’est juste de décrire ce qui te trotte dans la tête.',
     examplesTitle: 'Des idées que je prendrais sans hésiter',
     examples: [
+      'Tes notes vocales du truck → un brouillon de facture qui t’attend le dimanche matin',
       'Un site une-page pour les 30 ans de ton chum avec un mot de chaque ami',
       'Un outil pour aider ta grand-mère à organiser ses recettes',
       'Un compteur « jours sans… » (cigarette, jeu vidéo, peu importe)',
@@ -176,48 +177,52 @@ const FR = {
       'Une carte des bons cafés sur le bord de la 132',
     ],
     reassure:
-      'Si c’est trop petit pour mes prix, je te dis comment le faire toi-même (Tier 0, gratuit). Si c’est trop gros, je suis honnête. Si c’est entre les deux, je triage. Mais je veux le voir avant de décider.',
+      'Si c’est trop petit pour mes prix, je te dis comment le faire toi-même (Niveau 0, gratuit). Si c’est trop gros, je suis honnête. Si c’est entre les deux, je triage. Mais je veux le voir avant de décider.',
     cta: 'Décris ton idée →',
   },
 
   pricing: {
     eyebrow: 'prix publics',
     title: 'Combien ça coûte',
-    body: 'Prix concrets, pas de devis caché. Chaque tier (niveau de prix) renvoie à des projets réels du même niveau — tu vois ce que ça donne avant de soumettre.',
+    body: 'Prix concrets, pas de devis caché. Chaque niveau renvoie à des projets réels du même calibre — tu vois ce que ça donne avant de soumettre.',
     asOf: 'Prix publics, en vigueur depuis 2026-05-15.',
     disclaimer:
-      'Les prix peuvent bouger d’une saison à l’autre. Toujours négociables avant qu’on démarre, jamais de surprise après.',
+      'Les prix sont fixes avant qu’on commence. Pas de surprise après — si je dépasse, c’est mon problème.',
     custodianNote:
-      'Mode dépositaire (200 $/an) — applicable à tous les tiers payants. Par défaut à la livraison, Marc opère le site (DNS, certificats, petites retouches jusqu’à 2 h/mois). Tu peux choisir « Tout à toi » à la place si tu gères déjà tes outils.',
+      'Mode dépositaire (200 $/an) — applicable à tous les niveaux payants. Par défaut à la livraison, je m’occupe que ça reste en ligne et à jour (petites retouches incluses, jusqu’à 2 h/mois). Tu peux choisir « Tout à toi » à la place si tu préfères gérer toi-même.',
     custodianNoteHeading: 'Et après la livraison ?',
     custodianNoteCta: 'Comment ça finit →',
     tiers: [
       {
-        name: 'Tier 0',
+        name: 'Niveau 0',
         price: 'Gratuit',
         scope:
           'Ton problème est trop petit pour engager un dev. Je te redirige vers un patron (modèle prêt-à-utiliser) ou un template no-code.',
+        example: 'Ex. la rotation de pelletage du voisinage, ou le RSVP d’un party — un patron, et tu pars avec.',
         after: 'auto-service',
       },
       {
-        name: 'Tier 1',
+        name: 'Niveau 1',
         price: '≈ 300 $',
         scope:
           'Petit projet simple. Petit script, portfolio, automatisation, formulaire qui marche.',
+        example: 'Ex. un formulaire web qui rentre direct dans ton chiffrier — pas besoin de retaper.',
         after: '0 retouches après livraison',
       },
       {
-        name: 'Tier 2',
+        name: 'Niveau 2',
         price: '≈ 1 500 $',
         scope:
           'Projet de quelques semaines. Outil interne qui dure. Projets de communauté. Payé en deux temps : 750 $ au démarrage, 750 $ à la livraison.',
+        example: 'Ex. tes notes vocales du truck transformées en brouillon de facture le dimanche matin.',
         after: '1 ronde de retouches incluse',
         anchor: true,
       },
       {
-        name: 'Tier 3',
+        name: 'Niveau 3',
         price: '≈ 3 000 $+',
         scope: 'Projet plus gros. Sur devis après triage (l’étape où je lis et je décide).',
+        example: 'Ex. un outil de gestion sur mesure pour ta petite équipe, ou une plateforme pour une coopérative.',
         after: 'devis post-triage',
       },
     ],
@@ -268,7 +273,7 @@ const FR = {
   },
 
   projectsFilter: {
-    tierLabel: 'Tier',
+    tierLabel: 'Niveau',
     statusLabel: 'État',
     all: 'Tout',
     clear: 'Réinitialiser',
@@ -306,7 +311,7 @@ const FR = {
     items: [
       {
         q: 'Le prix annoncé, c’est vraiment ça?',
-        a: 'Oui. Tier 0 est à 0 $ et sert à se voir si on est compatibles. Les tiers 1 à 3 ont un prix forfaitaire avant de commencer — on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise. Le reçu officiel vient de Stripe (noreply@stripe.com) — c’est normal, c’est mon processeur de paiement.',
+        a: 'Oui. Le Niveau 0 est à 0 $ et sert à se voir si on est compatibles. Les niveaux 1 à 3 ont un prix forfaitaire avant de commencer — on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise. Le reçu officiel vient de Stripe (noreply@stripe.com) — c’est normal, c’est mon processeur de paiement.',
       },
       {
         q: 'Et si ça prend plus de temps que prévu?',
@@ -368,7 +373,7 @@ const FR = {
       title: 'Aperçu testable',
       iframeTitle: 'Aperçu en direct du livrable',
       notDeployedYet:
-        "Pas encore déployé — l'aperçu apparaîtra ici dès le jour 5 (engagement type Tier 2).",
+        "Pas encore déployé — l'aperçu apparaîtra ici dès le jour 5 (engagement type Niveau 2).",
     },
     thread: {
       title: "Le fil de l'engagement",
@@ -389,11 +394,11 @@ const FR = {
   },
 
   tier0: {
-    pageTitle: 'Tier 0 — outils gratuits pour problèmes plus petits',
+    pageTitle: 'Niveau 0 — outils gratuits pour problèmes plus petits',
     metaDescription:
       "Patrons gratuits pour les problèmes du quotidien trop petits pour engager un dev : rotation de pelletage, RSVP, suivi d'heures, prêts entre voisins.",
     backHome: "← Retour à l'accueil",
-    eyebrow: 'Tier 0 · auto-service · gratuit',
+    eyebrow: 'Niveau 0 · auto-service · gratuit',
     title: 'Ton problème est trop petit pour engager un dev — voici comment le régler toi-même',
     intro:
       "Pas de honte. Si ton budget est sous 200 $ et que ton problème entre dans une de ces 4 catégories, voici la recette. Tu n'as rien à acheter et tu n'as pas besoin de moi.",
@@ -402,7 +407,7 @@ const FR = {
     problemLabel: 'Le problème',
     recipeLabel: 'La recette',
     growBack:
-      "Si un de ces patrons ne suffit plus, c'est que ton problème a grandi. Bonne nouvelle, c'est probablement Tier 1 ou 2 maintenant — décris-moi ça.",
+      "Si un de ces patrons ne suffit plus, c'est que ton problème a grandi. Bonne nouvelle, c'est probablement Niveau 1 ou 2 maintenant — décris-moi ça.",
     intakeCta: 'Mon problème a grandi → ouvrir le formulaire',
   },
 
@@ -411,14 +416,15 @@ const FR = {
     eyebrow: 'démo · voix → brouillon de facture',
     title: 'Sunday Night Dread',
     intro:
-      "Pendant la semaine, tu dictes des notes vocales dans ton truck. Ici, tu peux 'jouer' 3 notes composites pour voir comment elles deviennent un brouillon de facture le dimanche matin.",
+      "Démo d’un outil que j’ai bâti pour un plombier — pour te montrer ce que je veux dire par « régler un problème du quotidien ». Pendant la semaine, il dicte ses notes vocales dans le truck. Ici, tu peux « jouer » 3 notes composites pour voir comment elles deviennent un brouillon de facture le dimanche matin.",
     clipsTitle: '1. Notes vocales de la semaine',
     clipsHint: "Clique pour 'jouer' chaque note. Tu peux en jouer une, deux ou les trois.",
+    play: 'Jouer',
     transcriptLabel: 'Transcription',
     atClient: 'chez {name}',
     parsedTitle: '2. Ce que le système extrait',
     parsedHint:
-      'Texte libre + lexique de chantier québécois. Pas de listes déroulantes. Le parser (l’algorithme qui lit) trouve le client, les heures, les matériaux.',
+      'Pas de menus à remplir. Tu dictes comme tu parles (« 2 h chez Tremblay, 50 pi de PEX »), et le système trouve tout seul le client, les heures, les matériaux.',
     invoiceTitle: '3. Brouillon de facture',
     invoiceHint:
       'Le dimanche matin, un brouillon arrive dans ta boîte de réception (pas une nouvelle app). TPS + TVQ calculées. À toi de réviser et envoyer.',
@@ -466,16 +472,20 @@ const FR = {
     vibe: {
       eyebrow: 'avant tout',
       confirm: "J'ai lu, ça matche, je continue.",
+      // Quirky swap-in shown after the visitor ticks the box — same
+      // checkbox, warmer text. Non-blocking: the CTA always works.
+      ackThanks: "✓ Merci d'avoir lu — t'as compris la vibe.",
       cta: 'Continuer →',
     },
     account: {
       eyebrow: 'compte gratuit',
       title: "J'ai besoin d'une adresse courriel",
-      body: "C'est tout. Pas de mot de passe pendant que tu remplis. Si tu reviens plus tard, je t'envoie un lien magique (un lien par courriel) pour reprendre. Le brouillon se sauvegarde tout seul à chaque champ.",
+      body: "C'est tout. Pas de mot de passe pendant que tu remplis. Si tu reviens plus tard, je t'envoie un lien de connexion par courriel pour reprendre — pas de compte à créer, pas de mot de passe à inventer. Le brouillon se sauvegarde tout seul à chaque champ.",
       emailLabel: 'Courriel',
       nameLabel: 'Ton prénom (optionnel)',
       namePlaceholder: 'Marie',
       hint: 'Marc lit chaque formulaire lui-même. Aucun spam, aucune liste, aucune revente.',
+      autosaveNote: '✓ Pas de pression — ton brouillon t’attend si tu reviens.',
       cta: 'Continuer →',
       alreadyHaveAccount: 'Tu as déjà un compte ?',
       signIn: 'Connecte-toi →',
@@ -630,11 +640,11 @@ const FR = {
     noBuildYet: 'Pas encore de build épinglé',
     openCta: 'Voir les avancées →',
     openBuild: 'Ouvrir le build ↗',
-    tierPrefix: 'Tier',
+    tierPrefix: 'Niveau',
     placeholderEyebrow: 'ton projet ici',
     placeholderHeading: 'Une place t’attend',
-    placeholderIntro: 'Peu importe le tier — un point de départ.',
-    placeholderT0Cta: 'Voir Tier 0 →',
+    placeholderIntro: 'Peu importe le niveau — un point de départ.',
+    placeholderT0Cta: 'Voir Niveau 0 →',
     placeholderIntakeCta: "Démarrer l'intake →",
   },
 
@@ -647,13 +657,13 @@ const FR = {
     titlePlaceholder: 'Truck Notes — voix → facture',
     taglineLabel: 'Sous-titre court (optionnel)',
     taglinePlaceholder: 'Notes vocales du truck → brouillon de facture le dimanche.',
-    tierLabel: 'Tier',
+    tierLabel: 'Niveau',
     tierHint: 'Calibre la session par rapport à la grille de prix publique.',
     tierOptionNone: 'Non classé',
-    tierOption0: 'Tier 0 · auto-service',
-    tierOption1: 'Tier 1 · ≈ 300 $',
-    tierOption2: 'Tier 2 · ≈ 1 500 $',
-    tierOption3: 'Tier 3 · ≈ 3 000 $+',
+    tierOption0: 'Niveau 0 · auto-service',
+    tierOption1: 'Niveau 1 · ≈ 300 $',
+    tierOption2: 'Niveau 2 · ≈ 1 500 $',
+    tierOption3: 'Niveau 3 · ≈ 3 000 $+',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
     saveError: 'Échec — réessaie.',
@@ -737,7 +747,7 @@ const FR = {
             actor: 'you',
             duration: '1 clic',
             where: 'ton courriel',
-            title: 'Le lien magique arrive dans ta boîte',
+            title: 'Le lien de connexion arrive dans ta boîte',
             body: 'Aucun mot de passe à inventer. Le lien crée ton compte gratuit en un clic et te ramène au bon endroit.',
           },
         ],
@@ -761,7 +771,7 @@ const FR = {
             duration: 'async',
             where: 'fil de session',
             title: 'Je réponds : oui, non, ou « raconte-moi plus »',
-            body: 'Si oui : devis ferme écrit dans ton portail. Si non : je te redirige vers un patron Tier 0 gratuit, ou un dev qui matche mieux. Si entre les deux : je pose mes questions.',
+            body: 'Si oui : devis ferme écrit dans ton portail. Si non : je te redirige vers un patron Niveau 0 gratuit, ou un dev qui matche mieux. Si entre les deux : je pose mes questions.',
           },
         ],
       },
@@ -776,7 +786,7 @@ const FR = {
             duration: '1 min',
             where: 'Stripe',
             title: 'Tu paies le démarrage',
-            body: 'Tier 1 : 300 $ en plein. Tier 2 : 750 $ de dépôt (le solde à la livraison). Tier 3 : selon devis. Reçu officiel automatique par Stripe.',
+            body: 'Niveau 1 : 300 $ en plein. Niveau 2 : 750 $ de dépôt (le solde à la livraison). Niveau 3 : selon devis. Reçu officiel automatique par Stripe.',
           },
           {
             num: '07',
@@ -815,14 +825,14 @@ const FR = {
             duration: '1 min',
             where: 'Stripe',
             title: 'Tu paies le solde',
-            body: 'Tier 2 : les 750 $ qui restent. Tier 3 : le solde du devis. Reçu officiel Stripe — c’est ce qui sort sur ta compta.',
+            body: 'Niveau 2 : les 750 $ qui restent. Niveau 3 : le solde du devis. Reçu officiel Stripe — c’est ce qui sort sur ta compta.',
           },
           {
             num: '11',
             actor: 'both',
             duration: '7 jours',
             where: 'portail',
-            title: 'Une ronde de retouches incluse (Tier 2+)',
+            title: 'Une ronde de retouches incluse (Niveau 2+)',
             body: 'Tu testes en vrai pendant une semaine. Tu reviens avec une liste de petits ajustements. Je polis. Inclus dans le prix.',
           },
           {
@@ -954,7 +964,7 @@ const EN: Copy = {
     },
     signature: 'Marc — Quebec',
     body1:
-      'As a side-gig, I help people solve everyday problems. Asynchronous (no calls, no meetings). All through my portal, at your pace and mine.',
+      'Evenings and weekends, I help people solve everyday problems. No calls, no meetings — everything flows through a simple site, at your pace and mine.',
     body2:
       "Got a recurring problem — paperwork, tracking, coordination? It's not a national crisis, but it's still annoying? Tell me about it through the portal.",
     body3:
@@ -1075,6 +1085,7 @@ const EN: Copy = {
     body: "I want every idea to land in my inbox — small, weird, half-formed, doesn't matter. My job is to filter. Yours is just to describe whatever's been rattling around in your head.",
     examplesTitle: "Ideas I'd happily take",
     examples: [
+      'Your truck voice-notes → a draft invoice waiting for you Sunday morning',
       "A one-page site for your partner's 30th birthday with a note from each friend",
       'A tool to help your grandma organize her recipes',
       'A "days without…" counter (cigarettes, video games, whatever)',
@@ -1095,9 +1106,9 @@ const EN: Copy = {
     body: 'Concrete prices, no hidden quotes. Each tier (price level) links to actual past projects of the same level — you see what it looks like before you submit.',
     asOf: 'Public prices, effective 2026-05-15.',
     disclaimer:
-      'Prices may move between seasons. Always negotiable before we start, never a surprise after.',
+      'Prices are fixed before we start. No surprise after — if I run over, that’s on me.',
     custodianNote:
-      'Custodian mode ($200/yr) — applies to every paid tier. By default at delivery, Marc operates the site (DNS, certificates, small tweaks up to 2 h/mo). You can opt for "All yours" instead if you already manage your tools.',
+      'Custodian mode ($200/yr) — applies to every paid tier. By default at delivery, I make sure it stays online and up-to-date (small tweaks included, up to 2 h/mo). You can opt for "All yours" instead if you’d rather manage it yourself.',
     custodianNoteHeading: 'After delivery, then what?',
     custodianNoteCta: 'How it ends →',
     tiers: [
@@ -1106,12 +1117,14 @@ const EN: Copy = {
         price: 'Free',
         scope:
           'Your problem is too small to hire a dev. I redirect you to a similar pattern (a ready-made recipe) or a no-code template.',
+        example: 'e.g. neighbourhood snow-shovel rotation, or a party RSVP — pick a recipe, you’re done.',
         after: 'self-service',
       },
       {
         name: 'Tier 1',
         price: '≈ $300',
         scope: 'Small simple project. Small script, portfolio, automation, a form that works.',
+        example: 'e.g. a web form that drops straight into your spreadsheet — no retyping.',
         after: '0 post-ship tweaks',
       },
       {
@@ -1119,6 +1132,7 @@ const EN: Copy = {
         price: '≈ $1500',
         scope:
           'A few-week project. An internal tool that lasts. Community projects. Paid in two halves: $750 to start, $750 at delivery.',
+        example: 'e.g. your truck voice-notes turned into a Sunday-morning draft invoice.',
         after: '1 round of tweaks included',
         anchor: true,
       },
@@ -1126,6 +1140,7 @@ const EN: Copy = {
         name: 'Tier 3',
         price: '≈ $3000+',
         scope: 'Bigger project. Custom-quoted after triage (the step where I read it and decide).',
+        example: 'e.g. a tailored management tool for your small team, or a platform for a co-op.',
         after: 'post-triage quote',
       },
     ],
@@ -1316,14 +1331,15 @@ const EN: Copy = {
     eyebrow: 'demo · voice → draft invoice',
     title: 'Sunday Night Dread',
     intro:
-      "During the week you dictate voice notes from your truck. Here you can 'play' 3 composite notes to see how they become a draft invoice on Sunday morning.",
+      "Demo of a tool I built for a plumber — to show what I mean by ‘solve an everyday problem.’ During the week, he dictates voice notes from his truck. Here you can ‘play’ 3 composite notes to see how they become a draft invoice on Sunday morning.",
     clipsTitle: '1. Voice notes from the week',
     clipsHint: "Click to 'play' each note. You can play one, two, or all three.",
+    play: 'Play',
     transcriptLabel: 'Transcript',
     atClient: "at {name}'s",
     parsedTitle: '2. What the system extracts',
     parsedHint:
-      'Free text + Quebec construction lexicon. No dropdowns. The parser (the algorithm that reads it) finds the client, hours, and materials.',
+      'No menus to fill out. You dictate the way you talk (“2 hours at Tremblay’s, 50 ft of PEX”), and the system pulls out the client, hours, and materials on its own.',
     invoiceTitle: '3. Draft invoice',
     invoiceHint:
       'Sunday morning, a draft lands in your inbox (not yet another app). GST + QST calculated. You review and send.',
@@ -1371,16 +1387,20 @@ const EN: Copy = {
     vibe: {
       eyebrow: 'first things first',
       confirm: "I've read it, it matches, I want to continue.",
+      // Quirky swap-in shown after the visitor ticks the box — same
+      // checkbox, warmer text. Non-blocking: the CTA always works.
+      ackThanks: '✓ Thanks for reading — you got the vibe.',
       cta: 'Continue →',
     },
     account: {
       eyebrow: 'free account',
       title: 'I just need an email',
-      body: "That's it. No password while you fill the form. If you come back later, I'll send a magic link (a sign-in link by email) to resume. Your draft auto-saves on every field.",
+      body: "That's it. No password while you fill the form. If you come back later, I'll send a sign-in link by email to resume — no account to create, no password to invent. Your draft auto-saves on every field.",
       emailLabel: 'Email',
       nameLabel: 'First name (optional)',
       namePlaceholder: 'Marie',
       hint: 'Marc reads every form himself. No spam, no lists, no resale.',
+      autosaveNote: '✓ No pressure — your draft will be here if you come back.',
       cta: 'Continue →',
       alreadyHaveAccount: 'Already have an account?',
       signIn: 'Sign in →',
@@ -1639,7 +1659,7 @@ const EN: Copy = {
             actor: 'you',
             duration: '1 click',
             where: 'your inbox',
-            title: 'A magic link lands in your inbox',
+            title: 'A sign-in link lands in your inbox',
             body: 'No password to invent. The link creates your free account in one click and drops you back where you were.',
           },
         ],

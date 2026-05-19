@@ -26,7 +26,9 @@ export function Pricing({ lang }: { lang: Lang }) {
         </header>
         <ol className="tiers tiers--menu">
           {t.tiers.map((tier) => {
-            const tierDigit = tier.name.replace(/^Tier\s*/, '')
+            // Robust digit extraction so the routing keeps working when the
+            // FR copy renames the prefix to "Niveau".
+            const tierDigit = tier.name.match(/\d+/)?.[0] ?? '0'
             const isTier0 = tierDigit === '0'
             const isAnchor = 'anchor' in tier && tier.anchor
             const cardClass = `tier tier--menu${isAnchor ? ' tier--anchor' : ''}`
@@ -47,6 +49,7 @@ export function Pricing({ lang }: { lang: Lang }) {
                     <span className="tier__price">{tier.price}</span>
                   </div>
                   <p className="tier__scope">{tier.scope}</p>
+                  <p className="tier__example">{tier.example}</p>
                   <div className="tier__after mono">{tier.after}</div>
                 </a>
               </li>

@@ -91,6 +91,10 @@ export function AccountStep({
         </a>
       </p>
 
+      {/* Privacy hint moved above the inputs — non-tech visitors read the
+          reassurance before they type, not after. */}
+      <p className="field__hint field__hint--lede">{t.hint}</p>
+
       <label className="field">
         <span className="field__label">{t.emailLabel}</span>
         <input
@@ -116,7 +120,9 @@ export function AccountStep({
         />
       </label>
 
-      <p className="field__hint">{t.hint}</p>
+      {/* Autosave reassurance — visible from the account step so visitors
+          don't worry that closing the tab loses what they've typed. */}
+      <p className="intake__autosave-note mono">{t.autosaveNote}</p>
 
       <button
         type="button"
