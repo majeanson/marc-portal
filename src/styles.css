@@ -1503,6 +1503,38 @@ button.intake__progress-step:focus-visible {
     border-right: none;
     border-bottom: 1px solid var(--border);
     overflow-y: visible;
+    /* Tighten chrome on phones — the desktop padding ate ~30% of the
+       viewport before main content started rendering. Brand + links + footer
+       stay vertical, just compressed. */
+    padding: 14px 18px 12px;
+    gap: 12px;
+  }
+  .admin__brand {
+    padding-bottom: 10px;
+  }
+  .admin__brand-name {
+    font-size: 16px;
+  }
+  .admin__brand-role {
+    margin-top: 2px;
+    font-size: 10px;
+  }
+  /* Links wrap to a single row on the top bar — 3 short labels fit on
+     360-wide. Tap targets stay ≥44px tall. */
+  .admin__links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .admin__link {
+    padding: 12px 14px;
+    min-height: 44px;
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .admin__footer {
+    padding-top: 10px;
+    font-size: 11.5px;
   }
 }
 .admin__brand {
@@ -3482,6 +3514,18 @@ button.intake__progress-step:focus-visible {
 }
 .admin-inbox__attention-pill--empty:not(.admin-inbox__attention-pill--active) {
   opacity: 0.45;
+}
+/* Touch: pad each filter pill to a 44px-tall hit target. Visual size grows
+   slightly but the row still wraps cleanly on a 360-wide phone. */
+@media (pointer: coarse) {
+  .admin-inbox__attention-pill {
+    padding: 9px 13px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .admin-inbox__attention-pills {
+    gap: 6px;
+  }
 }
 
 /* AdminCustodians page — buckets are vertically stacked cards. Tone hint
@@ -5647,6 +5691,18 @@ button.intake__progress-step:disabled {
   font-size: 15px;
   line-height: 1.5;
 }
+/* iOS Safari zooms the viewport when a focused input's effective font-size
+   is below 16px. The thread reply box, admin filters, and a few admin
+   inputs read at 14–15px on desktop; we hold the desktop look and bump only
+   when a coarse pointer is the primary input device. */
+@media (pointer: coarse) {
+  .thread__input,
+  .field__input.mono,
+  .audit-filters__input,
+  .session-frame__tier3-input {
+    font-size: 16px;
+  }
+}
 .confirmation__strip {
   margin: 18px 0 6px;
 }
@@ -7664,9 +7720,16 @@ button.intake__progress-step:disabled {
   .lang a {
     padding: 4px 8px;
   }
+  /* Below ~44px the theme toggle is a thumb-sized button on a thumb-sized
+     phone. Pad the hit area without growing the visual disc — the glyph
+     stays small, only the touch surface scales. Pairs with the lang pills
+     below which get the same minimum 40px height. */
   .theme-toggle {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
+  }
+  .lang a {
+    padding: 8px 12px;
   }
 }
 @media (max-width: 480px) {
@@ -7698,6 +7761,16 @@ button.intake__progress-step:disabled {
   .site-header__auth {
     gap: 6px;
     font-size: 12px;
+  }
+  /* Keep tap targets ≥40px even at 360-wide. The horizontally-scrolling
+     right cluster means small elements never compete for space, so we can
+     safely up-size each cell without breaking the row. */
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
+  }
+  .lang a {
+    padding: 8px 11px;
   }
   /* Paper grain off on very small viewports — perf + clarity */
   .home::before {
@@ -8567,6 +8640,23 @@ button.intake__progress-step:disabled {
   border-color: var(--accent-warm);
   outline: none;
 }
+/* Touch: 13px on .share-modal__url triggers iOS zoom when the field is
+   focused (e.g. to long-press for copy). The close × needs a real tap
+   target — at 22px / 4×8 padding it's a thumb-miss on a phone. */
+@media (pointer: coarse) {
+  .share-modal__url {
+    font-size: 16px;
+  }
+  .share-modal__close {
+    padding: 8px 12px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .share-modal__copy {
+    padding: 12px 18px;
+    min-height: 44px;
+  }
+}
 
 /* ──────────────────────────────────────────────────────────────────────────
    ADMIN SHOWCASE OVERVIEW — operator-only grid view at /admin/showcase.
@@ -9282,6 +9372,36 @@ button.intake__progress-step:disabled {
   .time-travel__notch.is-active,
   .time-travel__notch:hover {
     transform: none;
+  }
+}
+/* Touch-only treatment: the keyboard hint reads weird without a keyboard,
+   the 16px notch is too thin to tap reliably, and the prev/play/next pills
+   are below the recommended 44px hit target. We keep the visual rhythm by
+   leaving the notch *track* at the same height — the hit area grows via
+   a transparent ::before so the layout doesn't shift. */
+@media (pointer: coarse) {
+  .time-travel__keyhint {
+    display: none;
+  }
+  .time-travel__notch {
+    height: 20px;
+    border-radius: 8px;
+    position: relative;
+  }
+  .time-travel__notch::before {
+    content: '';
+    position: absolute;
+    inset: -14px -3px;
+  }
+  .time-travel__btn {
+    padding: 11px 18px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .time-travel__track {
+    /* Loose gaps + comfy padding so a thumb hits one notch at a time. */
+    gap: 4px;
+    padding: 18px 4px 14px;
   }
 }
 
