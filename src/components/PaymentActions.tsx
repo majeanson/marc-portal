@@ -498,7 +498,7 @@ export function PaymentActions({
             <p className="field__hint me-portal__pay-hint">{copy.payTier2FinalHint}</p>
           )}
           {projectState === 'pay' && (
-            <a href="#thread" className="me-portal__pay-ask-link mono">
+            <a href="#session-conversation" className="me-portal__pay-ask-link mono">
               {copy.askFirst}
             </a>
           )}
