@@ -39,6 +39,10 @@ export function VibeFilter({ lang }: { lang: Lang }) {
             </ul>
           </div>
         </div>
+        {/* Permission line — softens the gate created by the do/don't ledger
+            above so a visitor with an idea that doesn't obviously fit a row
+            doesn't quietly close the tab. Triage is Marc's job, not theirs. */}
+        <p className="vibe__outro">{t.outro}</p>
       </div>
     </section>
   )

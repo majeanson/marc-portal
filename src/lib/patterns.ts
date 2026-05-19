@@ -101,6 +101,165 @@ export const PATTERNS: SelfServicePattern[] = [
       href: 'https://www.notion.so/',
     },
   },
+  {
+    id: 'sugar-shack-potluck',
+    tag: { fr: 'potluck', en: 'potluck' },
+    tone: 'sage',
+    title: {
+      fr: 'Cabane à sucre — qui apporte quoi',
+      en: 'Sugar shack — who brings what',
+    },
+    problem: {
+      fr: "25 personnes vont à la cabane à sucre familiale. Sans coordination, on arrive avec 4 tartes au sucre et zéro salade.",
+      en: '25 people are heading to the family sugar shack. Without coordination, you end up with 4 maple-sugar pies and zero salad.',
+    },
+    recipe: {
+      fr: "Google Sheets : colonne A = plat à apporter (tarte, salade, jambon, chaudière de sirop), colonne B = qui (vide au début). Tout le monde a le lien, chacun se met sur ce qu'il apporte. Premier arrivé, premier servi. Tu peux geler la liste 3 jours avant.",
+      en: "Google Sheets: column A = dish to bring (pie, salad, ham, bucket of syrup), column B = who (empty at first). Everyone has the link, each person signs up for what they bring. First-come, first-served. Freeze the list 3 days before.",
+    },
+    template: {
+      label: {
+        fr: 'Modèle Google Sheets (à dupliquer)',
+        en: 'Google Sheets template (duplicate it)',
+      },
+      href: 'https://docs.google.com/spreadsheets/u/0/?tgif=d',
+    },
+  },
+  {
+    id: 'shared-expenses',
+    tag: { fr: 'partage des coûts', en: 'cost splitting' },
+    tone: 'warm',
+    title: {
+      fr: 'Dépenses partagées (chalet, road trip, voyage)',
+      en: 'Shared expenses (cabin trip, road trip, vacation)',
+    },
+    problem: {
+      fr: "Quatre amis louent un chalet. À la fin du weekend, personne ne se souvient qui a payé l'épicerie, le bois, l'essence — et personne ne veut faire le calcul.",
+      en: 'Four friends rent a cabin. By the end of the weekend, nobody remembers who paid for groceries, firewood, gas — and nobody wants to do the math.',
+    },
+    recipe: {
+      fr: "Splitwise (app gratuite). Crée un groupe avec les 4 amis. Chaque fois que quelqu'un paye quelque chose, l'entrer dans l'app. À la fin, Splitwise dit « Marie doit 47 $ à Pat ». Aucune chicane, aucun calcul.",
+      en: 'Splitwise (free app). Create a group with the four of you. Each time someone pays, enter it in the app. At the end, Splitwise says "Marie owes Pat $47." No fights, no math.',
+    },
+    template: {
+      label: { fr: 'Splitwise (gratuit)', en: 'Splitwise (free)' },
+      href: 'https://www.splitwise.com/',
+    },
+  },
+  {
+    id: 'kids-clothes-exchange',
+    tag: { fr: 'échange', en: 'exchange' },
+    tone: 'sand',
+    title: {
+      fr: 'Bourse aux vêtements pour enfants (groupe de parents)',
+      en: 'Kids clothing exchange (parent group)',
+    },
+    problem: {
+      fr: "Huit familles avec des enfants de 2 à 8 ans. Vous voulez vous échanger les vêtements trop petits sans rien acheter. Personne ne se rappelle qui a la combinaison de neige 4T cette année.",
+      en: "Eight families with kids aged 2 to 8. You want to swap outgrown clothes without buying anything new. Nobody remembers who has the 4T snowsuit this year.",
+    },
+    recipe: {
+      fr: "Un groupe Facebook privé ou un canal Signal. Format de post fixe : taille + item + dispo/cherche + photo. Premier arrivé, premier servi. Pas besoin d'app dédiée — la simplicité du fil chronologique fait la job.",
+      en: 'A private Facebook group or Signal channel. Fixed post format: size + item + offering/looking-for + photo. First-come, first-served. No dedicated app needed — a simple chronological thread does the job.',
+    },
+  },
+  {
+    id: 'hockey-tournament-signup',
+    tag: { fr: 'inscription', en: 'sign-up' },
+    tone: 'navy',
+    title: {
+      fr: 'Inscription tournoi de hockey de quartier',
+      en: 'Local hockey tournament sign-up',
+    },
+    problem: {
+      fr: "Tu organises un tournoi 3-contre-3 à l'aréna municipale, max 8 équipes. Tu veux pas faire le suivi des inscriptions au téléphone et par texto.",
+      en: "You're organizing a 3-on-3 tournament at the local arena, max 8 teams. You don't want to track sign-ups by phone and text.",
+    },
+    recipe: {
+      fr: "Google Forms (gratuit). Un formulaire : nom de l'équipe, capitaine, 5 joueurs minimum, courriel pour les nouvelles. Active la limite à 8 réponses. Tout finit dans un Google Sheets que tu peux trier et imprimer.",
+      en: 'Google Forms (free). One form: team name, captain, 5 players minimum, email for updates. Set the response limit to 8. Everything flows into a Google Sheets you can sort and print.',
+    },
+    template: {
+      label: { fr: 'Google Forms (gratuit)', en: 'Google Forms (free)' },
+      href: 'https://forms.google.com/',
+    },
+  },
+  {
+    id: 'wedding-tasks',
+    tag: { fr: 'mariage', en: 'wedding' },
+    tone: 'sage',
+    title: {
+      fr: 'Tâches partagées pour la noce',
+      en: 'Shared wedding task list',
+    },
+    problem: {
+      fr: "Vous vous mariez dans 4 mois. La belle-mère veut aider mais sait pas où, ton chum oublie la moitié des courriels, et toi tu veux pas tout porter toute seule.",
+      en: "You're getting married in 4 months. Your mother-in-law wants to help but doesn't know where, your partner forgets half the emails, and you don't want to carry it all alone.",
+    },
+    recipe: {
+      fr: "Trello (gratuit). Une carte par tâche (réserver le DJ, choisir les fleurs, écrire les vœux, etc.). Drag-and-drop pour assigner. Quand c'est fait, ça glisse dans la colonne « terminé ». Visible par tout le monde, tout le temps.",
+      en: 'Trello (free). One card per task (book the DJ, pick the flowers, write the vows, etc.). Drag-and-drop to assign. When it\'s done, it slides into the "done" column. Visible to everyone, always.',
+    },
+    template: {
+      label: { fr: 'Trello (gratuit)', en: 'Trello (free)' },
+      href: 'https://trello.com/',
+    },
+  },
+  {
+    id: 'neighborhood-newsletter',
+    tag: { fr: 'infolettre', en: 'newsletter' },
+    tone: 'warm',
+    title: {
+      fr: 'Bulletin de quartier mensuel',
+      en: 'Monthly neighborhood newsletter',
+    },
+    problem: {
+      fr: "Tu es bénévole pour ton association de quartier. Tu veux envoyer un bulletin une fois par mois à 80 voisins sans payer un service de courriel.",
+      en: "You volunteer for your neighborhood association. You want to send a monthly newsletter to 80 neighbors without paying for an email service.",
+    },
+    recipe: {
+      fr: "Brevo (anciennement Sendinblue, gratuit jusqu'à 300 envois/jour). Importe ta liste, écris ton bulletin dans l'éditeur, envoie. Tu vois qui ouvre, qui clique. Si ta liste grossit au-delà de 500 personnes, là on en reparle — c'est rendu Tier 1.",
+      en: 'Brevo (formerly Sendinblue, free up to 300 sends/day). Import your list, write the newsletter in the editor, send. See who opens, who clicks. If your list grows past 500 people, then come back — that\'s Tier 1.',
+    },
+    template: {
+      label: { fr: 'Brevo (gratuit)', en: 'Brevo (free)' },
+      href: 'https://www.brevo.com/',
+    },
+  },
+  {
+    id: 'boat-log',
+    tag: { fr: 'entretien', en: 'maintenance' },
+    tone: 'sand',
+    title: {
+      fr: "Carnet de bord d'un bateau (heures moteur, entretien)",
+      en: 'Boat log (engine hours, maintenance)',
+    },
+    problem: {
+      fr: "Ton bateau a un moteur qui demande une vidange à chaque 100 heures. Tu te souviens jamais où tu en es, et le mécanicien te le demande à chaque printemps.",
+      en: 'Your boat has a motor that needs an oil change every 100 hours. You never remember where you stand, and the mechanic asks you every spring.',
+    },
+    recipe: {
+      fr: "Un carnet papier dans le bateau, OU une note Apple Notes / Google Keep. À chaque sortie : date / heures au départ / heures au retour / ce que tu as fait (vidange, hélice changée, plein d'essence). C'est tout. Pas besoin de logiciel dédié.",
+      en: 'A paper logbook in the boat, OR an Apple Notes / Google Keep note. Each trip: date / hours at start / hours at end / what you did (oil change, propeller swap, refuel). That\'s it. No dedicated software needed.',
+    },
+  },
+  {
+    id: 'dog-rotation',
+    tag: { fr: 'rotation', en: 'rotation' },
+    tone: 'navy',
+    title: {
+      fr: "Garde du chien pendant les vacances (groupe d'amis)",
+      en: 'Dog-sitting during vacations (friend group)',
+    },
+    problem: {
+      fr: "Quatre amis avec des chiens. Chacun part en vacances 2-3 fois par an. Vous voulez vous garder mutuellement les chiens sans payer une pension à 50 $/jour.",
+      en: 'Four friends with dogs. Each one goes on vacation 2-3 times a year. You want to dog-sit for each other instead of paying a kennel at $50/day.',
+    },
+    recipe: {
+      fr: "Un groupe WhatsApp. Quelqu'un poste « vacances du 15 au 22 juin, Rex cherche un toit ». Premier répondant garde. Tu peux ajouter un Google Sheets épinglé qui compte « qui a gardé qui combien de fois » pour rester juste sur le long terme.",
+      en: 'A WhatsApp group. Someone posts "vacation June 15-22, Rex needs a place." First reply gets the dog. Optionally pin a Google Sheets tracking "who watched whose dog how many times" to stay fair over time.',
+    },
+  },
 ]
 
 export function listPatterns(): SelfServicePattern[] {

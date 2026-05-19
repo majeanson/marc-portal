@@ -11240,3 +11240,156 @@ button.intake__progress-step:disabled {
   background: var(--bg);
 }
 
+/* ────────────────────────────────────────────────────────────────────────────
+   VIBE OUTRO + BRING-ANYTHING — permission copy that immediately follows
+   the vibe do/don't ledger so a hesitant visitor never closes the tab.
+
+   The vibe__outro is a single italic paragraph below the two-column ledger.
+   The bring-anything section is a full editorial beat after it, with an
+   examples card styled as a quick notes page.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.vibe__outro {
+  margin: 32px auto 0;
+  max-width: 60ch;
+  font-family: var(--sans);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-mid);
+  text-align: center;
+  /* Subtle sage accent rule above to mark the shift from "rules" to
+     "permission" — visually echoes the section divider asterisms. */
+  position: relative;
+  padding-top: 22px;
+}
+.vibe__outro::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.45;
+}
+
+.bring-anything .section__head {
+  /* The "no idea too small" eyebrow lands closer to the title — the lead
+     paragraph carries the weight, so the head is intentionally compact. */
+  margin-bottom: 28px;
+}
+
+.bring-anything__examples {
+  margin-top: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 32px 32px 28px;
+  position: relative;
+  /* Faint horizontal rule pattern under the content reads as ruled-notepad
+     paper. Kept very low contrast — texture, not graph paper. */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 26px,
+    var(--border-soft) 26px,
+    var(--border-soft) 27px
+  );
+  background-size: 100% auto;
+  background-position: 0 38px;
+  background-repeat: repeat-y;
+}
+
+.bring-anything__examples-tab {
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  transform: rotate(-1.5deg);
+  z-index: 1;
+}
+
+.bring-anything__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 32px;
+}
+
+.bring-anything__item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--text-mid);
+}
+
+.bring-anything__bullet {
+  color: var(--accent-warm);
+  flex-shrink: 0;
+  font-size: 22px;
+  line-height: 0.9;
+  padding-top: 1px;
+}
+
+.bring-anything__reassure {
+  margin: 32px auto 0;
+  max-width: 60ch;
+  font-family: var(--sans);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-mid);
+  text-align: center;
+}
+
+.bring-anything__cta-row {
+  margin-top: 28px;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 760px) {
+  .bring-anything__examples {
+    padding: 28px 22px 22px;
+  }
+  .bring-anything__list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .bring-anything__item {
+    font-size: 15px;
+  }
+  .bring-anything__examples-tab {
+    left: 16px;
+  }
+}
+
+/* Night-mode adjustments — ruled-paper texture reads wrong on dark ink,
+   soften it dramatically. */
+:root[data-theme='night'] .bring-anything__examples {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 26px,
+    rgba(243, 236, 217, 0.05) 26px,
+    rgba(243, 236, 217, 0.05) 27px
+  );
+}
+:root[data-theme='night'] .bring-anything__examples-tab {
+  background: var(--bg-section);
+}
+

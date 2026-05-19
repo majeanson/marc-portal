@@ -19,6 +19,7 @@ import { InlineIntakeTeaser } from '../components/InlineIntakeTeaser'
 import { FAQ } from '../components/FAQ'
 import { Testimonials } from '../components/Testimonials'
 import { NapperonDoodles } from '../components/NapperonDoodles'
+import { BringAnything } from '../components/BringAnything'
 
 export function Home({ lang }: { lang: Lang }) {
   const t = DICT[lang]
@@ -70,7 +71,12 @@ export function Home({ lang }: { lang: Lang }) {
         <InlineIntakeTeaser lang={lang} />
         {/* 5 — Vibe filter: do/don't lists — final self-qualification gate */}
         <VibeFilter lang={lang} />
-        {/* 5b — Pull-quote: a short voice break before About lands */}
+        {/* 5b — "Bring me anything": neutralizes the self-filter the vibe
+              ledger can trigger. Marc's framing: I want every idea in my
+              inbox; the triage is my job, not the visitor's. Examples are
+              aspirational ("things I'd take"), not fake-historic. */}
+        <BringAnything lang={lang} />
+        {/* 5c — Pull-quote: a short voice break before About lands */}
         <PullQuote lang={lang} />
         {/* 6 — About: short bio near the end (visitors who care, scroll) */}
         <About lang={lang} />

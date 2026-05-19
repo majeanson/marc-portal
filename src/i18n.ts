@@ -152,6 +152,28 @@ const FR = {
         'Du travail dans le beurre',
       ],
     },
+    outro:
+      'Ces listes sont indicatives, pas un test à passer. Si ton idée ne rentre pas clairement dans une catégorie, écris-la pareil — c’est moi qui triage, pas toi.',
+  },
+
+  bringAnything: {
+    eyebrow: 'aucune idée trop petite',
+    title: 'Apporte-moi n’importe quoi',
+    body: 'Je veux toutes les idées arriver dans ma boîte — petites, weird, à moitié formées, peu importe. Mon job, c’est de filtrer. Le tien, c’est juste de décrire ce qui te trotte dans la tête.',
+    examplesTitle: 'Des idées que je prendrais sans hésiter',
+    examples: [
+      'Un site une-page pour les 30 ans de ton chum avec un mot de chaque ami',
+      'Un outil pour aider ta grand-mère à organiser ses recettes',
+      'Un compteur « jours sans… » (cigarette, jeu vidéo, peu importe)',
+      'Une page mémorial avec photos pour ton chat décédé',
+      'Un catalogue des blagues internes de ton groupe d’amis',
+      'Une calculatrice qui résout exactement UN problème dans ta job',
+      'Un tableau de bord pour la cuisine (météo, todo, anniversaires)',
+      'Une carte des bons cafés sur le bord de la 132',
+    ],
+    reassure:
+      'Si c’est trop petit pour mes prix, je te dis comment le faire toi-même (Tier 0, gratuit). Si c’est trop gros, je suis honnête. Si c’est entre les deux, je triage. Mais je veux le voir avant de décider.',
+    cta: 'Décris ton idée →',
   },
 
   pricing: {
@@ -286,7 +308,7 @@ const FR = {
       },
       {
         q: 'Je ne sais pas exactement ce que je veux. C’est ok?',
-        a: 'C’est même attendu. Décris le problème comme il te vient, en français/anglais, dans tes mots. Mon job c’est de poser les bonnes questions et de te montrer une version concrète sur laquelle tu peux réagir.',
+        a: 'C’est même attendu. Décris comme il te vient, dans tes mots — sans te filtrer. Si ça sonne trop petit, trop weird, ou pas assez « professionnel », écris-le pareil. C’est moi qui décide ce qui rentre. Mon job c’est de poser les bonnes questions et de te montrer une version concrète sur laquelle tu peux réagir.',
       },
       {
         q: 'À qui appartient le code à la fin?',
@@ -1032,6 +1054,28 @@ const EN: Copy = {
         'Work that goes nowhere',
       ],
     },
+    outro:
+      "These lists are indicative, not a test you have to pass. If your idea doesn't clearly fit one of the categories, write it anyway — I triage, not you.",
+  },
+
+  bringAnything: {
+    eyebrow: 'no idea too small',
+    title: 'Bring me anything',
+    body: "I want every idea to land in my inbox — small, weird, half-formed, doesn't matter. My job is to filter. Yours is just to describe whatever's been rattling around in your head.",
+    examplesTitle: "Ideas I'd happily take",
+    examples: [
+      "A one-page site for your partner's 30th birthday with a note from each friend",
+      'A tool to help your grandma organize her recipes',
+      'A "days without…" counter (cigarettes, video games, whatever)',
+      'A memorial page with photos for your cat who passed',
+      'A catalog of the inside jokes in your friend group',
+      'A calculator that solves exactly ONE problem in your job',
+      'A kitchen dashboard (weather, todo, birthdays)',
+      'An interactive map of good coffee shops along Route 132',
+    ],
+    reassure:
+      "If it's too small for my pricing, I'll show you how to do it yourself (Tier 0, free). If it's too big, I'll be honest. If it's in between, I triage. But I want to see it before I decide.",
+    cta: 'Describe your idea →',
   },
 
   pricing: {
@@ -1164,7 +1208,7 @@ const EN: Copy = {
       },
       {
         q: "I don't know exactly what I want. Is that ok?",
-        a: "It's expected. Describe the problem the way it comes to you, in French or English, in your own words. My job is to ask the right questions and put a concrete version in front of you to react to.",
+        a: "It's expected. Describe it the way it comes, in your own words — don't pre-filter. If it sounds too small, too weird, or not \"professional enough,\" write it anyway. I decide what fits. My job is to ask the right questions and put a concrete version in front of you to react to.",
       },
       {
         q: 'Who owns the code at the end?',
