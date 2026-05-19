@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
+import { useTabTitleWink } from '../lib/tabTitleWink'
 import { Header } from '../components/Header'
 import { Hero } from '../components/Hero'
 import { HowItWorks } from '../components/HowItWorks'
@@ -23,6 +24,9 @@ import { BringAnything } from '../components/BringAnything'
 
 export function Home({ lang }: { lang: Lang }) {
   const t = DICT[lang]
+
+  // Swap the tab title to a "come back" wave when the visitor switches away.
+  useTabTitleWink(t.tabAway)
 
   useEffect(() => {
     document.documentElement.lang = t.langCode

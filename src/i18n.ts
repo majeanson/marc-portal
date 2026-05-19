@@ -25,7 +25,11 @@ const FR = {
     },
   },
 
-  brandTitle: 'Marc — dev québécois',
+  brandTitle: '№ 01 · Marc — dev québécois',
+  // Title swapped in when the tab loses focus (visibilitychange → hidden).
+  // Restored on refocus. Echoes the napperon "fait main" voice — a tiny
+  // wave at visitors who have tab-parked us. Home-only.
+  tabAway: '👋 reviens-moi · Marc',
   metaDescription:
     "Marc, dev québécois. Le soir et la fin de semaine, j'aide les gens à régler des problèmes du quotidien avec du code. Async — pas de meetings, à ton rythme.",
 
@@ -928,7 +932,8 @@ const EN: Copy = {
     },
   },
 
-  brandTitle: 'Marc — Québécois dev',
+  brandTitle: '№ 01 · Marc — Québécois dev',
+  tabAway: '👋 come back · Marc',
   metaDescription:
     'Marc, a Québécois dev. Evenings and weekends, I help people solve everyday problems with code. Async — no meetings, at your pace.',
 

@@ -5,6 +5,7 @@ import { AuthProvider } from './lib/AuthProvider'
 import { TenantProvider } from './lib/TenantProvider'
 import { initSentry } from './lib/sentry'
 import { installScrollDirection } from './lib/scrollDirection'
+import { printConsoleGreeting } from './lib/consoleGreeting'
 import { router } from './router'
 import './styles.css'
 
@@ -17,6 +18,9 @@ initSentry()
 // scroll-down and slide back on scroll-up. CSS reads the resulting
 // data-scroll-direction attribute on <html>.
 installScrollDirection()
+
+// Quirky bilingual hello for visitors who open devtools.
+printConsoleGreeting()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
