@@ -35,24 +35,6 @@
       "lastTransitionDate": "2026-05-07"
     },
     {
-      "featureKey": "feat-2026-010",
-      "dirSlug": "feat-demo-sunday-night-dread",
-      "title": "Demo: Sunday Night Dread — Voice-to-Invoice MVP",
-      "status": "active",
-      "domain": "content/demo",
-      "tags": [
-        "demo",
-        "showcase-anchor",
-        "voice-to-invoice",
-        "trades",
-        "tier-2",
-        "cornerstone-artifact"
-      ],
-      "problem": "A local plumber, electrician, or carpenter is brilliant at their craft but spends every Sunday evening hunched over a laptop, reconstructing material costs, labor hours, and invoices from memory and coffee-stained scraps of paper collected throughout the week. This administrative tax steals their rest and leads to for…",
-      "decisionsCount": 4,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
       "featureKey": "feat-2026-015",
       "dirSlug": "feat-engagement-runtime",
       "title": "Engagement Runtime — Magic-Link Sessions, Persistence & Marc/Visitor Interaction",
@@ -106,23 +88,6 @@
       "lastTransitionDate": "2026-05-07"
     },
     {
-      "featureKey": "feat-2026-021",
-      "dirSlug": "feat-template-snd-package",
-      "title": "SND as a Tenanted Package — productize the demo into the first sellable template",
-      "status": "active",
-      "domain": "marc-portal/templates",
-      "tags": [
-        "template",
-        "snd",
-        "tenanted-app",
-        "voice",
-        "invoicing"
-      ],
-      "problem": "SND today is a static interactive demo at /demo/sunday-night-dread, with composite voice clips and a parser that runs entirely in the browser. To sell it as Roger Voice Truck's actual app, it needs to become a tenanted template: real D1-backed data (voice clips uploaded by end-users, parsed entries, invoice drafts, en…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
       "featureKey": "feat-2026-022",
       "dirSlug": "feat-template-volunteer-roster",
       "title": "Volunteer Roster — second sellable template (Phase 2 abstraction stress-test)",
@@ -158,76 +123,6 @@
       "domain": null,
       "tags": [],
       "problem": "Buyers want visual control over their app so it feels like theirs, not Marc's. The Bonjour retheme already routes every visual decision through CSS custom properties (--accent, --paper, --display, --radius, etc.), so per-tenant theming is just persisting a JSON dictionary of token overrides and injecting them into the…",
-      "decisionsCount": 0,
-      "lastTransitionDate": null
-    },
-    {
-      "featureKey": "feat-2026-014",
-      "dirSlug": "feat-snd-iter-accounting",
-      "title": "SND itération — Synchronisation comptable (QuickBooks / Acomba)",
-      "status": "draft",
-      "domain": "sunday-night-dread/iteration",
-      "tags": [
-        "iteration",
-        "roadmap",
-        "sunday-night-dread",
-        "accounting",
-        "quickbooks",
-        "acomba"
-      ],
-      "problem": "Une fois le brouillon de facture généré par le MVP et révisé, le tradesperson doit le ressaisir dans son logiciel comptable (QuickBooks ou Acomba — les deux dominants au Québec) pour produire la vraie facture officielle, payer la TPS/TVQ, et tenir la comptabilité. Cette double saisie est exactement le type de friction…",
-      "decisionsCount": 0,
-      "lastTransitionDate": null
-    },
-    {
-      "featureKey": "feat-2026-013",
-      "dirSlug": "feat-snd-iter-asbuilt",
-      "title": "SND itération — Documentation as-built (PDF client final)",
-      "status": "draft",
-      "domain": "sunday-night-dread/iteration",
-      "tags": [
-        "iteration",
-        "roadmap",
-        "sunday-night-dread",
-        "as-built",
-        "pdf",
-        "post-mvp"
-      ],
-      "problem": "Les clients finaux (propriétaires, gestionnaires de bâtiment, syndicats de copropriété) demandent souvent un récapitulatif documenté des travaux : matériaux installés, heures travaillées, décisions techniques notées en cours de chantier. Faire ce document à la main = encore une tâche du dimanche soir. Cette itération…",
-      "decisionsCount": 0,
-      "lastTransitionDate": null
-    },
-    {
-      "featureKey": "feat-2026-012",
-      "dirSlug": "feat-snd-iter-inventory",
-      "title": "SND itération — Inventaire lié par chantier",
-      "status": "draft",
-      "domain": "sunday-night-dread/iteration",
-      "tags": [
-        "iteration",
-        "roadmap",
-        "sunday-night-dread",
-        "inventory",
-        "post-mvp"
-      ],
-      "problem": "Au-delà de la facture, le tradesperson veut savoir combien de matériaux ont été utilisés sur chaque chantier — utile pour les soumissions futures, le suivi de pertes, et les commandes de réapprovisionnement. Cette itération relie les notes vocales (déjà parsées par le MVP) à un compteur de matériaux par chantier. Aucu…",
-      "decisionsCount": 0,
-      "lastTransitionDate": null
-    },
-    {
-      "featureKey": "feat-2026-011",
-      "dirSlug": "feat-snd-iter-versioning",
-      "title": "SND itération — Versionnage par chantier",
-      "status": "draft",
-      "domain": "sunday-night-dread/iteration",
-      "tags": [
-        "iteration",
-        "roadmap",
-        "sunday-night-dread",
-        "versioning",
-        "post-mvp"
-      ],
-      "problem": "Le MVP Sunday Night Dread mélange toutes les notes vocales d'une semaine dans une seule boîte de réception. Mais le tradesperson travaille sur plusieurs chantiers en parallèle — quand il dicte « 2 heures chez Tremblay et 1 heure chez Côté », ces lignes appartiennent à des factures différentes. Cette itération introdui…",
       "decisionsCount": 0,
       "lastTransitionDate": null
     },
@@ -384,5 +279,5 @@
       "lastTransitionDate": "2026-05-07"
     }
   ],
-  "generatedAt": "2026-05-19T19:16:35.516Z"
+  "generatedAt": "2026-05-19T20:08:26.008Z"
 }

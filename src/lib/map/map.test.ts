@@ -127,6 +127,27 @@ describe('curated overlay coherence', () => {
   it('ships at least one journey', () => {
     expect(data.journeys.length).toBeGreaterThanOrEqual(1)
   })
+
+  it('ships a Vision layer with 4–8 bubbles, ≤5 words each', () => {
+    expect(data.vision.length).toBeGreaterThanOrEqual(4)
+    expect(data.vision.length).toBeLessThanOrEqual(8)
+    for (const b of data.vision) {
+      for (const lang of ['fr', 'en'] as const) {
+        const words = b.label[lang].split(/\s+/).filter(Boolean)
+        expect(
+          words.length,
+          `vision bubble ${b.id} [${lang}] is ${words.length} words`,
+        ).toBeLessThanOrEqual(5)
+      }
+    }
+  })
+
+  it('Vision bubble indexes form a 1..N sequence', () => {
+    const indexes = data.vision.map((b) => b.index).sort((a, b) => a - b)
+    for (let i = 0; i < indexes.length; i++) {
+      expect(indexes[i]).toBe(i + 1)
+    }
+  })
 })
 
 describe('visitor filter', () => {

@@ -2,6 +2,42 @@ export type Lang = 'fr' | 'en'
 
 export type Copy = typeof FR
 
+/**
+ * Three bilingual-copy patterns exist in this codebase. Use this guide
+ * when picking one (decided 2026-05 standardization pass):
+ *
+ *   1. `DICT[lang].something` (this file)
+ *      For shared chrome (header nav, footer, status labels) and the long
+ *      marketing copy on public-facing pages (Home, Tier0, Projects,
+ *      Journey, Vouches, etc.). One file means typeof FR is the
+ *      compile-time parity contract: every key in FR must exist in EN.
+ *      Use when: copy is reused across components OR is core
+ *      marketing/visitor-facing content.
+ *
+ *   2. Inline `const COPY = { fr: {...}, en: {...} } as const` at the
+ *      top of a single component file.
+ *      For page-specific copy that nothing else references. Cheaper than
+ *      adding 200 keys to this file for one operator-only surface.
+ *      Use when: the copy is local to one component AND would just bulk
+ *      up i18n.ts without anyone else reusing it. Examples: Privacy,
+ *      Pia, Handoff, Map, AdminHub, AdminRunbook.
+ *
+ *   3. `Bi { fr: string; en: string }` shape, used by data files.
+ *      For lists of structured items where each item has bilingual
+ *      labels — Runbook steps (trackA.ts, trackB.ts), map nodes/groups
+ *      (curated.ts, types.ts). The shape pairs with the data, not the
+ *      component, so the component renders generically over either lang.
+ *      Use when: building a list/array/graph of bilingual items
+ *      consumed by a single renderer.
+ *
+ * Anti-patterns to avoid:
+ *   - Don't mix patterns inside one file. Pick one.
+ *   - Don't inline copy in JSX (`{lang === 'fr' ? 'Suivant →' : 'Next →'}`) —
+ *     extract to one of the three patterns above so the parity contract
+ *     stays visible.
+ *   - Don't add tiny one-off operator-only copy to DICT — that's
+ *     pattern #2's job.
+ */
 const FR = {
   langCode: 'fr-CA',
   langSwitchLabel: 'EN',
@@ -415,41 +451,6 @@ const FR = {
     intakeCta: 'Mon problème a grandi → ouvrir le formulaire',
   },
 
-  sndDemo: {
-    pageTitle: 'Démo Sunday Night Dread',
-    eyebrow: 'démo · voix → brouillon de facture',
-    title: 'Sunday Night Dread',
-    intro:
-      'Démo d’un outil que j’ai bâti pour un plombier — pour te montrer ce que je veux dire par « régler un problème du quotidien ». Pendant la semaine, il dicte ses notes vocales dans le truck. Ici, tu peux « jouer » 3 notes composites pour voir comment elles deviennent un brouillon de facture le dimanche matin.',
-    clipsTitle: '1. Notes vocales de la semaine',
-    clipsHint: "Clique pour 'jouer' chaque note. Tu peux en jouer une, deux ou les trois.",
-    play: 'Jouer',
-    transcriptLabel: 'Transcription',
-    atClient: 'chez {name}',
-    parsedTitle: '2. Ce que le système extrait',
-    parsedHint:
-      'Pas de menus à remplir. Tu dictes comme tu parles (« 2 h chez Tremblay, 50 pi de PEX »), et le système trouve tout seul le client, les heures, les matériaux.',
-    invoiceTitle: '3. Brouillon de facture',
-    invoiceHint:
-      'Le dimanche matin, un brouillon arrive dans ta boîte de réception (pas une nouvelle app). TPS + TVQ calculées. À toi de réviser et envoyer.',
-    generate: 'Générer le brouillon de facture →',
-    emailFrom: 'De: marc.portal@example.qc.ca',
-    emailTo: 'Pour: toi (brouillon)',
-    emailSubject: 'Sujet: Brouillon de facture — semaine — {client}',
-    invoiceGreeting: 'Brouillon de facture pour {client}',
-    invoiceLead: "Voici ce qui a été dicté cette semaine. Révise les chiffres avant d'envoyer.",
-    col_desc: 'Description',
-    col_qty: 'Qté',
-    col_unit: 'Prix unitaire',
-    col_total: 'Total',
-    laborRow: "Main-d'œuvre (taux ${rate}/h)",
-    subtotal: 'Sous-total',
-    total: 'Total',
-    invoiceSign: '— Brouillon généré · à réviser et envoyer manuellement.',
-    disclaimer:
-      'Démo statique avec voix-clients composites. Le code et le parser sont vrais. Aucune donnée réelle, aucun courriel envoyé.',
-  },
-
   intake: {
     pageTitle: 'Décris ton problème — formulaire',
     metaDescription:
@@ -564,11 +565,11 @@ const FR = {
     formBody: 'Description',
     formBodyPlaceholder: 'Ce qui a changé dans ce build, ce qu’il y a à tester.',
     formIframePath: 'Chemin de l’iframe (optionnel)',
-    formIframePathPlaceholder: '/me, /demo/sunday-night-dread, etc.',
+    formIframePathPlaceholder: '/me, /projects, etc.',
     formIframePathHint:
       'Site-relatif (commence par /). Vide = racine du déploiement. Sert à pointer l’iframe sur la page la plus pertinente.',
     formBuildUrl: 'URL du build (optionnel)',
-    formBuildUrlPlaceholder: 'https://marcportal.com/demo/sunday-night-dread',
+    formBuildUrlPlaceholder: 'https://marcportal.com/projects',
     formBuildUrlHint:
       'Pour un build hébergé ailleurs (autre repo, autre projet Cloudflare). Vide = stamping automatique au prochain déploiement du portail.',
     formFlags: 'Visibilité',
@@ -1331,41 +1332,6 @@ const EN: Copy = {
     intakeCta: 'My problem grew → open the form',
   },
 
-  sndDemo: {
-    pageTitle: 'Sunday Night Dread demo',
-    eyebrow: 'demo · voice → draft invoice',
-    title: 'Sunday Night Dread',
-    intro:
-      'Demo of a tool I built for a plumber — to show what I mean by ‘solve an everyday problem.’ During the week, he dictates voice notes from his truck. Here you can ‘play’ 3 composite notes to see how they become a draft invoice on Sunday morning.',
-    clipsTitle: '1. Voice notes from the week',
-    clipsHint: "Click to 'play' each note. You can play one, two, or all three.",
-    play: 'Play',
-    transcriptLabel: 'Transcript',
-    atClient: "at {name}'s",
-    parsedTitle: '2. What the system extracts',
-    parsedHint:
-      'No menus to fill out. You dictate the way you talk (“2 hours at Tremblay’s, 50 ft of PEX”), and the system pulls out the client, hours, and materials on its own.',
-    invoiceTitle: '3. Draft invoice',
-    invoiceHint:
-      'Sunday morning, a draft lands in your inbox (not yet another app). GST + QST calculated. You review and send.',
-    generate: 'Generate draft invoice →',
-    emailFrom: 'From: marc.portal@example.qc.ca',
-    emailTo: 'To: you (draft)',
-    emailSubject: 'Subject: Draft invoice — week — {client}',
-    invoiceGreeting: 'Draft invoice for {client}',
-    invoiceLead: 'Here is what was dictated this week. Review the numbers before sending.',
-    col_desc: 'Description',
-    col_qty: 'Qty',
-    col_unit: 'Unit price',
-    col_total: 'Total',
-    laborRow: 'Labor (rate ${rate}/h)',
-    subtotal: 'Subtotal',
-    total: 'Total',
-    invoiceSign: '— Draft generated · review and send manually.',
-    disclaimer:
-      'Static demo with composite client voices. The code and parser are real. No real data, no email sent.',
-  },
-
   intake: {
     pageTitle: 'Describe your problem — form',
     metaDescription:
@@ -1479,11 +1445,11 @@ const EN: Copy = {
     formBody: 'Description',
     formBodyPlaceholder: "What changed in this build, what's worth poking at.",
     formIframePath: 'Iframe path (optional)',
-    formIframePathPlaceholder: '/me, /demo/sunday-night-dread, etc.',
+    formIframePathPlaceholder: '/me, /projects, etc.',
     formIframePathHint:
       'Site-relative (starts with /). Empty = deploy root. Used to focus the iframe on the most relevant page.',
     formBuildUrl: 'Build URL (optional)',
-    formBuildUrlPlaceholder: 'https://marcportal.com/demo/sunday-night-dread',
+    formBuildUrlPlaceholder: 'https://marcportal.com/projects',
     formBuildUrlHint:
       'For a build hosted elsewhere (different repo or Cloudflare project). Empty = auto-stamp on the portal’s next deploy.',
     formFlags: 'Visibility',

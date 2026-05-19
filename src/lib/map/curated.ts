@@ -16,7 +16,15 @@
  * site actually works.
  */
 
-import type { CuratedOverlay, MapNode, MapEdge, MapGroup, MapJourney, Bi } from './types'
+import type {
+  CuratedOverlay,
+  MapNode,
+  MapEdge,
+  MapGroup,
+  MapJourney,
+  Bi,
+  VisionBubble,
+} from './types'
 
 const bi = (fr: string, en: string): Bi => ({ fr, en })
 
@@ -29,7 +37,7 @@ const PAGE_PATCHES = [
     label: bi('Accueil', 'Home'),
     desc: bi('La page d’atterrissage.', 'The landing page.'),
     group: 'group.public-front',
-    folio: '№ 01',
+    // Folio comes from PAGE_FOLIOS.home via data.ts — no manual override here.
   },
   {
     id: 'page.intake',
@@ -61,15 +69,6 @@ const PAGE_PATCHES = [
     desc: bi(
       'Ce que ça donne d’atterrir ici jusqu’à recevoir un livrable.',
       'What it looks like from landing here to receiving a deliverable.',
-    ),
-    group: 'group.public-front',
-  },
-  {
-    id: 'page.snd-demo',
-    label: bi('Démo SND', 'SND demo'),
-    desc: bi(
-      'Démo audio Sunday Night Dread — une étude de cas vivante.',
-      'Sunday Night Dread audio demo — a living case study.',
     ),
     group: 'group.public-front',
   },
@@ -394,7 +393,6 @@ const GROUPS: MapGroup[] = [
       'page.napkin',
       'page.tier0',
       'page.journey',
-      'page.snd-demo',
       'page.projects',
       'page.engagement',
       'page.vouches',
@@ -725,10 +723,88 @@ const JOURNEYS: MapJourney[] = [
   },
 ]
 
+// ─── Vision — the “big picture” layer ────────────────────────────────────────
+//
+// Six bubbles, ≤ 5 words per language, that summarize Marc's whole idea
+// without forcing the visitor to read 9 home sections to get it. Sized and
+// positioned by hand for a napperon / sketchbook feel — not a grid. The
+// sequence numbers (index) trace a natural read path: who → deal → rhythm →
+// entry → values → exit.
+
+const VISION: VisionBubble[] = [
+  {
+    id: 'vision.who',
+    label: bi('Marc, dev solo, QC', 'Marc, solo dev, QC'),
+    desc: bi(
+      'Un humain à Montréal. Pas une agence, pas une équipe.',
+      'One human in Montréal. Not an agency, not a team.',
+    ),
+    size: 'lg',
+    pos: { x: 22, y: 22 },
+    index: 1,
+  },
+  {
+    id: 'vision.deal',
+    label: bi('Tu décris, je code', 'You describe, I code'),
+    desc: bi(
+      'Tu apportes le problème quotidien ; je le tourne en logiciel qui marche.',
+      'You bring the everyday problem; I turn it into software that works.',
+    ),
+    size: 'lg',
+    pos: { x: 65, y: 30 },
+    index: 2,
+  },
+  {
+    id: 'vision.rhythm',
+    label: bi('Async, pas de meetings', 'Async, no meetings'),
+    desc: bi(
+      'Tout passe par écrit, à ton rythme. Soirs et fins de semaine.',
+      'Everything in writing, at your pace. Evenings and weekends.',
+    ),
+    size: 'md',
+    pos: { x: 30, y: 55 },
+    index: 3,
+  },
+  {
+    id: 'vision.entry',
+    label: bi('Tier 0 : on jase', 'Tier 0: we just talk'),
+    desc: bi(
+      'Premier échange gratuit, sans engagement. Tu vois la vibe avant.',
+      'First conversation free, no strings. You feel the vibe first.',
+    ),
+    size: 'md',
+    pos: { x: 72, y: 58 },
+    index: 4,
+  },
+  {
+    id: 'vision.privacy',
+    label: bi('Vie privée, Loi 25', 'Privacy first, Loi 25'),
+    desc: bi(
+      'Données hébergées au Canada. PIA publié. Aucun pixel publicitaire.',
+      'Canada-hosted data. Published PIA. Zero ad pixels.',
+    ),
+    size: 'sm',
+    pos: { x: 24, y: 82 },
+    index: 5,
+  },
+  {
+    id: 'vision.exit',
+    label: bi('Tu reprends quand tu veux', 'Take the keys any time'),
+    desc: bi(
+      'À la livraison, deux modes : « je m’en occupe » ou « tout à toi ».',
+      'At delivery, two modes: "I handle it" or "all yours".',
+    ),
+    size: 'md',
+    pos: { x: 70, y: 82 },
+    index: 6,
+  },
+]
+
 export const CURATED: CuratedOverlay = {
   patches: [...PAGE_PATCHES],
   extras: SERVICE_NODES,
   edges: EDGES,
   groups: GROUPS,
   journeys: JOURNEYS,
+  vision: VISION,
 }

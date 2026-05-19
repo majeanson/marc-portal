@@ -6,7 +6,7 @@
 // Usage in a handler:
 //
 //   export const onRequestPost: PagesFunction<Env> = async (ctx) => {
-//     const gate = await requireTemplate(ctx, 'snd', { ownerOnly: true })
+//     const gate = await requireTemplate(ctx, 'volunteer-roster', { ownerOnly: true })
 //     if (gate instanceof Response) return gate
 //     const { tenant, email } = gate
 //     // domain logic here

@@ -31,8 +31,6 @@ const urls = [
   urlEntry('/en/napkin'),
   urlEntry('/tier-0'),
   urlEntry('/en/tier-0'),
-  urlEntry('/demo/sunday-night-dread'),
-  urlEntry('/en/demo/sunday-night-dread'),
   urlEntry('/confidentialite'),
   urlEntry('/en/privacy'),
   urlEntry('/handoff'),

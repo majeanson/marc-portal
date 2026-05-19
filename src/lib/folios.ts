@@ -10,6 +10,16 @@
  * "VII"). The two folios were drifting because each component "remembered"
  * its number from before the last reshuffle.
  *
+ * Folio policy (decided 2026-05 standardization pass):
+ *   - **Content pages** get a sequential PAGE_FOLIOS entry. Home through
+ *     Map below — the "issues" of the magazine.
+ *   - **Functional flows** do NOT get folios. These are forms and
+ *     account-state surfaces (Intake, Login, MagicLinkSent, MePortal,
+ *     SessionPage, PublicAdvancements, Vouch form, Engagement, Napkin).
+ *     A folio on a form would feel like flair on a tax return.
+ *   - **Admin surfaces** never get folios — they're operator tools, not
+ *     publication content.
+ *
  * How to use:
  *
  *   import { HOME_FOLIOS } from '../lib/folios'
@@ -26,8 +36,8 @@
  *
  * Hero is intentionally absent from HOME_FOLIOS: it uses a magazine-style
  * "cover folio" (`№ 01 — Marc, dev québécois`) defined in i18n alongside
- * the descriptive subtitle. That number doubles as the home's "issue"
- * within the PAGE_FOLIOS scheme below.
+ * the descriptive subtitle. The numeric `home: '01'` below mirrors that
+ * for surfaces that need the bare number (e.g. the /carte atlas badge).
  */
 
 /**
@@ -50,18 +60,35 @@ export type HomeFolioKey = keyof typeof HOME_FOLIOS
 
 /**
  * Standalone-page folios in the "magazine issue" format (`№ XX`).
- * Hero/home uses `№ 01` but defines its own folio in i18n (`hero.folio`)
- * alongside the descriptive subtitle — not duplicated here to avoid a
- * second source of truth for the same number. When adding a new page,
- * take the next sequential number (07, 08, …); don't recycle.
+ * Sequence — content pages, intended reading order:
+ *   00 tier0     (the free first chat — the entry)
+ *   01 home      (the cover / landing)
+ *   02 projects  (the gallery)
+ *   03 vouches   (testimonials)
+ *   04 journey   (visitor's path explained)
+ *   05 meta      (under the hood — LAC features)
+ *   06 handoff   (how it ends — buyer guide)
+ *   07 handoffChecklist (companion to handoff — executable list)
+ *   08 privacy   (Loi 25 visitor statement)
+ *   09 pia       (companion to privacy — PIA)
+ *   10 map       (the carte / atlas — meta-meta)
+ *
+ * When adding a new content page, take the next sequential number; don't
+ * recycle. When adding a functional flow (form, portal surface), DO NOT
+ * add it here — see the policy in this file's header doc.
  */
 export const PAGE_FOLIOS = {
   tier0: '00',
+  home: '01',
   projects: '02',
   vouches: '03',
   journey: '04',
   meta: '05',
   handoff: '06',
+  handoffChecklist: '07',
+  privacy: '08',
+  pia: '09',
+  map: '10',
 } as const
 
 export type PageFolioKey = keyof typeof PAGE_FOLIOS

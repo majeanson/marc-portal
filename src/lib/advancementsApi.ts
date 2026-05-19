@@ -4,7 +4,7 @@
  * is the functions side; this file follows.
  *
  * An "advancement" is an admin-posted record of build/demo progress on a
- * session — the SND-style cadence ("rev 1 demo shipped → rev 2 → ...") with
+ * session — an iterative cadence ("rev 1 demo shipped → rev 2 → ...") with
  * each entry pinned to a Cloudflare Pages deployment URL the visitor can
  * iframe to time-travel through builds.
  */

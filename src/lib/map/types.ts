@@ -19,8 +19,10 @@ export type { Lang }
 
 export type Visibility = 'public' | 'admin'
 
-/** Which overlays a node/edge participates in. A node can live on multiple. */
-export type LayerId = 'pages' | 'data' | 'admin' | 'journeys'
+/** Which overlays a node/edge participates in. A node can live on multiple.
+ *  `vision` is the entry layer — 5–6 hand-positioned bubbles summarizing the
+ *  whole idea in ≤ 5 words each; pages/data/admin/journeys drill in from there. */
+export type LayerId = 'vision' | 'pages' | 'data' | 'admin' | 'journeys'
 
 export interface Bi {
   fr: string
@@ -93,11 +95,29 @@ export interface MapJourney {
   steps: { nodeId: string; note?: Bi }[]
 }
 
+/** A single Vision-layer bubble — 5 words max, hand-positioned. The layer
+ *  is intentionally tiny and curated, not derived from anything. */
+export interface VisionBubble {
+  id: string
+  /** ≤ 5 words per language. Enforced via reviewer eyes, not the type. */
+  label: Bi
+  /** Optional one-line elaboration shown on hover/click. */
+  desc?: Bi
+  /** Visual emphasis (drives bubble radius). 'lg' for the headline idea. */
+  size: 'sm' | 'md' | 'lg'
+  /** Position in 0–100 percent of the canvas, so the same layout reads on any
+   *  width. The exact values are picked by hand for an organic, napperon feel. */
+  pos: { x: number; y: number }
+  /** Sequence number (1..N) drawn as a small mark next to the bubble. */
+  index: number
+}
+
 export interface MapData {
   nodes: MapNode[]
   edges: MapEdge[]
   groups: MapGroup[]
   journeys: MapJourney[]
+  vision: VisionBubble[]
 }
 
 // ─── Skeleton (what build-map-skeleton.mjs emits) ─────────────────────────────
@@ -159,4 +179,5 @@ export interface CuratedOverlay {
   edges: MapEdge[]
   groups: MapGroup[]
   journeys: MapJourney[]
+  vision: VisionBubble[]
 }

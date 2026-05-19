@@ -13,6 +13,37 @@ import type { ReactNode } from 'react'
  * an eyebrow + h1 + lead. We don't bake the eyebrow/title structure in
  * because each page already has its own copy and tier of section
  * detail (Journey has stats + legend, Meta has counts + asof line).
+ *
+ * ─── Canonical page shape (2026-05 standardization pass) ─────────────────
+ *
+ * Content pages (the PAGE_FOLIOS issues) should follow:
+ *
+ *   export function Foo({ lang }: { lang: Lang }) {
+ *     const t = COPY[lang]              // or DICT[lang].foo — pick one per file
+ *     useEffect(() => { document.title = `${t.crumb} — Marc` }, [t])
+ *     return (
+ *       <article className="foo">      // single page-class wrapper
+ *         <PageMast folio={`№ ${PAGE_FOLIOS.foo} — ${t.title}`}
+ *                   stampLabel="..." stampSub="...">
+ *           <p className="section__eyebrow">{t.eyebrow}</p>
+ *           <h1 className="page-mast__title">{t.title}</h1>
+ *           <p className="page-mast__lead">{t.lead}</p>
+ *         </PageMast>
+ *         <main>... body ...</main>
+ *       </article>
+ *     )
+ *   }
+ *
+ * Pages that intentionally diverge (no PageMast, hand-rolled header):
+ *   - Privacy, Pia — legal-doc structure with anchored TOC
+ *   - Map — interactive canvas with layer-toggle UI as the chrome
+ *   - HandoffChecklist — collapsed technical sections with a back link
+ *   - Login, MagicLinkSent, Intake, Vouch, MePortal — functional flows,
+ *     not magazine "issues"
+ *
+ * If you're adding a new content page, follow PageMast. If you're adding a
+ * form/flow, hand-roll the header but keep the `.{page}-page` or `.{page}`
+ * wrapper class for CSS hooks.
  */
 export function PageMast({
   folio,

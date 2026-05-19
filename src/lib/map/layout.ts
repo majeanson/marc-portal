@@ -49,27 +49,29 @@ export interface LayerLayout {
 }
 
 // Tuning. Desktop-first; CSS scales the <svg> to fit narrower viewports.
+// Bumped node + group dimensions in the 2026-05 polish pass — the previous
+// 220×88 cards rendered as walls of cramped text on the live page.
 const PAGES = {
-  NODE_W: 220,
-  NODE_H: 88,
+  NODE_W: 260,
+  NODE_H: 116,
   COLS: 3,
-  COL_GAP: 16,
-  ROW_GAP: 12,
-  GROUP_HEADER_H: 40,
-  GROUP_PAD_X: 16,
-  GROUP_PAD_Y: 16,
-  GROUP_GAP_Y: 28,
-  PADDING: 24,
+  COL_GAP: 20,
+  ROW_GAP: 16,
+  GROUP_HEADER_H: 48,
+  GROUP_PAD_X: 20,
+  GROUP_PAD_Y: 20,
+  GROUP_GAP_Y: 36,
+  PADDING: 32,
 } as const
 
 const DATA = {
-  NODE_W: 220,
-  NODE_H: 56,
-  ROW_GAP: 10,
-  COL_W: 240,
-  COL_GAP: 80,
-  COL_HEADER_H: 40,
-  PADDING: 24,
+  NODE_W: 240,
+  NODE_H: 64,
+  ROW_GAP: 14,
+  COL_W: 260,
+  COL_GAP: 96,
+  COL_HEADER_H: 48,
+  PADDING: 32,
 } as const
 
 function visibleNodesFor(group: MapGroup, nodeById: Map<string, MapNode>): MapNode[] {

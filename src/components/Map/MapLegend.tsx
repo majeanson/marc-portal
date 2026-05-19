@@ -28,6 +28,7 @@ interface Props {
 
 const LAYER_LABELS = {
   fr: {
+    vision: 'Vue d’ensemble',
     pages: 'Pages',
     data: 'Flux de données',
     journeys: 'Parcours',
@@ -37,6 +38,7 @@ const LAYER_LABELS = {
     journey: 'Parcours :',
   },
   en: {
+    vision: 'Big picture',
     pages: 'Pages',
     data: 'Data flow',
     journeys: 'Journeys',
@@ -47,7 +49,9 @@ const LAYER_LABELS = {
   },
 } as const
 
-const LAYER_ORDER: LayerId[] = ['pages', 'data', 'journeys', 'admin']
+// Render order, left → right. `vision` first because it's the entry point;
+// other layers drill down from there.
+const LAYER_ORDER: LayerId[] = ['vision', 'pages', 'data', 'journeys', 'admin']
 
 export function MapLegend({
   lang,

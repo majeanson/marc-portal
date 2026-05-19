@@ -36,5 +36,7 @@ export function filterForViewer(data: MapData, isAdmin: boolean): MapData {
     .filter((j) => keep(j.visibility))
     .filter((j) => j.steps.every((s) => nodeIds.has(s.nodeId)))
 
-  return { nodes, edges, groups, journeys }
+  // Vision bubbles are all public by design — pass through. If we ever ship
+  // an admin-only vision bubble, gate it the same way as nodes.
+  return { nodes, edges, groups, journeys, vision: data.vision }
 }

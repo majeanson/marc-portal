@@ -43,17 +43,18 @@ const COPY = {
   },
 } as const
 
-const VALID_LAYERS = new Set<LayerId>(['pages', 'data', 'admin', 'journeys'])
+const VALID_LAYERS = new Set<LayerId>(['vision', 'pages', 'data', 'admin', 'journeys'])
 
 export function Map({ lang }: { lang: Lang }) {
   const { isAdmin, realIsAdmin, previewAsUser, setPreviewAsUser } = useAuth()
   const [params, setParams] = useSearchParams()
 
   // URL is the source of truth for layer + journey so /carte?layer=data is
-  // bookmarkable and refresh-safe. Default to pages when missing or invalid.
+  // bookmarkable and refresh-safe. Default to vision — the entry layer that
+  // explains the whole idea before any drill-down.
   const layer: LayerId = (() => {
     const v = params.get('layer') as LayerId | null
-    return v && VALID_LAYERS.has(v) ? v : 'pages'
+    return v && VALID_LAYERS.has(v) ? v : 'vision'
   })()
   const activeJourneyId = params.get('journey') ?? undefined
 
@@ -62,7 +63,8 @@ export function Map({ lang }: { lang: Lang }) {
       setParams(
         (prev) => {
           const next = new URLSearchParams(prev)
-          if (l === 'pages') next.delete('layer')
+          // 'vision' is the default — keep the URL clean when on it.
+          if (l === 'vision') next.delete('layer')
           else next.set('layer', l)
           return next
         },

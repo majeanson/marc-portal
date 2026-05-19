@@ -109,12 +109,17 @@ function bindingNodes(bindings: SkeletonBinding[]): MapNode[] {
 
 const PAGE_FOLIO_BY_ID: Record<string, string> = {
   // PAGE_FOLIOS keys use the component dir-slug; map by node id.
+  'page.root-by-template': PAGE_FOLIOS.home,
   'page.tier0': PAGE_FOLIOS.tier0,
   'page.projects': PAGE_FOLIOS.projects,
   'page.vouches': PAGE_FOLIOS.vouches,
   'page.journey': PAGE_FOLIOS.journey,
   'page.meta': PAGE_FOLIOS.meta,
   'page.handoff': PAGE_FOLIOS.handoff,
+  'page.handoff-checklist': PAGE_FOLIOS.handoffChecklist,
+  'page.privacy': PAGE_FOLIOS.privacy,
+  'page.pia': PAGE_FOLIOS.pia,
+  'page.map-page': PAGE_FOLIOS.map,
 }
 
 function applyPatch(node: MapNode, patch: OverlayPatch): MapNode {
@@ -175,6 +180,7 @@ export function buildMapData(
     edges: curated.edges,
     groups: curated.groups,
     journeys: curated.journeys,
+    vision: curated.vision,
   }
 }
 

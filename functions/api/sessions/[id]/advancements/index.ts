@@ -57,7 +57,7 @@ interface PostBody {
   iframePath?: unknown
   flags?: unknown
   /** Optional pre-filled deploy URL — for advancements pointing at builds
-   * outside this repo (e.g. snd-demo on its own Cloudflare project). When
+   * outside this repo (e.g. a separate Cloudflare Pages project). When
    * provided, auto-stamping skips this row (it only stamps WHERE
    * build_url IS NULL). When omitted, CI fills it on the next deploy. */
   buildUrl?: unknown

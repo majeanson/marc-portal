@@ -12,8 +12,8 @@
  * thin — a render-prop-driven framework would over-couple templates that
  * may diverge later.
  *
- * Class names stay .snd-app-* for back-compat (renaming to .app-shell-* is
- * a future cosmetic pass, see feat-2026-023 known-limitations).
+ * Class names follow the .app-shell-* BEM pattern (renamed from .snd-app-*
+ * during the 2026-05 standardization pass when the SND template was retired).
  */
 
 import type { ReactNode } from 'react'
@@ -37,22 +37,22 @@ export function AppShell({ lang, children }: { lang: Lang; children: ReactNode }
   const langPrefix = lang === 'en' ? '/en' : ''
 
   return (
-    <div className="snd-app">
-      <header className="snd-app__head">
-        <div className="snd-app__brand">
+    <div className="app-shell">
+      <header className="app-shell__head">
+        <div className="app-shell__brand">
           <h1>{tenant?.displayName ?? 'App'}</h1>
         </div>
-        <nav className="snd-app__nav">
+        <nav className="app-shell__nav">
           {isAdmin && (
-            <Link to={`${langPrefix}/admin`} className="snd-app__nav-link">
+            <Link to={`${langPrefix}/admin`} className="app-shell__nav-link">
               ⚙ {t.settings}
             </Link>
           )}
-          {email && <span className="snd-app__user mono">{email}</span>}
+          {email && <span className="app-shell__user mono">{email}</span>}
           {realIsAdmin && (
             <button
               type="button"
-              className={`snd-app__preview-toggle mono${previewAsUser ? ' snd-app__preview-toggle--on' : ''}`}
+              className={`app-shell__preview-toggle mono${previewAsUser ? ' app-shell__preview-toggle--on' : ''}`}
               onClick={() => setPreviewAsUser(!previewAsUser)}
               aria-pressed={previewAsUser}
             >
@@ -62,7 +62,7 @@ export function AppShell({ lang, children }: { lang: Lang; children: ReactNode }
         </nav>
       </header>
 
-      <main id="main-content" className="snd-app__main">
+      <main id="main-content" className="app-shell__main">
         {children}
       </main>
 

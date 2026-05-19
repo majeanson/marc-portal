@@ -7,6 +7,7 @@
 
 import type { Lang } from '../../i18n'
 import type { LayerId, MapData } from '../../lib/map/types'
+import { VisionLayer } from './layers/VisionLayer'
 import { PagesLayer } from './layers/PagesLayer'
 import { DataLayer } from './layers/DataLayer'
 import { AdminLayer } from './layers/AdminLayer'
@@ -22,6 +23,8 @@ interface Props {
 
 export function MapCanvas({ layer, data, lang, isAdmin, activeJourneyId }: Props) {
   switch (layer) {
+    case 'vision':
+      return <VisionLayer data={data} lang={lang} />
     case 'pages':
       return <PagesLayer data={data} lang={lang} />
     case 'data':

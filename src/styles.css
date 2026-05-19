@@ -2064,14 +2064,17 @@ button.intake__progress-step:focus-visible {
   min-width: 0;
 }
 
-/* SND productized app — buyer-facing, lives at the buyer's root domain */
-.snd-app {
+/* App shell — buyer-facing tenant chrome (header + main + footer wrapper).
+   Used by every per-template buyer app (VolunteerApp, future templates).
+   Lives at the buyer's root domain (RootByTemplate picks the inner app
+   based on tenant.templateId). */
+.app-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
 }
-.snd-app__head {
+.app-shell__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2081,7 +2084,7 @@ button.intake__progress-step:focus-visible {
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
-.snd-app__brand h1 {
+.app-shell__brand h1 {
   margin: 0;
   font-family: var(--display);
   font-weight: 800;
@@ -2089,26 +2092,26 @@ button.intake__progress-step:focus-visible {
   letter-spacing: -0.01em;
   color: var(--text);
 }
-.snd-app__nav {
+.app-shell__nav {
   display: flex;
   align-items: center;
   gap: 20px;
 }
-.snd-app__nav-link {
+.app-shell__nav-link {
   color: var(--text-mid);
   font-family: var(--display);
   font-weight: 500;
   font-size: 14px;
   text-decoration: none;
 }
-.snd-app__nav-link:hover {
+.app-shell__nav-link:hover {
   color: var(--accent-warm);
 }
-.snd-app__user {
+.app-shell__user {
   font-size: 12px;
   color: var(--text-soft);
 }
-.snd-app__preview-toggle {
+.app-shell__preview-toggle {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2119,24 +2122,24 @@ button.intake__progress-step:focus-visible {
   color: var(--text-soft);
   cursor: pointer;
 }
-.snd-app__preview-toggle:hover,
-.snd-app__preview-toggle:focus-visible {
+.app-shell__preview-toggle:hover,
+.app-shell__preview-toggle:focus-visible {
   border-color: var(--text);
   color: var(--text);
   outline: none;
 }
-.snd-app__preview-toggle--on {
+.app-shell__preview-toggle--on {
   color: #fff;
   border-color: var(--accent-warm);
   background: var(--accent-warm);
 }
-.snd-app__preview-toggle--on:hover,
-.snd-app__preview-toggle--on:focus-visible {
+.app-shell__preview-toggle--on:hover,
+.app-shell__preview-toggle--on:focus-visible {
   color: #fff;
   border-color: var(--accent-warm);
   filter: brightness(1.05);
 }
-.snd-app__main {
+.app-shell__main {
   flex: 1;
   max-width: 880px;
   width: 100%;
@@ -2144,34 +2147,34 @@ button.intake__progress-step:focus-visible {
   padding: 48px 40px 80px;
 }
 @media (max-width: 800px) {
-  .snd-app__head {
+  .app-shell__head {
     padding: 18px 24px;
   }
-  .snd-app__main {
+  .app-shell__main {
     padding: 32px 24px 64px;
   }
 }
-.snd-app__intro {
+.app-shell__intro {
   margin-bottom: 28px;
 }
-.snd-app__intro h2 {
+.app-shell__intro h2 {
   font-size: clamp(28px, 3.4vw, 36px);
   margin-bottom: 8px;
 }
-.snd-app__intro p {
+.app-shell__intro p {
   font-size: 18px;
   line-height: 1.6;
   color: var(--text-mid);
   max-width: 60ch;
   margin: 0;
 }
-.snd-app__add-btn {
+.app-shell__add-btn {
   margin-bottom: 32px;
 }
-.snd-app__form {
+.app-shell__form {
   margin-bottom: 32px;
 }
-.snd-app__empty {
+.app-shell__empty {
   padding: 36px 24px;
   text-align: center;
   background: var(--bg-card);
@@ -2182,7 +2185,7 @@ button.intake__progress-step:focus-visible {
   margin: 0;
 }
 
-.snd-clips {
+.app-shell-clips {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -2190,44 +2193,44 @@ button.intake__progress-step:focus-visible {
   flex-direction: column;
   gap: 12px;
 }
-.snd-app-clip {
+.app-shell-clip {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 18px 22px;
 }
-.snd-app-clip__head {
+.app-shell-clip__head {
   display: flex;
   align-items: baseline;
   gap: 14px;
   margin-bottom: 10px;
   flex-wrap: wrap;
 }
-.snd-app-clip__when {
+.app-shell-clip__when {
   font-size: 12px;
   color: var(--text-soft);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-.snd-app-clip__client {
+.app-shell-clip__client {
   font-family: var(--display);
   font-weight: 700;
   font-size: 18px;
   color: var(--text);
 }
-.snd-app-clip__body {
+.app-shell-clip__body {
   margin: 0 0 12px;
   font-size: 16.5px;
   line-height: 1.55;
   color: var(--text);
   max-width: none;
 }
-.snd-app-clip__foot {
+.app-shell-clip__foot {
   font-size: 11px;
   color: var(--text-soft);
 }
 
-/* Volunteer Roster — feat-2026-022. Reuses snd-app shell, adds shift-specific bits. */
+/* Volunteer Roster — feat-2026-022. Reuses app-shell, adds shift-specific bits. */
 .vr-day {
   margin-bottom: 28px;
 }
@@ -4877,220 +4880,6 @@ button:focus-visible,
 }
 .tier0__outro p {
   margin-top: 0;
-}
-
-/* SND demo (iframe-friendly, no header/footer) */
-.snd-demo {
-  background: var(--bg);
-  color: var(--text);
-  padding: 32px var(--gutter) 48px;
-  min-height: 100vh;
-  font-family: var(--sans);
-}
-.snd-demo__header {
-  max-width: 720px;
-  margin: 0 auto 32px;
-}
-.snd-demo__title {
-  font-size: 32px;
-  margin: 4px 0 12px;
-}
-.snd-demo__intro {
-  font-size: 15px;
-  color: var(--text-mid);
-}
-.snd-demo__panel {
-  max-width: 720px;
-  margin: 0 auto 32px;
-  padding: 20px 22px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-.snd-demo__h {
-  font-size: 18px;
-  margin: 0 0 6px;
-}
-.snd-demo__hint {
-  font-size: 13px;
-  color: var(--text-soft);
-  margin: 0 0 16px;
-}
-.snd-demo__footer {
-  max-width: 720px;
-  margin: 32px auto 0;
-  text-align: center;
-}
-.snd-demo__footer p {
-  font-size: 11px;
-  color: var(--text-soft);
-}
-
-.snd-demo__clips {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.snd-clip {
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg);
-  overflow: hidden;
-}
-.snd-clip--played {
-  border-color: var(--accent);
-}
-.snd-clip__btn {
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  border: none;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: pointer;
-  color: var(--text);
-  font-family: var(--sans);
-}
-.snd-clip__btn:hover {
-  background: var(--bg-hover);
-}
-.snd-clip__icon {
-  font-size: 18px;
-  color: var(--accent-warm);
-  width: 24px;
-  text-align: center;
-}
-.snd-clip__meta {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.snd-clip__when {
-  font-size: 11px;
-  color: var(--text-soft);
-}
-.snd-clip__client {
-  font-size: 14px;
-  color: var(--text);
-}
-.snd-clip__transcript {
-  padding: 12px 14px 16px;
-  border-top: 1px dashed var(--border-soft);
-  background: rgba(61, 110, 78, 0.05);
-}
-.snd-clip__transcript-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-soft);
-  margin-bottom: 6px;
-}
-.snd-clip__transcript p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--text-mid);
-  font-style: italic;
-}
-
-.snd-parsed {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
-}
-.snd-parsed__card {
-  border: 1px solid var(--border-soft);
-  border-radius: 4px;
-  padding: 12px 14px;
-  background: var(--bg);
-}
-.snd-parsed__head {
-  font-size: 12px;
-  color: var(--accent-warm);
-  margin-bottom: 8px;
-  letter-spacing: 0.04em;
-}
-.snd-parsed__list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-mid);
-}
-.snd-parsed__list li {
-  padding: 3px 0;
-}
-
-.snd-invoices {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.snd-invoice {
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-  background: var(--bg);
-}
-.snd-invoice__email {
-  background: var(--bg-section);
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border-soft);
-  font-size: 12px;
-  color: var(--text-soft);
-}
-.snd-invoice__email div {
-  padding: 1px 0;
-}
-.snd-invoice__body {
-  padding: 14px 16px;
-}
-.snd-invoice__body p {
-  font-size: 14px;
-  margin: 6px 0 12px;
-  color: var(--text-mid);
-}
-.snd-invoice__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.snd-invoice__table th,
-.snd-invoice__table td {
-  padding: 6px 8px;
-  text-align: left;
-  border-bottom: 1px solid var(--border-soft);
-}
-.snd-invoice__table th {
-  font-size: 11px;
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 500;
-}
-.snd-invoice__table tfoot td {
-  border-bottom: none;
-  padding: 4px 8px;
-  color: var(--text-mid);
-}
-.snd-invoice__table tfoot td:first-child {
-  text-align: right;
-}
-.snd-invoice__total td {
-  font-weight: 700;
-  color: var(--accent) !important;
-  border-top: 2px solid var(--accent) !important;
-  padding-top: 8px !important;
-}
-.snd-invoice__sign {
-  font-family: var(--mono);
-  font-size: 11px !important;
-  color: var(--text-soft) !important;
-  margin-top: 14px !important;
 }
 
 /* Session advancements — admin posts iterative build/demo entries that
@@ -12517,10 +12306,10 @@ button.intake__progress-step:disabled {
   opacity: 0.55;
 }
 .map-group__label {
-  fill: var(--text-soft);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  fill: var(--accent-warm);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .map-edge {
@@ -12555,8 +12344,8 @@ button.intake__progress-step:disabled {
 .map-node {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
+  gap: 6px;
+  padding: 14px 16px 12px;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
@@ -12565,8 +12354,8 @@ button.intake__progress-step:disabled {
   border-radius: var(--radius-sm);
   color: var(--text);
   text-decoration: none;
-  font-size: 13px;
-  line-height: 1.3;
+  font-size: 13.5px;
+  line-height: 1.35;
   position: relative;
   transition:
     border-color 140ms ease,
@@ -12583,35 +12372,42 @@ a.map-node:focus-visible {
 }
 .map-node__folio {
   position: absolute;
-  top: 6px;
-  right: 8px;
-  font-size: 9.5px;
-  letter-spacing: 0.06em;
-  color: var(--text-faint);
+  top: 8px;
+  right: 10px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--accent-warm);
+  font-weight: 600;
 }
 .map-node__badge {
   position: absolute;
-  bottom: 6px;
-  right: 8px;
-  font-size: 9.5px;
+  bottom: 8px;
+  right: 10px;
+  font-size: 10px;
   letter-spacing: 0.04em;
   color: var(--text-soft);
+  padding: 1px 6px;
+  background: var(--bg);
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
 }
 .map-node__label {
   font-family: var(--display);
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 15px;
   color: var(--text);
-  letter-spacing: -0.005em;
+  letter-spacing: -0.01em;
+  padding-right: 32px; /* leave space for absolute-positioned folio */
 }
 .map-node__desc {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-soft);
-  line-height: 1.35;
+  line-height: 1.4;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  padding-right: 8px;
 }
 .map-node--endpoint,
 .map-node--table,
@@ -12810,5 +12606,83 @@ a.map-node:focus-visible {
 @media (max-width: 720px) {
   .map-canvas {
     min-width: 720px;
+  }
+}
+
+/* Vision layer — the "big picture" bubbles. Hand-positioned in
+   curated.ts; SVG normalized to 1280x720. Bubble fill is paper-warm so
+   it reads as a sketched note, not a UI card. */
+.map-canvas--vision {
+  /* Wider min-width than the other layers — bubbles want room to breathe. */
+  min-width: 960px;
+}
+.map-vision__connector {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 2 9;
+  opacity: 0.45;
+}
+.map-vision__bubble-bg {
+  fill: var(--bg-card);
+  stroke: var(--accent);
+  stroke-width: 1.8;
+  transition:
+    fill 180ms ease,
+    stroke-width 180ms ease;
+}
+.map-vision__bubble--lg .map-vision__bubble-bg {
+  fill: var(--accent-soft);
+  stroke-width: 2.4;
+}
+.map-vision__bubble--md .map-vision__bubble-bg {
+  fill: var(--bg-card);
+}
+.map-vision__bubble--sm .map-vision__bubble-bg {
+  fill: var(--bg-section);
+  stroke-width: 1.4;
+}
+.map-vision__bubble:hover .map-vision__bubble-bg {
+  fill: var(--accent-soft);
+  stroke-width: 3;
+}
+.map-vision__bubble-index {
+  fill: var(--accent-warm);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+.map-vision__bubble-label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 4px;
+}
+.map-vision__bubble--lg .map-vision__bubble-label {
+  font-size: 20px;
+  color: var(--accent-warm);
+}
+.map-vision__bubble--sm .map-vision__bubble-label {
+  font-size: 15px;
+}
+
+/* Page layer canvas bumped to match the new node sizes (260 wide × 3 cols
+   + gaps + padding = ~900px), so the SVG keeps its design width on
+   narrow viewports instead of crushing labels. */
+@media (max-width: 960px) {
+  .map-canvas--pages {
+    min-width: 900px;
+  }
+  .map-canvas--data {
+    min-width: 1080px;
   }
 }

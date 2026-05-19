@@ -6,9 +6,9 @@
  * action, signed-in users sign up / cancel their slot. The slot fill count
  * comes from the server (shifts join signups), so the SPA stays dumb.
  *
- * Differs from SndApp on purpose: forward-dated time buckets, two role types,
- * mutable signups. Phase 3 generalization compares this against SndApp to
- * extract what's truly shared spine.
+ * Forward-dated time buckets, two role types, mutable signups — a different
+ * shape from the retired SND template. Phase 3 generalization will compare
+ * this against future templates to extract what's truly shared spine.
  */
 
 import { useEffect, useMemo, useState } from 'react'
@@ -237,7 +237,7 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
 
   return (
     <AppShell lang={lang}>
-      <section className="snd-app__intro">
+      <section className="app-shell__intro">
         <h2>{t.title}</h2>
         <p>{t.sub}</p>
       </section>
@@ -245,7 +245,7 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
       {!adding && (
         <button
           type="button"
-          className="hero__cta snd-app__add-btn"
+          className="hero__cta app-shell__add-btn"
           onClick={() => setAdding(true)}
         >
           {t.add}
@@ -257,36 +257,36 @@ export function VolunteerApp({ lang }: { lang: Lang }) {
 
       {error && <p className="form__error">{t.error}</p>}
 
-      {shifts && shifts.length === 0 && <p className="snd-app__empty">{t.empty}</p>}
+      {shifts && shifts.length === 0 && <p className="app-shell__empty">{t.empty}</p>}
 
       {grouped.map(([dayKey, dayShifts]) => (
         <section key={dayKey} className="vr-day">
           <h3 className="vr-day__head">
             {dayShifts[0] ? fmtDate(dayShifts[0].startsAt, lang, true) : dayKey}
           </h3>
-          <ul className="snd-clips">
+          <ul className="app-shell-clips">
             {dayShifts.map((s) => {
               const full = s.filled >= s.slotsNeeded
               const mineHere = mySignups.has(s.id)
               return (
-                <li key={s.id} className="snd-app-clip vr-shift">
-                  <header className="snd-app-clip__head vr-shift__head">
-                    <div className="snd-app-clip__when mono">
+                <li key={s.id} className="app-shell-clip vr-shift">
+                  <header className="app-shell-clip__head vr-shift__head">
+                    <div className="app-shell-clip__when mono">
                       {fmtTime(s.startsAt, lang)} – {fmtTime(s.endsAt, lang)}
                     </div>
-                    <div className="snd-app-clip__client">{s.role}</div>
+                    <div className="app-shell-clip__client">{s.role}</div>
                     <div className={`vr-shift__fill${full ? ' vr-shift__fill--full' : ''}`}>
                       {full ? t.full : `${s.filled} ${t.of} ${s.slotsNeeded} ${t.filled}`}
                     </div>
                   </header>
                   {s.location && (
-                    <p className="snd-app-clip__body" style={{ margin: '0 0 6px' }}>
+                    <p className="app-shell-clip__body" style={{ margin: '0 0 6px' }}>
                       📍 {s.location}
                     </p>
                   )}
-                  {s.notes && <p className="snd-app-clip__body">{s.notes}</p>}
+                  {s.notes && <p className="app-shell-clip__body">{s.notes}</p>}
                   <footer className="vr-shift__foot">
-                    <span className="snd-app-clip__foot mono">
+                    <span className="app-shell-clip__foot mono">
                       {t.by} {s.createdByEmail}
                     </span>
                     {!full && !mineHere && (
@@ -362,7 +362,7 @@ function AddShiftForm({
   }
 
   return (
-    <form className="admin-block snd-app__form" onSubmit={submit}>
+    <form className="admin-block app-shell__form" onSubmit={submit}>
       <div className="theme-fields">
         <label className="field">
           <span className="field__label">{t.role}</span>

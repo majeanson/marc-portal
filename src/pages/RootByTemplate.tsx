@@ -4,7 +4,7 @@
  * Marc's tenant (templateId='marc-portal') → marketing Home page (existing
  * behavior, no change for visitors of lifeascode.app or marc-portal.pages.dev).
  *
- * SND-template tenants (templateId='snd') → the buyer-facing SndApp at /.
+ * Volunteer-roster tenants → the buyer-facing VolunteerApp at /.
  *
  * Unknown / not-yet-resolved → render Home as the safe default. The tenant
  * provider's loading window is short (single API call); rendering Home
@@ -14,14 +14,10 @@
 import type { Lang } from '../i18n'
 import { useTenant } from '../lib/tenantContext'
 import { Home } from './Home'
-import { SndApp } from './SndApp'
 import { VolunteerApp } from './VolunteerApp'
 
 export function RootByTemplate({ lang }: { lang: Lang }) {
   const { tenant } = useTenant()
-  if (tenant?.templateId === 'snd') {
-    return <SndApp lang={lang} />
-  }
   if (tenant?.templateId === 'volunteer-roster') {
     return <VolunteerApp lang={lang} />
   }

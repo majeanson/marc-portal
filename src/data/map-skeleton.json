@@ -71,20 +71,6 @@
       "inAdminShell": false
     },
     {
-      "path": "/demo/sunday-night-dread",
-      "component": "SndDemo",
-      "lang": "fr",
-      "dynamic": false,
-      "inAdminShell": false
-    },
-    {
-      "path": "/en/demo/sunday-night-dread",
-      "component": "SndDemo",
-      "lang": "en",
-      "dynamic": false,
-      "inAdminShell": false
-    },
-    {
       "path": "/confidentialite",
       "component": "Privacy",
       "lang": "fr",
@@ -762,16 +748,6 @@
       ],
       "adminOnly": false,
       "file": "functions/api/sessions/index.ts"
-    },
-    {
-      "id": "api.snd.clips",
-      "path": "/api/snd/clips",
-      "methods": [
-        "GET",
-        "POST"
-      ],
-      "adminOnly": false,
-      "file": "functions/api/snd/clips.ts"
     },
     {
       "id": "api.tenant",

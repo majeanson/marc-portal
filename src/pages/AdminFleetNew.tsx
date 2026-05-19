@@ -75,10 +75,7 @@ const COPY = {
   },
 } as const
 
-const TEMPLATES = [
-  { id: 'snd', label: 'Sunday Night Dread', version: '1.0' },
-  { id: 'volunteer-roster', label: 'Volunteer Roster', version: '0.1' },
-]
+const TEMPLATES = [{ id: 'volunteer-roster', label: 'Volunteer Roster', version: '0.1' }]
 
 export function AdminFleetNew({ lang }: { lang: Lang }) {
   const t = COPY[lang]
