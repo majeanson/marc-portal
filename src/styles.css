@@ -273,13 +273,43 @@ p {
   outline: none;
   text-decoration: none;
 }
-/* Hide the secondary nav on narrow viewports — the right-side auth controls
-   keep priority. The page is still navigable by scroll. The 1180px ceiling
-   accounts for admin chrome (Mes sessions · Déconnexion · VOIR COMME
-   VISITEUR pill), which otherwise pushes the centered nav into the brand. */
+/* Below 1180px the centered nav can't share a row with brand + admin chrome
+   (Mes sessions · Déconnexion · VOIR COMME VISITEUR pill) without colliding.
+   Instead of hiding it (which left phone visitors with no section nav and
+   no SectionRail either), wrap the header to two rows: brand + auth on top,
+   sections as a horizontally-swipable strip below. Same scroll-with-fade
+   pattern as .site-header__right on phones. */
 @media (max-width: 1180px) {
+  .site-header__inner {
+    flex-wrap: wrap;
+  }
   .site-header__sections {
+    /* order:3 puts the strip after both brand and the right cluster (both
+       default order:0), so row 1 stays "brand … auth" and row 2 holds the
+       section nav full-width. flex-basis: 100% forces the wrap. */
+    order: 3;
+    flex-basis: 100%;
+    min-width: 0;
+    justify-content: flex-start;
+    gap: 22px;
+    margin-top: 6px;
+    padding-bottom: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    /* Soft fade on the right edge hints "more to swipe" the same way the
+       right-cluster mask does. Left edge stays flush so the first item
+       lines up with the brand above it. */
+    mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+  }
+  .site-header__sections::-webkit-scrollbar {
     display: none;
+  }
+  .site-header__section-link {
+    flex-shrink: 0;
   }
 }
 .site-header__right {
@@ -7667,7 +7697,8 @@ button.intake__progress-step:disabled {
   .site-header__inner {
     gap: 8px;
     padding: 12px 14px;
-    flex-wrap: nowrap;
+    /* Wrap is enabled in the 1180px rule above so the section nav drops
+       to its own row beneath brand + auth. Keep that here. */
   }
   .brand {
     flex-shrink: 0;
