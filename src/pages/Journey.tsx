@@ -1,14 +1,9 @@
-import { Fragment, useEffect } from 'react'
+import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
-
-// Depth-sounding numerals scattered between the four journey phases — pure
-// nautical-chart decoration, matching the "ship's voyage" framing the chart
-// adds to the page. Values are evocative, not literal (no real depth here).
-const SOUNDINGS = ['12', '24', '36'] as const
 
 /**
  * The full journey — a visual, phased walkthrough from "stranger lands on the
@@ -160,9 +155,9 @@ export function Journey({ lang }: { lang: Lang }) {
                   path through the viewport. Decorative, paired with the
                   dashed ::before pseudo as the static base layer. */}
               <div className="journey__spine" aria-hidden="true" />
-              {j.phases.map((phase, phaseIndex) => (
-                <Fragment key={phase.roman}>
+              {j.phases.map((phase) => (
                 <section
+                  key={phase.roman}
                   className="journey__phase"
                   aria-labelledby={`phase-${phase.roman}`}
                 >
@@ -212,12 +207,6 @@ export function Journey({ lang }: { lang: Lang }) {
                     })}
                   </ol>
                 </section>
-                {phaseIndex < j.phases.length - 1 && (
-                  <div className="journey__sounding mono" aria-hidden="true">
-                    · {SOUNDINGS[phaseIndex]} ·
-                  </div>
-                )}
-                </Fragment>
               ))}
             </div>
 

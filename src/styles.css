@@ -34,6 +34,15 @@
 
   --max-w: 880px;
   --gutter: 24px;
+
+  /* --bg-app: legacy alias for --bg, kept because 11+ admin components
+     reference it. Defining it once here (instead of touching every
+     callsite) ensures all those components track the theme correctly.
+     Before this, --bg-app was referenced but never declared, so any
+     `color: var(--bg-app)` rendered as the default initial value
+     (effectively invisible) — that's what made the active admin filter
+     pill show no text. */
+  --bg-app: var(--bg);
 }
 
 :root[data-theme='night'] {
@@ -3543,7 +3552,29 @@ button.intake__progress-step:focus-visible {
   color: #2b556d;
 }
 .admin-inbox__attention-pill--empty:not(.admin-inbox__attention-pill--active) {
-  opacity: 0.45;
+  opacity: 0.55;
+}
+/* Night-mode tone overrides — the day pastels (#fff4e0 / #fdecec / #eef4f9)
+   read as bright clashes against the dark surface. Deeper backgrounds with
+   higher-contrast foregrounds keep each tone semantically distinct
+   (amber / red / blue) while staying readable on ink. */
+:root[data-theme='night']
+  .admin-inbox__attention-pill--warn:not(.admin-inbox__attention-pill--active) {
+  border-color: #5e4623;
+  background: #2e2515;
+  color: #e8b96b;
+}
+:root[data-theme='night']
+  .admin-inbox__attention-pill--urgent:not(.admin-inbox__attention-pill--active) {
+  border-color: #5e2828;
+  background: #2e1717;
+  color: #e89898;
+}
+:root[data-theme='night']
+  .admin-inbox__attention-pill--info:not(.admin-inbox__attention-pill--active) {
+  border-color: #2d4a5e;
+  background: #15222e;
+  color: #92bbd6;
 }
 /* Touch: pad each filter pill to a 44px-tall hit target. Visual size grows
    slightly but the row still wraps cleanly on a 360-wide phone. */
@@ -11129,28 +11160,6 @@ button.intake__progress-step:disabled {
   }
 }
 
-/* Depth-sounding numerals — sit dead-center between phases, where the
-   spine passes through. Italic mono in a very faint ink so they read as
-   "background detail" rather than content. */
-.journey__sounding {
-  position: relative;
-  text-align: center;
-  font-family: var(--mono);
-  font-style: italic;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: var(--text-faint);
-  margin: 4px 0;
-  z-index: 1;
-  /* Reserve a small backdrop so the number doesn't sit directly on the
-     dashed spine; the bg-color pad creates a clean break. */
-  background: var(--bg);
-  width: fit-content;
-  margin-inline: auto;
-  padding: 2px 10px;
-  pointer-events: none;
-}
-
 /* Tablet: shrink the chart chrome so it doesn't crowd the path. */
 @media (max-width: 900px) {
   .journey__chart-frame {
@@ -11216,12 +11225,6 @@ button.intake__progress-step:disabled {
     width: 22px;
     height: 24px;
   }
-  .journey__sounding {
-    /* Pull the sounding off-center so it sits on the left spine. */
-    margin-left: 0;
-    margin-right: auto;
-    transform: translateX(2px);
-  }
 }
 
 /* Night-mode adjustments — chart-frame keeps just the dashed border (the
@@ -11229,9 +11232,6 @@ button.intake__progress-step:disabled {
    value and rendered as a visible horizontal band on the night surface). */
 :root[data-theme='night'] .journey__cartouche {
   background: var(--bg-section);
-}
-:root[data-theme='night'] .journey__sounding {
-  background: var(--bg);
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
