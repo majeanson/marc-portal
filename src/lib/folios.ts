@@ -50,14 +50,12 @@ export type HomeFolioKey = keyof typeof HOME_FOLIOS
 
 /**
  * Standalone-page folios in the "magazine issue" format (`№ XX`).
- * Hero's `№ 01` is the home page's own issue number (defined in i18n);
- * everything else gets a unique sequential number. Add a new page → take
- * the next number; don't recycle.
+ * Hero/home uses `№ 01` but defines its own folio in i18n (`hero.folio`)
+ * alongside the descriptive subtitle — not duplicated here to avoid a
+ * second source of truth for the same number. When adding a new page,
+ * take the next sequential number (07, 08, …); don't recycle.
  */
 export const PAGE_FOLIOS = {
-  /** Hero / home cover. Folio lives in i18n (`hero.folio`) because it
-   *  carries a descriptive subtitle ("№ 01 — Marc, dev québécois"). */
-  home: '01',
   tier0: '00',
   projects: '02',
   vouches: '03',

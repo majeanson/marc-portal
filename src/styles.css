@@ -3619,6 +3619,12 @@ button.intake__progress-step:focus-visible {
   background: #fdf7ec;
   border-left: 3px solid var(--accent-warm);
 }
+:root[data-theme='night'] .me-portal__pay-custodian--recommended {
+  /* Hardcoded #fdf7ec cream read as a bright block on the night surface;
+     a deeper warm tone preserves the "this is the recommended path"
+     emphasis without screaming against the dark ink. */
+  background: #2a2418;
+}
 .me-portal__pay-custodian--recommended .me-portal__pay-section-tag {
   background: var(--accent-warm);
   color: #fff;
@@ -11406,6 +11412,24 @@ button.intake__progress-step:disabled {
   z-index: 3;
   pointer-events: none;
   filter: drop-shadow(0 4px 6px rgba(31, 29, 24, 0.22));
+}
+.journey__boat-hull {
+  fill: var(--accent);
+}
+.journey__boat-rigging {
+  stroke: var(--text);
+  fill: none;
+}
+.journey__boat-sail {
+  fill: var(--bg-card);
+  stroke: var(--text);
+}
+.journey__boat-pennant {
+  fill: var(--warm);
+}
+:root[data-theme='night'] .journey__boat {
+  /* Drop-shadow on dark ink reads inverted — soften it. */
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
 }
 /* Scroll-driven sail: the boat tracks the visible portion of the path,
    leaning slightly with each phase like it's catching wind. Falls back to

@@ -146,15 +146,27 @@ export function Journey({ lang }: { lang: Lang }) {
                 viewBox="0 0 36 38"
                 aria-hidden="true"
               >
-                {/* hull */}
-                <path d="M 4 26 L 32 26 L 28 34 L 8 34 Z" fill="#3d6e4e" />
-                <path d="M 4 26 L 32 26" stroke="#1f1d18" strokeWidth="0.8" />
-                {/* mast */}
-                <path d="M 18 6 L 18 26" stroke="#1f1d18" strokeWidth="1.5" strokeLinecap="round" />
-                {/* sail */}
-                <path d="M 18 8 L 30 24 L 18 24 Z" fill="#fff9ec" stroke="#1f1d18" strokeWidth="0.9" />
-                {/* pennant */}
-                <path d="M 18 6 L 24 8 L 18 10 Z" fill="#c1693d" />
+                {/* Colors set via CSS (.journey__boat-*) so the sprite
+                    adapts to night mode — hardcoded fills were leaving the
+                    dark sage hull + dark mast invisible on the night surface. */}
+                <path className="journey__boat-hull" d="M 4 26 L 32 26 L 28 34 L 8 34 Z" />
+                <path
+                  className="journey__boat-rigging"
+                  d="M 4 26 L 32 26"
+                  strokeWidth="0.8"
+                />
+                <path
+                  className="journey__boat-rigging"
+                  d="M 18 6 L 18 26"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  className="journey__boat-sail"
+                  d="M 18 8 L 30 24 L 18 24 Z"
+                  strokeWidth="0.9"
+                />
+                <path className="journey__boat-pennant" d="M 18 6 L 24 8 L 18 10 Z" />
               </svg>
               {/* Animated sage spine — draws in as the visitor scrolls the
                   path through the viewport. Decorative, paired with the
