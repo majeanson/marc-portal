@@ -1,9 +1,14 @@
-import { useEffect } from 'react'
+import { Fragment, useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
+
+// Depth-sounding numerals scattered between the four journey phases — pure
+// nautical-chart decoration, matching the "ship's voyage" framing the chart
+// adds to the page. Values are evocative, not literal (no real depth here).
+const SOUNDINGS = ['12', '24', '36'] as const
 
 /**
  * The full journey — a visual, phased walkthrough from "stranger lands on the
@@ -102,13 +107,62 @@ export function Journey({ lang }: { lang: Lang }) {
             </PageMast>
 
             <div className="journey__path">
+              {/* Chart frame + cartouche + compass + boat — pure cartographic
+                  decoration that reframes the 12-step ladder as a nautical
+                  voyage. All aria-hidden. The boat sails down the spine on
+                  scroll (scroll-driven CSS animation); chrome shrinks/folds
+                  on narrow viewports so the cards never get crowded. */}
+              <div className="journey__chart-frame" aria-hidden="true" />
+              <div className="journey__cartouche" aria-hidden="true">
+                <div className="journey__cartouche-row mono">
+                  <span>{lang === 'fr' ? 'CARTE' : 'CHART'}</span>
+                  <span>№ 04</span>
+                </div>
+                <div className="journey__cartouche-title">
+                  {lang === 'fr' ? 'le parcours' : 'the voyage'}
+                </div>
+                <div className="journey__cartouche-row mono">
+                  <span>XII PORTS</span>
+                  <span>·</span>
+                  <span>{lang === 'fr' ? 'MARC.PORTAIL' : 'MARC.PORTAL'}</span>
+                </div>
+              </div>
+              <svg
+                className="journey__compass"
+                viewBox="0 0 80 80"
+                aria-hidden="true"
+              >
+                <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" strokeWidth="1.4" opacity="0.45" />
+                <circle cx="40" cy="40" r="27" fill="none" stroke="currentColor" strokeWidth="0.7" opacity="0.35" />
+                <path d="M 40 8 L 44 38 L 40 40 L 36 38 Z" fill="currentColor" opacity="0.78" />
+                <path d="M 40 72 L 44 42 L 40 40 L 36 42 Z" fill="currentColor" opacity="0.32" />
+                <path d="M 8 40 L 38 36 L 40 40 L 38 44 Z" fill="currentColor" opacity="0.32" />
+                <path d="M 72 40 L 42 36 L 40 40 L 42 44 Z" fill="currentColor" opacity="0.32" />
+                <circle cx="40" cy="40" r="2" fill="currentColor" opacity="0.8" />
+                <text x="40" y="6" textAnchor="middle" fontSize="6" fontFamily="serif" fontStyle="italic" fill="currentColor">N</text>
+              </svg>
+              <svg
+                className="journey__boat"
+                viewBox="0 0 36 38"
+                aria-hidden="true"
+              >
+                {/* hull */}
+                <path d="M 4 26 L 32 26 L 28 34 L 8 34 Z" fill="#3d6e4e" />
+                <path d="M 4 26 L 32 26" stroke="#1f1d18" strokeWidth="0.8" />
+                {/* mast */}
+                <path d="M 18 6 L 18 26" stroke="#1f1d18" strokeWidth="1.5" strokeLinecap="round" />
+                {/* sail */}
+                <path d="M 18 8 L 30 24 L 18 24 Z" fill="#fff9ec" stroke="#1f1d18" strokeWidth="0.9" />
+                {/* pennant */}
+                <path d="M 18 6 L 24 8 L 18 10 Z" fill="#c1693d" />
+              </svg>
               {/* Animated sage spine — draws in as the visitor scrolls the
                   path through the viewport. Decorative, paired with the
                   dashed ::before pseudo as the static base layer. */}
               <div className="journey__spine" aria-hidden="true" />
-              {j.phases.map((phase) => (
+              {j.phases.map((phase, phaseIndex) => (
+                <Fragment key={phase.roman}>
                 <section
-                  key={phase.roman}
                   className="journey__phase"
                   aria-labelledby={`phase-${phase.roman}`}
                 >
@@ -158,6 +212,12 @@ export function Journey({ lang }: { lang: Lang }) {
                     })}
                   </ol>
                 </section>
+                {phaseIndex < j.phases.length - 1 && (
+                  <div className="journey__sounding mono" aria-hidden="true">
+                    · {SOUNDINGS[phaseIndex]} ·
+                  </div>
+                )}
+                </Fragment>
               ))}
             </div>
 

@@ -10912,3 +10912,323 @@ button.intake__progress-step:disabled {
   letter-spacing: 0.04em;
   color: var(--text-mid);
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   NAPPERON DOODLES — hand-drawn margin glyphs on the home page.
+
+   Strategy: each doodle is an SVG with a class that pins it to an absolute
+   (y, side) coordinate inside <main.home>. Approximate alignment with the
+   sections below — the home page's section heights are roughly stable, and
+   the doodles sit in the gutters outside the centered content column so an
+   off-by-100px is invisible.
+
+   The whole layer hides under 1080px (where the margins collapse behind the
+   content), and each doodle ink-ins on scroll via animation-timeline. Under
+   reduced-motion the doodles are simply visible from page-load. The layer
+   is aria-hidden and pointer-events:none — pure paper character.
+   ──────────────────────────────────────────────────────────────────────── */
+.napperon {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.napperon__doodle {
+  position: absolute;
+  pointer-events: none;
+  /* Filter softens edges so the marks read like ink absorbing into paper
+     rather than crisp vector. Subtle — visible side-by-side comparison. */
+  filter: blur(0.18px);
+}
+
+/* Approximate scroll-Y positions, picked by section landmark. Real Y will
+   drift slightly with content but doodles always sit in the gutter, so
+   they never collide with text. */
+.napperon__circle    { top: 220px;  right: -36px;  transform: rotate(-6deg); }
+.napperon__check     { top: 980px;  left:  -28px;  transform: rotate(-12deg); }
+.napperon__coffee    { top: 1900px; right: -44px;  transform: rotate(8deg); }
+.napperon__squiggle  { top: 2620px; left:  -26px;  transform: rotate(-3deg); }
+.napperon__star      { top: 3300px; right: -10px;  transform: rotate(14deg); }
+.napperon__blot      { top: 3880px; left:  -6px;   }
+.napperon__arrow     { top: 4480px; right: -16px;  transform: rotate(-10deg) scaleX(-1); }
+
+/* Scroll-driven "drawing in" — opacity from 0 to 1 as the doodle's scroll-Y
+   crosses the viewport. The asymmetric range (entry 5% → cover 30%) means
+   the mark is half-drawn by the time it's prominent on screen, mimicking
+   the lag between Marc reaching for a pen and the mark appearing on paper. */
+@supports (animation-timeline: view()) {
+  .napperon__doodle {
+    opacity: 0;
+    animation: napperon-ink-in linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 30%;
+  }
+  @keyframes napperon-ink-in {
+    to {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .napperon__doodle {
+      animation: none;
+      opacity: 1;
+    }
+  }
+}
+
+/* Fallback for engines without scroll-driven animations: just show them. */
+@supports not (animation-timeline: view()) {
+  .napperon__doodle {
+    opacity: 1;
+  }
+}
+
+/* Margins disappear under this width — hide the whole napperon to avoid
+   the doodles bleeding under the content column. */
+@media (max-width: 1080px) {
+  .napperon {
+    display: none;
+  }
+}
+
+/* In night mode the bright terracotta + sage strokes read too vivid on the
+   dark ink surface; soften the whole layer. */
+:root[data-theme='night'] .napperon__doodle {
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+:root[data-theme='night'] .napperon__blot {
+  mix-blend-mode: lighten;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   JOURNEY CHART — cartographic chrome around the 12-step path.
+
+   Adds a faint dashed frame, a top-left cartouche (chart-style title block),
+   a top-right compass rose, a boat sprite that sails down the spine on
+   scroll, and italic depth-sounding numerals between phases. None of this
+   touches the underlying step grid — the cards remain the load-bearing
+   content. The chart frame is the wrapper around the voyage.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.journey__chart-frame {
+  position: absolute;
+  inset: -28px -22px -18px -22px;
+  pointer-events: none;
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(58, 96, 121, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 30% 100%, rgba(193, 105, 61, 0.04) 0%, transparent 60%);
+  z-index: 0;
+}
+
+.journey__cartouche {
+  position: absolute;
+  top: -22px;
+  left: -6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(31, 29, 24, 0.06);
+}
+.journey__cartouche-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.journey__cartouche-title {
+  font-family: var(--sans);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.journey__compass {
+  position: absolute;
+  top: -10px;
+  right: -2px;
+  width: 64px;
+  height: 64px;
+  color: var(--accent-warm);
+  z-index: 2;
+  pointer-events: none;
+}
+:root[data-theme='night'] .journey__compass {
+  color: var(--accent-warm);
+}
+/* Tiny lazy spin on the compass — a one-shot rotate on first reveal,
+   nothing more. Skipped under reduced-motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .journey__compass {
+    animation: journey-compass-settle 1.6s cubic-bezier(0.34, 1.4, 0.4, 1) 0.2s both;
+  }
+  @keyframes journey-compass-settle {
+    from {
+      transform: rotate(-28deg);
+      opacity: 0;
+    }
+    to {
+      transform: rotate(0deg);
+      opacity: 1;
+    }
+  }
+}
+
+.journey__boat {
+  position: absolute;
+  left: 50%;
+  top: 32px;
+  width: 30px;
+  height: 32px;
+  transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(31, 29, 24, 0.22));
+}
+/* Scroll-driven sail: the boat tracks the visible portion of the path,
+   leaning slightly with each phase like it's catching wind. Falls back to
+   a static position at the top under engines without scroll-timeline. */
+@supports (animation-timeline: view()) {
+  .journey__boat {
+    animation: journey-boat-sail linear both;
+    animation-timeline: --journey-path;
+    animation-range: entry 20% exit 20%;
+  }
+  @keyframes journey-boat-sail {
+    0% {
+      top: 24px;
+      transform: translateX(-50%) rotate(-3deg);
+    }
+    25% {
+      transform: translateX(-50%) rotate(2deg);
+    }
+    50% {
+      transform: translateX(-50%) rotate(-2deg);
+    }
+    75% {
+      transform: translateX(-50%) rotate(2deg);
+    }
+    100% {
+      top: calc(100% - 84px);
+      transform: translateX(-50%) rotate(-1deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .journey__boat {
+      animation: none;
+    }
+  }
+}
+
+/* Depth-sounding numerals — sit dead-center between phases, where the
+   spine passes through. Italic mono in a very faint ink so they read as
+   "background detail" rather than content. */
+.journey__sounding {
+  position: relative;
+  text-align: center;
+  font-family: var(--mono);
+  font-style: italic;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-faint);
+  margin: 4px 0;
+  z-index: 1;
+  /* Reserve a small backdrop so the number doesn't sit directly on the
+     dashed spine; the bg-color pad creates a clean break. */
+  background: var(--bg);
+  width: fit-content;
+  margin-inline: auto;
+  padding: 2px 10px;
+  pointer-events: none;
+}
+
+/* Tablet: shrink the chart chrome so it doesn't crowd the path. */
+@media (max-width: 900px) {
+  .journey__chart-frame {
+    inset: -16px -12px -10px -12px;
+    border-radius: 14px;
+  }
+  .journey__cartouche {
+    top: -16px;
+    left: -2px;
+    padding: 8px 11px;
+  }
+  .journey__cartouche-title {
+    font-size: 14px;
+  }
+  .journey__compass {
+    width: 52px;
+    height: 52px;
+    top: -6px;
+  }
+  .journey__boat {
+    width: 26px;
+    height: 28px;
+  }
+}
+
+/* Mobile: chart-frame border dissolves (would crowd the cards). Cartouche
+   stays as a small chip; compass shrinks further. Boat keeps sailing on
+   the left-aligned mobile spine. */
+@media (max-width: 640px) {
+  .journey__chart-frame {
+    border-style: none;
+    background: none;
+  }
+  .journey__cartouche {
+    top: -10px;
+    left: 0;
+    padding: 6px 9px;
+    border-radius: 8px;
+  }
+  .journey__cartouche-title {
+    font-size: 12px;
+  }
+  .journey__cartouche-row {
+    font-size: 9px;
+  }
+  .journey__compass {
+    width: 42px;
+    height: 42px;
+    top: -4px;
+    right: -2px;
+  }
+  .journey__boat {
+    /* On mobile the spine is pinned to the left (20px), not centered. */
+    left: 20px;
+    width: 22px;
+    height: 24px;
+  }
+  .journey__sounding {
+    /* Pull the sounding off-center so it sits on the left spine. */
+    margin-left: 0;
+    margin-right: auto;
+    transform: translateX(2px);
+  }
+}
+
+/* Night-mode tints — the chart radials get washed out on dark ink. */
+:root[data-theme='night'] .journey__chart-frame {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(108, 145, 173, 0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 30% 100%, rgba(210, 131, 88, 0.06) 0%, transparent 60%);
+}
+:root[data-theme='night'] .journey__cartouche {
+  background: var(--bg-section);
+}
+:root[data-theme='night'] .journey__sounding {
+  background: var(--bg);
+}
+

@@ -18,6 +18,7 @@ import { MobileStickyCta } from '../components/MobileStickyCta'
 import { InlineIntakeTeaser } from '../components/InlineIntakeTeaser'
 import { FAQ } from '../components/FAQ'
 import { Testimonials } from '../components/Testimonials'
+import { NapperonDoodles } from '../components/NapperonDoodles'
 
 export function Home({ lang }: { lang: Lang }) {
   const t = DICT[lang]
@@ -48,6 +49,11 @@ export function Home({ lang }: { lang: Lang }) {
       <Header lang={lang} />
       <SectionRail lang={lang} />
       <main id="main-content" className="home">
+        {/* 0 — Napperon doodles: hand-drawn margin glyphs (coffee ring, red-pen
+              circle, ink check, etc.) pinned in the gutters. Pure decoration,
+              aria-hidden, hidden under 1080px. Reinforces the placemat
+              metaphor across the whole page, not just the canvas widget. */}
+        <NapperonDoodles />
         {/* 1 — Hero: the offer + primary CTA, above the fold */}
         <Hero lang={lang} />
         {/* 2 — Featured projects: real /projects feed, top 3, foregrounded as
