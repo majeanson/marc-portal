@@ -95,14 +95,25 @@ export interface MapJourney {
   steps: { nodeId: string; note?: Bi }[]
 }
 
-/** A single Vision-layer bubble — 5 words max, hand-positioned. The layer
- *  is intentionally tiny and curated, not derived from anything. */
+/** A single Vision-layer bubble — represents one product feature.
+ *
+ *  Each bubble holds:
+ *    - a short feature title (≤ 5 words per language)
+ *    - up to 3–4 sub-items naming the concrete sub-features inside
+ *    - a primary href that opens the most representative page for that feature
+ *
+ *  Sub-items are descriptive only (separated by middot in render); they don't
+ *  individually navigate in v1. The whole bubble is one click target. */
 export interface VisionBubble {
   id: string
   /** ≤ 5 words per language. Enforced by the map.test.ts word-count guard. */
   label: Bi
-  /** Optional one-line elaboration shown on hover/click. */
+  /** Optional one-line elaboration shown on hover (SVG <title>). */
   desc?: Bi
+  /** Concrete sub-features that live under this bubble. Rendered as small
+   *  mono text inside the bubble, separated by " · ". 3–4 items reads best;
+   *  longer lists wrap awkwardly inside the circle. */
+  sub?: Bi[]
   /** Visual emphasis (drives bubble radius). 'lg' for the headline idea. */
   size: 'sm' | 'md' | 'lg'
   /** Position in 0–100 percent of the canvas, so the same layout reads on any

@@ -30,13 +30,24 @@ const bi = (fr: string, en: string): Bi => ({ fr, en })
 
 // ─── Patches (overrides on skeleton-derived nodes) ────────────────────────────
 
+// Patches are grouped by feature to mirror the Vision-layer bubbles, so the
+// Pages and Vision layers tell the same story at different altitudes.
+//
+//   1. Bring a project       → group.feat-intake
+//   2. Conversation          → group.feat-conversation
+//   3. Pricing               → group.feat-pricing
+//   4. Portfolio             → group.feat-portfolio
+//   5. Privacy               → group.feat-privacy
+//   6. Handoff               → group.feat-handoff
+//   7. Operator console      → group.feat-operator   (admin layer toggle in map)
+
 const PAGE_PATCHES = [
-  // Public front-of-house
+  // 1 — Bring a project
   {
     id: 'page.root-by-template',
     label: bi('Accueil', 'Home'),
     desc: bi('La page d’atterrissage.', 'The landing page.'),
-    group: 'group.public-front',
+    group: 'group.feat-intake',
     // Folio comes from PAGE_FOLIOS.home via data.ts — no manual override here.
   },
   {
@@ -46,7 +57,7 @@ const PAGE_PATCHES = [
       'Le formulaire d’admission — la porte d’entrée pour proposer un projet.',
       'The intake form — the front door for submitting a project idea.',
     ),
-    group: 'group.public-front',
+    group: 'group.feat-intake',
   },
   {
     id: 'page.napkin',
@@ -55,13 +66,7 @@ const PAGE_PATCHES = [
       'Tableau Excalidraw partagé — pour griffonner une idée avant l’intake.',
       'Shared Excalidraw whiteboard — to sketch an idea before the intake.',
     ),
-    group: 'group.public-front',
-  },
-  {
-    id: 'page.tier0',
-    label: bi('Tier 0', 'Tier 0'),
-    desc: bi('La conversation gratuite, sans engagement.', 'The free, no-strings conversation.'),
-    group: 'group.public-front',
+    group: 'group.feat-intake',
   },
   {
     id: 'page.journey',
@@ -70,43 +75,10 @@ const PAGE_PATCHES = [
       'Ce que ça donne d’atterrir ici jusqu’à recevoir un livrable.',
       'What it looks like from landing here to receiving a deliverable.',
     ),
-    group: 'group.public-front',
-  },
-  {
-    id: 'page.projects',
-    label: bi('Projets', 'Projects'),
-    desc: bi(
-      'Galerie publique des projets livrés et en cours.',
-      'Public gallery of shipped + in-flight projects.',
-    ),
-    group: 'group.public-front',
-  },
-  {
-    id: 'page.engagement',
-    label: bi('Engagement', 'Engagement'),
-    desc: bi(
-      'Page dynamique d’un engagement spécifique.',
-      'Dynamic page for a specific engagement.',
-    ),
-    group: 'group.public-front',
-  },
-  {
-    id: 'page.vouches',
-    label: bi('Témoignages', 'Vouches'),
-    desc: bi('Témoignages publics modérés.', 'Public moderated testimonials.'),
-    group: 'group.public-front',
-  },
-  {
-    id: 'page.vouch',
-    label: bi('Soumettre un témoignage', 'Submit a vouch'),
-    desc: bi(
-      'Formulaire pour soumettre un témoignage (modéré avant publication).',
-      'Form to submit a testimonial (moderated before going live).',
-    ),
-    group: 'group.public-front',
+    group: 'group.feat-intake',
   },
 
-  // Account / auth
+  // 2 — Conversation
   {
     id: 'page.login',
     label: bi('Connexion', 'Login'),
@@ -114,7 +86,7 @@ const PAGE_PATCHES = [
       'Entre ton courriel — un lien magique arrive en 30 secondes.',
       'Enter your email — a magic link arrives in 30 seconds.',
     ),
-    group: 'group.account',
+    group: 'group.feat-conversation',
   },
   {
     id: 'page.magic-link-sent',
@@ -123,7 +95,7 @@ const PAGE_PATCHES = [
       'Page de confirmation après envoi du lien.',
       'Confirmation page after the link is sent.',
     ),
-    group: 'group.account',
+    group: 'group.feat-conversation',
   },
   {
     id: 'page.me-portal',
@@ -132,7 +104,7 @@ const PAGE_PATCHES = [
       'Le portail visiteur — toutes tes conversations en un endroit.',
       'Visitor portal — every conversation in one place.',
     ),
-    group: 'group.account',
+    group: 'group.feat-conversation',
   },
   {
     id: 'page.session-page',
@@ -141,7 +113,7 @@ const PAGE_PATCHES = [
       'Fil de conversation pour une session. Visiteur ou admin — même surface.',
       'Conversation thread for one session. Visitor or admin — same surface.',
     ),
-    group: 'group.account',
+    group: 'group.feat-conversation',
     // Skeleton flags SessionPage as admin because it's also reachable via
     // /admin/inbox/:id (dual context). The canonical surface is the visitor
     // /session/:id view, so explicitly bring it back to public here. The
@@ -155,10 +127,53 @@ const PAGE_PATCHES = [
       'Lien public partageable pour les avancements d’une session.',
       'Shareable public link for a session’s advancements.',
     ),
-    group: 'group.account',
+    group: 'group.feat-conversation',
   },
 
-  // Legal / docs
+  // 3 — Pricing
+  {
+    id: 'page.tier0',
+    label: bi('Tier 0', 'Tier 0'),
+    desc: bi('La conversation gratuite, sans engagement.', 'The free, no-strings conversation.'),
+    group: 'group.feat-pricing',
+  },
+
+  // 4 — Portfolio
+  {
+    id: 'page.projects',
+    label: bi('Projets', 'Projects'),
+    desc: bi(
+      'Galerie publique des projets livrés et en cours.',
+      'Public gallery of shipped + in-flight projects.',
+    ),
+    group: 'group.feat-portfolio',
+  },
+  {
+    id: 'page.engagement',
+    label: bi('Engagement', 'Engagement'),
+    desc: bi(
+      'Page dynamique d’un engagement spécifique.',
+      'Dynamic page for a specific engagement.',
+    ),
+    group: 'group.feat-portfolio',
+  },
+  {
+    id: 'page.vouches',
+    label: bi('Témoignages', 'Vouches'),
+    desc: bi('Témoignages publics modérés.', 'Public moderated testimonials.'),
+    group: 'group.feat-portfolio',
+  },
+  {
+    id: 'page.vouch',
+    label: bi('Soumettre un témoignage', 'Submit a vouch'),
+    desc: bi(
+      'Formulaire pour soumettre un témoignage (modéré avant publication).',
+      'Form to submit a testimonial (moderated before going live).',
+    ),
+    group: 'group.feat-portfolio',
+  },
+
+  // 5 — Privacy
   {
     id: 'page.privacy',
     label: bi('Confidentialité', 'Privacy'),
@@ -166,7 +181,7 @@ const PAGE_PATCHES = [
       'Politique de confidentialité — version visiteur de la Loi 25.',
       'Privacy policy — visitor-facing Loi 25 statement.',
     ),
-    group: 'group.legal',
+    group: 'group.feat-privacy',
   },
   {
     id: 'page.pia',
@@ -175,8 +190,10 @@ const PAGE_PATCHES = [
       'Évaluation d’impact relative à la vie privée (Loi 25).',
       'Privacy impact assessment (Loi 25).',
     ),
-    group: 'group.legal',
+    group: 'group.feat-privacy',
   },
+
+  // 6 — Handoff (+ transparency pages a buyer would consult during takeover)
   {
     id: 'page.handoff',
     label: bi('Handoff', 'Handoff'),
@@ -184,13 +201,13 @@ const PAGE_PATCHES = [
       'Le guide « acheteur » pour reprendre la pratique au complet.',
       'The “buyer” guide for taking over the whole practice.',
     ),
-    group: 'group.legal',
+    group: 'group.feat-handoff',
   },
   {
     id: 'page.handoff-checklist',
     label: bi('Checklist handoff', 'Handoff checklist'),
     desc: bi('Liste exécutable des étapes de reprise.', 'Executable checklist of takeover steps.'),
-    group: 'group.legal',
+    group: 'group.feat-handoff',
   },
   {
     id: 'page.meta',
@@ -199,7 +216,7 @@ const PAGE_PATCHES = [
       'Manifeste de fonctionnalités LAC — généré depuis feat-*/feature.json.',
       'LAC feature manifest — generated from feat-*/feature.json.',
     ),
-    group: 'group.legal',
+    group: 'group.feat-handoff',
   },
   {
     id: 'page.map-page',
@@ -208,10 +225,10 @@ const PAGE_PATCHES = [
       'Cette carte — un atlas du site, pages, données, parcours.',
       'This map — an atlas of the site, pages, data, journeys.',
     ),
-    group: 'group.legal',
+    group: 'group.feat-handoff',
   },
 
-  // Admin — working surfaces
+  // 7 — Operator console (admin)
   {
     id: 'page.admin-hub',
     label: bi('Console', 'Console'),
@@ -219,7 +236,7 @@ const PAGE_PATCHES = [
       'Le hub admin — index de toutes les surfaces opérateur.',
       'Admin hub — index of every operator surface.',
     ),
-    group: 'group.admin-working',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-inbox',
@@ -228,7 +245,7 @@ const PAGE_PATCHES = [
       'Sessions en cours, triage, réponses. La surface de travail principale.',
       'Live sessions, triage, replies. The primary working surface.',
     ),
-    group: 'group.admin-working',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-trash',
@@ -237,7 +254,7 @@ const PAGE_PATCHES = [
       'Sessions soft-deleted. Restauration ou suppression définitive.',
       'Soft-deleted sessions. Restore or hard-delete.',
     ),
-    group: 'group.admin-working',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-custodians',
@@ -246,7 +263,7 @@ const PAGE_PATCHES = [
       'Abonnements « Je m’en occupe ». MRR d’un coup d’œil.',
       '“I handle it” subscriptions. MRR at a glance.',
     ),
-    group: 'group.admin-working',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-vouches',
@@ -255,7 +272,7 @@ const PAGE_PATCHES = [
       'File de modération — approuver / rejeter / supprimer.',
       'Moderation queue — approve / reject / delete.',
     ),
-    group: 'group.admin-working',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-runbook',
@@ -264,51 +281,49 @@ const PAGE_PATCHES = [
       'Mémoire opérateur en deux pistes parallèles (handoff dev || parcours visiteur).',
       'Operator memory in two parallel tracks (dev handoff || user journey).',
     ),
-    group: 'group.admin-working',
+    group: 'group.feat-operator',
   },
-
-  // Admin — other
   {
     id: 'page.admin-showcase',
     label: bi('Vitrine', 'Showcase'),
     desc: bi('Aperçu en direct des cartes OG.', 'Live preview of OG cards.'),
-    group: 'group.admin-other',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-audit',
     label: bi('Journal d’audit', 'Audit log'),
     desc: bi('Actions opérateur dans le temps.', 'Operator actions over time.'),
-    group: 'group.admin-other',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-fleet',
     label: bi('Flotte', 'Fleet'),
     desc: bi('Liste des tenants (instances) hébergés.', 'List of hosted tenants (instances).'),
-    group: 'group.admin-other',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-fleet-new',
     label: bi('Nouvel onboarding', 'New onboarding'),
     desc: bi('Assistant pour ajouter un nouveau tenant.', 'Wizard to add a new tenant.'),
-    group: 'group.admin-other',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-appearance',
     label: bi('Apparence', 'Appearance'),
     desc: bi('Configuration de la marque d’un tenant.', 'Tenant brand configuration.'),
-    group: 'group.admin-other',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-team',
     label: bi('Équipe', 'Team'),
     desc: bi('Gestion d’équipe (placeholder).', 'Team management (placeholder).'),
-    group: 'group.admin-other',
+    group: 'group.feat-operator',
   },
   {
     id: 'page.admin-billing',
     label: bi('Facturation', 'Billing'),
     desc: bi('Vue facturation tenant.', 'Tenant billing view.'),
-    group: 'group.admin-other',
+    group: 'group.feat-operator',
   },
 ] as const
 
@@ -380,28 +395,20 @@ const SERVICE_NODES: MapNode[] = [
 // ─── Groups ───────────────────────────────────────────────────────────────────
 
 const GROUPS: MapGroup[] = [
-  // Pages layer — render order top-to-bottom
+  // Pages layer — feature groups, mirroring the 6 Vision bubbles
+  // (intake, conversation, pricing, portfolio, privacy, handoff)
+  // plus operator console as the admin-only seventh group.
   {
-    id: 'group.public-front',
-    label: bi('Surface publique', 'Public surface'),
+    id: 'group.feat-intake',
+    label: bi('Apporte un projet', 'Bring a project'),
     layer: 'pages',
     visibility: 'public',
     order: 0,
-    nodeIds: [
-      'page.root-by-template',
-      'page.intake',
-      'page.napkin',
-      'page.tier0',
-      'page.journey',
-      'page.projects',
-      'page.engagement',
-      'page.vouches',
-      'page.vouch',
-    ],
+    nodeIds: ['page.root-by-template', 'page.intake', 'page.napkin', 'page.journey'],
   },
   {
-    id: 'group.account',
-    label: bi('Compte & sessions', 'Account & sessions'),
+    id: 'group.feat-conversation',
+    label: bi('Discussion', 'Conversation'),
     layer: 'pages',
     visibility: 'public',
     order: 1,
@@ -414,26 +421,43 @@ const GROUPS: MapGroup[] = [
     ],
   },
   {
-    id: 'group.legal',
-    label: bi('Documents & légal', 'Docs & legal'),
+    id: 'group.feat-pricing',
+    label: bi('Tarification', 'Pricing'),
     layer: 'pages',
     visibility: 'public',
     order: 2,
-    nodeIds: [
-      'page.privacy',
-      'page.pia',
-      'page.handoff',
-      'page.handoff-checklist',
-      'page.meta',
-      'page.map-page',
-    ],
+    nodeIds: ['page.tier0'],
   },
   {
-    id: 'group.admin-working',
-    label: bi('Admin — surfaces de travail', 'Admin — working surfaces'),
+    id: 'group.feat-portfolio',
+    label: bi('Portfolio', 'Portfolio'),
+    layer: 'pages',
+    visibility: 'public',
+    order: 3,
+    nodeIds: ['page.projects', 'page.engagement', 'page.vouches', 'page.vouch'],
+  },
+  {
+    id: 'group.feat-privacy',
+    label: bi('Vie privée', 'Privacy'),
+    layer: 'pages',
+    visibility: 'public',
+    order: 4,
+    nodeIds: ['page.privacy', 'page.pia'],
+  },
+  {
+    id: 'group.feat-handoff',
+    label: bi('Reprise', 'Handoff'),
+    layer: 'pages',
+    visibility: 'public',
+    order: 5,
+    nodeIds: ['page.handoff', 'page.handoff-checklist', 'page.meta', 'page.map-page'],
+  },
+  {
+    id: 'group.feat-operator',
+    label: bi('Console opérateur', 'Operator console'),
     layer: 'pages',
     visibility: 'admin',
-    order: 3,
+    order: 6,
     nodeIds: [
       'page.admin-hub',
       'page.admin-inbox',
@@ -441,15 +465,6 @@ const GROUPS: MapGroup[] = [
       'page.admin-custodians',
       'page.admin-vouches',
       'page.admin-runbook',
-    ],
-  },
-  {
-    id: 'group.admin-other',
-    label: bi('Admin — autres', 'Admin — other'),
-    layer: 'pages',
-    visibility: 'admin',
-    order: 4,
-    nodeIds: [
       'page.admin-showcase',
       'page.admin-audit',
       'page.admin-fleet',
@@ -725,85 +740,111 @@ const JOURNEYS: MapJourney[] = [
 
 // ─── Vision — the “big picture” layer ────────────────────────────────────────
 //
-// Six bubbles, ≤ 5 words per language, that summarize Marc's whole idea
-// without forcing the visitor to read 9 home sections to get it. Sized and
-// positioned by hand for a napperon / sketchbook feel — not a grid. The
-// sequence numbers (index) trace a natural read path: who → deal → rhythm →
-// entry → values → exit.
+// Six bubbles around the SIX CORE FEATURES of the app. Bubbles are the entry
+// point; sub-items name the concrete pieces inside each feature. Clicking a
+// bubble navigates to its most representative page.
+//
+// Layout is a clean 2-column × 3-row grid so each row is one mental hop:
+//   row 1 — Intake     | Discussion      (the visitor's two doors)
+//   row 2 — Pricing    | Portfolio       (what's behind the doors)
+//   row 3 — Privacy    | Handoff         (the trust + exit terms)
 
 const VISION: VisionBubble[] = [
   {
-    id: 'vision.who',
-    label: bi('Marc, dev solo, QC', 'Marc, solo dev, QC'),
+    id: 'vision.intake',
+    label: bi('Apporte un projet', 'Bring a project'),
     desc: bi(
-      'Un humain à Montréal. Pas une agence, pas une équipe.',
-      'One human in Montréal. Not an agency, not a team.',
+      "La porte d'entrée : tu décris, je triage, on continue ensemble.",
+      'The front door: you describe, I triage, we continue together.',
     ),
+    sub: [
+      bi('Intake', 'Intake'),
+      bi('Napperon', 'Napkin'),
+      bi('Tier 0 (gratuit)', 'Tier 0 (free)'),
+    ],
     size: 'lg',
-    pos: { x: 22, y: 22 },
+    pos: { x: 24, y: 20 },
     index: 1,
-    // The home page is the long-form version of "who I am".
-    href: bi('/', '/en'),
-  },
-  {
-    id: 'vision.deal',
-    label: bi('Tu décris, je code', 'You describe, I code'),
-    desc: bi(
-      'Tu apportes le problème quotidien ; je le tourne en logiciel qui marche.',
-      'You bring the everyday problem; I turn it into software that works.',
-    ),
-    size: 'lg',
-    pos: { x: 65, y: 30 },
-    index: 2,
-    // "Describe" → the intake form.
     href: bi('/intake', '/en/intake'),
   },
   {
-    id: 'vision.rhythm',
-    label: bi('Async, pas de meetings', 'Async, no meetings'),
+    id: 'vision.conversation',
+    label: bi('Discussion', 'Conversation'),
     desc: bi(
-      'Tout passe par écrit, à ton rythme. Soirs et fins de semaine.',
-      'Everything in writing, at your pace. Evenings and weekends.',
+      'Échange async par fil de session. Pas de mot de passe, pas de réunion.',
+      'Async session threads. No password, no meeting.',
     ),
+    sub: [
+      bi('Lien magique', 'Magic link'),
+      bi('Mes sessions', 'My sessions'),
+      bi('Fil de session', 'Session thread'),
+    ],
     size: 'md',
-    pos: { x: 30, y: 55 },
-    index: 3,
-    // The journey page explains the rhythm in detail.
-    href: bi('/parcours', '/en/journey'),
+    pos: { x: 64, y: 20 },
+    index: 2,
+    href: bi('/me', '/en/me'),
   },
   {
-    id: 'vision.entry',
-    label: bi('Tier 0 : on jase', 'Tier 0: we just talk'),
+    id: 'vision.pricing',
+    label: bi('Tarification', 'Pricing'),
     desc: bi(
-      'Premier échange gratuit, sans engagement. Tu vois la vibe avant.',
-      'First conversation free, no strings. You feel the vibe first.',
+      "Trois tiers de projet + un abonnement « je m'en occupe ». Tout est transparent.",
+      'Three project tiers plus an "I handle it" subscription. All transparent.',
     ),
+    sub: [
+      bi('Tier 0 — gratuit', 'Tier 0 — free'),
+      bi('Tier 1–3', 'Tier 1–3'),
+      bi('Custodian (200 $/an)', 'Custodian ($200/yr)'),
+    ],
     size: 'md',
-    pos: { x: 72, y: 58 },
-    index: 4,
+    pos: { x: 24, y: 52 },
+    index: 3,
     href: bi('/tier-0', '/en/tier-0'),
   },
   {
-    id: 'vision.privacy',
-    label: bi('Vie privée, Loi 25', 'Privacy first, Loi 25'),
+    id: 'vision.portfolio',
+    label: bi('Portfolio', 'Portfolio'),
     desc: bi(
-      'Données hébergées au Canada. PIA publié. Aucun pixel publicitaire.',
-      'Canada-hosted data. Published PIA. Zero ad pixels.',
+      'Projets livrés, témoignages publics, partage de progrès par lien.',
+      'Shipped projects, public vouches, shareable progress links.',
     ),
+    sub: [
+      bi('Projets', 'Projects'),
+      bi('Témoignages', 'Vouches'),
+      bi('Partage public', 'Public share'),
+    ],
+    size: 'md',
+    pos: { x: 64, y: 52 },
+    index: 4,
+    href: bi('/projects', '/en/projects'),
+  },
+  {
+    id: 'vision.privacy',
+    label: bi('Vie privée', 'Privacy'),
+    desc: bi(
+      'Loi 25, hébergement canadien, PIA publié, donnée minimale.',
+      'Loi 25, Canadian hosting, published PIA, minimal data collection.',
+    ),
+    sub: [bi('Loi 25', 'Loi 25'), bi('PIA', 'PIA'), bi('Donnée minimale', 'Minimal data')],
     size: 'sm',
-    pos: { x: 24, y: 82 },
+    pos: { x: 24, y: 84 },
     index: 5,
     href: bi('/confidentialite', '/en/privacy'),
   },
   {
-    id: 'vision.exit',
-    label: bi('Tu reprends quand tu veux', 'Take the keys any time'),
+    id: 'vision.handoff',
+    label: bi('Reprise', 'Handoff'),
     desc: bi(
-      'À la livraison, deux modes : « je m’en occupe » ou « tout à toi ».',
-      'At delivery, two modes: "I handle it" or "all yours".',
+      "À la livraison : « je m'en occupe » ou « tout à toi ». Tu choisis.",
+      'At delivery: "I handle it" or "all yours". You pick.',
     ),
+    sub: [
+      bi("« Je m'en occupe »", '"I handle it"'),
+      bi('« Tout à toi »', '"All yours"'),
+      bi('Checklist', 'Checklist'),
+    ],
     size: 'md',
-    pos: { x: 70, y: 82 },
+    pos: { x: 64, y: 84 },
     index: 6,
     href: bi('/handoff', '/en/handoff'),
   },

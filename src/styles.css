@@ -12186,8 +12186,9 @@ button.intake__progress-step:disabled {
    path, journey, and admin surface. Four togglable layers share one
    page; visitor vs admin filtering happens client-side in filter.ts. */
 .map-page {
-  padding: 0 0 40px;
+  padding: 32px var(--gutter) 56px;
   max-width: 1280px;
+  margin: 0 auto;
 }
 .map-page__head {
   margin-bottom: 20px;
@@ -12663,26 +12664,46 @@ a.map-node:focus-visible {
   letter-spacing: 0.04em;
   opacity: 0.85;
 }
-.map-vision__bubble-label {
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 1.22;
-  letter-spacing: -0.01em;
-  color: var(--text);
-  text-align: center;
+.map-vision__bubble-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
   padding: 0 4px;
+  gap: 8px;
+  text-align: center;
+}
+.map-vision__bubble-label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.map-vision__bubble-sub {
+  font-size: 11px;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: var(--text-soft);
+  max-width: 100%;
+  /* The sub-list is a single string of items joined by " · ". Word-break
+     lets it wrap inside the bubble instead of overflowing the foreignObject. */
+  overflow-wrap: anywhere;
 }
 .map-vision__bubble--lg .map-vision__bubble-label {
-  font-size: 20px;
+  font-size: 22px;
   color: var(--accent-warm);
+}
+.map-vision__bubble--lg .map-vision__bubble-sub {
+  font-size: 12px;
 }
 .map-vision__bubble--sm .map-vision__bubble-label {
   font-size: 15px;
+}
+.map-vision__bubble--sm .map-vision__bubble-sub {
+  font-size: 10.5px;
 }
 
 /* Page layer canvas bumped to match the new node sizes (260 wide × 3 cols

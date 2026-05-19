@@ -20,6 +20,8 @@ import { PAGE_FOLIOS } from '../lib/folios'
 import { MAP_DATA } from '../lib/map/data'
 import { filterForViewer } from '../lib/map/filter'
 import type { LayerId } from '../lib/map/types'
+import { Header } from '../components/Header'
+import { Footer } from '../components/Footer'
 import { MapCanvas } from '../components/Map/MapCanvas'
 import { MapLegend } from '../components/Map/MapLegend'
 
@@ -103,49 +105,58 @@ export function Map({ lang }: { lang: Lang }) {
       : undefined
 
   return (
-    <article className="map-page">
-      <header className="map-page__head">
-        <div className="section__eyebrow">{t.eyebrow}</div>
-        <p className="page-folio-mark mono" aria-hidden="true">
-          № {PAGE_FOLIOS.map}
-        </p>
-        <h1 className="map-page__title">{t.title}</h1>
-        <p className="map-page__sub">{t.sub}</p>
-      </header>
+    <div className="app">
+      <Header lang={lang} />
+      <main id="main-content">
+        {/* Map is wider than the 880px reading column other content pages
+            use (the layered atlas needs room), so it sits directly inside
+            <main> with its own .map-page max-width + centering. */}
+        <article className="map-page">
+          <header className="map-page__head">
+            <div className="section__eyebrow">{t.eyebrow}</div>
+            <p className="page-folio-mark mono" aria-hidden="true">
+              № {PAGE_FOLIOS.map}
+            </p>
+            <h1 className="map-page__title">{t.title}</h1>
+            <p className="map-page__sub">{t.sub}</p>
+          </header>
 
-      {realIsAdmin && previewAsUser && (
-        <div className="map-page__preview-banner" role="status">
-          {t.previewBanner}
-        </div>
-      )}
+          {realIsAdmin && previewAsUser && (
+            <div className="map-page__preview-banner" role="status">
+              {t.previewBanner}
+            </div>
+          )}
 
-      <MapLegend
-        lang={lang}
-        layer={layer}
-        setLayer={setLayer}
-        data={filtered}
-        activeJourneyId={activeJourneyId}
-        setActiveJourneyId={setActiveJourneyId}
-        realIsAdmin={realIsAdmin}
-        previewAsUser={previewAsUser}
-        setPreviewAsUser={setPreviewAsUser}
-      />
+          <MapLegend
+            lang={lang}
+            layer={layer}
+            setLayer={setLayer}
+            data={filtered}
+            activeJourneyId={activeJourneyId}
+            setActiveJourneyId={setActiveJourneyId}
+            realIsAdmin={realIsAdmin}
+            previewAsUser={previewAsUser}
+            setPreviewAsUser={setPreviewAsUser}
+          />
 
-      {activeJourney && (
-        <p className="map-page__journey-title">
-          <span className="mono">{t.journeyOn}</span> {activeJourney.label[lang]}
-        </p>
-      )}
+          {activeJourney && (
+            <p className="map-page__journey-title">
+              <span className="mono">{t.journeyOn}</span> {activeJourney.label[lang]}
+            </p>
+          )}
 
-      <div className="map-page__canvas">
-        <MapCanvas
-          layer={layer}
-          data={filtered}
-          lang={lang}
-          isAdmin={isAdmin}
-          activeJourneyId={activeJourneyId}
-        />
-      </div>
-    </article>
+          <div className="map-page__canvas">
+            <MapCanvas
+              layer={layer}
+              data={filtered}
+              lang={lang}
+              isAdmin={isAdmin}
+              activeJourneyId={activeJourneyId}
+            />
+          </div>
+        </article>
+      </main>
+      <Footer lang={lang} />
+    </div>
   )
 }

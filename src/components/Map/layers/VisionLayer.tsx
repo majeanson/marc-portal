@@ -1,9 +1,8 @@
 /**
- * Vision layer — the “big picture” bubbles. Hand-positioned in normalized
- * 0–100 coordinates (curated.ts) and projected into a 1280×720 SVG canvas
- * here. Bubble radius is driven by VisionBubble.size; thin pencil-style
- * connector arcs trace the read order (1 → 2 → ... → N) so the eye knows
- * where to land first.
+ * Vision layer — the “big picture” bubbles. Each bubble is one product
+ * feature; the sub-items inside name the concrete pieces of that feature.
+ * Hand-positioned in normalized 0–100 coordinates (curated.ts) and
+ * projected into a 1280×800 SVG canvas here.
  *
  * Bubbles with an `href` become real navigation. We use useNavigate +
  * onClick/onKeyDown on the <g> (with role="link", cursor:pointer) so the
@@ -23,13 +22,15 @@ interface Props {
 }
 
 // Logical canvas. CSS scales the SVG to fit any width via preserveAspectRatio.
+// Taller than wide-ratio because we lay out 2 columns × 3 rows of bubbles with
+// sub-item lists inside; height ~= width × 0.625 keeps each row breathable.
 const W = 1280
-const H = 720
+const H = 800
 
 const RADIUS: Record<VisionBubble['size'], number> = {
-  sm: 92,
-  md: 108,
-  lg: 128,
+  sm: 96,
+  md: 116,
+  lg: 136,
 }
 
 // Inset for the label's foreignObject — how much smaller than the diameter,
@@ -37,8 +38,8 @@ const RADIUS: Record<VisionBubble['size'], number> = {
 // because their absolute padding shouldn't scale linearly.
 const LABEL_INSET: Record<VisionBubble['size'], number> = {
   sm: 22,
-  md: 30,
-  lg: 36,
+  md: 28,
+  lg: 34,
 }
 
 export function VisionLayer({ data, lang }: Props) {
@@ -60,7 +61,7 @@ export function VisionLayer({ data, lang }: Props) {
     const dy = by - ay
     const len = Math.hypot(dx, dy) || 1
     // Push the curve handle perpendicular to the segment so the line bows.
-    const wobble = Math.min(80, len * 0.22) * (i % 2 === 0 ? 1 : -1)
+    const wobble = Math.min(80, len * 0.18) * (i % 2 === 0 ? 1 : -1)
     const cx = mx + (-dy / len) * wobble
     const cy = my + (dx / len) * wobble
     return {
@@ -90,9 +91,10 @@ export function VisionLayer({ data, lang }: Props) {
           const r = RADIUS[b.size]
           const inset = LABEL_INSET[b.size]
           const labelW = r * 2 - inset * 2
-          const labelH = r * 1.6
+          const labelH = r * 1.85
           const label = b.label[lang]
           const desc = b.desc?.[lang]
+          const subItems = b.sub?.map((s) => s[lang]) ?? []
           const href = b.href?.[lang]
           const interactive = !!href
 
@@ -119,16 +121,25 @@ export function VisionLayer({ data, lang }: Props) {
                   : undefined
               }
               aria-label={
-                interactive ? `${b.index}. ${label}${desc ? ` — ${desc}` : ''}` : undefined
+                interactive
+                  ? `${b.index}. ${label}${
+                      subItems.length ? ` — ${subItems.join(' · ')}` : ''
+                    }${desc ? ` — ${desc}` : ''}`
+                  : undefined
               }
             >
               <title>{desc ? `${label} — ${desc}` : label}</title>
               <circle className="map-vision__bubble-bg" r={r} />
-              <text className="map-vision__bubble-index mono" x={-r + inset - 4} y={-r + inset + 4}>
+              <text className="map-vision__bubble-index mono" x={-r + inset - 2} y={-r + inset + 6}>
                 {b.index}
               </text>
               <foreignObject x={-labelW / 2} y={-labelH / 2} width={labelW} height={labelH}>
-                <div className="map-vision__bubble-label">{label}</div>
+                <div className="map-vision__bubble-content">
+                  <div className="map-vision__bubble-label">{label}</div>
+                  {subItems.length > 0 && (
+                    <div className="map-vision__bubble-sub mono">{subItems.join(' · ')}</div>
+                  )}
+                </div>
               </foreignObject>
             </g>
           )
