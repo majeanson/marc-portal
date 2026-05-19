@@ -40,39 +40,43 @@ export function Vouches({ lang }: { lang: Lang }) {
   return (
     <>
       <Header lang={lang} />
-      <main className="page">
-        <section className="page__panel">
-          <PageMast
-            folio={lang === 'fr' ? '№ 03 — témoignages' : '№ 03 — testimonials'}
-            stampLabel={lang === 'fr' ? 'VOUCHÉ' : 'VOUCHED'}
-            stampSub={lang === 'fr' ? 'PAR DES VRAIS' : 'BY REAL PEOPLE'}
-          >
-            <h1>{t.heading}</h1>
-            <p>{t.lead}</p>
-            <p>
-              <Link to={`${langPrefix}/vouch`} className="hero__cta">
-                {t.submitCta}
-              </Link>
-            </p>
-          </PageMast>
-        </section>
+      <main id="main-content">
+        <article className="section">
+          <div className="section__inner">
+            <PageMast
+              folio={lang === 'fr' ? '№ 03 — témoignages' : '№ 03 — testimonials'}
+              stampLabel={lang === 'fr' ? 'VOUCHÉ' : 'VOUCHED'}
+              stampSub={lang === 'fr' ? 'PAR DES VRAIS' : 'BY REAL PEOPLE'}
+            >
+              <h1>{t.heading}</h1>
+              <p>{t.lead}</p>
+              <p>
+                <Link to={`${langPrefix}/vouch`} className="hero__cta">
+                  {t.submitCta}
+                </Link>
+              </p>
+            </PageMast>
 
-        <section className="vouches-list">
-          {error && <p className="form__error">{DICT[lang].errorBoundary.body}</p>}
-          {!error && vouches === null && (
-            <p className="field__hint" aria-busy="true">
-              …
-            </p>
-          )}
-          {vouches !== null && vouches.length === 0 && <p className="field__hint">{t.empty}</p>}
-          {vouches !== null && vouches.length > 0 && (
-            <ul className="vouches-list__items">
-              {vouches.map((v, i) => (
-                <VouchCard key={v.id} v={v} lang={lang} index={i} />
-              ))}
-            </ul>
-          )}
-        </section>
+            <div className="vouches-list">
+              {error && <p className="form__error">{DICT[lang].errorBoundary.body}</p>}
+              {!error && vouches === null && (
+                <p className="field__hint" aria-busy="true">
+                  …
+                </p>
+              )}
+              {vouches !== null && vouches.length === 0 && (
+                <p className="field__hint">{t.empty}</p>
+              )}
+              {vouches !== null && vouches.length > 0 && (
+                <ul className="vouches-list__items">
+                  {vouches.map((v, i) => (
+                    <VouchCard key={v.id} v={v} lang={lang} index={i} />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </article>
       </main>
       <Footer lang={lang} />
     </>
