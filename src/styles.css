@@ -282,6 +282,52 @@ p {
   outline: none;
   text-decoration: none;
 }
+
+/* Session variant: the nav collapses to a single "← Mes sessions" back
+   link, styled like the page-back link visitors already see lower in the
+   session (familiar affordance, no learning cost). On mobile the strip
+   stays on row 1 next to the brand instead of wrapping to a second row —
+   one link doesn't need the swipable shelf the full marketing nav does. */
+.site-header__sections--session {
+  justify-content: flex-start;
+  gap: 0;
+  flex: 1 1 auto;
+  padding-inline-start: 18px;
+}
+.site-header__section-link--back {
+  color: var(--text-mid);
+  border-bottom: none;
+  padding: 6px 4px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+}
+.site-header__section-link--back:hover,
+.site-header__section-link--back:focus-visible {
+  color: var(--accent);
+  border-bottom: none;
+}
+@media (max-width: 1180px) {
+  /* Don't apply the marketing-nav second-row wrap to the session back link
+     — it's a single link, stays inline with the brand. */
+  .site-header__sections--session {
+    order: 0;
+    flex-basis: auto;
+    margin-top: 0;
+    padding-bottom: 0;
+    overflow: visible;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+@media (max-width: 640px) {
+  .site-header__sections--session {
+    padding-inline-start: 12px;
+  }
+  .site-header__section-link--back {
+    font-size: 12px;
+  }
+}
 /* Below 1180px the centered nav can't share a row with brand + admin chrome
    (Mes sessions · Déconnexion · VOIR COMME VISITEUR pill) without colliding.
    Instead of hiding it (which left phone visitors with no section nav and

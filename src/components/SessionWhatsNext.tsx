@@ -3,25 +3,6 @@ import type { SessionRow } from '../lib/sessionsApi'
 import type { PaymentSummary } from '../lib/paymentsApi'
 import { computeSla, formatRelativeWindow } from '../lib/format'
 
-/** Read the visitor's intake mode preference (`__handoff_mode`) from the
- *  serialized intake_json. Returns null if the row has no intake or the
- *  field isn't a known value. Used to nudge copy at delivery. */
-function readModePreference(
-  intakeJson: string | null,
-): 'je-men-occupe' | 'tout-a-toi' | 'on-en-parle' | null {
-  if (!intakeJson) return null
-  try {
-    const obj = JSON.parse(intakeJson) as {
-      formData?: Record<string, unknown>
-    }
-    const v = obj.formData?.['__handoff_mode']
-    if (v === 'je-men-occupe' || v === 'tout-a-toi' || v === 'on-en-parle') return v
-  } catch {
-    // Malformed intake — fall through.
-  }
-  return null
-}
-
 /**
  * One-line "you are here, here's what's next" strip rendered above the
  * payment block on /session/:id. Mirrors the state machine so the visitor
@@ -66,9 +47,12 @@ export function SessionWhatsNext({
   }
 
   // Shipped: the next step is the ownership decision (Custodian by default
-  // vs explicit All-yours opt-out). Branch on the intake preference + the
-  // ack state so the strip nudges toward the visitor's hinted path. Once
-  // the decision is recorded (sub active or ack set), the strip says so.
+  // vs explicit All-yours opt-out). For the decision-pending variants we
+  // return null on purpose — the MODE DÉPOSITAIRE and TOUT À TOI sections
+  // rendered directly below already carry the same explanation in full
+  // detail, so a cream summary box above them was pure duplication. Only
+  // post-decision status (subscription active, past-due, acked all-yours)
+  // gets a strip, since those aren't redundant with the cards below.
   if (session.status === 'shipped') {
     const ackedAllYours = session.all_yours_acknowledged_at !== null
     const custActive = summary?.custodianStatus === 'active'
@@ -76,13 +60,7 @@ export function SessionWhatsNext({
     if (custActive) return <Frame tone="ok">{t.shippedCustodianActive}</Frame>
     if (custPastDue) return <Frame tone="cta">{t.shippedCustodianPastDue}</Frame>
     if (ackedAllYours) return <Frame tone="ok">{t.shippedAllYoursAcked}</Frame>
-    // Decision pending: nudge per the intake preference.
-    const pref = readModePreference(session.intake_json)
-    if (pref === 'tout-a-toi') return <Frame tone="cta">{t.shippedNudgeAllYours}</Frame>
-    if (pref === 'je-men-occupe') return <Frame tone="cta">{t.shippedNudgeCustodian}</Frame>
-    // No hint or 'on-en-parle' — generic "decide now" copy, framed with
-    // custodian as the default.
-    return <Frame tone="cta">{t.shippedNudgeDefault}</Frame>
+    return null
   }
 
   // Active: most of the nuance. Branch on tier + payment summary.

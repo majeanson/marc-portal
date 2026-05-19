@@ -11,7 +11,18 @@ type DocumentWithViewTransition = Document & {
   startViewTransition?: (cb: () => void) => unknown
 }
 
-export function Header({ lang }: { lang: Lang }) {
+/**
+ * variant:
+ *   'full'    — default. Marketing nav (Projets / Comment ça marche / Prix /
+ *               Je fais — Je fais pas / À propos). Used on home + every
+ *               marketing-style page (handoff, vouches, tier0, etc.).
+ *   'session' — drops the marketing nav and replaces it with a single
+ *               "← Mes sessions" back link so the session detail page reads
+ *               as a product surface, not a marketing one. Especially
+ *               important on mobile where the 5-link nav otherwise wraps
+ *               to a second row and pushes session content below the fold.
+ */
+export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full' | 'session' }) {
   const t = DICT[lang]
   const { email, isAdmin, realIsAdmin, previewAsUser, setPreviewAsUser, loading, logout } =
     useAuth()
@@ -61,28 +72,35 @@ export function Header({ lang }: { lang: Lang }) {
           >
             marc<span className="dot">.</span>portal
           </a>
-          {/* Header nav is anchor-only: every link points at a home section.
-              Drill-down to a dedicated full page (e.g. /projects, /parcours)
-              happens from inside the relevant section, not from the header,
-              so visitors always land on the home page first and can read the
-              teaser before committing to the deep view. */}
-          <nav className="site-header__sections" aria-label={t.nav.sections.projects}>
-            <a href={`${langPrefix}/#featured`} className="site-header__section-link">
-              {t.nav.sections.projects}
-            </a>
-            <a href={`${langPrefix}/#how`} className="site-header__section-link">
-              {t.nav.sections.how}
-            </a>
-            <a href={`${langPrefix}/#pricing`} className="site-header__section-link">
-              {t.nav.sections.pricing}
-            </a>
-            <a href={`${langPrefix}/#vibe`} className="site-header__section-link">
-              {t.nav.sections.vibe}
-            </a>
-            <a href={`${langPrefix}/#about`} className="site-header__section-link">
-              {t.nav.sections.about}
-            </a>
-          </nav>
+          {/* Header nav: in 'full' mode it's anchor-only, every link points
+              at a home section. In 'session' mode it collapses to a single
+              "← back to sessions" link so the header stays out of the way
+              on a product surface (especially mobile). */}
+          {variant === 'session' ? (
+            <nav className="site-header__sections site-header__sections--session" aria-label={t.nav.mySessions}>
+              <a href={sessionsHref} className="site-header__section-link site-header__section-link--back">
+                ← {t.nav.mySessions}
+              </a>
+            </nav>
+          ) : (
+            <nav className="site-header__sections" aria-label={t.nav.sections.projects}>
+              <a href={`${langPrefix}/#featured`} className="site-header__section-link">
+                {t.nav.sections.projects}
+              </a>
+              <a href={`${langPrefix}/#how`} className="site-header__section-link">
+                {t.nav.sections.how}
+              </a>
+              <a href={`${langPrefix}/#pricing`} className="site-header__section-link">
+                {t.nav.sections.pricing}
+              </a>
+              <a href={`${langPrefix}/#vibe`} className="site-header__section-link">
+                {t.nav.sections.vibe}
+              </a>
+              <a href={`${langPrefix}/#about`} className="site-header__section-link">
+                {t.nav.sections.about}
+              </a>
+            </nav>
+          )}
           <div className="site-header__right">
             {!loading && (
               <div className="site-header__auth">

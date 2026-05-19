@@ -44,6 +44,38 @@ export function Home({ lang }: { lang: Lang }) {
     if (ogLocale) ogLocale.setAttribute('content', lang === 'en' ? 'en_CA' : 'fr_CA')
   }, [lang, t])
 
+  // Scroll-to-hash on cold load. The Header section links point at /#featured,
+  // /#how, /#pricing, /#vibe, /#about; when clicked from a non-home route the
+  // browser navigates here but its native hash-scroll fires before async-
+  // mounted sections (FeaturedProjects fetches public projects) are in the
+  // DOM, so the visitor lands on the home top instead of the target section.
+  // Re-attempt the scroll once on mount, and again after 250ms in case the
+  // target hasn't rendered yet.
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, '')
+    if (!hash) return
+    const scroll = () => {
+      const el = document.getElementById(hash)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return true
+      }
+      return false
+    }
+    // First pass on next frame (after initial layout).
+    let timer: number | undefined
+    const raf = requestAnimationFrame(() => {
+      if (!scroll()) {
+        // Second pass after async content (projects, advancements) likely landed.
+        timer = window.setTimeout(scroll, 250)
+      }
+    })
+    return () => {
+      cancelAnimationFrame(raf)
+      if (timer !== undefined) window.clearTimeout(timer)
+    }
+  }, [])
+
   return (
     <div className="app">
       <ScrollProgress />
