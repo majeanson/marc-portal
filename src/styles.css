@@ -248,44 +248,22 @@ p {
   }
 }
 
-/* Session sub-header — sticky tab bar that sits directly below the main
-   header on /session/:id. Tabs anchor to the six major sections of the
-   page (Statut, Conversation, Builds, Paiement, Livraison, Intake); active
+/* Session sub-header — tab bar rendered INSIDE the main <header> on
+   /session/:id, so both rows share a single sticky element and hide/show
+   together on scroll. Tabs anchor to the six major session surfaces
+   (Statut, Conversation, Builds, Paiement, Livraison, Intake); active
    tab is computed via IntersectionObserver in SessionSubHeader.tsx. Tabs
-   for sections that aren't on the page (e.g. Builds before any
-   advancement is posted) are filtered out automatically. */
+   for sections that aren't on the page (Builds before any advancement
+   exists, Livraison until shipped, etc.) are filtered out automatically.
+   No own sticky positioning here — the parent .site-header carries it. */
 .session-subheader {
-  position: sticky;
-  /* Sit immediately below the main header — its height varies with the
-     mobile/desktop row wrapping but ~56px is the tightest single-row
-     case; the backdrop overlap is invisible. */
-  top: 56px;
-  z-index: 9;
-  background: rgba(251, 247, 236, 0.92);
-  backdrop-filter: saturate(140%) blur(8px);
-  -webkit-backdrop-filter: saturate(140%) blur(8px);
-  border-bottom: 1px solid var(--border-soft);
-  /* Hide-on-scroll-down — slides up further than the main header
-     (translateY -200%) so it goes fully off-screen even when the main
-     header has already moved up. Both slide back together on scroll-up. */
-  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-}
-:root[data-scroll-direction='down'] .session-subheader {
-  transform: translateY(-200%);
-}
-@media (prefers-reduced-motion: reduce) {
-  .session-subheader {
-    transition: none;
-  }
-  :root[data-scroll-direction='down'] .session-subheader {
-    transform: none;
-  }
+  border-top: 1px solid var(--border-soft);
+  background: transparent;
 }
 
 /* Scroll offset for sub-header tab anchors. scrollIntoView({block:'start'})
-   parks the target at viewport top, but the sticky main header + sticky
-   sub-header (combined ~104 px on desktop, ~96 px on mobile) cover that
+   parks the target at viewport top, but the combined sticky header
+   (brand row + tab row, ~100 px desktop / ~92 px mobile) covers that
    area — so the section title was landing behind the chrome. scroll-margin
    tells the browser to leave that much room above when scrolling. */
 #session-statut,
@@ -294,7 +272,7 @@ p {
 #session-paiement,
 #session-livraison,
 #session-intake {
-  scroll-margin-top: 112px;
+  scroll-margin-top: 116px;
 }
 @media (max-width: 640px) {
   #session-statut,
@@ -303,7 +281,7 @@ p {
   #session-paiement,
   #session-livraison,
   #session-intake {
-    scroll-margin-top: 96px;
+    scroll-margin-top: 104px;
   }
 }
 .session-subheader__inner {

@@ -27,7 +27,6 @@ import { SessionStatusStrip } from '../components/intake/SessionStatusStrip'
 import { SessionTierStrip } from '../components/intake/SessionTierStrip'
 import { PaymentActions } from '../components/PaymentActions'
 import { SessionWhatsNext } from '../components/SessionWhatsNext'
-import { SessionSubHeader } from '../components/SessionSubHeader'
 import { getPaymentSummary, type PaymentSummary } from '../lib/paymentsApi'
 import { SessionHeader } from '../components/intake/SessionHeader'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
@@ -702,7 +701,6 @@ export function SessionPage({ lang }: { lang: Lang }) {
   return (
     <div className="app">
       <Header lang={lang} variant="session" />
-      <SessionSubHeader lang={lang} />
       <main id="main-content">
         <article className="section intake session-frame">
           <div className="section__inner">

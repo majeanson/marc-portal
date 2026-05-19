@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
 import { swapLangPath } from '../lib/swapLangPath'
+import { SessionSubHeader } from './SessionSubHeader'
 import { ThemeToggle } from './ThemeToggle'
 
 // Feature-detect View Transitions API for the language swap. Firefox lacks
@@ -169,6 +170,13 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
             </nav>
           </div>
         </div>
+        {/* Session-page sub-header is rendered INSIDE the main <header> so
+            both rows share a single sticky element and hide/show as one
+            unit on scroll. Before, the sub-header was a separate sticky
+            block at top:56px; on scroll-up the two bars sometimes came
+            back at different rates and the visitor would see only the
+            back-link row without the section tabs. */}
+        {variant === 'session' && <SessionSubHeader lang={lang} />}
       </header>
     </>
   )
