@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
+import { PAGE_FOLIOS } from '../lib/folios'
 
 /**
  * Bilingual page explaining the two ownership modes offered at engagement close
@@ -356,7 +357,11 @@ export function Handoff({ lang }: { lang: Lang }) {
         <article className="section">
           <div className="section__inner privacy handoff">
             <PageMast
-              folio={lang === 'fr' ? '№ 06 — comment ça finit' : '№ 06 — how it ends'}
+              folio={
+                lang === 'fr'
+                  ? `№ ${PAGE_FOLIOS.handoff} — comment ça finit`
+                  : `№ ${PAGE_FOLIOS.handoff} — how it ends`
+              }
               stampLabel={lang === 'fr' ? 'PASSATION' : 'HANDOFF'}
               stampSub={lang === 'fr' ? 'SANS PIÈGE' : 'NO LOCK-IN'}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}

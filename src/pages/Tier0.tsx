@@ -5,6 +5,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
 import { listPatterns, localizedPattern } from '../lib/patterns'
+import { PAGE_FOLIOS } from '../lib/folios'
 
 /**
  * Tier 0 self-service redirect (feat-2026-008). Curated free patterns + no-code
@@ -29,7 +30,11 @@ export function Tier0({ lang }: { lang: Lang }) {
         <article className="section">
           <div className="section__inner">
             <PageMast
-              folio={lang === 'fr' ? '№ 00 — libre-service' : '№ 00 — self-serve'}
+              folio={
+                lang === 'fr'
+                  ? `№ ${PAGE_FOLIOS.tier0} — libre-service`
+                  : `№ ${PAGE_FOLIOS.tier0} — self-serve`
+              }
               stampLabel={lang === 'fr' ? 'GRATUIT' : 'FREE'}
               stampSub={lang === 'fr' ? 'AUCUN COMPTE' : 'NO ACCOUNT'}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.tier0.backHome }}

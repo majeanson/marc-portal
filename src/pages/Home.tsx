@@ -49,29 +49,34 @@ export function Home({ lang }: { lang: Lang }) {
   // browser navigates here but its native hash-scroll fires before async-
   // mounted sections (FeaturedProjects fetches public projects) are in the
   // DOM, so the visitor lands on the home top instead of the target section.
-  // Re-attempt the scroll once on mount, and again after 250ms in case the
-  // target hasn't rendered yet.
+  //
+  // Strategy: poll every 80ms for up to 1.5s. As soon as the target element
+  // exists in the DOM, scroll to it and stop. Earlier passes (immediate +
+  // rAF) catch sections that mount synchronously; later passes catch slow
+  // network fetches. A single retry at 250ms was leaving first clicks
+  // failing on slow phones (visitor's complaint: "I have to click twice").
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '')
     if (!hash) return
-    const scroll = () => {
+    let stopped = false
+    let attempts = 0
+    const MAX_ATTEMPTS = 18 // 18 * 80ms ≈ 1.4s, longer than any realistic SPA mount
+    let timer: number | undefined
+    const tick = () => {
+      if (stopped) return
       const el = document.getElementById(hash)
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        return true
+        return
       }
-      return false
+      if (++attempts < MAX_ATTEMPTS) {
+        timer = window.setTimeout(tick, 80)
+      }
     }
-    // First pass on next frame (after initial layout).
-    let timer: number | undefined
-    const raf = requestAnimationFrame(() => {
-      if (!scroll()) {
-        // Second pass after async content (projects, advancements) likely landed.
-        timer = window.setTimeout(scroll, 250)
-      }
-    })
+    // First pass: synchronous, in case the target is already in the DOM.
+    tick()
     return () => {
-      cancelAnimationFrame(raf)
+      stopped = true
       if (timer !== undefined) window.clearTimeout(timer)
     }
   }, [])

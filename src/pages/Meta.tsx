@@ -23,6 +23,7 @@ import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
 import manifest from '../data/lac-features.json'
 import { formatDate } from '../lib/format'
+import { PAGE_FOLIOS } from '../lib/folios'
 
 interface FeatureRow {
   featureKey: string
@@ -140,7 +141,11 @@ export function Meta({ lang }: { lang: Lang }) {
         <article className="section">
           <div className="section__inner privacy meta-page">
             <PageMast
-              folio={lang === 'fr' ? '№ 05 — sous le capot' : '№ 05 — under the hood'}
+              folio={
+                lang === 'fr'
+                  ? `№ ${PAGE_FOLIOS.meta} — sous le capot`
+                  : `№ ${PAGE_FOLIOS.meta} — under the hood`
+              }
               stampLabel="LAC"
               stampSub={lang === 'fr' ? 'LIFE · AS · CODE' : 'LIFE · AS · CODE'}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}

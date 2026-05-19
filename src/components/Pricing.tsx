@@ -1,5 +1,6 @@
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
+import { HOME_FOLIOS } from '../lib/folios'
 
 export function Pricing({ lang }: { lang: Lang }) {
   const t = DICT[lang].pricing
@@ -14,12 +15,14 @@ export function Pricing({ lang }: { lang: Lang }) {
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
-            IV
+            {HOME_FOLIOS.pricing}
           </div>
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 className="section__display">{t.title}</h2>
           <p className="section__lead">{t.body}</p>
-          <p className="tier__asof mono">{t.asOf}</p>
+          <p className="tier__asof mono">
+            {HOME_FOLIOS.pricing} — {t.asOf}
+          </p>
         </header>
         <ol className="tiers tiers--menu">
           {t.tiers.map((tier) => {

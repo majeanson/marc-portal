@@ -180,7 +180,7 @@ const FR = {
     eyebrow: 'prix publics',
     title: 'Combien ça coûte',
     body: 'Prix concrets, pas de devis caché. Chaque tier (niveau de prix) renvoie à des projets réels du même niveau — tu vois ce que ça donne avant de soumettre.',
-    asOf: 'IV — Prix publics, en vigueur depuis 2026-05-15.',
+    asOf: 'Prix publics, en vigueur depuis 2026-05-15.',
     disclaimer:
       'Les prix peuvent bouger d’une saison à l’autre. Toujours négociables avant qu’on démarre, jamais de surprise après.',
     tier2Note:
@@ -1082,7 +1082,7 @@ const EN: Copy = {
     eyebrow: 'public pricing',
     title: 'What it costs',
     body: 'Concrete prices, no hidden quotes. Each tier (price level) links to actual past projects of the same level — you see what it looks like before you submit.',
-    asOf: 'IV — Public prices, effective 2026-05-15.',
+    asOf: 'Public prices, effective 2026-05-15.',
     disclaimer:
       'Prices may move between seasons. Always negotiable before we start, never a surprise after.',
     tier2Note:

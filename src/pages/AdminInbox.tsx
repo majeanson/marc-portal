@@ -260,7 +260,7 @@ export function AdminInbox({ lang }: { lang: Lang }) {
   if (authLoading) {
     return (
       <div className="app">
-        <Header lang={lang} />
+        <Header lang={lang} variant="session" />
         <main id="main-content">
           <article className="section intake session-frame">
             <div className="section__inner">
@@ -276,7 +276,7 @@ export function AdminInbox({ lang }: { lang: Lang }) {
   if (!email || !isAdmin) {
     return (
       <div className="app">
-        <Header lang={lang} />
+        <Header lang={lang} variant="session" />
         <main id="main-content">
           <article className="section intake session-frame">
             <div className="section__inner">
@@ -294,7 +294,7 @@ export function AdminInbox({ lang }: { lang: Lang }) {
 
   return (
     <div className="app">
-      <Header lang={lang} />
+      <Header lang={lang} variant="session" />
       <main id="main-content">
         <article className="section intake session-frame">
           <div className="section__inner">

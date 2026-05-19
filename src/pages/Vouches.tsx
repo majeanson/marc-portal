@@ -10,6 +10,7 @@ import { Header } from '../components/Header'
 import { PageMast } from '../components/PageMast'
 import { DICT, type Lang } from '../i18n'
 import { cssVars } from '../lib/styleVars'
+import { PAGE_FOLIOS } from '../lib/folios'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
 
 export function Vouches({ lang }: { lang: Lang }) {
@@ -44,7 +45,11 @@ export function Vouches({ lang }: { lang: Lang }) {
         <article className="section">
           <div className="section__inner">
             <PageMast
-              folio={lang === 'fr' ? '№ 03 — témoignages' : '№ 03 — testimonials'}
+              folio={
+                lang === 'fr'
+                  ? `№ ${PAGE_FOLIOS.vouches} — témoignages`
+                  : `№ ${PAGE_FOLIOS.vouches} — testimonials`
+              }
               stampLabel={lang === 'fr' ? 'VOUCHÉ' : 'VOUCHED'}
               stampSub={lang === 'fr' ? 'PAR DES VRAIS' : 'BY REAL PEOPLE'}
             >

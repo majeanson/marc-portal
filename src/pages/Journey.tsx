@@ -4,6 +4,7 @@ import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
+import { PAGE_FOLIOS } from '../lib/folios'
 
 /**
  * The full journey — a visual, phased walkthrough from "stranger lands on the
@@ -47,7 +48,11 @@ export function Journey({ lang }: { lang: Lang }) {
         <article className="section journey">
           <div className="section__inner">
             <PageMast
-              folio={lang === 'fr' ? '№ 04 — le parcours' : '№ 04 — the journey'}
+              folio={
+                lang === 'fr'
+                  ? `№ ${PAGE_FOLIOS.journey} — le parcours`
+                  : `№ ${PAGE_FOLIOS.journey} — the journey`
+              }
               stampLabel={lang === 'fr' ? 'XII ÉTAPES' : 'XII STEPS'}
               stampSub={lang === 'fr' ? 'TOI · MOI · NOUS' : 'YOU · ME · BOTH'}
               back={{ href: homeHref, label: j.backHome }}
@@ -111,7 +116,7 @@ export function Journey({ lang }: { lang: Lang }) {
               <div className="journey__cartouche" aria-hidden="true">
                 <div className="journey__cartouche-row mono">
                   <span>{lang === 'fr' ? 'CARTE' : 'CHART'}</span>
-                  <span>№ 04</span>
+                  <span>№ {PAGE_FOLIOS.journey}</span>
                 </div>
                 <div className="journey__cartouche-title">
                   {lang === 'fr' ? 'le parcours' : 'the voyage'}

@@ -1,5 +1,6 @@
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
+import { HOME_FOLIOS } from '../lib/folios'
 
 const GITHUB_URL = 'https://github.com/majeanson'
 // onError on the img hides the figure if /marc.jpg ever 404s, so a missing
@@ -13,7 +14,7 @@ export function About({ lang }: { lang: Lang }) {
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
-            VI
+            {HOME_FOLIOS.about}
           </div>
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 className="section__display">{t.title}</h2>

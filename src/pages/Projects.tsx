@@ -8,6 +8,7 @@ import { ProjectCardPreview } from '../components/ProjectCardPreview'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
+import { PAGE_FOLIOS } from '../lib/folios'
 
 type TierFilter = '0' | '1' | '2' | '3'
 type StatusFilter = 'active' | 'shipped' | 'draft' | 'triage' | 'rejected'
@@ -96,7 +97,11 @@ export function Projects({ lang }: { lang: Lang }) {
         <article className="section projects">
           <div className="section__inner">
             <PageMast
-              folio={lang === 'fr' ? '№ 02 — la galerie' : '№ 02 — the gallery'}
+              folio={
+                lang === 'fr'
+                  ? `№ ${PAGE_FOLIOS.projects} — la galerie`
+                  : `№ ${PAGE_FOLIOS.projects} — the gallery`
+              }
               stampLabel={lang === 'fr' ? 'LIVRÉ' : 'SHIPPED'}
               stampSub="QUÉBEC · ASYNC"
             >

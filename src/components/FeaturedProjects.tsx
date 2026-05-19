@@ -3,6 +3,7 @@ import { Link, useViewTransitionState } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { formatDate } from '../lib/format'
+import { HOME_FOLIOS } from '../lib/folios'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 import { ProjectCardPreview } from './ProjectCardPreview'
 
@@ -40,7 +41,7 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
-            III
+            {HOME_FOLIOS.featured}
           </div>
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 className="section__display">{t.title}</h2>

@@ -1,6 +1,7 @@
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { cssVars } from '../lib/styleVars'
+import { HOME_FOLIOS } from '../lib/folios'
 
 export function HowItWorks({ lang }: { lang: Lang }) {
   const t = DICT[lang].how
@@ -10,7 +11,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
-            II
+            {HOME_FOLIOS.how}
           </div>
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 className="section__display">{t.title}</h2>

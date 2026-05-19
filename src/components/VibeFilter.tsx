@@ -1,5 +1,6 @@
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
+import { HOME_FOLIOS } from '../lib/folios'
 
 export function VibeFilter({ lang }: { lang: Lang }) {
   const t = DICT[lang].vibe
@@ -8,7 +9,7 @@ export function VibeFilter({ lang }: { lang: Lang }) {
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
-            V
+            {HOME_FOLIOS.vibe}
           </div>
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 className="section__display">{t.title}</h2>

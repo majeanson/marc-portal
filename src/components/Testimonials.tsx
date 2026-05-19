@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { DICT, type Lang } from '../i18n'
+import { HOME_FOLIOS } from '../lib/folios'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
 
 const HOME_LIMIT = 3
@@ -57,7 +58,7 @@ export function Testimonials({ lang }: { lang: Lang }) {
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
-            VIII
+            {HOME_FOLIOS.testimonials}
           </div>
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 id="testimonials-heading" className="section__display">

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
+import { HOME_FOLIOS } from '../lib/folios'
 
 /**
  * Native <details>/<summary> accordion — no JS state for open/close (browsers
@@ -84,7 +85,7 @@ export function FAQ({ lang }: { lang: Lang }) {
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
-            VII
+            {HOME_FOLIOS.faq}
           </div>
           <div className="section__eyebrow">{t.eyebrow}</div>
           <h2 className="section__display">{t.title}</h2>
