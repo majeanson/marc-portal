@@ -10081,7 +10081,7 @@ button.intake__progress-step:disabled {
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: lowercase;
-  color: var(--text-soft);
+  color: var(--text-mid);
   margin: 0;
 }
 
@@ -10259,7 +10259,7 @@ button.intake__progress-step:disabled {
   color: var(--text-mid);
 }
 .journey__step-where {
-  color: var(--text-soft);
+  color: var(--text-mid);
 }
 .journey__step-title {
   font-family: var(--display);
@@ -11017,9 +11017,6 @@ button.intake__progress-step:disabled {
   pointer-events: none;
   border: 1px dashed var(--border);
   border-radius: 18px;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(58, 96, 121, 0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 30% 100%, rgba(193, 105, 61, 0.04) 0%, transparent 60%);
   z-index: 0;
 }
 
@@ -11227,12 +11224,9 @@ button.intake__progress-step:disabled {
   }
 }
 
-/* Night-mode tints — the chart radials get washed out on dark ink. */
-:root[data-theme='night'] .journey__chart-frame {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(108, 145, 173, 0.10) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 30% 100%, rgba(210, 131, 88, 0.06) 0%, transparent 60%);
-}
+/* Night-mode adjustments — chart-frame keeps just the dashed border (the
+   day-mode parchment-tint gradient was dropped: it added no readable
+   value and rendered as a visible horizontal band on the night surface). */
 :root[data-theme='night'] .journey__cartouche {
   background: var(--bg-section);
 }
