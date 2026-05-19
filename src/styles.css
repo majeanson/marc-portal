@@ -11180,15 +11180,23 @@ button.intake__progress-step:disabled {
 }
 
 /* Mobile: chart-frame border dissolves (would crowd the cards). Cartouche
-   stays as a small chip; compass shrinks further. Boat keeps sailing on
-   the left-aligned mobile spine. */
+   and compass are lifted into the path's top margin so they don't crash
+   into the first phase header (which sits at the same top-left corner of
+   the path on mobile). Boat keeps sailing on the left-aligned spine. */
 @media (max-width: 640px) {
+  .journey__path {
+    /* Reserve room above the first phase for the cartouche + compass that
+       are absolutely positioned just above the path top edge. Without
+       this, the cartouche overlaps the phase-head ("I — Découverte"). */
+    margin-top: 72px;
+  }
   .journey__chart-frame {
     border-style: none;
     background: none;
   }
   .journey__cartouche {
-    top: -10px;
+    /* Sits in the new margin-top space above the path content. */
+    top: -64px;
     left: 0;
     padding: 6px 9px;
     border-radius: 8px;
@@ -11200,10 +11208,10 @@ button.intake__progress-step:disabled {
     font-size: 9px;
   }
   .journey__compass {
-    width: 42px;
-    height: 42px;
-    top: -4px;
-    right: -2px;
+    width: 44px;
+    height: 44px;
+    top: -56px;
+    right: 4px;
   }
   .journey__boat {
     /* On mobile the spine is pinned to the left (20px), not centered. */
