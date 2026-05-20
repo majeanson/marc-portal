@@ -11667,39 +11667,10 @@ button.intake__progress-step:disabled {
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   VIBE OUTRO + BRING-ANYTHING — permission copy that immediately follows
-   the vibe do/don't ledger so a hesitant visitor never closes the tab.
-
-   The vibe__outro is a single italic paragraph below the two-column ledger.
-   The bring-anything section is a full editorial beat after it, with an
-   examples card styled as a quick notes page.
+   BRING-ANYTHING — permission copy that immediately follows the vibe
+   do/don't ledger so a hesitant visitor never closes the tab. A full
+   editorial beat, with an examples card styled as a quick notes page.
    ──────────────────────────────────────────────────────────────────────── */
-
-.vibe__outro {
-  margin: 32px auto 0;
-  max-width: 60ch;
-  font-family: var(--sans);
-  font-style: italic;
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--text-mid);
-  text-align: center;
-  /* Subtle sage accent rule above to mark the shift from "rules" to
-     "permission" — visually echoes the section divider asterisms. */
-  position: relative;
-  padding-top: 22px;
-}
-.vibe__outro::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px;
-  height: 1px;
-  background: var(--accent);
-  opacity: 0.45;
-}
 
 .bring-anything .section__head {
   /* The "no idea too small" eyebrow lands closer to the title — the lead

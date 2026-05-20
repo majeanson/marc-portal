@@ -188,8 +188,6 @@ const FR = {
         'Du travail dans le beurre',
       ],
     },
-    outro:
-      'Ces listes sont indicatives, pas un test à passer. Si ton idée ne rentre pas clairement dans une catégorie, écris-la pareil — c’est moi qui triage, pas toi.',
   },
 
   bringAnything: {
@@ -389,7 +387,7 @@ const FR = {
   },
 
   pullQuote: {
-    body: 'Pas une agence. Pas une plateforme. Un humain qui décide, une machine au milieu pour gérer le reste.',
+    body: 'Je serai toujours honnête sur ton projet — même quand la réponse, c’est « garde ton argent ».',
     attribution: 'Marc',
   },
 
@@ -1072,8 +1070,6 @@ const EN: Copy = {
         'Work that goes nowhere',
       ],
     },
-    outro:
-      "These lists are indicative, not a test you have to pass. If your idea doesn't clearly fit one of the categories, write it anyway — I triage, not you.",
   },
 
   bringAnything: {
@@ -1266,7 +1262,7 @@ const EN: Copy = {
   },
 
   pullQuote: {
-    body: 'Not an agency. Not a platform. A human deciding, with a machine in the middle for the rest.',
+    body: 'I’ll always be honest about your project — even when the answer is “keep your money.”',
     attribution: 'Marc',
   },
 
