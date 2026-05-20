@@ -2,15 +2,8 @@ import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { HeroShippedProject } from './HeroShippedProject'
-import { FeatureDot } from './FeatureDot'
 import { useAuth } from '../lib/authContext'
-import { PAGE_FEATURE } from '../lib/features'
 import { getCapacityLive, listPublicProjects, type PublicProject } from '../lib/sessionsApi'
-
-const SECONDARY_CTA: Record<Lang, { label: string; href: string }> = {
-  fr: { label: 'Voir un projet en cours →', href: '/projects' },
-  en: { label: 'See a project in progress →', href: '/en/projects' },
-}
 
 // Greeting that swaps with the visitor's local clock. Late-night gets a
 // dry "encore là?" because Marc is a side-gig dev — most of the page's
@@ -174,21 +167,6 @@ export function Hero({ lang }: { lang: Lang }) {
             </a>
           )}
         </div>
-        {/* Secondary CTA lands on /projects (shipped cluster). The teal
-            dot signals "you're about to enter the shipped colour story" and
-            doubles as a /carte?feature=shipped shortcut. */}
-        <span className="hero__secondary-cta-wrap" data-feature={PAGE_FEATURE['page.projects']}>
-          <FeatureDot
-            feature={PAGE_FEATURE['page.projects']}
-            lang={lang}
-            size="sm"
-            decorative
-            className="hero__secondary-cta-dot"
-          />
-          <a className="hero__secondary-cta mono" href={SECONDARY_CTA[lang].href}>
-            {SECONDARY_CTA[lang].label}
-          </a>
-        </span>
         {shippedThisYear > 0 && (
           <p className="hero__shipped-counter mono">
             <span className="hero__shipped-counter-dot" aria-hidden="true" />

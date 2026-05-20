@@ -863,42 +863,6 @@ p {
   box-shadow: 0 8px 22px rgba(61, 110, 78, 0.28);
 }
 
-/* Secondary CTA — the "I just want to peek" path per §2.2(d). Sits on
-   its own line beneath the primary so the eye reads "main action, then
-   alternative" without visual competition. */
-.hero__secondary-cta {
-  display: inline-block;
-  margin-top: 14px;
-  font-size: 13.5px;
-  letter-spacing: 0.02em;
-  color: var(--text-soft);
-  border-bottom: 1px dotted var(--text-soft);
-  padding-bottom: 2px;
-}
-.hero__secondary-cta:hover,
-.hero__secondary-cta:focus-visible {
-  color: var(--accent-warm);
-  border-bottom-color: var(--accent-warm);
-  text-decoration: none;
-  outline: none;
-}
-/* Wrapper holds the shipped-feature dot + the dotted secondary CTA on one
-   line. Dot inherits --ft-color from data-feature on the wrapper. */
-.hero__secondary-cta-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 14px;
-}
-.hero__secondary-cta-wrap .hero__secondary-cta {
-  margin-top: 0;
-}
-.hero__secondary-cta-wrap:hover .hero__secondary-cta,
-.hero__secondary-cta-wrap:focus-within .hero__secondary-cta {
-  color: var(--ft-color, var(--accent-warm));
-  border-bottom-color: var(--ft-color, var(--accent-warm));
-}
-
 /* Steps */
 .steps {
   list-style: none;
