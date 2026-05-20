@@ -13334,6 +13334,12 @@ a.feature-dot:focus-visible {
 /* FeatureContinue — page-outro "next up" pointer. Carries data-feature
    of the DESTINATION feature so its accent comes from --ft-color. */
 .feature-continue {
+  /* width:100% is load-bearing — .app is a column flex, and the `auto`
+     side margins below would otherwise suppress the default stretch,
+     shrinking the aside to its content width and centring it off the
+     880px content column. An explicit width keeps it aligned with
+     .section__inner. */
+  width: 100%;
   max-width: var(--max-w);
   margin: 8px auto 0;
   padding: 0 var(--gutter);
