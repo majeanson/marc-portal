@@ -23,6 +23,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
+    "e2e": "playwright test",
+    "e2e:update": "playwright test --update-snapshots",
+    "e2e:report": "playwright show-report",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run lac-lint && npm run test:run",
     "db:migrate:local": "wrangler d1 migrations apply marc-portal-db --local",
     "db:migrate:prod": "wrangler d1 migrations apply marc-portal-db --remote"
@@ -44,6 +47,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.0.0",
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

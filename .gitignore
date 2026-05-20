@@ -9,3 +9,8 @@ dist
 *.tsbuildinfo
 prompt.log.jsonl
 .claude
+
+# Playwright — committed: e2e/__screenshots__ (baselines). Ignored: run output.
+playwright-report
+test-results
+e2e/.cache

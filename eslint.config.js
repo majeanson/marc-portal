@@ -31,4 +31,11 @@ export default defineConfig([
       ],
     },
   },
+  {
+    // Playwright config + E2E specs run in Node, not the browser.
+    files: ['e2e/**/*.ts', 'playwright.config.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

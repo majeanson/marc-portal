@@ -1,0 +1,32 @@
+/**
+ * Visual-regression suite — one full-page screenshot per public route, per
+ * viewport. The committed baselines under e2e/__screenshots__/ double as a
+ * browsable layout gallery.
+ *
+ * Masked regions are content that legitimately changes between runs and
+ * would otherwise fail every diff:
+ *  - the footer build hash + live Quebec clock
+ *  - the /meta freshness pills (their colour is derived from today's date)
+ */
+
+import { expect, test } from '@playwright/test'
+import { PUBLIC_ROUTES } from './routes'
+
+test.describe('page screenshots', () => {
+  for (const route of PUBLIC_ROUTES) {
+    test(route.name, async ({ page }) => {
+      await page.goto(route.path, { waitUntil: 'networkidle' })
+      // Custom display/mono fonts load async — wait or the first paint
+      // shows a fallback face and the baseline is unstable.
+      await page.evaluate(() => document.fonts.ready)
+      await expect(page).toHaveScreenshot(`${route.name}.png`, {
+        fullPage: true,
+        mask: [
+          page.locator('.site-footer__build'),
+          page.locator('.site-footer__qctime'),
+          page.locator('.meta-feature__fresh'),
+        ],
+      })
+    })
+  }
+})
