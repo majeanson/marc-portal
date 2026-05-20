@@ -130,14 +130,11 @@ export interface VisionBubble {
   pos: { x: number; y: number }
   /** Sequence number (1..N) drawn as a small mark next to the bubble. */
   index: number
-  /** Optional in-app navigation target. When set, the bubble becomes a real
-   *  link (cursor pointer, role=link, Enter/Space activates). Use the FR
-   *  path on the FR side, EN path on the EN side. Validated by the map test:
-   *  every href must match a real route in the skeleton. */
-  href?: Bi
   /** The feature this bubble represents — one bubble per FeatureId. Drives
-   *  the bubble's accent color via --feat-{feature}-color / -soft tokens
-   *  and ties the bubble to the matching Pages-layer group. */
+   *  the bubble's accent color via --feat-{feature}-color / -soft tokens,
+   *  ties it to the matching Pages-layer group, and is what a click "opens"
+   *  (switch to Pages layer + ?feature filter). A bubble is a feature, not
+   *  a shortcut to one page. */
   feature: FeatureId
 }
 

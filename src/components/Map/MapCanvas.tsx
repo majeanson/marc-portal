@@ -25,12 +25,29 @@ interface Props {
   isAdmin: boolean
   activeJourneyId?: string
   activeFeature?: FeatureId | null
+  /** Open a feature from a Vision bubble — switches layer + applies filter. */
+  onSelectFeature: (feature: FeatureId) => void
 }
 
-export function MapCanvas({ layer, data, lang, isAdmin, activeJourneyId, activeFeature }: Props) {
+export function MapCanvas({
+  layer,
+  data,
+  lang,
+  isAdmin,
+  activeJourneyId,
+  activeFeature,
+  onSelectFeature,
+}: Props) {
   switch (layer) {
     case 'vision':
-      return <VisionLayer data={data} lang={lang} activeFeature={activeFeature ?? null} />
+      return (
+        <VisionLayer
+          data={data}
+          lang={lang}
+          activeFeature={activeFeature ?? null}
+          onSelectFeature={onSelectFeature}
+        />
+      )
     case 'pages':
       return <PagesLayer data={data} lang={lang} activeFeature={activeFeature ?? null} />
     case 'data':

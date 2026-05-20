@@ -12566,15 +12566,10 @@ a.map-node:focus-visible {
   .map-page__canvas {
     padding: 8px;
   }
-  /* Filter pill — wrap its inner labels so a long feature name doesn't
-     blow out the page width on a 360px phone. */
-  .map-page__filter-pill {
-    flex-wrap: wrap;
-    row-gap: 4px;
-    padding: 6px 8px 6px 12px;
-  }
-  .map-page__filter-name {
-    word-break: break-word;
+  /* FeatureIndex — stack the two surface columns on a phone. */
+  .feature-index__lists {
+    flex-direction: column;
+    gap: 14px;
   }
 }
 @media (max-width: 480px) {
@@ -13130,58 +13125,109 @@ a.page-folio-mark:focus-visible .page-folio-mark__dot {
   pointer-events: none;
 }
 
-/* Filter pill — sits above the canvas when ?feature= is active. The pill
-   itself carries data-feature so its colors come from --ft-color/--ft-soft. */
-.map-page__filter-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+/* FeatureIndex — the panel shown above the canvas when ?feature= is active.
+   Lists every page + home section in the open feature's colour. Carries
+   data-feature so all its accents come from --ft-color / --ft-soft. */
+.feature-index {
   margin-top: 18px;
-  padding: 8px 10px 8px 14px;
+  padding: 14px 16px 16px;
   background: var(--ft-soft);
   border: 1px solid var(--ft-color);
-  border-radius: 999px;
+  border-radius: var(--radius);
   color: var(--text);
-  font-size: 13px;
-  max-width: 100%;
 }
-.map-page__filter-dot {
-  width: 10px;
-  height: 10px;
+.feature-index__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.feature-index__dot {
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--ft-color);
   flex-shrink: 0;
 }
-.map-page__filter-label {
-  font-size: 11px;
-  letter-spacing: 0.08em;
+.feature-index__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.feature-index__eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-soft);
 }
-.map-page__filter-name {
+.feature-index__title {
   font-family: var(--display);
   font-weight: 700;
+  font-size: 18px;
+  margin: 0;
   color: var(--ft-color);
 }
-.map-page__filter-clear {
-  margin-left: 6px;
+.feature-index__count {
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.feature-index__clear {
+  margin-left: auto;
   border: 1px solid var(--ft-color);
   background: transparent;
   color: var(--ft-color);
   font-size: 11px;
   letter-spacing: 0.04em;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 999px;
   cursor: pointer;
   transition:
     background 140ms ease,
     color 140ms ease;
 }
-.map-page__filter-clear:hover,
-.map-page__filter-clear:focus-visible {
+.feature-index__clear:hover,
+.feature-index__clear:focus-visible {
   background: var(--ft-color);
   color: var(--bg);
   outline: none;
+}
+.feature-index__lists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 12px;
+}
+.feature-index__col-title {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin: 0 0 6px;
+}
+.feature-index__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.feature-index__item {
+  font-size: 13.5px;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 120ms ease;
+}
+.feature-index__item:hover,
+.feature-index__item:focus-visible {
+  border-bottom-color: var(--ft-color);
+  outline: none;
+}
+.feature-index__empty {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--text-soft);
 }
 
 /* Make the page-folio-mark clickable when it's a real link (carries

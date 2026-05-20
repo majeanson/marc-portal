@@ -775,7 +775,6 @@ const VISION: VisionBubble[] = [
     size: 'lg',
     pos: { x: 24, y: 18 },
     index: 1,
-    href: bi('/intake', '/en/intake'),
   },
   {
     id: 'vision.conversation',
@@ -788,7 +787,6 @@ const VISION: VisionBubble[] = [
     size: 'md',
     pos: { x: 64, y: 18 },
     index: 2,
-    href: bi('/parcours', '/en/journey'),
   },
   {
     id: 'vision.iterative',
@@ -801,7 +799,6 @@ const VISION: VisionBubble[] = [
     size: 'md',
     pos: { x: 24, y: 50 },
     index: 3,
-    href: bi('/projects', '/en/projects'),
   },
   {
     id: 'vision.pricing',
@@ -814,7 +811,6 @@ const VISION: VisionBubble[] = [
     size: 'md',
     pos: { x: 64, y: 50 },
     index: 4,
-    href: bi('/tier-0', '/en/tier-0'),
   },
   {
     id: 'vision.keys',
@@ -827,7 +823,6 @@ const VISION: VisionBubble[] = [
     size: 'md',
     pos: { x: 24, y: 82 },
     index: 5,
-    href: bi('/handoff', '/en/handoff'),
   },
   {
     id: 'vision.shipped',
@@ -840,7 +835,6 @@ const VISION: VisionBubble[] = [
     size: 'md',
     pos: { x: 64, y: 82 },
     index: 6,
-    href: bi('/vouches', '/en/vouches'),
   },
 ]
 

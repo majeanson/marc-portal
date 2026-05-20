@@ -208,20 +208,15 @@ describe('curated overlay coherence', () => {
     }
   })
 
-  it('every Vision bubble href maps to a real route in the skeleton', () => {
-    // Vision bubbles double as CTAs; a broken link sends visitors to a 404.
-    // Pair each href.fr / href.en against the route table so a renamed route
-    // surfaces here in CI rather than as a visitor-reported dead link.
-    const frPaths = new Set(skeleton.routes.filter((r) => r.lang === 'fr').map((r) => r.path))
-    const enPaths = new Set(skeleton.routes.filter((r) => r.lang === 'en').map((r) => r.path))
-    for (const b of data.vision) {
-      if (!b.href) continue
-      expect(frPaths, `vision ${b.id} fr href ${b.href.fr} is not a known route`).toContain(
-        b.href.fr,
-      )
-      expect(enPaths, `vision ${b.id} en href ${b.href.en} is not a known route`).toContain(
-        b.href.en,
-      )
+  it('every feature has at least one page so the FeatureIndex is never empty', () => {
+    // Clicking a Vision bubble opens its feature in the FeatureIndex panel.
+    // A feature with zero pages would render an empty panel — a dead end.
+    for (const fid of FEATURE_IDS) {
+      const pages = data.nodes.filter((n) => n.kind === 'page' && n.feature === fid)
+      expect(
+        pages.length,
+        `feature ${fid} has no page — FeatureIndex would be empty`,
+      ).toBeGreaterThanOrEqual(1)
     }
   })
 })

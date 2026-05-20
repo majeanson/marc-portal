@@ -16,7 +16,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { useAuth } from '../lib/authContext'
-import { FEATURES, isFeatureId, PAGE_FEATURE, type FeatureId } from '../lib/features'
+import { isFeatureId, PAGE_FEATURE, type FeatureId } from '../lib/features'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { MAP_DATA } from '../lib/map/data'
 import { filterForViewer } from '../lib/map/filter'
@@ -26,6 +26,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { MapCanvas } from '../components/Map/MapCanvas'
 import { MapLegend } from '../components/Map/MapLegend'
+import { FeatureIndex } from '../components/Map/FeatureIndex'
 
 const COPY = {
   fr: {
@@ -36,8 +37,6 @@ const COPY = {
     previewBanner:
       'Aperçu visiteur — tu vois ce que voit un visiteur non connecté. Clique « Quitter aperçu » pour revenir.',
     journeyOn: 'Parcours :',
-    filterShowing: 'Filtre :',
-    filterClear: 'Tout afficher',
   },
   en: {
     eyebrow: 'MAP',
@@ -47,8 +46,6 @@ const COPY = {
     previewBanner:
       'Previewing as visitor — you’re seeing what a signed-out visitor sees. Click “Exit preview” to return.',
     journeyOn: 'Journey:',
-    filterShowing: 'Filter:',
-    filterClear: 'Show all',
   },
 } as const
 
@@ -84,6 +81,22 @@ export function Map({ lang }: { lang: Lang }) {
       { replace: true },
     )
   }, [setParams])
+
+  // Opening a feature (clicking a Vision bubble) drops the visitor on the
+  // Pages layer filtered to that feature — they see every page in the
+  // colour, and the FeatureIndex panel lists pages + home sections. Not a
+  // `replace` so the browser back button returns to the Vision view.
+  const selectFeature = useCallback(
+    (f: FeatureId) => {
+      setParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('layer', 'pages')
+        next.set('feature', f)
+        return next
+      })
+    },
+    [setParams],
+  )
 
   const setLayer = useCallback(
     (l: LayerId) => {
@@ -152,19 +165,12 @@ export function Map({ lang }: { lang: Lang }) {
           )}
 
           {activeFeature && (
-            <div
-              className="map-page__filter-pill"
-              data-feature={activeFeature}
-              role="status"
-              aria-live="polite"
-            >
-              <span className="map-page__filter-dot" aria-hidden="true" />
-              <span className="map-page__filter-label mono">{t.filterShowing}</span>
-              <span className="map-page__filter-name">{FEATURES[activeFeature].label[lang]}</span>
-              <button type="button" className="map-page__filter-clear mono" onClick={clearFeature}>
-                {t.filterClear} ×
-              </button>
-            </div>
+            <FeatureIndex
+              feature={activeFeature}
+              lang={lang}
+              data={filtered}
+              onClear={clearFeature}
+            />
           )}
 
           <MapLegend
@@ -207,6 +213,7 @@ export function Map({ lang }: { lang: Lang }) {
               isAdmin={isAdmin}
               activeJourneyId={activeJourneyId}
               activeFeature={activeFeature}
+              onSelectFeature={selectFeature}
             />
           </div>
         </article>

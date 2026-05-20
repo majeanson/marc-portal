@@ -164,6 +164,23 @@ export const HOME_SECTION_FEATURE: Record<string, FeatureId | undefined> = {
   cta: 'intake',
 }
 
+/** Display labels for the home anchor sections — keyed by the same slug
+ *  HOME_SECTION_FEATURE uses. The FeatureIndex panel reads this to list
+ *  "which home sections belong to feature X" with human labels + anchors.
+ *  Kept here (not i18n.ts) so the section↔feature↔label triple stays in
+ *  one file and can't drift. */
+export const HOME_SECTION_LABEL: Record<string, Bi> = {
+  featured: { fr: 'Projets en vedette', en: 'Featured projects' },
+  how: { fr: 'Comment ça marche', en: 'How it works' },
+  pricing: { fr: 'Prix', en: 'Pricing' },
+  vibe: { fr: 'Je fais / je fais pas', en: 'What I do / don’t' },
+  'bring-anything': { fr: 'Apporte n’importe quoi', en: 'Bring anything' },
+  about: { fr: 'À propos', en: 'About' },
+  testimonials: { fr: 'Témoignages', en: 'Testimonials' },
+  faq: { fr: 'FAQ', en: 'FAQ' },
+  cta: { fr: 'Appel final', en: 'Final call' },
+}
+
 /** Session sub-header tabs (#session-statut / #session-conversation /
  *  ...). Active tab borrows --ft-color from the matched feature so the
  *  user follows one colour from "Paiement" tab → /tier-0 → /carte. */
