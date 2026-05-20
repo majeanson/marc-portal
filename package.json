@@ -45,6 +45,7 @@
     "langium": "^4.2.4"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@cloudflare/workers-types": "^4.0.0",
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.60.0",

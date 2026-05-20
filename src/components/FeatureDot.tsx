@@ -9,21 +9,26 @@
  * primary affordance: any title with a dot belongs to a coloured cluster,
  * and any dot leads back to the cluster.
  *
+ * Each coloured dot also carries the feature's pictogram (folder, speech
+ * bubble, eye, $, key, check, gear) painted in the paper colour — so the
+ * dot identifies its feature even before a visitor has learned the palette.
+ *
  * Variants:
- *   - feature set → renders as a <Link> to /carte?feature=X
- *   - feature undefined → renders a neutral hollow dot (transparency/meta
- *     pages — Privacy, PIA, Meta, Map — show this so the visual rhythm of
- *     "every page title has a dot" doesn't break)
+ *   - feature set → renders as a <Link> to /carte?feature=X, glyph inside
+ *   - feature undefined → renders a neutral filled dot, no glyph
+ *     (transparency/meta pages — Privacy, PIA, Meta, Map — show this so the
+ *     visual rhythm of "every page title has a dot" doesn't break)
  *
  * Sizes:
- *   - 'sm' (8px)  — beside small inline links (footer, section rail)
- *   - 'md' (10px) — beside page titles
- *   - 'lg' (14px) — beside big magazine-style h1 (PageMast title)
+ *   - 'sm' (11px) — beside small inline links (footer, section rail)
+ *   - 'md' (14px) — beside page titles
+ *   - 'lg' (18px) — beside big magazine-style h1 (PageMast title)
  */
 
 import type { Lang } from '../i18n'
 import { Link } from 'react-router-dom'
 import { FEATURES, type FeatureId } from '../lib/features'
+import { FeatureGlyph } from '../lib/featureGlyphs'
 
 interface Props {
   feature: FeatureId | undefined
@@ -50,7 +55,11 @@ export function FeatureDot({ feature, lang, size = 'sm', decorative = false, cla
   if (decorative) {
     // Inside an already-clickable parent — render a plain styled span that
     // inherits the feature accent. The PARENT is the link; we're just paint.
-    return <span className={cls} data-feature={feature} aria-hidden="true" />
+    return (
+      <span className={cls} data-feature={feature} aria-hidden="true">
+        <FeatureGlyph feature={feature} />
+      </span>
+    )
   }
 
   const to = lang === 'en' ? `/en/map?feature=${feature}` : `/carte?feature=${feature}`
@@ -59,5 +68,9 @@ export function FeatureDot({ feature, lang, size = 'sm', decorative = false, cla
       ? `Filter the site map to “${FEATURES[feature].label.en}”`
       : `Filtrer la carte du site sur « ${FEATURES[feature].label.fr} »`
 
-  return <Link to={to} className={cls} data-feature={feature} aria-label={label} title={label} />
+  return (
+    <Link to={to} className={cls} data-feature={feature} aria-label={label} title={label}>
+      <FeatureGlyph feature={feature} />
+    </Link>
+  )
 }

@@ -30,6 +30,7 @@ import {
   SESSION_TAB_LABEL,
   type FeatureId,
 } from '../../lib/features'
+import { FeatureGlyph } from '../../lib/featureGlyphs'
 import type { MapData, MapNode } from '../../lib/map/types'
 
 interface Props {
@@ -98,7 +99,9 @@ export function FeatureIndex({ feature, lang, data, onClear }: Props) {
       aria-label={FEATURES[feature].label[lang]}
     >
       <header className="feature-index__head">
-        <span className="feature-index__dot" aria-hidden="true" />
+        <span className="feature-index__dot" aria-hidden="true">
+          <FeatureGlyph feature={feature} />
+        </span>
         <div className="feature-index__heading">
           <span className="feature-index__eyebrow mono">{t.eyebrow}</span>
           <h2 className="feature-index__title">{FEATURES[feature].label[lang]}</h2>

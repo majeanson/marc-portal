@@ -18,6 +18,7 @@
 import type { Lang } from '../../../i18n'
 import type { FeatureId } from '../../../lib/features'
 import { FEATURES } from '../../../lib/features'
+import { FeatureGlyph } from '../../../lib/featureGlyphs'
 import type { MapData, VisionBubble } from '../../../lib/map/types'
 
 interface Props {
@@ -47,6 +48,13 @@ const LABEL_INSET: Record<VisionBubble['size'], number> = {
   sm: 22,
   md: 26,
   lg: 30,
+}
+
+// Feature pictogram size, mirrored top-right against the tour index.
+const GLYPH_SIZE: Record<VisionBubble['size'], number> = {
+  sm: 34,
+  md: 40,
+  lg: 46,
 }
 
 function openLabel(lang: Lang, featureLabel: string): string {
@@ -86,7 +94,7 @@ export function VisionLayer({ data, lang, activeFeature, onSelectFeature }: Prop
         className="map-canvas map-canvas--vision map-vision__svg"
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="xMidYMid meet"
-        role="img"
+        role="group"
         aria-label={lang === 'en' ? 'Big picture map' : 'Carte d’ensemble'}
       >
         <g className="map-vision__connectors">
@@ -136,6 +144,14 @@ export function VisionLayer({ data, lang, activeFeature, onSelectFeature }: Prop
                 >
                   {b.index}
                 </text>
+                <FeatureGlyph
+                  feature={b.feature}
+                  className="map-vision__bubble-glyph"
+                  width={GLYPH_SIZE[b.size]}
+                  height={GLYPH_SIZE[b.size]}
+                  x={r - inset - GLYPH_SIZE[b.size] + 6}
+                  y={-r + inset - 8}
+                />
                 <foreignObject x={-labelW / 2} y={-labelH / 2} width={labelW} height={labelH}>
                   <div className="map-vision__bubble-content">
                     <div className="map-vision__bubble-label">{label}</div>
@@ -175,6 +191,7 @@ export function VisionLayer({ data, lang, activeFeature, onSelectFeature }: Prop
                 <span className="map-vision__card-index mono" aria-hidden="true">
                   {String(b.index).padStart(2, '0')}
                 </span>
+                <FeatureGlyph feature={b.feature} className="map-vision__card-glyph" />
                 <span className="map-vision__card-body">
                   <span className="map-vision__card-label">{label}</span>
                   {sub && <span className="map-vision__card-sub">{sub}</span>}

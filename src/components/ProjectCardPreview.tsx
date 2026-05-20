@@ -64,6 +64,19 @@ export function ProjectCardPreview({
     return () => io.disconnect()
   }, [buildHref, hasIO])
 
+  // Keep --preview-scale in sync with the card width. The iframe renders at
+  // a fixed 1280×800 desktop size; CSS scales it by this value so it fills
+  // the 16:10 box exactly at any card width (a fixed scale left a gap).
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const sync = () => el.style.setProperty('--preview-scale', String(el.clientWidth / 1280))
+    sync()
+    const ro = new ResizeObserver(sync)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   useEffect(() => {
     if (!visible || !buildHref) return
     const tid = window.setTimeout(() => {

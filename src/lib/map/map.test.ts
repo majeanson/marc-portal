@@ -21,6 +21,7 @@ import { CURATED } from './curated'
 import {
   FEATURE_IDS,
   FEATURE_PRIMARY_PAGE,
+  HOME_SECTION_ORDER,
   META_PAGE_LINK,
   PAGE_FEATURE,
   PRODUCT_FEATURE_IDS,
@@ -221,12 +222,32 @@ describe('curated overlay coherence', () => {
   it('every FEATURE_PRIMARY_PAGE route resolves to a real route', () => {
     // The continue-nudge lands here; a stale route would 404 the visitor.
     // FEATURE_PRIMARY_PAGE is keyed by the six product features only.
+    // A stop may be a home-section anchor ('/en/#how') for a feature with
+    // no dedicated page — split off the '#section' and validate each part:
+    // the base must be a real route, the anchor a real home section.
     const frPaths = new Set(skeleton.routes.filter((r) => r.lang === 'fr').map((r) => r.path))
     const enPaths = new Set(skeleton.routes.filter((r) => r.lang === 'en').map((r) => r.path))
+    const sections = new Set<string>(HOME_SECTION_ORDER)
+    const check = (full: string, routes: Set<string>, fid: string) => {
+      const hashIdx = full.indexOf('#')
+      const hash = hashIdx === -1 ? undefined : full.slice(hashIdx + 1)
+      let base = hashIdx === -1 ? full : full.slice(0, hashIdx)
+      // '/en/#how' → base '/en/'; normalise the trailing slash (keep root '/').
+      if (base.length > 1 && base.endsWith('/')) base = base.slice(0, -1)
+      expect(routes, `${fid} primary page ${full} → base ${base} is not a known route`).toContain(
+        base,
+      )
+      if (hash !== undefined) {
+        expect(
+          sections,
+          `${fid} primary page ${full} → anchor #${hash} is not a home section`,
+        ).toContain(hash)
+      }
+    }
     for (const fid of PRODUCT_FEATURE_IDS) {
       const page = FEATURE_PRIMARY_PAGE[fid]
-      expect(frPaths, `${fid} primary page ${page.fr} is not a known route`).toContain(page.fr)
-      expect(enPaths, `${fid} primary page ${page.en} is not a known route`).toContain(page.en)
+      check(page.fr, frPaths, fid)
+      check(page.en, enPaths, fid)
     }
   })
 

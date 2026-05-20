@@ -79,27 +79,27 @@ export const FEATURES: Record<FeatureId, Feature> = {
   intake: {
     id: 'intake',
     label: { fr: 'Apporte un projet', en: 'Bring a project' },
-    hue: 'sage',
+    hue: 'green',
   },
   conversation: {
     id: 'conversation',
     label: { fr: 'Discussion async', en: 'Async conversation' },
-    hue: 'cool blue',
+    hue: 'blue',
   },
   iterative: {
     id: 'iterative',
     label: { fr: 'Tu vois chaque build', en: 'You see every build' },
-    hue: 'ochre',
+    hue: 'amber',
   },
   pricing: {
     id: 'pricing',
     label: { fr: 'Tarification claire', en: 'Clear pricing' },
-    hue: 'plum',
+    hue: 'purple',
   },
   keys: {
     id: 'keys',
     label: { fr: 'Tu gardes les clés', en: 'You keep the keys' },
-    hue: 'terracotta',
+    hue: 'red',
   },
   shipped: {
     id: 'shipped',
@@ -190,13 +190,19 @@ export const FEATURE_NEXT: Record<ProductFeatureId, ProductFeatureId> = {
 
 /** The page a "continue" nudge lands on for each PRODUCT feature — the
  *  most representative, visitor-pleasant page in that feature's cluster.
- *  Validated against the route skeleton in map.test.ts. */
+ *
+ *  Two features have no dedicated public page: `conversation`'s surfaces are
+ *  all auth-gated (login, sessions) and `iterative`'s public surface is the
+ *  dynamic /share/:id link. Sending the tour to /login (a bare form) or to
+ *  /projects (which is actually the `shipped` gallery) lands the visitor
+ *  somewhere irrelevant — so those two stops point at the home-page section
+ *  that explains the feature instead (the `#how` anchor, matching
+ *  FEATURE_HOME_SECTION). Validated against the route skeleton in
+ *  map.test.ts, which also accepts a `#section` anchor. */
 export const FEATURE_PRIMARY_PAGE: Record<ProductFeatureId, Bi> = {
   intake: { fr: '/intake', en: '/en/intake' },
-  // Conversation has no marketing page — its surfaces are all functional
-  // (login, sessions). /login is the honest "this is where it starts".
-  conversation: { fr: '/login', en: '/en/login' },
-  iterative: { fr: '/projects', en: '/en/projects' },
+  conversation: { fr: '/#how', en: '/en/#how' },
+  iterative: { fr: '/#how', en: '/en/#how' },
   pricing: { fr: '/tier-0', en: '/en/tier-0' },
   keys: { fr: '/handoff', en: '/en/handoff' },
   shipped: { fr: '/vouches', en: '/en/vouches' },

@@ -25,7 +25,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
-  workers: isCI ? 2 : undefined,
+  // Capped at 2 everywhere: with one shared preview server, the default
+  // (CPU-count) worker pool overwhelms the machine doing full-page
+  // screenshots + axe scans in parallel, causing timeout flake.
+  workers: 2,
   reporter: isCI
     ? [['github'], ['html', { open: 'never' }]]
     : [['list'], ['html', { open: 'never' }]],
@@ -58,6 +61,18 @@ export default defineConfig({
     {
       name: 'wide',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      // Dark theme — screenshots only. Dark-mode bugs are colour/contrast,
+      // not layout, so one viewport is enough signal. colorScheme: 'dark'
+      // makes both theme-bootstrap.js and React pick the night theme.
+      name: 'dark',
+      testMatch: /screenshots\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+        colorScheme: 'dark',
+      },
     },
   ],
   webServer: {

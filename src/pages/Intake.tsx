@@ -66,6 +66,23 @@ function emptyDraft(): IntakeDraft {
   return { formData: {} }
 }
 
+/**
+ * Load the autosaved draft for a *fresh* visit to /intake. A draft that
+ * carries `submittedAt` belongs to a session that was already saved/sent —
+ * it isn't an in-progress draft anymore. We drop it from localStorage and
+ * start clean, so re-entering /intake behaves as if storage were empty
+ * instead of resurrecting the old confirmation screen.
+ */
+function loadActiveDraft(): IntakeDraft {
+  const d = loadDraft<IntakeDraft>(DRAFT_KEY)
+  if (!d) return emptyDraft()
+  if (d.submittedAt) {
+    clearDraft(DRAFT_KEY)
+    return emptyDraft()
+  }
+  return d
+}
+
 function pickStep(draft: IntakeDraft, vibeAccepted: boolean): Step {
   if (draft.submittedAt) return 'confirmation'
   if (!vibeAccepted) return 'vibe'
@@ -99,19 +116,15 @@ function draftIsMeaningful(d: IntakeDraft | null | undefined): boolean {
 export function Intake({ lang }: { lang: Lang }) {
   const t = DICT[lang]
   const auth = useAuth()
-  const [draft, setDraft] = useState<IntakeDraft>(
-    () => loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft(),
-  )
-  const [step, setStep] = useState<Step>(() =>
-    pickStep(loadDraft<IntakeDraft>(DRAFT_KEY) ?? emptyDraft(), flagSet(VIBE_FLAG)),
-  )
+  const [draft, setDraft] = useState<IntakeDraft>(loadActiveDraft)
+  const [step, setStep] = useState<Step>(() => pickStep(draft, flagSet(VIBE_FLAG)))
   const [draftPromptOpen, setDraftPromptOpen] = useState<boolean>(() => {
     try {
       if (sessionStorage.getItem(DRAFT_PROMPT_DISMISS_KEY) === '1') return false
     } catch {
       // sessionStorage unavailable — fall through, we'll just prompt.
     }
-    return draftIsMeaningful(loadDraft<IntakeDraft>(DRAFT_KEY))
+    return draftIsMeaningful(draft)
   })
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)

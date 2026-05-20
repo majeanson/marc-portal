@@ -45,25 +45,30 @@
   --bg-app: var(--bg);
 
   /* Feature accents — see src/lib/features.ts for the taxonomy. Each of the
-     six user-facing features gets a "color" + "soft" variant. Use the soft
-     variant for tinted backgrounds; use the color variant for borders, text
-     accents, and the clickable feature dots. Sage/cool/warm reuse the
-     existing accent tokens so the primary feature (intake) keeps the
-     site's familiar voice. */
-  --feat-intake: var(--accent);
-  --feat-intake-soft: var(--accent-soft);
-  --feat-conversation: var(--cool);
-  --feat-conversation-soft: var(--cool-soft);
-  --feat-iterative: #b8893a; /* ochre */
-  --feat-iterative-soft: #f0e2c4;
-  --feat-pricing: #8b4960; /* plum */
-  --feat-pricing-soft: #efd6df;
-  --feat-keys: var(--warm);
-  --feat-keys-soft: var(--warm-soft);
-  --feat-shipped: #2f7068; /* teal */
-  --feat-shipped-soft: #cce4df;
-  --feat-meta: #5d6b78; /* slate — the backstage layer */
-  --feat-meta-soft: #dde2e7;
+     seven features gets a "color" + "soft" variant. Use the soft variant for
+     tinted backgrounds; the color variant for borders, text accents, and the
+     clickable feature dots.
+
+     The seven hues are spread around the wheel — green, blue, amber, purple,
+     red, teal, slate — and kept dark enough that the paper-coloured glyph
+     inside each FeatureDot stays legible. They are intentionally punchier
+     and more saturated than the site chrome (accent/cool/warm): a 12px dot
+     has to telegraph its feature at a glance, so the dots run their own,
+     louder palette rather than aliasing the quieter chrome tokens. */
+  --feat-intake: #3a7d4d; /* green */
+  --feat-intake-soft: #d9ebdc;
+  --feat-conversation: #2f6fa6; /* blue */
+  --feat-conversation-soft: #d4e4f1;
+  --feat-iterative: #b97d12; /* amber */
+  --feat-iterative-soft: #f3e4bf;
+  --feat-pricing: #7d459e; /* purple */
+  --feat-pricing-soft: #e7daf2;
+  --feat-keys: #c4402a; /* red */
+  --feat-keys-soft: #f4d7cd;
+  --feat-shipped: #0f857a; /* teal */
+  --feat-shipped-soft: #c8e6e2;
+  --feat-meta: #566270; /* slate — the backstage layer */
+  --feat-meta-soft: #dde1e6;
 }
 
 :root[data-theme='night'] {
@@ -88,16 +93,25 @@
   --status-active: #6a9b78;
 
   /* Feature accents — dark-mode pair for each. The "color" values are pushed
-     brighter so they read against the dark paper; "soft" values are deep,
-     desaturated so tinted backgrounds don't muddy the surrounding chrome. */
-  --feat-iterative: #d6ad6e;
-  --feat-iterative-soft: #3a2f1e;
-  --feat-pricing: #c787a0;
-  --feat-pricing-soft: #3d2530;
-  --feat-shipped: #6dada3;
-  --feat-shipped-soft: #1f3633;
-  --feat-meta: #97a4b1;
-  --feat-meta-soft: #2a2f36;
+     bright so they read against the dark paper AND so the ink-coloured glyph
+     inside a FeatureDot stays legible on them; "soft" values are deep,
+     desaturated so tinted backgrounds don't muddy the surrounding chrome.
+     All seven are set explicitly here (they no longer alias accent/cool/
+     warm) so the louder dot palette survives the theme switch. */
+  --feat-intake: #5fb16f;
+  --feat-intake-soft: #243a2b;
+  --feat-conversation: #5fa0d0;
+  --feat-conversation-soft: #20323f;
+  --feat-iterative: #e0aa4a;
+  --feat-iterative-soft: #3a2f1a;
+  --feat-pricing: #bd8ad6;
+  --feat-pricing-soft: #322240;
+  --feat-keys: #e58162;
+  --feat-keys-soft: #3d271d;
+  --feat-shipped: #4fc0b1;
+  --feat-shipped-soft: #173733;
+  --feat-meta: #9aa7b4;
+  --feat-meta-soft: #2a3038;
   color-scheme: dark;
 }
 /* Sticky header glass — re-tinted in night so the blur doesn't read white. */
@@ -5259,6 +5273,7 @@ button:focus-visible,
   object-fit: cover;
   pointer-events: none;
   z-index: 0;
+  transition: transform 600ms cubic-bezier(0.2, 0.6, 0.2, 1);
 }
 .project-card__preview-frame {
   position: absolute;
@@ -5266,7 +5281,10 @@ button:focus-visible,
   width: 1280px;
   height: 800px;
   border: 0;
-  transform: scale(0.3);
+  /* --preview-scale (set per-card by a ResizeObserver) = boxWidth / 1280,
+     so the 1280×800 desktop render fills the 16:10 box exactly. The 0.3
+     fallback only applies for the brief moment before the observer fires. */
+  transform: scale(var(--preview-scale, 0.3));
   transform-origin: top left;
   pointer-events: none;
   opacity: 0;
@@ -5279,15 +5297,23 @@ button:focus-visible,
 .project-card__preview-frame.is-loaded {
   opacity: 1;
 }
+/* Small zoom on hover — lands on whichever layer is showing: the live
+   build iframe when loaded, the OG thumbnail otherwise. */
 .project-card:hover .project-card__preview-frame.is-loaded {
-  transform: scale(0.32);
+  transform: scale(calc(var(--preview-scale, 0.3) * 1.045));
+}
+.project-card:hover .project-card__preview-og {
+  transform: scale(1.045);
 }
 @media (prefers-reduced-motion: reduce) {
   .project-card__preview-frame {
     transition: opacity 120ms ease;
   }
   .project-card:hover .project-card__preview-frame.is-loaded {
-    transform: scale(0.3);
+    transform: scale(var(--preview-scale, 0.3));
+  }
+  .project-card:hover .project-card__preview-og {
+    transform: none;
   }
 }
 /* Loading skeleton — sits over the iframe while it boots, fades when state
@@ -6081,6 +6107,15 @@ button.intake__progress-step:disabled {
 }
 .home .section--editorial {
   border-bottom: none;
+}
+/* Home-page section anchors land flush at the section top. The global
+   .section rule sets scroll-margin-top: 72px to clear a fixed header, but
+   the home header hides on scroll-down — so that 72px just exposed a strip
+   of the PREVIOUS section above the target when a SectionRail link was
+   clicked. Zero it here so a rail/menu jump parks the section's own top
+   (the wavy seam divider) at the viewport top, with nothing bleeding in. */
+.home .section {
+  scroll-margin-top: 0;
 }
 
 .section__head {
@@ -7636,8 +7671,30 @@ button.intake__progress-step:disabled {
 }
 .section-rail__dot {
   grid-column: 1;
+  /* Pin to row 1 of the item subgrid. Without it, auto-placement runs the
+     DOM-first link (column 2/-1) into row 1, then can't backfill column 1,
+     so the dot drops to row 2 — visibly offset below its own numeral. */
+  grid-row: 1;
   justify-self: center;
   align-self: center;
+}
+/* The rail is a quiet index — dots stay neutral at rest and reveal the
+   section's feature hue only when the row is hovered or focused. */
+.section-rail__dot.feature-dot {
+  background: var(--text-faint);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-faint) 28%, transparent);
+  /* Keep the glyph's cut-outs matched to the muted rest-state disc, so the
+     pictogram doesn't flash the feature hue before the row is hovered. */
+  --feature-glyph-hole: var(--text-faint);
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+.section-rail__item:hover .section-rail__dot.feature-dot,
+.section-rail__item:focus-within .section-rail__dot.feature-dot {
+  background: var(--ft-color, var(--text-soft));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ft-color, var(--text-soft)) 28%, transparent);
+  --feature-glyph-hole: var(--ft-color, var(--text-soft));
 }
 .section-rail__link {
   display: grid;
@@ -11338,11 +11395,6 @@ button.intake__progress-step:disabled {
 /* Approximate scroll-Y positions, picked by section landmark. Real Y will
    drift slightly with content but doodles always sit in the gutter, so
    they never collide with text. */
-.napperon__circle {
-  top: 220px;
-  right: -36px;
-  transform: rotate(-6deg);
-}
 .napperon__check {
   top: 980px;
   left: -28px;
@@ -12852,6 +12904,14 @@ a.map-card:focus-visible {
   letter-spacing: 0.04em;
   opacity: 0.85;
 }
+/* Feature pictogram, top-right of each bubble. Painted in the feature hue
+   against the bubble's soft fill; cut-outs punch back to that fill. */
+.map-vision__bubble-glyph {
+  color: var(--ft-color);
+  --feature-glyph-hole: var(--ft-soft);
+  opacity: 0.9;
+  pointer-events: none;
+}
 .map-vision__bubble-content {
   display: flex;
   flex-direction: column;
@@ -12931,12 +12991,22 @@ a.map-card:focus-visible {
 }
 .map-vision__card-link {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto 1fr auto;
   align-items: center;
   gap: 12px;
   padding: 14px 14px 14px 12px;
   text-decoration: none;
   color: var(--text);
+}
+/* Feature pictogram on each mobile card — feature-hued on the soft card
+   fill, with cut-outs punched back to that fill. */
+.map-vision__card-glyph {
+  width: 26px;
+  height: 26px;
+  color: var(--ft-color);
+  --feature-glyph-hole: var(--ft-soft, var(--bg-card));
+  align-self: flex-start;
+  margin-top: 1px;
 }
 .map-vision__card-link--static {
   cursor: default;
@@ -13159,11 +13229,20 @@ a.page-folio-mark:focus-visible .page-folio-mark__dot {
   flex-wrap: wrap;
 }
 .feature-index__dot {
-  width: 14px;
-  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--ft-color);
+  color: var(--bg);
+  --feature-glyph-hole: var(--ft-color);
   flex-shrink: 0;
+}
+.feature-index__dot .feature-glyph {
+  width: 64%;
+  height: 64%;
 }
 .feature-index__heading {
   display: flex;
@@ -13281,17 +13360,27 @@ a.page-folio-mark:focus-visible {
    the matching ?feature= filter applied. Neutral pages (Privacy, PIA,
    Meta, Map) render a hollow placeholder dot to keep the title rhythm. */
 .feature-dot {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   vertical-align: middle;
   border-radius: 50%;
   background: var(--ft-color, var(--text-soft));
   /* Tiny shadow ring so the dot reads on coloured/soft backgrounds too. */
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ft-color, var(--text-soft)) 28%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ft-color, var(--text-soft)) 32%, transparent);
+  /* The pictogram inside is painted in the paper colour; its cut-outs
+     (eye pupil, key bow, gear hub) read back as the disc's feature hue. */
+  color: var(--bg);
+  --feature-glyph-hole: var(--ft-color, var(--text-soft));
   transition:
     transform 140ms ease,
     box-shadow 140ms ease,
     background 140ms ease;
+}
+.feature-dot .feature-glyph {
+  width: 66%;
+  height: 66%;
 }
 a.feature-dot {
   cursor: pointer;
@@ -13307,22 +13396,28 @@ a.feature-dot:focus-visible {
    works, About): they span every feature, so no single colour is honest.
    A *filled* muted dot reads as a deliberate "overview" marker; a hollow
    ring read as an unfinished / missing colour. Same size + ring as a
-   coloured dot so the row rhythm holds. */
+   coloured dot so the row rhythm holds. It carries no glyph. */
 .feature-dot--neutral {
   background: var(--text-soft);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-soft) 28%, transparent);
 }
 .feature-dot--sm {
-  width: 8px;
-  height: 8px;
+  width: 11px;
+  height: 11px;
 }
 .feature-dot--md {
-  width: 10px;
-  height: 10px;
-}
-.feature-dot--lg {
   width: 14px;
   height: 14px;
+}
+.feature-dot--lg {
+  width: 18px;
+  height: 18px;
+}
+/* Shared base for every feature pictogram (FeatureDot, FeatureIndex,
+   Vision bubbles). Block display kills the inline-SVG descender gap. */
+.feature-glyph {
+  display: block;
+  flex-shrink: 0;
 }
 /* When a dot sits inline with text, give it a hair of right margin so the
    title sentence breathes. Use --feature-dot-gap on the wrapper to override

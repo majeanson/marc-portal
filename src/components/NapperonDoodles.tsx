@@ -2,9 +2,9 @@
  * Hand-drawn margin doodles for the home page. The whole site already leans
  * on the napperon (placemat) metaphor through the `/` canvas widget — these
  * extend the metaphor to the page itself, so reading the home feels like
- * reading a napperon Marc scribbled on at a diner: a red-pen circle around
- * something important, a coffee-ring stain, an ink check, a squiggle, an
- * asterisk, a small blot, and an arrow pointing at a CTA.
+ * reading a napperon Marc scribbled on at a diner: a coffee-ring stain, an
+ * ink check, a squiggle, an asterisk, a small blot, and an arrow pointing
+ * at a CTA.
  *
  * All decoration. The whole tree is `aria-hidden` and `pointer-events:none`.
  * Each doodle is pinned to an approximate scroll position in the page
@@ -22,7 +22,6 @@
 export function NapperonDoodles() {
   return (
     <div className="napperon" aria-hidden="true">
-      <CircleScribble />
       <CheckMark />
       <CoffeeRing />
       <Squiggle />
@@ -30,37 +29,6 @@ export function NapperonDoodles() {
       <InkBlot />
       <ArrowScribble />
     </div>
-  )
-}
-
-function CircleScribble() {
-  return (
-    <svg
-      className="napperon__doodle napperon__circle"
-      viewBox="0 0 200 120"
-      width="200"
-      height="120"
-    >
-      {/* Wobbly red-pen circle — the "this matters" mark. Two overlapping
-          loops so the ends overshoot like a real pen pass. */}
-      <path
-        d="M 26 70 C 4 36 38 12 78 10 C 132 4 188 28 188 60 C 190 94 148 110 92 108 C 38 106 14 86 24 60"
-        fill="none"
-        stroke="#c1693d"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.55"
-      />
-      <path
-        d="M 28 72 C 14 50 38 22 80 18"
-        fill="none"
-        stroke="#c1693d"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity="0.4"
-      />
-    </svg>
   )
 }
 
