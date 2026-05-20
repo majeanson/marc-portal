@@ -323,6 +323,23 @@ export const HOME_SECTION_LABEL: Record<string, Bi> = {
   cta: { fr: 'Appel final', en: 'Final call' },
 }
 
+/** Feature → the home-page anchor section that best represents it. The
+ *  page-outro pointer (FeatureContinue) uses this to offer a "back to the
+ *  home page" exit from the tour loops, landing the visitor on the section
+ *  that matches the page they were reading. Several features have no
+ *  dedicated home section (conversation, iterative, keys), so they point
+ *  at `how` — the catch-all "how it works" explainer. Every value is a
+ *  real HOME_SECTION_ORDER id; guarded in features.test.ts. */
+export const FEATURE_HOME_SECTION: Record<FeatureId, string> = {
+  intake: 'vibe',
+  conversation: 'how',
+  iterative: 'how',
+  pricing: 'pricing',
+  keys: 'how',
+  shipped: 'featured',
+  meta: 'how',
+}
+
 /** Session sub-header tabs (#session-statut / #session-conversation /
  *  ...). Active tab borrows --ft-color from the matched feature so the
  *  user follows one colour from "Paiement" tab → /tier-0 → /carte. */

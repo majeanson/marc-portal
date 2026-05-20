@@ -1,7 +1,8 @@
 /**
  * FeatureContinue — the page-outro "where next" pointer. Sits at the bottom
  * of every content page so no page is a dead end and the visitor always
- * knows one concrete way to keep moving.
+ * knows two concrete ways to keep moving: onward through the tour, or back
+ * to the matching section of the home page.
  *
  * Two arcs, one component:
  *  - Product pages ride the FEATURE_NEXT loop: bring a project → talk → see
@@ -10,6 +11,9 @@
  *  - Backstage (`meta`) pages ride the META_PAGE_NEXT loop: site map → under
  *    the hood → privacy → PIA → back to the map.
  *
+ * Both arcs also carry a "back to home" exit (FEATURE_HOME_SECTION) so the
+ * loop is never a trap — the visitor can always drop back to the main page.
+ *
  * The page passes only its own page-id; the component derives the feature,
  * the destination and the colour. No per-page curation of "what's next".
  */
@@ -17,9 +21,11 @@
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import {
+  FEATURE_HOME_SECTION,
   FEATURE_NEXT,
   FEATURE_PRIMARY_PAGE,
   FEATURES,
+  HOME_SECTION_LABEL,
   META_PAGE_LINK,
   META_PAGE_NEXT,
   PAGE_FEATURE,
@@ -41,6 +47,7 @@ const COPY = {
     metaEyebrow: 'Les coulisses',
     metaHint:
       'Les pages qui montrent comment le site est bâti et comment tes données sont protégées. Continue, ou reviens à la carte quand tu veux.',
+    backHome: 'Retour à l’accueil',
   },
   en: {
     tourEyebrow: 'Continue the tour',
@@ -49,6 +56,7 @@ const COPY = {
     metaEyebrow: 'Behind the scenes',
     metaHint:
       'The pages that show how the site is built and how your data is protected. Keep going, or head back to the map any time.',
+    backHome: 'Back to home',
   },
 } as const
 
@@ -56,6 +64,16 @@ export function FeatureContinue({ page, lang }: Props) {
   const feature = PAGE_FEATURE[page]
   if (!feature) return null
   const t = COPY[lang]
+  const langPrefix = lang === 'en' ? '/en' : ''
+
+  // Back-to-home exit — lands on the home section that matches THIS page's
+  // feature, so neither tour loop is ever a trap.
+  const homeSection = FEATURE_HOME_SECTION[feature]
+  const homeLink = (
+    <Link className="feature-continue__home" to={`${langPrefix}/#${homeSection}`}>
+      <span aria-hidden="true">←</span> {t.backHome} · {HOME_SECTION_LABEL[homeSection][lang]}
+    </Link>
+  )
 
   // Backstage pages: walk the META_PAGE_NEXT loop instead of the product arc.
   if (feature === 'meta') {
@@ -79,6 +97,7 @@ export function FeatureContinue({ page, lang }: Props) {
             →
           </span>
         </Link>
+        {homeLink}
       </aside>
     )
   }
@@ -106,6 +125,7 @@ export function FeatureContinue({ page, lang }: Props) {
           →
         </span>
       </Link>
+      {homeLink}
     </aside>
   )
 }

@@ -19,6 +19,8 @@ import { describe, expect, it } from 'vitest'
 import {
   FAQ_FEATURE,
   FAQ_LABEL,
+  FEATURE_HOME_SECTION,
+  FEATURE_IDS,
   FEATURE_NEXT,
   HOME_SECTION_FEATURE,
   HOME_SECTION_LABEL,
@@ -362,6 +364,24 @@ describe('page wayfinding', () => {
   it('every wayfinding page-id is a known page with a feature', () => {
     for (const pageId of Object.values(CONTENT_PAGES)) {
       expect(PAGE_FEATURE[pageId], `${pageId} has no PAGE_FEATURE entry`).toBeDefined()
+    }
+  })
+})
+
+/**
+ * Back-to-home exits. Every feature must map to a real home section so the
+ * page-outro pointer can always offer a "back to home" link — neither tour
+ * loop should ever be a trap.
+ */
+describe('feature → home section exits', () => {
+  const sectionIds = new Set<string>(HOME_SECTION_ORDER)
+
+  it('FEATURE_HOME_SECTION maps every feature to a real, labelled home section', () => {
+    for (const fid of FEATURE_IDS) {
+      const section = FEATURE_HOME_SECTION[fid]
+      expect(section, `${fid} has no FEATURE_HOME_SECTION entry`).toBeDefined()
+      expect(sectionIds.has(section), `${fid} → "${section}" is not a home section`).toBe(true)
+      expect(HOME_SECTION_LABEL[section], `home section "${section}" has no label`).toBeDefined()
     }
   })
 })
