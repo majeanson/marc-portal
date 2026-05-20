@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { DICT, type Lang } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
-import { FeatureDot } from './FeatureDot'
+import { SectionEyebrow } from './SectionEyebrow'
+import { HomeDrillCard } from './HomeDrillCard'
 import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
 
 const HOME_LIMIT = 3
@@ -65,10 +66,9 @@ export function Testimonials({ lang }: { lang: Lang }) {
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.testimonials}
           </div>
-          <div className="section__eyebrow">
-            <FeatureDot feature={feature} lang={lang} size="sm" />
+          <SectionEyebrow lang={lang} feature={feature}>
             {t.eyebrow}
-          </div>
+          </SectionEyebrow>
           <h2 id="testimonials-heading" className="section__display">
             {t.title}
           </h2>
@@ -101,27 +101,16 @@ export function Testimonials({ lang }: { lang: Lang }) {
           })}
         </ul>
 
-        {/* Shared drill-down card — same pattern as #featured and #how so
-            visitors get a predictable "go deeper" affordance. No stats
-            here, so the --no-stats modifier collapses the grid. */}
-        <div className="home-drill-card-wrap" data-feature={PAGE_FEATURE['page.vouches']}>
-          <a className="home-drill-card home-drill-card--no-stats" href={vouchesHref}>
-            <div className="home-drill-card-text">
-              <span className="home-drill-card-feature">
-                <FeatureDot
-                  feature={PAGE_FEATURE['page.vouches']}
-                  lang={lang}
-                  size="sm"
-                  decorative
-                />
-                <span className="home-drill-card-eyebrow mono">{t.galleryCard.eyebrow}</span>
-              </span>
-              <h3 className="home-drill-card-title">{t.galleryCard.title}</h3>
-              <p className="home-drill-card-body">{t.galleryCard.body}</p>
-            </div>
-            <span className="home-drill-card-cta mono">{t.galleryCard.cta}</span>
-          </a>
-        </div>
+        {/* Shared "go deeper" card — same pattern as #featured and #how. */}
+        <HomeDrillCard
+          lang={lang}
+          feature={PAGE_FEATURE['page.vouches']}
+          href={vouchesHref}
+          eyebrow={t.galleryCard.eyebrow}
+          title={t.galleryCard.title}
+          body={t.galleryCard.body}
+          cta={t.galleryCard.cta}
+        />
 
         <p className="testimonials-section__write">
           <a className="testimonials-section__write-link mono" href={writeHref}>

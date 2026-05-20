@@ -1,17 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
-import { CapacityCounter } from './CapacityCounter'
 import { HeroShippedProject } from './HeroShippedProject'
 import { FeatureDot } from './FeatureDot'
 import { useAuth } from '../lib/authContext'
 import { PAGE_FEATURE } from '../lib/features'
 import { getCapacityLive, listPublicProjects, type PublicProject } from '../lib/sessionsApi'
-
-const FACTS: Record<Lang, string[]> = {
-  fr: ['72 h · réponse honnête', 'Async · pas de calls', 'Démos testables', '≈ 300 $ – 3 000 $+'],
-  en: ['72h · honest reply', 'Async · no calls', 'Live demos', '≈ $300 – $3000+'],
-}
 
 const SECONDARY_CTA: Record<Lang, { label: string; href: string }> = {
   fr: { label: 'Voir un projet en cours →', href: '/projects' },
@@ -158,10 +152,6 @@ export function Hero({ lang }: { lang: Lang }) {
           <strong>{t.body2}</strong>
         </p>
 
-        <p className="hero__lead hero__lead--meta">
-          {t.body1} {t.body3}
-        </p>
-
         <div className="hero__actions">
           <a className="hero__cta hero__cta--primary" href={intakeHref}>
             {ctaLabel}
@@ -208,12 +198,6 @@ export function Hero({ lang }: { lang: Lang }) {
           </p>
         )}
 
-        <ul className="hero__facts" aria-label={lang === 'fr' ? 'Faits en bref' : 'Quick facts'}>
-          {FACTS[lang].map((f) => (
-            <li key={f}>{f}</li>
-          ))}
-        </ul>
-
         <div className="hero__bilingual mono">{t.bilingual}</div>
 
         {/* Signed sign-off — italic serif text with a hand-drawn flourish
@@ -244,8 +228,6 @@ export function Hero({ lang }: { lang: Lang }) {
             />
           </svg>
         </div>
-
-        <CapacityCounter lang={lang} />
       </div>
 
       {/* Right-rail shipped-project preview. Becomes a stacked card on

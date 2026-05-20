@@ -7,20 +7,21 @@ import { FeatureDot } from './FeatureDot'
 import { SessionSubHeader } from './SessionSubHeader'
 import { ThemeToggle } from './ThemeToggle'
 
-/** Marketing nav links — each anchor links to a home section AND borrows
- *  the matching feature colour (via HOME_SECTION_FEATURE) so the rail,
- *  the header, the section eyebrow, and the /carte cluster all agree.
- *  Sections with no clean feature equivalent (#how, #about) render a
- *  neutral hollow dot so the visual rhythm holds. */
-const NAV_SECTION_IDS = ['featured', 'how', 'pricing', 'vibe', 'about'] as const
-type NavSectionKey = (typeof NAV_SECTION_IDS)[number]
-const NAV_LABEL_KEY: Record<NavSectionKey, keyof (typeof DICT)['fr']['nav']['sections']> = {
-  featured: 'projects',
-  how: 'how',
-  pricing: 'pricing',
-  vibe: 'vibe',
-  about: 'about',
-}
+/** Marketing nav links — `id` is the home-section anchor (also the
+ *  HOME_SECTION_FEATURE key, so each link borrows the section's feature
+ *  colour), `labelKey` indexes into DICT.nav.sections. Sections with no
+ *  clean feature equivalent (#how, #about) render a neutral hollow dot
+ *  so the visual rhythm holds. */
+const NAV_LINKS = [
+  { id: 'featured', labelKey: 'projects' },
+  { id: 'how', labelKey: 'how' },
+  { id: 'pricing', labelKey: 'pricing' },
+  { id: 'vibe', labelKey: 'vibe' },
+  { id: 'about', labelKey: 'about' },
+] as const satisfies readonly {
+  id: string
+  labelKey: keyof (typeof DICT)['fr']['nav']['sections']
+}[]
 
 /**
  * variant:
@@ -76,9 +77,9 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
             </nav>
           ) : (
             <nav className="site-header__sections" aria-label={t.nav.sections.projects}>
-              {NAV_SECTION_IDS.map((id) => {
+              {NAV_LINKS.map(({ id, labelKey }) => {
                 const feature = HOME_SECTION_FEATURE[id]
-                const label = t.nav.sections[NAV_LABEL_KEY[id]]
+                const label = t.nav.sections[labelKey]
                 return (
                   <span key={id} className="site-header__section" data-feature={feature}>
                     {/* Dot is a separate target — clicks land on /carte

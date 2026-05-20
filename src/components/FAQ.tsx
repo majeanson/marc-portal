@@ -4,6 +4,7 @@ import { DICT } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
 import { FAQ_FEATURE, HOME_SECTION_FEATURE } from '../lib/features'
 import { FeatureDot } from './FeatureDot'
+import { SectionEyebrow } from './SectionEyebrow'
 
 /**
  * Native <details>/<summary> accordion — no JS state for open/close (browsers
@@ -93,10 +94,9 @@ export function FAQ({ lang }: { lang: Lang }) {
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.faq}
           </div>
-          <div className="section__eyebrow">
-            <FeatureDot feature={sectionFeature} lang={lang} size="sm" />
+          <SectionEyebrow lang={lang} feature={sectionFeature}>
             {t.eyebrow}
-          </div>
+          </SectionEyebrow>
           <h2 className="section__display">{t.title}</h2>
         </header>
         <div className="faq__list" ref={listRef}>

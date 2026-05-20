@@ -2,7 +2,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
 import { HOME_SECTION_FEATURE } from '../lib/features'
-import { FeatureDot } from './FeatureDot'
+import { SectionEyebrow } from './SectionEyebrow'
 
 export function CTA({ lang }: { lang: Lang }) {
   const t = DICT[lang].cta
@@ -15,10 +15,9 @@ export function CTA({ lang }: { lang: Lang }) {
         <div className="asterism" aria-hidden="true">
           ✶ ✶ ✶
         </div>
-        <div className="section__eyebrow">
-          <FeatureDot feature={feature} lang={lang} size="sm" />
+        <SectionEyebrow lang={lang} feature={feature}>
           {t.eyebrow}
-        </div>
+        </SectionEyebrow>
         <h2 className="cta__title">{t.title}</h2>
         <p className="cta__body">{t.body}</p>
         <a className="hero__cta cta__button" href={intakeHref}>

@@ -2,7 +2,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
 import { HOME_SECTION_FEATURE } from '../lib/features'
-import { FeatureDot } from './FeatureDot'
+import { SectionEyebrow } from './SectionEyebrow'
 
 export function VibeFilter({ lang }: { lang: Lang }) {
   const t = DICT[lang].vibe
@@ -14,10 +14,9 @@ export function VibeFilter({ lang }: { lang: Lang }) {
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.vibe}
           </div>
-          <div className="section__eyebrow">
-            <FeatureDot feature={feature} lang={lang} size="sm" />
+          <SectionEyebrow lang={lang} feature={feature}>
             {t.eyebrow}
-          </div>
+          </SectionEyebrow>
           <h2 className="section__display">{t.title}</h2>
           <p className="section__lead">{t.body}</p>
         </header>

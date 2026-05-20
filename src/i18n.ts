@@ -80,12 +80,8 @@ const FR = {
       tail: 'pour ma communauté.',
     },
     signature: 'Marc — Québec',
-    body1:
-      'Le soir et la fin de semaine, j’aide les gens à régler des problèmes du quotidien. Sans appels, sans réunions — tout passe par un site simple, à ton rythme et au mien.',
     body2:
       "Tu as un problème qui revient toujours, paperasse, suivi, coordination? Ton problème n'est pas un enjeu national, mais tout de même irritant ? Décris-le moi via le portail.",
-    body3:
-      "Compte gratuit. Tu testes, vois la démo à chaque étape. Premier brouillon en quelques jours. On se rend jusqu'au bout ensemble. Tout transparent.",
     cta: 'Crée ton compte gratuit →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle proposition →',
@@ -968,12 +964,8 @@ const EN: Copy = {
       tail: 'for my community.',
     },
     signature: 'Marc — Quebec',
-    body1:
-      'Evenings and weekends, I help people solve everyday problems. No calls, no meetings — everything flows through a simple site, at your pace and mine.',
     body2:
       "Got a recurring problem — paperwork, tracking, coordination? It's not a national crisis, but it's still annoying? Tell me about it through the portal.",
-    body3:
-      'Free account. You test, see the demo at every step. First draft in a few days. We see it through to the end together. All transparent.',
     cta: 'Create a free account →',
     ctaWaitlist: 'Join the waitlist →',
     ctaLoggedIn: 'Start a new proposal →',

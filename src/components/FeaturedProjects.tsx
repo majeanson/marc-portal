@@ -6,7 +6,8 @@ import { formatDate } from '../lib/format'
 import { HOME_FOLIOS } from '../lib/folios'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 import { ProjectCardPreview } from './ProjectCardPreview'
-import { FeatureDot } from './FeatureDot'
+import { SectionEyebrow } from './SectionEyebrow'
+import { HomeDrillCard } from './HomeDrillCard'
 import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
 
 export const FEATURED_LIMIT = 3
@@ -50,10 +51,9 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.featured}
           </div>
-          <div className="section__eyebrow">
-            <FeatureDot feature={feature} lang={lang} size="sm" />
+          <SectionEyebrow lang={lang} feature={feature}>
             {t.eyebrow}
-          </div>
+          </SectionEyebrow>
           <h2 className="section__display">{t.title}</h2>
           <p className="featured-projects__sub section__lead">{t.sub}</p>
         </header>
@@ -67,31 +67,18 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
                 <FeaturedCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} />
               ))}
             </ul>
-            {/* Shared drill-down card pattern — matches the journey-card in
-                #how so visitors get the same "go deeper" affordance every
-                time a home section has a dedicated full page. No stats here,
-                so the --no-stats modifier collapses the grid to a single
-                column. The dot above the title carries the destination
-                page's feature colour ("shipped" — teal) so the visitor
-                already sees which cluster they're about to enter. */}
-            <div className="home-drill-card-wrap" data-feature={PAGE_FEATURE['page.projects']}>
-              <a className="home-drill-card home-drill-card--no-stats" href={galleryHref}>
-                <div className="home-drill-card-text">
-                  <span className="home-drill-card-feature">
-                    <FeatureDot
-                      feature={PAGE_FEATURE['page.projects']}
-                      lang={lang}
-                      size="sm"
-                      decorative
-                    />
-                    <span className="home-drill-card-eyebrow mono">{t.galleryCard.eyebrow}</span>
-                  </span>
-                  <h3 className="home-drill-card-title">{t.galleryCard.title}</h3>
-                  <p className="home-drill-card-body">{t.galleryCard.body}</p>
-                </div>
-                <span className="home-drill-card-cta mono">{t.galleryCard.cta}</span>
-              </a>
-            </div>
+            {/* Shared "go deeper" card — same pattern as #how and
+                #testimonials so every section with a dedicated full page
+                offers the visitor the same affordance. */}
+            <HomeDrillCard
+              lang={lang}
+              feature={PAGE_FEATURE['page.projects']}
+              href={galleryHref}
+              eyebrow={t.galleryCard.eyebrow}
+              title={t.galleryCard.title}
+              body={t.galleryCard.body}
+              cta={t.galleryCard.cta}
+            />
           </>
         )}
 

@@ -722,42 +722,17 @@ p {
 .hero__lead--primary {
   font-size: 22px;
   color: var(--text);
-  margin: 0 0 14px;
+  margin: 0 0 24px;
   line-height: 1.4;
 }
 .hero__lead--primary strong {
   color: var(--text);
   font-weight: 600;
 }
-.hero__lead--meta {
-  font-size: 17px;
-  color: var(--text-mid);
-  margin: 0 0 24px;
-}
 .hero__logged-in {
   margin-top: 12px;
   font-size: 14px;
   font-family: var(--mono);
-}
-.hero__facts {
-  list-style: none;
-  padding: 0;
-  margin: 22px 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.hero__facts li {
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 14px;
-  background: var(--accent-soft);
-  color: var(--accent-warm);
-  border-radius: 999px;
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.01em;
 }
 .hero__bilingual {
   margin-top: 14px;
@@ -922,68 +897,6 @@ p {
 .hero__secondary-cta-wrap:focus-within .hero__secondary-cta {
   color: var(--ft-color, var(--accent-warm));
   border-bottom-color: var(--ft-color, var(--accent-warm));
-}
-
-/* Capacity counter */
-.capacity {
-  margin-top: 28px;
-  padding: 14px 18px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--text-mid);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-.capacity__row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-}
-.capacity__line {
-  color: var(--text-mid);
-  opacity: 0.85;
-}
-.capacity__pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.capacity__pill::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-warm);
-  display: inline-block;
-  /* Slow, gentle pulse — telegraphs "live count, not static text" without
-     drawing the eye away from the hero CTA. Once-around-per-cycle so it's
-     a tick rather than a strobe. prefers-reduced-motion disables it. */
-  animation: capacity-tick 4s ease-in-out infinite;
-}
-.capacity__pill--active::before {
-  background: var(--status-active);
-}
-@keyframes capacity-tick {
-  0%,
-  60%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  30% {
-    transform: scale(1.35);
-    opacity: 0.7;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .capacity__pill::before {
-    animation: none;
-  }
 }
 
 /* Steps */
@@ -6593,8 +6506,7 @@ button.intake__progress-step:disabled {
 
 /* VÉRIFIÉ stamp echoing the OG card. Decorative, low-opacity warm-brown
    so the headline always wins the eye. Positioned bottom-right of the
-   hero block. Mobile: smaller + nudged so it doesn't overlap the
-   CapacityCounter on narrow viewports. */
+   hero block; smaller + nudged on mobile. */
 .hero__stamp {
   position: absolute;
   right: calc(var(--gutter) + 16px);
@@ -6867,20 +6779,14 @@ button.intake__progress-step:disabled {
   font-family: var(--sans);
   font-size: 21px;
   line-height: 1.45;
-  margin: 0 0 14px;
+  margin: 0 0 28px;
   color: var(--text);
-  max-width: 38ch;
+  max-width: 48ch;
 }
 .hero__lead--primary strong {
   font-weight: 600;
   background: linear-gradient(transparent 62%, rgba(193, 105, 61, 0.22) 62% 92%, transparent 92%);
   padding: 0 2px;
-}
-.hero__lead--meta {
-  font-size: 16.5px;
-  color: var(--text-mid);
-  margin: 0 0 28px;
-  max-width: 56ch;
 }
 
 .hero__actions {
@@ -6938,35 +6844,6 @@ button.intake__progress-step:disabled {
   background: currentColor;
 }
 
-.home .hero__facts {
-  margin: 28px 0 0;
-  gap: 6px;
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-}
-.home .hero__facts li {
-  padding: 7px 14px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-mid);
-  font-family: var(--mono);
-  font-weight: 500;
-  font-size: 12.5px;
-  letter-spacing: 0.02em;
-  border-radius: 999px;
-  transition:
-    color 0.18s,
-    border-color 0.18s,
-    background 0.18s;
-}
-.home .hero__facts li:hover {
-  color: var(--accent-warm);
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
 .hero__bilingual {
   margin-top: 18px;
   font-size: 12.5px;
@@ -6974,18 +6851,12 @@ button.intake__progress-step:disabled {
   letter-spacing: 0.02em;
 }
 
-/* Hero side column — capacity + signature */
+/* Hero side column — signature */
 .hero__side {
   display: flex;
   flex-direction: column;
   gap: 22px;
   position: relative;
-}
-.home .hero__side .capacity {
-  margin: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  box-shadow: 0 1px 0 var(--border-soft);
 }
 .hero__signature {
   display: flex;
@@ -7980,18 +7851,12 @@ button.intake__progress-step:disabled {
   .hero__lead--primary {
     font-size: 18.5px;
   }
-  .hero__lead--meta {
-    font-size: 15.5px;
-  }
   .hero__side {
     flex-direction: row;
     align-items: stretch;
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
-  }
-  .home .hero__side .capacity {
-    flex: 1 1 240px;
   }
   .hero__signature {
     align-items: flex-end;
@@ -10252,23 +10117,6 @@ button.intake__progress-step:disabled {
   line-height: 1.55;
   color: var(--text-mid);
 }
-.tier__custodian-cta {
-  color: var(--ft-color, var(--accent-warm));
-  text-decoration: none;
-  white-space: nowrap;
-  margin-inline-start: 2px;
-}
-.tier__custodian-cta:hover,
-.tier__custodian-cta:focus-visible {
-  text-decoration: underline;
-}
-/* Cross-feature dot: this link points at /handoff (keys), not at the
-   pricing slice the section sits in. The wrapping span carries
-   data-feature="keys" so the dot + the link both adopt the keys hue. */
-.tier__custodian-cta-dot {
-  margin-right: 4px;
-  vertical-align: 0.05em;
-}
 @media (max-width: 640px) {
   .tier__custodian-note {
     padding: 16px 16px 14px;
@@ -10285,21 +10133,28 @@ button.intake__progress-step:disabled {
   color: var(--text-soft);
   line-height: 1.55;
 }
-.about__ownership-note a {
-  color: var(--ft-color, var(--accent-warm));
-  white-space: nowrap;
-}
-/* Cross-feature handoff link — wrapper carries data-feature="keys" so the
-   inline dot + link both adopt the terracotta accent. The dot itself is
-   decorative; the anchor next to it is the click target. */
-.about__ownership-cta {
+
+/* CrossFeatureLink — inline link to a page in a different feature cluster.
+   The wrapper carries data-feature so the leading dot + the anchor both
+   adopt the destination feature's hue. Used in Pricing (→ /handoff) and
+   About (→ /handoff). */
+.cross-feature-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
 }
-.about__ownership-cta-dot {
+.cross-feature-link__dot {
   vertical-align: 0.05em;
+}
+.cross-feature-link__anchor {
+  color: var(--ft-color, var(--accent-warm));
+  text-decoration: none;
+  white-space: nowrap;
+}
+.cross-feature-link__anchor:hover,
+.cross-feature-link__anchor:focus-visible {
+  text-decoration: underline;
 }
 
 /* Intake form — handoff mode preference (reserved __handoff_mode key). */
@@ -12823,17 +12678,42 @@ a.map-node:focus-visible {
   margin-right: 6px;
 }
 
-/* On narrow screens, let the SVG keep its design width and scroll
-   horizontally rather than crushing every node label to 7px. */
+/* On medium-narrow screens (640–720px) the SVG layers keep their design
+   width and scroll horizontally rather than crushing every node label to
+   7px. Below 640px the SVG is hidden outright and the layer's vertical
+   card stack (.map-cards) takes over — see swap rules below. */
 @media (max-width: 720px) {
   .map-canvas {
     min-width: 720px;
   }
 }
 
-/* "← scroll to pan →" hint — only visible on narrow screens, only inside
-   .map-page__canvas. The hint is hidden on the Vision layer (which uses
-   the vertical card stack on mobile) and Admin (HTML grid). */
+/* SVG-vs-cards swap. Each layer (Pages / Data / Journeys) renders BOTH
+   an SVG (.map-canvas--svg-only) AND a vertical HTML card stack
+   (.map-cards). Desktop shows the SVG and hides the cards; mobile flips.
+   The Vision layer has its own dual-render (.map-vision__svg /
+   .map-vision__cards) — keep it as-is for backwards compat. */
+.map-cards {
+  display: none;
+}
+@media (max-width: 640px) {
+  .map-canvas--svg-only {
+    display: none;
+  }
+  .map-cards {
+    display: block;
+  }
+  /* Cancel the 720px min-width forced by the SVG-still-scrollable rule
+     above so the card stack doesn't inherit a phantom horizontal scroll
+     from its parent .map-page__canvas wrapper. */
+  .map-page__canvas {
+    overflow-x: visible;
+  }
+}
+
+/* "← scroll to pan →" hint — visible only in the narrow band where the
+   SVG is still rendered AND still wider than the viewport (640–720px).
+   Below 640px the SVG is hidden and the cards don't need a hint. */
 .map-page__scroll-hint {
   display: none;
   font-size: 11px;
@@ -12843,12 +12723,138 @@ a.map-node:focus-visible {
   margin: 0 0 6px;
   opacity: 0.75;
 }
-@media (max-width: 720px) {
+@media (min-width: 641px) and (max-width: 720px) {
   .map-page__canvas[data-layer='pages'] .map-page__scroll-hint,
   .map-page__canvas[data-layer='data'] .map-page__scroll-hint,
   .map-page__canvas[data-layer='journeys'] .map-page__scroll-hint {
     display: block;
   }
+}
+
+/* Mobile card stack — one section per group, each section borrows its
+   --ft-color via data-feature so the colour story matches the SVG. */
+.map-cards__group {
+  margin: 0 0 18px;
+}
+.map-cards__group:last-child {
+  margin-bottom: 0;
+}
+.map-cards__group-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ft-color, var(--text-soft));
+  font-weight: 700;
+  margin: 0 0 8px;
+  padding-left: 2px;
+}
+.map-cards__group--column .map-cards__group-label {
+  color: var(--text-soft);
+  text-align: left;
+}
+.map-cards__group--dim {
+  opacity: 0.45;
+}
+.map-cards__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Individual card — mirrors the SVG node's affordances (feature dot via
+   data-feature ancestor, optional badge, chevron when navigable). Tap
+   target is the whole row; the chevron is decorative. */
+.map-card-row {
+  display: block;
+}
+.map-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--ft-color, var(--border));
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--text);
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
+}
+a.map-card:hover,
+a.map-card:focus-visible {
+  outline: none;
+  border-color: var(--ft-color, var(--accent-warm));
+  background: var(--bg-hover);
+}
+.map-card--dim {
+  opacity: 0.4;
+}
+.map-card--teaser {
+  background: transparent;
+  border-style: dashed;
+}
+.map-card__badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-soft);
+  background: var(--ft-soft, var(--bg-section));
+  padding: 3px 7px;
+  border-radius: 4px;
+  min-width: 28px;
+  text-align: center;
+}
+.map-card__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.map-card__label {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+.map-card__desc {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-mid);
+}
+.map-card__chevron {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  color: var(--ft-color, var(--text-soft));
+  font-size: 14px;
+}
+
+/* Journey list — wraps each step in a row so the optional note can sit
+   directly under the card it belongs to, indented to match. */
+.map-cards--journey {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.map-cards__step {
+  display: block;
+}
+.map-cards__step-note {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-mid);
+  margin: 6px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--ft-color, var(--border-soft));
 }
 
 /* Vision layer — the "big picture" bubbles. Hand-positioned in
@@ -13049,10 +13055,10 @@ a.map-node:focus-visible {
   pointer-events: none;
 }
 
-/* At narrow widths, swap SVG vision for the vertical card stack. The
-   non-vision SVG layers (Pages, Data, Journeys) still scroll
-   horizontally; only Vision gets a layout swap because it's the entry
-   layer and benefits most from a mobile-native list. */
+/* At narrow widths, swap the Vision SVG for its vertical card stack.
+   The other three layers (Pages, Data, Journeys) have their own
+   SVG↔.map-cards swap defined above. All four are mobile-native lists
+   below 640px now. */
 @media (max-width: 640px) {
   .map-vision__svg {
     display: none;
@@ -13060,12 +13066,6 @@ a.map-node:focus-visible {
   .map-vision__cards {
     display: flex;
     flex-direction: column;
-  }
-  /* The canvas frame holds an HTML list now, not an SVG; let it grow to
-     the column width without forcing horizontal scroll. */
-  .map-page__canvas:has(.map-vision__cards) {
-    overflow-x: visible;
-    padding: 10px;
   }
 }
 

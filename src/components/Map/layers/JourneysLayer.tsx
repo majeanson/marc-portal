@@ -6,13 +6,19 @@
  *
  * v1: one journey at a time, selected via prop. Curated supplies the
  * journey list; Map.tsx picks the first visible one as default.
+ *
+ * Mobile fallback: at < 640px the SVG is hidden and a numbered step list
+ * renders in its place — each row shows the step number, the destination
+ * page card, and any curated note. The "polyline through pages" mental
+ * model still reads as "1 → 2 → 3" but vertically.
  */
 
 import { useMemo } from 'react'
 import type { Lang } from '../../../i18n'
-import type { MapData } from '../../../lib/map/types'
+import type { Bi, MapData, MapNode } from '../../../lib/map/types'
 import { layoutJourney, layoutPages } from '../../../lib/map/layout'
 import { MapNodeView } from '../MapNode'
+import { MapNodeCard } from '../MapNodeCard'
 
 interface Props {
   data: MapData
@@ -25,70 +31,111 @@ export function JourneysLayer({ data, lang, journeyId }: Props) {
   const journey = data.journeys.find((j) => j.id === journeyId) ?? data.journeys[0]
   const overlay = useMemo(() => (journey ? layoutJourney(pages, journey) : null), [pages, journey])
 
+  // Mobile step list — resolve each journey step's nodeId to a real
+  // MapNode (post-filter, so admin nodes are dropped from the visitor
+  // view automatically). Missing nodes are skipped silently; the
+  // map.test.ts guard already enforces that journeys reference real ids.
+  const nodeById = useMemo(() => {
+    const m = new Map<string, MapNode>()
+    for (const n of data.nodes) m.set(n.id, n)
+    return m
+  }, [data.nodes])
+  const stepsForCards = useMemo<{ index: number; node: MapNode; note: Bi | undefined }[]>(() => {
+    if (!journey) return []
+    const out: { index: number; node: MapNode; note: Bi | undefined }[] = []
+    journey.steps.forEach((s, i) => {
+      const node = nodeById.get(s.nodeId)
+      if (node) out.push({ index: i + 1, node, note: s.note })
+    })
+    return out
+  }, [journey, nodeById])
+
   return (
-    <svg
-      className="map-canvas map-canvas--journeys"
-      viewBox={`0 0 ${pages.viewBox.width} ${pages.viewBox.height}`}
-      preserveAspectRatio="xMidYMin meet"
-      role="img"
-      aria-label={journey ? journey.label[lang] : lang === 'en' ? 'Journey map' : 'Parcours'}
-    >
-      <defs>
-        <marker
-          id="map-arrow"
-          viewBox="0 0 10 10"
-          refX="9"
-          refY="5"
-          markerWidth="7"
-          markerHeight="7"
-          orient="auto-start-reverse"
-        >
-          <path d="M0,0 L10,5 L0,10 z" className="map-arrow map-arrow--journey" />
-        </marker>
-      </defs>
+    <>
+      <svg
+        className="map-canvas map-canvas--journeys map-canvas--svg-only"
+        viewBox={`0 0 ${pages.viewBox.width} ${pages.viewBox.height}`}
+        preserveAspectRatio="xMidYMin meet"
+        role="img"
+        aria-label={journey ? journey.label[lang] : lang === 'en' ? 'Journey map' : 'Parcours'}
+      >
+        <defs>
+          <marker
+            id="map-arrow"
+            viewBox="0 0 10 10"
+            refX="9"
+            refY="5"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto-start-reverse"
+          >
+            <path d="M0,0 L10,5 L0,10 z" className="map-arrow map-arrow--journey" />
+          </marker>
+        </defs>
 
-      <g className="map-groups">
-        {pages.groups.map((g) => (
-          <g key={g.group.id} transform={`translate(${g.x} ${g.y})`}>
-            <rect
-              className="map-group__bg map-group__bg--dim"
-              x={0}
-              y={0}
-              width={g.width}
-              height={g.height}
-              rx={10}
-            />
-            <text className="map-group__label mono" x={16} y={26}>
-              {g.group.label[lang]}
-            </text>
-          </g>
-        ))}
-      </g>
-
-      <g className="map-nodes map-nodes--dim">
-        {pages.nodes.map((p) => (
-          <MapNodeView key={p.node.id} pos={p} lang={lang} />
-        ))}
-      </g>
-
-      {overlay && (
-        <g className="map-journey">
-          <path
-            className="map-journey__path"
-            d={overlay.d}
-            fill="none"
-            markerEnd="url(#map-arrow)"
-          />
-          {overlay.steps.map((s) => (
-            <g key={`${s.nodeId}-${s.index}`} transform={`translate(${s.x} ${s.y})`}>
-              <circle className="map-journey__step-bg" r={14} />
-              <text className="map-journey__step-num" textAnchor="middle" dy="0.35em">
-                {s.index}
+        <g className="map-groups">
+          {pages.groups.map((g) => (
+            <g key={g.group.id} transform={`translate(${g.x} ${g.y})`}>
+              <rect
+                className="map-group__bg map-group__bg--dim"
+                x={0}
+                y={0}
+                width={g.width}
+                height={g.height}
+                rx={10}
+              />
+              <text className="map-group__label mono" x={16} y={26}>
+                {g.group.label[lang]}
               </text>
             </g>
           ))}
         </g>
-      )}
-    </svg>
+
+        <g className="map-nodes map-nodes--dim">
+          {pages.nodes.map((p) => (
+            <MapNodeView key={p.node.id} pos={p} lang={lang} />
+          ))}
+        </g>
+
+        {overlay && (
+          <g className="map-journey">
+            <path
+              className="map-journey__path"
+              d={overlay.d}
+              fill="none"
+              markerEnd="url(#map-arrow)"
+            />
+            {overlay.steps.map((s) => (
+              <g key={`${s.nodeId}-${s.index}`} transform={`translate(${s.x} ${s.y})`}>
+                <circle className="map-journey__step-bg" r={14} />
+                <text className="map-journey__step-num" textAnchor="middle" dy="0.35em">
+                  {s.index}
+                </text>
+              </g>
+            ))}
+          </g>
+        )}
+      </svg>
+
+      {/* Mobile step list — numbered journey steps as a vertical sequence
+        of node cards. The "step number → page" rhythm preserves the
+        SVG's "polyline through pages" mental model without needing
+        positional coordinates. */}
+      <ol
+        className="map-cards map-cards--journey"
+        aria-label={
+          journey ? journey.label[lang] : lang === 'en' ? 'Journey steps' : 'Étapes du parcours'
+        }
+      >
+        {stepsForCards.map(({ index, node, note }) => (
+          <li key={`${node.id}-${index}`} className="map-cards__step">
+            <ol className="map-cards__list">
+              <MapNodeCard node={node} lang={lang} leadBadge={String(index).padStart(2, '0')} />
+            </ol>
+            {note && <p className="map-cards__step-note">{note[lang]}</p>}
+          </li>
+        ))}
+      </ol>
+    </>
   )
 }

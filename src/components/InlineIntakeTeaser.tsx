@@ -4,7 +4,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import type { ProblemType } from '../lib/intakeSchemas'
 import { loadDraft, saveDraft } from '../lib/draft'
-import { FeatureDot } from './FeatureDot'
+import { SectionEyebrow } from './SectionEyebrow'
 import { PAGE_FEATURE } from '../lib/features'
 
 const TYPES: ProblemType[] = ['paperasse', 'suivi', 'coordination', 'autre']
@@ -49,10 +49,13 @@ export function InlineIntakeTeaser({ lang }: { lang: Lang }) {
       data-feature={PAGE_FEATURE['page.intake']}
     >
       <div className="section__inner inline-teaser__inner">
-        <div className="section__eyebrow inline-teaser__eyebrow">
-          <FeatureDot feature={PAGE_FEATURE['page.intake']} lang={lang} size="sm" />
+        <SectionEyebrow
+          lang={lang}
+          feature={PAGE_FEATURE['page.intake']}
+          className="inline-teaser__eyebrow"
+        >
           <span>{t.eyebrow}</span>
-        </div>
+        </SectionEyebrow>
         <h2 className="inline-teaser__title">{t.title}</h2>
         <p className="inline-teaser__sub">{t.sub}</p>
         <div className="inline-teaser__grid" role="group" aria-label={t.title}>

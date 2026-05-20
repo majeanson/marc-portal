@@ -77,17 +77,19 @@ export function Home({ lang }: { lang: Lang }) {
         <HowItWorks lang={lang} />
         {/* 4 — Pricing: concrete numbers so visitors self-qualify */}
         <Pricing lang={lang} />
-        {/* 4b — Inline intake teaser: low-friction "pick a type" CTA right
-              after pricing. Skips the type-picker step inside /intake. */}
-        <InlineIntakeTeaser lang={lang} />
-        {/* 5 — Vibe filter: do/don't lists — final self-qualification gate */}
+        {/* 5 — Vibe filter: do/don't lists — self-qualification gate */}
         <VibeFilter lang={lang} />
         {/* 5b — "Bring me anything": neutralizes the self-filter the vibe
               ledger can trigger. Marc's framing: I want every idea in my
               inbox; the triage is my job, not the visitor's. Examples are
               aspirational ("things I'd take"), not fake-historic. */}
         <BringAnything lang={lang} />
-        {/* 5c — Pull-quote: a short voice break before About lands */}
+        {/* 5c — Inline intake teaser: low-friction "pick a type" CTA. Sits
+              last in the qualify→reassure→act run so the type-picker is the
+              final step before the visitor commits. Skips the type-picker
+              step inside /intake. */}
+        <InlineIntakeTeaser lang={lang} />
+        {/* 5d — Pull-quote: a short voice break before About lands */}
         <PullQuote lang={lang} />
         {/* 6 — About: short bio near the end (visitors who care, scroll) */}
         <About lang={lang} />

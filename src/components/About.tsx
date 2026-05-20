@@ -2,7 +2,8 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
 import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
-import { FeatureDot } from './FeatureDot'
+import { SectionEyebrow } from './SectionEyebrow'
+import { CrossFeatureLink } from './CrossFeatureLink'
 
 const GITHUB_URL = 'https://github.com/majeanson'
 // onError on the img hides the figure if /marc.jpg ever 404s, so a missing
@@ -26,10 +27,9 @@ export function About({ lang }: { lang: Lang }) {
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.about}
           </div>
-          <div className="section__eyebrow">
-            <FeatureDot feature={feature} lang={lang} size="sm" />
+          <SectionEyebrow lang={lang} feature={feature}>
             {t.eyebrow}
-          </div>
+          </SectionEyebrow>
           <h2 className="section__display">{t.title}</h2>
         </header>
         <div className="about__layout about__layout--editorial">
@@ -54,18 +54,13 @@ export function About({ lang }: { lang: Lang }) {
               {lang === 'fr'
                 ? 'À la fin du projet, repo, comptes et domaine te reviennent — soit dès le jour 1, soit sur demande. '
                 : 'At the end of the project, repo, accounts, and domain come back to you — either from day 1 or on demand. '}
-              <span data-feature={handoffFeature} className="about__ownership-cta">
-                <FeatureDot
-                  feature={handoffFeature}
-                  lang={lang}
-                  size="sm"
-                  decorative
-                  className="about__ownership-cta-dot"
-                />
-                <a href={lang === 'fr' ? '/handoff' : '/en/handoff'}>
-                  {lang === 'fr' ? 'Voir comment ça finit →' : 'See how it ends →'}
-                </a>
-              </span>
+              <CrossFeatureLink
+                lang={lang}
+                feature={handoffFeature}
+                href={lang === 'fr' ? '/handoff' : '/en/handoff'}
+              >
+                {lang === 'fr' ? 'Voir comment ça finit →' : 'See how it ends →'}
+              </CrossFeatureLink>
             </p>
             <ul className="about__links" aria-label={t.title}>
               <li>
