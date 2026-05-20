@@ -161,7 +161,7 @@ export function Projects({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
-      <FeatureContinue feature={PAGE_FEATURE['page.projects']} lang={lang} />
+      <FeatureContinue page="page.projects" lang={lang} />
       <Footer lang={lang} />
       {/* Gallery has no hero, so a smaller scroll threshold makes the pill
           appear right after the first card. `.site-footer` is the hide-near

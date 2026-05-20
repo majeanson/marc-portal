@@ -5438,6 +5438,9 @@ button:focus-visible,
   position: absolute;
   top: 14px;
   right: 16px;
+  /* Above the preview iframe/skeleton (z-index 1) — otherwise the scaled
+     iframe paints over the button and only its overhanging edge shows. */
+  z-index: 2;
   font-size: 11px;
   color: var(--accent-warm);
   text-decoration: none;
@@ -13342,6 +13345,15 @@ a.feature-dot:focus-visible {
   font-size: 10.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--text-soft);
+}
+/* One-line wayfinding hint — tells the visitor how the onward link fits
+   into the site so the "next" box reads as orientation, not a dead CTA. */
+.feature-continue__hint {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 13px;
+  line-height: 1.55;
   color: var(--text-soft);
 }
 .feature-continue__link {

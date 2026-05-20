@@ -416,7 +416,7 @@ export function HandoffChecklist({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
-      <FeatureContinue feature={PAGE_FEATURE['page.handoff-checklist']} lang={lang} />
+      <FeatureContinue page="page.handoff-checklist" lang={lang} />
       <Footer lang={lang} />
     </div>
   )

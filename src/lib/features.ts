@@ -203,6 +203,44 @@ export const FEATURE_PRIMARY_PAGE: Record<ProductFeatureId, Bi> = {
 }
 
 /* -------------------------------------------------------------------------
+ * Backstage (meta) page loop. The four `meta` pages aren't on the product
+ * arc, but they shouldn't be dead ends either. They form their own small
+ * loop — site map → under the hood → privacy → PIA → back to the map — so
+ * the page-outro "where next" pointer works for backstage pages too.
+ * ------------------------------------------------------------------------- */
+
+/** Next backstage page in the loop, keyed by page-node id. A single
+ *  4-cycle over the meta pages; guarded in features.test.ts. */
+export const META_PAGE_NEXT: Record<string, string> = {
+  'page.map-page': 'page.meta',
+  'page.meta': 'page.privacy',
+  'page.privacy': 'page.pia',
+  'page.pia': 'page.map-page',
+}
+
+/** Route + short label for each backstage page — what the page-outro
+ *  pointer needs to render a link. Paths validated against the route
+ *  skeleton in map.test.ts. */
+export const META_PAGE_LINK: Record<string, { label: Bi; path: Bi }> = {
+  'page.map-page': {
+    label: { fr: 'La carte du site', en: 'The site map' },
+    path: { fr: '/carte', en: '/en/map' },
+  },
+  'page.meta': {
+    label: { fr: 'Sous le capot', en: 'Under the hood' },
+    path: { fr: '/meta', en: '/en/meta' },
+  },
+  'page.privacy': {
+    label: { fr: 'Vie privée', en: 'Privacy' },
+    path: { fr: '/confidentialite', en: '/en/privacy' },
+  },
+  'page.pia': {
+    label: { fr: 'Protection des données', en: 'Data protection' },
+    path: { fr: '/pia', en: '/en/pia' },
+  },
+}
+
+/* -------------------------------------------------------------------------
  * Surface → feature maps. SINGLE SOURCE OF TRUTH for "where on the site
  * does a colour belong, beyond a real page?". Every nav/header/subheader/
  * accordion consumer reads from one of these so a colour never goes stale

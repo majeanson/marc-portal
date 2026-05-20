@@ -473,7 +473,7 @@ export function Handoff({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
-      <FeatureContinue feature={PAGE_FEATURE['page.handoff']} lang={lang} />
+      <FeatureContinue page="page.handoff" lang={lang} />
       <Footer lang={lang} />
     </div>
   )

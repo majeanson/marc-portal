@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { FeatureContinue } from '../components/FeatureContinue'
 import { FeatureFolioLink } from '../components/FeatureFolioLink'
 import { PAGE_FEATURE } from '../lib/features'
 import { PAGE_FOLIOS } from '../lib/folios'
@@ -176,6 +177,7 @@ export function Privacy({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
+      <FeatureContinue page="page.privacy" lang={lang} />
       <Footer lang={lang} />
     </div>
   )

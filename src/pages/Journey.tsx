@@ -258,7 +258,7 @@ export function Journey({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
-      <FeatureContinue feature={PAGE_FEATURE['page.journey']} lang={lang} />
+      <FeatureContinue page="page.journey" lang={lang} />
       <Footer lang={lang} />
     </div>
   )

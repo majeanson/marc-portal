@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { FeatureContinue } from '../components/FeatureContinue'
 import { PageMast } from '../components/PageMast'
 import manifest from '../data/lac-features.json'
 import { formatDate } from '../lib/format'
@@ -121,7 +122,6 @@ function freshness(dateStr: string | null, now: number): 'fresh' | 'warm' | 'sta
 export function Meta({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const m = manifest as Manifest
-  const langPrefix = lang === 'en' ? '/en' : ''
 
   useEffect(() => {
     document.documentElement.lang = lang === 'fr' ? 'fr-CA' : 'en-CA'
@@ -220,14 +220,10 @@ export function Meta({ lang }: { lang: Lang }) {
             <p className="meta-page__cta mono">
               <a href={lang === 'fr' ? '/parcours' : '/en/journey'}>{t.journeyCta}</a>
             </p>
-            <p className="meta-page__back-link">
-              <a href={`${langPrefix}/`} className="link-btn mono">
-                {t.backHome}
-              </a>
-            </p>
           </div>
         </article>
       </main>
+      <FeatureContinue page="page.meta" lang={lang} />
       <Footer lang={lang} />
     </div>
   )

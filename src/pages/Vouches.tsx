@@ -89,7 +89,7 @@ export function Vouches({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
-      <FeatureContinue feature={PAGE_FEATURE['page.vouches']} lang={lang} />
+      <FeatureContinue page="page.vouches" lang={lang} />
       <Footer lang={lang} />
     </div>
   )

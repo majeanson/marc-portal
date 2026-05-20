@@ -21,6 +21,7 @@ import { CURATED } from './curated'
 import {
   FEATURE_IDS,
   FEATURE_PRIMARY_PAGE,
+  META_PAGE_LINK,
   PAGE_FEATURE,
   PRODUCT_FEATURE_IDS,
   isFeatureId,
@@ -226,6 +227,16 @@ describe('curated overlay coherence', () => {
       const page = FEATURE_PRIMARY_PAGE[fid]
       expect(frPaths, `${fid} primary page ${page.fr} is not a known route`).toContain(page.fr)
       expect(enPaths, `${fid} primary page ${page.en} is not a known route`).toContain(page.en)
+    }
+  })
+
+  it('every META_PAGE_LINK route resolves to a real route', () => {
+    // The backstage continue-pointer lands here; a stale route would 404.
+    const frPaths = new Set(skeleton.routes.filter((r) => r.lang === 'fr').map((r) => r.path))
+    const enPaths = new Set(skeleton.routes.filter((r) => r.lang === 'en').map((r) => r.path))
+    for (const [id, link] of Object.entries(META_PAGE_LINK)) {
+      expect(frPaths, `${id} → ${link.path.fr} is not a known route`).toContain(link.path.fr)
+      expect(enPaths, `${id} → ${link.path.en} is not a known route`).toContain(link.path.en)
     }
   })
 

@@ -93,7 +93,7 @@ export function Tier0({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
-      <FeatureContinue feature={PAGE_FEATURE['page.tier0']} lang={lang} />
+      <FeatureContinue page="page.tier0" lang={lang} />
       <Footer lang={lang} />
     </div>
   )

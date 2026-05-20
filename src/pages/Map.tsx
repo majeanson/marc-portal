@@ -21,6 +21,7 @@ import { PAGE_FOLIOS } from '../lib/folios'
 import { MAP_DATA } from '../lib/map/data'
 import { filterForViewer } from '../lib/map/filter'
 import type { LayerId } from '../lib/map/types'
+import { FeatureContinue } from '../components/FeatureContinue'
 import { FeatureFolioLink } from '../components/FeatureFolioLink'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -218,6 +219,7 @@ export function Map({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
+      <FeatureContinue page="page.map-page" lang={lang} />
       <Footer lang={lang} />
     </div>
   )

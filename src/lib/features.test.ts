@@ -14,6 +14,7 @@
  */
 
 import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   FAQ_FEATURE,
@@ -22,6 +23,9 @@ import {
   HOME_SECTION_FEATURE,
   HOME_SECTION_LABEL,
   HOME_SECTION_ORDER,
+  META_PAGE_LINK,
+  META_PAGE_NEXT,
+  PAGE_FEATURE,
   PRODUCT_FEATURE_IDS,
   SESSION_TAB_FEATURE,
   SESSION_TAB_LABEL,
@@ -268,6 +272,96 @@ describe('home section ordering', () => {
         `${id} missing from HOME_SECTION_FEATURE`,
       ).toBe(true)
       expect(HOME_SECTION_LABEL[id], `${id} missing from HOME_SECTION_LABEL`).toBeDefined()
+    }
+  })
+})
+
+/**
+ * Backstage page loop. The four `meta` pages form their own closed cycle so
+ * the page-outro pointer (FeatureContinue) never dead-ends on a backstage
+ * page. META_PAGE_NEXT must cover exactly the meta pages and META_PAGE_LINK
+ * must give every one of them a bilingual label + route.
+ */
+describe('backstage page loop', () => {
+  /** The meta page-ids, derived from PAGE_FEATURE — the source of truth. */
+  const metaPages = Object.entries(PAGE_FEATURE)
+    .filter(([, f]) => f === 'meta')
+    .map(([id]) => id)
+
+  it('META_PAGE_NEXT covers exactly the meta pages', () => {
+    expect(new Set(Object.keys(META_PAGE_NEXT))).toEqual(new Set(metaPages))
+  })
+
+  it('META_PAGE_NEXT is one closed cycle through every meta page', () => {
+    const keys = Object.keys(META_PAGE_NEXT)
+    const seen: string[] = []
+    let cur = keys[0]
+    for (let i = 0; i < keys.length; i++) {
+      seen.push(cur)
+      cur = META_PAGE_NEXT[cur]
+    }
+    expect(cur, 'META_PAGE_NEXT does not return to the start').toBe(keys[0])
+    expect(new Set(seen).size, 'META_PAGE_NEXT skips or repeats a page').toBe(keys.length)
+  })
+
+  it('no meta page points its pointer at itself', () => {
+    for (const [from, to] of Object.entries(META_PAGE_NEXT)) {
+      expect(to, `${from} points at itself`).not.toBe(from)
+    }
+  })
+
+  it('every meta page has a bilingual META_PAGE_LINK label and route', () => {
+    for (const id of metaPages) {
+      const link = META_PAGE_LINK[id]
+      expect(link, `${id} missing from META_PAGE_LINK`).toBeDefined()
+      expect(link?.label.fr && link?.label.en, `${id} link label missing fr/en`).toBeTruthy()
+      expect(link?.path.fr && link?.path.en, `${id} link path missing fr/en`).toBeTruthy()
+    }
+  })
+})
+
+/**
+ * Page wayfinding completeness. Every content page must end with a
+ * FeatureContinue pointing at its OWN page-id — that's what turns the site
+ * into a walkable loop with no dead ends. A new content page that forgets
+ * the pointer (or passes the wrong id) fails here.
+ */
+describe('page wayfinding', () => {
+  /** Page source file → the page-id it must hand to FeatureContinue. Home
+   *  is excluded — it's the funnel start and has its own CTAs. */
+  const CONTENT_PAGES: Record<string, string> = {
+    'Tier0.tsx': 'page.tier0',
+    'Projects.tsx': 'page.projects',
+    'Vouches.tsx': 'page.vouches',
+    'Journey.tsx': 'page.journey',
+    'Handoff.tsx': 'page.handoff',
+    'HandoffChecklist.tsx': 'page.handoff-checklist',
+    'Meta.tsx': 'page.meta',
+    'Privacy.tsx': 'page.privacy',
+    'Pia.tsx': 'page.pia',
+    'Map.tsx': 'page.map-page',
+  }
+
+  // vitest runs with cwd = project root, so resolve page sources from
+  // there. (A template literal inside `new URL(..., import.meta.url)` is
+  // not rewritten by Vite, so import.meta.url can't be used for a dynamic
+  // filename — cwd is the reliable base.)
+  const pagesDir = join(process.cwd(), 'src', 'pages')
+  const sources = Object.fromEntries(
+    Object.keys(CONTENT_PAGES).map((file) => [file, readFileSync(join(pagesDir, file), 'utf8')]),
+  )
+
+  it('every content page renders a FeatureContinue with its own page-id', () => {
+    for (const [file, pageId] of Object.entries(CONTENT_PAGES)) {
+      expect(sources[file], `${file} must render <FeatureContinue page="${pageId}" ...>`).toContain(
+        `<FeatureContinue page="${pageId}"`,
+      )
+    }
+  })
+
+  it('every wayfinding page-id is a known page with a feature', () => {
+    for (const pageId of Object.values(CONTENT_PAGES)) {
+      expect(PAGE_FEATURE[pageId], `${pageId} has no PAGE_FEATURE entry`).toBeDefined()
     }
   })
 })

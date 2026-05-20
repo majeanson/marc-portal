@@ -1,47 +1,98 @@
 /**
- * FeatureContinue — the page-outro "next up" pointer. Sits at the bottom of
- * a content page and points the visitor at the NEXT feature in the arc
- * (FEATURE_NEXT), coloured with that destination feature's hue.
+ * FeatureContinue — the page-outro "where next" pointer. Sits at the bottom
+ * of every content page so no page is a dead end and the visitor always
+ * knows one concrete way to keep moving.
  *
- * It turns six standalone pages into one walkable loop: read about pricing
- * → "next: you keep the keys" → /handoff → "next: see what's shipped" →
- * /vouches → "next: bring a project" → /intake. The loop closes on intake
- * so the proof pages double as a conversion nudge.
+ * Two arcs, one component:
+ *  - Product pages ride the FEATURE_NEXT loop: bring a project → talk → see
+ *    builds → pricing → keys → proof → back to bring a project. The loop
+ *    closes on intake so the proof pages double as a conversion nudge.
+ *  - Backstage (`meta`) pages ride the META_PAGE_NEXT loop: site map → under
+ *    the hood → privacy → PIA → back to the map.
  *
- * Rule-based, not hand-placed: a page passes its OWN feature and the
- * component derives the destination — no per-page curation of "what's next".
+ * The page passes only its own page-id; the component derives the feature,
+ * the destination and the colour. No per-page curation of "what's next".
  */
 
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
-import { FEATURE_NEXT, FEATURE_PRIMARY_PAGE, FEATURES, type FeatureId } from '../lib/features'
+import {
+  FEATURE_NEXT,
+  FEATURE_PRIMARY_PAGE,
+  FEATURES,
+  META_PAGE_LINK,
+  META_PAGE_NEXT,
+  PAGE_FEATURE,
+} from '../lib/features'
 import { FeatureDot } from './FeatureDot'
 
 interface Props {
-  /** The current page's feature. Undefined (transparency/admin pages) →
-   *  the nudge renders nothing. */
-  feature: FeatureId | undefined
+  /** The current page's node id, e.g. 'page.handoff' or 'page.privacy'.
+   *  An id with no PAGE_FEATURE entry renders nothing. */
+  page: string
   lang: Lang
 }
 
 const COPY = {
-  fr: { eyebrow: 'Continue le tour' },
-  en: { eyebrow: 'Continue the tour' },
+  fr: {
+    tourEyebrow: 'Continue le tour',
+    tourHint:
+      'Le site fait une boucle : six fonctionnalités, chacune reliée par sa couleur. Suis la pastille pour passer à la suivante.',
+    metaEyebrow: 'Les coulisses',
+    metaHint:
+      'Les pages qui montrent comment le site est bâti et comment tes données sont protégées. Continue, ou reviens à la carte quand tu veux.',
+  },
+  en: {
+    tourEyebrow: 'Continue the tour',
+    tourHint:
+      'The site loops: six features, each linked by colour. Follow the dot to reach the next one.',
+    metaEyebrow: 'Behind the scenes',
+    metaHint:
+      'The pages that show how the site is built and how your data is protected. Keep going, or head back to the map any time.',
+  },
 } as const
 
-export function FeatureContinue({ feature, lang }: Props) {
-  // `meta` pages (Privacy, About-style surfaces) aren't part of the product
-  // tour, so they get no continue nudge — only the six product features do.
-  if (!feature || feature === 'meta') return null
+export function FeatureContinue({ page, lang }: Props) {
+  const feature = PAGE_FEATURE[page]
+  if (!feature) return null
+  const t = COPY[lang]
 
+  // Backstage pages: walk the META_PAGE_NEXT loop instead of the product arc.
+  if (feature === 'meta') {
+    const nextPage = META_PAGE_NEXT[page]
+    const link = nextPage ? META_PAGE_LINK[nextPage] : undefined
+    if (!link) return null
+    return (
+      <aside className="feature-continue" data-feature="meta">
+        <span className="feature-continue__eyebrow mono">{t.metaEyebrow}</span>
+        <p className="feature-continue__hint">{t.metaHint}</p>
+        <Link className="feature-continue__link" to={link.path[lang]}>
+          <FeatureDot
+            feature="meta"
+            lang={lang}
+            size="md"
+            decorative
+            className="feature-continue__dot"
+          />
+          <span className="feature-continue__label">{link.label[lang]}</span>
+          <span className="feature-continue__arrow" aria-hidden="true">
+            →
+          </span>
+        </Link>
+      </aside>
+    )
+  }
+
+  // Product pages: `feature` is now narrowed to a ProductFeatureId, so the
+  // FEATURE_NEXT lookup is total.
   const next = FEATURE_NEXT[feature]
   const to = FEATURE_PRIMARY_PAGE[next][lang]
   const label = FEATURES[next].label[lang]
-  const t = COPY[lang]
 
   return (
     <aside className="feature-continue" data-feature={next}>
-      <span className="feature-continue__eyebrow mono">{t.eyebrow}</span>
+      <span className="feature-continue__eyebrow mono">{t.tourEyebrow}</span>
+      <p className="feature-continue__hint">{t.tourHint}</p>
       <Link className="feature-continue__link" to={to}>
         <FeatureDot
           feature={next}
