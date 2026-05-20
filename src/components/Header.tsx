@@ -2,8 +2,25 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
 import { useLangSwitch } from '../lib/useLangSwitch'
+import { HOME_SECTION_FEATURE } from '../lib/features'
+import { FeatureDot } from './FeatureDot'
 import { SessionSubHeader } from './SessionSubHeader'
 import { ThemeToggle } from './ThemeToggle'
+
+/** Marketing nav links — each anchor links to a home section AND borrows
+ *  the matching feature colour (via HOME_SECTION_FEATURE) so the rail,
+ *  the header, the section eyebrow, and the /carte cluster all agree.
+ *  Sections with no clean feature equivalent (#how, #about) render a
+ *  neutral hollow dot so the visual rhythm holds. */
+const NAV_SECTION_IDS = ['featured', 'how', 'pricing', 'vibe', 'about'] as const
+type NavSectionKey = (typeof NAV_SECTION_IDS)[number]
+const NAV_LABEL_KEY: Record<NavSectionKey, keyof (typeof DICT)['fr']['nav']['sections']> = {
+  featured: 'projects',
+  how: 'how',
+  pricing: 'pricing',
+  vibe: 'vibe',
+  about: 'about',
+}
 
 /**
  * variant:
@@ -59,21 +76,27 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
             </nav>
           ) : (
             <nav className="site-header__sections" aria-label={t.nav.sections.projects}>
-              <a href={`${langPrefix}/#featured`} className="site-header__section-link">
-                {t.nav.sections.projects}
-              </a>
-              <a href={`${langPrefix}/#how`} className="site-header__section-link">
-                {t.nav.sections.how}
-              </a>
-              <a href={`${langPrefix}/#pricing`} className="site-header__section-link">
-                {t.nav.sections.pricing}
-              </a>
-              <a href={`${langPrefix}/#vibe`} className="site-header__section-link">
-                {t.nav.sections.vibe}
-              </a>
-              <a href={`${langPrefix}/#about`} className="site-header__section-link">
-                {t.nav.sections.about}
-              </a>
+              {NAV_SECTION_IDS.map((id) => {
+                const feature = HOME_SECTION_FEATURE[id]
+                const label = t.nav.sections[NAV_LABEL_KEY[id]]
+                return (
+                  <span key={id} className="site-header__section" data-feature={feature}>
+                    {/* Dot is a separate target — clicks land on /carte
+                        filtered to this feature, mirroring the SectionRail
+                        + Footer pattern. The anchor next to it still
+                        scrolls to the section like before. */}
+                    <FeatureDot
+                      feature={feature}
+                      lang={lang}
+                      size="sm"
+                      className="site-header__section-dot"
+                    />
+                    <a href={`${langPrefix}/#${id}`} className="site-header__section-link">
+                      {label}
+                    </a>
+                  </span>
+                )
+              })}
             </nav>
           )}
           <div className="site-header__right">

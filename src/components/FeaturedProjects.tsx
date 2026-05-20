@@ -7,7 +7,7 @@ import { HOME_FOLIOS } from '../lib/folios'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 import { ProjectCardPreview } from './ProjectCardPreview'
 import { FeatureDot } from './FeatureDot'
-import { PAGE_FEATURE } from '../lib/features'
+import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
 
 export const FEATURED_LIMIT = 3
 
@@ -37,15 +37,23 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
   const hasProjects = projects !== null && projects.length > 0
   const isLoading = projects === null && !errored
   const isEmpty = projects !== null && projects.length === 0
+  const feature = HOME_SECTION_FEATURE['featured']
 
   return (
-    <section className="section featured-projects section--editorial" id="featured">
+    <section
+      className="section featured-projects section--editorial"
+      id="featured"
+      data-feature={feature}
+    >
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.featured}
           </div>
-          <div className="section__eyebrow">{t.eyebrow}</div>
+          <div className="section__eyebrow">
+            <FeatureDot feature={feature} lang={lang} size="sm" />
+            {t.eyebrow}
+          </div>
           <h2 className="section__display">{t.title}</h2>
           <p className="featured-projects__sub section__lead">{t.sub}</p>
         </header>
@@ -66,10 +74,7 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
                 column. The dot above the title carries the destination
                 page's feature colour ("shipped" — teal) so the visitor
                 already sees which cluster they're about to enter. */}
-            <div
-              className="home-drill-card-wrap"
-              data-feature={PAGE_FEATURE['page.projects']}
-            >
+            <div className="home-drill-card-wrap" data-feature={PAGE_FEATURE['page.projects']}>
               <a className="home-drill-card home-drill-card--no-stats" href={galleryHref}>
                 <div className="home-drill-card-text">
                   <span className="home-drill-card-feature">
@@ -79,9 +84,7 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
                       size="sm"
                       decorative
                     />
-                    <span className="home-drill-card-eyebrow mono">
-                      {t.galleryCard.eyebrow}
-                    </span>
+                    <span className="home-drill-card-eyebrow mono">{t.galleryCard.eyebrow}</span>
                   </span>
                   <h3 className="home-drill-card-title">{t.galleryCard.title}</h3>
                   <p className="home-drill-card-body">{t.galleryCard.body}</p>

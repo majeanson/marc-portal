@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
+import { SESSION_TAB_FEATURE } from '../lib/features'
+import { FeatureDot } from './FeatureDot'
 
 /**
  * Sticky sub-header rendered below the slim session Header on /session/:id.
@@ -105,10 +107,16 @@ export function SessionSubHeader({ lang }: { lang: Lang }) {
       <div className="session-subheader__inner">
         {tabs.map((tab) => {
           const isActive = tab.id === activeId
+          // Tab borrows --ft-color from the central SESSION_TAB_FEATURE
+          // map so the active underline / hover colour matches the
+          // section the tab leads to. Same colour story the page-mast
+          // folio + /carte cluster carry — one feature, one hue.
+          const feature = SESSION_TAB_FEATURE[tab.id]
           return (
             <a
               key={tab.id}
               href={`#${tab.id}`}
+              data-feature={feature}
               className={`session-subheader__tab mono${isActive ? ' session-subheader__tab--active' : ''}`}
               aria-current={isActive ? 'true' : undefined}
               onClick={(e) => {
@@ -122,6 +130,13 @@ export function SessionSubHeader({ lang }: { lang: Lang }) {
                 }
               }}
             >
+              <FeatureDot
+                feature={feature}
+                lang={lang}
+                size="sm"
+                decorative
+                className="session-subheader__tab-dot"
+              />
               {tab.label[lang]}
             </a>
           )

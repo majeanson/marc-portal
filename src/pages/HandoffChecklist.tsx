@@ -324,7 +324,11 @@ export function HandoffChecklist({ lang }: { lang: Lang }) {
 
             <header className="handoff__hero">
               <div className="section__eyebrow">{t.eyebrow}</div>
-              <FeatureFolioLink feature={PAGE_FEATURE['page.handoff-checklist']} lang={lang} withDot>
+              <FeatureFolioLink
+                feature={PAGE_FEATURE['page.handoff-checklist']}
+                lang={lang}
+                withDot
+              >
                 № {PAGE_FOLIOS.handoffChecklist}
               </FeatureFolioLink>
               <h1>{t.title}</h1>

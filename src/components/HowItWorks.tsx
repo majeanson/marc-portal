@@ -3,19 +3,27 @@ import { DICT } from '../i18n'
 import { cssVars } from '../lib/styleVars'
 import { HOME_FOLIOS } from '../lib/folios'
 import { FeatureDot } from './FeatureDot'
-import { PAGE_FEATURE } from '../lib/features'
+import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
 
 export function HowItWorks({ lang }: { lang: Lang }) {
   const t = DICT[lang].how
   const journeyHref = lang === 'fr' ? '/parcours' : '/en/journey'
+  // HOME_SECTION_FEATURE['how'] is undefined on purpose — this section
+  // covers the whole arc (intake → conversation → builds → handoff),
+  // pinning it to one colour would be a half-truth. The eyebrow still
+  // gets a neutral hollow dot so the rhythm holds.
+  const feature = HOME_SECTION_FEATURE['how']
   return (
-    <section className="section section--alt section--editorial" id="how">
+    <section className="section section--alt section--editorial" id="how" data-feature={feature}>
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.how}
           </div>
-          <div className="section__eyebrow">{t.eyebrow}</div>
+          <div className="section__eyebrow">
+            <FeatureDot feature={feature} lang={lang} size="sm" />
+            {t.eyebrow}
+          </div>
           <h2 className="section__display">{t.title}</h2>
         </header>
         <ol className="steps steps--editorial">

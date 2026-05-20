@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
+import { FAQ_FEATURE, HOME_SECTION_FEATURE } from '../lib/features'
+import { FeatureDot } from './FeatureDot'
 
 /**
  * Native <details>/<summary> accordion — no JS state for open/close (browsers
@@ -80,28 +82,48 @@ export function FAQ({ lang }: { lang: Lang }) {
     })
   }
 
+  // HOME_SECTION_FEATURE['faq'] = undefined — FAQ aggregates Qs from
+  // every cluster, so the section itself doesn't carry a single hue.
+  // Each <details> below carries its own feature via FAQ_FEATURE.
+  const sectionFeature = HOME_SECTION_FEATURE['faq']
   return (
-    <section className="section section--editorial faq" id="faq">
+    <section className="section section--editorial faq" id="faq" data-feature={sectionFeature}>
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.faq}
           </div>
-          <div className="section__eyebrow">{t.eyebrow}</div>
+          <div className="section__eyebrow">
+            <FeatureDot feature={sectionFeature} lang={lang} size="sm" />
+            {t.eyebrow}
+          </div>
           <h2 className="section__display">{t.title}</h2>
         </header>
         <div className="faq__list" ref={listRef}>
           {t.items.map((item, i) => {
             const slug = t.slugs[i] ?? `q${i}`
             const id = `faq-${slug}`
+            // Each Q gets its feature colour via the central FAQ_FEATURE
+            // map — the same plum the visitor saw on the Pricing eyebrow
+            // shows up on the "le prix annoncé" question, and the dot
+            // lands them on /carte?feature=pricing.
+            const feature = FAQ_FEATURE[slug]
             return (
               <details
                 key={slug}
                 id={id}
+                data-feature={feature}
                 className="faq__item"
                 onToggle={(e) => onItemToggle(slug, (e.currentTarget as HTMLDetailsElement).open)}
               >
                 <summary className="faq__q">
+                  <FeatureDot
+                    feature={feature}
+                    lang={lang}
+                    size="sm"
+                    decorative
+                    className="faq__q-dot"
+                  />
                   <span className="faq__q-text">{item.q}</span>
                   <span className="faq__q-marker" aria-hidden="true">
                     +

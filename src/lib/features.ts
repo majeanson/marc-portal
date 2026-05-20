@@ -120,3 +120,81 @@ export function groupToFeature(groupId: string): FeatureId | null {
   if (!m) return null
   return isFeatureId(m[1]) ? m[1] : null
 }
+
+/* -------------------------------------------------------------------------
+ * Surface → feature maps. SINGLE SOURCE OF TRUTH for "where on the site
+ * does a colour belong, beyond a real page?". Every nav/header/subheader/
+ * accordion consumer reads from one of these so a colour never goes stale
+ * in just one place.
+ *
+ *   PAGE_FEATURE          (above) — page-node id → feature
+ *   HOME_SECTION_FEATURE  — home anchor section id → feature
+ *   SESSION_TAB_FEATURE   — session sub-header tab id → feature
+ *   FAQ_FEATURE           — FAQ item slug → feature
+ *
+ * `undefined` is deliberate, not absence: it means "this surface is real,
+ * but it crosses every feature" (e.g. "How it works" covers the full arc).
+ * Such surfaces still render a neutral hollow FeatureDot so the visual
+ * rhythm of "every title has a dot" never breaks.
+ * ------------------------------------------------------------------------- */
+
+/** Home page anchor sections → feature. Header nav links, SectionRail,
+ *  and any future surface that points at #pricing / #vibe / etc. all
+ *  agree on the colour by reading this map. */
+export const HOME_SECTION_FEATURE: Record<string, FeatureId | undefined> = {
+  // "Projets" — drills into the shipped gallery.
+  featured: 'shipped',
+  // "Comment ça marche" — covers the whole arc (intake → conversation →
+  // builds → handoff). Pinning to one colour would be a half-truth.
+  how: undefined,
+  // "Prix" — the only place that ever talks plum.
+  pricing: 'pricing',
+  // "Je fais / Je fais pas" — qualification gate, same role as the intake
+  // form, hence intake.
+  vibe: 'intake',
+  // "Apporte n'importe quoi" — neutralises the vibe gate and pushes the
+  // visitor toward /intake.
+  'bring-anything': 'intake',
+  // Pull-quote, About, Testimonials, ShareSite, FAQ — see below; only
+  // ones with a clean feature-equivalent appear here.
+  about: undefined,
+  testimonials: 'shipped',
+  faq: undefined,
+  // Final CTA — points at /intake.
+  cta: 'intake',
+}
+
+/** Session sub-header tabs (#session-statut / #session-conversation /
+ *  ...). Active tab borrows --ft-color from the matched feature so the
+ *  user follows one colour from "Paiement" tab → /tier-0 → /carte. */
+export const SESSION_TAB_FEATURE: Record<string, FeatureId | undefined> = {
+  // Statut is the session's "where are we" pill row — it's the live state
+  // of the async thread, so it reads as conversation.
+  'session-statut': 'conversation',
+  'session-conversation': 'conversation',
+  'session-builds': 'iterative',
+  'session-paiement': 'pricing',
+  'session-livraison': 'keys',
+  'session-intake': 'intake',
+}
+
+/** FAQ items by stable slug. Each Q/A maps to the feature it most clearly
+ *  belongs to. A visitor scanning the FAQ sees the same plum dot on the
+ *  price question that they saw on the Pricing section heading two
+ *  scrolls up, and clicking it lands them on /carte?feature=pricing. */
+export const FAQ_FEATURE: Record<string, FeatureId | undefined> = {
+  // "Le prix annoncé, c'est vraiment ça?" — pricing.
+  price: 'pricing',
+  // "Si ça prend plus de temps que prévu?" — promise relies on the per-
+  // build cadence (iterative), not pricing or conversation.
+  timeline: 'iterative',
+  // "Si je n'aime pas le résultat?" — answered with "demo testable à
+  // chaque étape" — that promise IS the iterative feature.
+  result: 'iterative',
+  // "Je ne sais pas exactement ce que je veux" — intake qualification.
+  unclear: 'intake',
+  // "À qui appartient le code?" — keys / handoff.
+  ownership: 'keys',
+  // "Apporter mes propres designs?" — intake (what you bring with you).
+  'bring-own': 'intake',
+}

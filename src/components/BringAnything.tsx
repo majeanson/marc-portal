@@ -1,6 +1,8 @@
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
+import { HOME_SECTION_FEATURE } from '../lib/features'
+import { FeatureDot } from './FeatureDot'
 
 /**
  * "Apporte-moi n'importe quoi" — sits directly after the vibe do/don't
@@ -19,14 +21,22 @@ import { HOME_FOLIOS } from '../lib/folios'
 export function BringAnything({ lang }: { lang: Lang }) {
   const t = DICT[lang].bringAnything
   const ctaHref = lang === 'fr' ? '/intake' : '/en/intake'
+  const feature = HOME_SECTION_FEATURE['bring-anything']
   return (
-    <section className="section section--editorial bring-anything" id="bring-anything">
+    <section
+      className="section section--editorial bring-anything"
+      id="bring-anything"
+      data-feature={feature}
+    >
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.bringAnything}
           </div>
-          <div className="section__eyebrow">{t.eyebrow}</div>
+          <div className="section__eyebrow">
+            <FeatureDot feature={feature} lang={lang} size="sm" />
+            {t.eyebrow}
+          </div>
           <h2 className="section__display">{t.title}</h2>
           <p className="section__lead">{t.body}</p>
         </header>

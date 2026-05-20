@@ -2,32 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import type { Lang } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
 import { FeatureDot } from './FeatureDot'
-import type { FeatureId } from '../lib/features'
+import { HOME_SECTION_FEATURE } from '../lib/features'
 
 interface RailItem {
   id: string
   label: string
-}
-
-/** Section-id → feature mapping. The home sections that have a clean
- *  feature equivalent get a coloured dot in the rail; ones that don't
- *  (how, vibe, about, cta) render a neutral hollow dot so the rail
- *  stays visually uniform. The "featured" and "testimonials" sections
- *  both map to /projects + /vouches respectively, both of which sit
- *  under the "shipped" feature. */
-const RAIL_FEATURE: Record<string, FeatureId | undefined> = {
-  featured: 'shipped',
-  // "How it works" intentionally has NO feature: the section covers the
-  // whole arc (intake → conversation → builds → handoff) and pinning it
-  // to a single colour would be a half-truth.
-  how: undefined,
-  pricing: 'pricing',
-  // "Je fais / Je fais pas" is the self-qualification gate — same role
-  // as the intake form, hence intake.
-  vibe: 'intake',
-  about: undefined,
-  testimonials: 'shipped',
-  cta: 'intake',
 }
 
 /** Cheap order-insensitive set equality check — we only ever store a few
@@ -209,13 +188,9 @@ export function SectionRail({ lang }: { lang: Lang }) {
           const isActive = it.id === activeId
           const p = progress[it.id] ?? 0
           const folio = RAIL_FOLIO[it.id] ?? ''
-          const feature = RAIL_FEATURE[it.id]
+          const feature = HOME_SECTION_FEATURE[it.id]
           return (
-            <li
-              key={it.id}
-              className="section-rail__item"
-              data-feature={feature}
-            >
+            <li key={it.id} className="section-rail__item" data-feature={feature}>
               <a
                 href={`#${it.id}`}
                 className={`section-rail__link${isActive ? ' is-active' : ''}`}
@@ -230,12 +205,7 @@ export function SectionRail({ lang }: { lang: Lang }) {
                   visitor can either jump to the anchor (the link) OR
                   jump to the /carte cluster (the dot). Two destinations,
                   two targets — no accidental click-stealing. */}
-              <FeatureDot
-                feature={feature}
-                lang={lang}
-                size="sm"
-                className="section-rail__dot"
-              />
+              <FeatureDot feature={feature} lang={lang} size="sm" className="section-rail__dot" />
             </li>
           )
         })}

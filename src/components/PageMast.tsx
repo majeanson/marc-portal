@@ -160,9 +160,7 @@ export function PageMast({
         {feature && lang && (
           <div className="page-mast__feature-cue">
             <FeatureDot feature={feature} lang={lang} size="lg" />
-            <span className="page-mast__feature-name mono">
-              {FEATURES[feature].label[lang]}
-            </span>
+            <span className="page-mast__feature-name mono">{FEATURES[feature].label[lang]}</span>
           </div>
         )}
         {children}

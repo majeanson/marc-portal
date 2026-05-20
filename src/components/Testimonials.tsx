@@ -3,7 +3,7 @@ import { DICT, type Lang } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
 import { FeatureDot } from './FeatureDot'
-import { PAGE_FEATURE } from '../lib/features'
+import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
 
 const HOME_LIMIT = 3
 
@@ -51,10 +51,13 @@ export function Testimonials({ lang }: { lang: Lang }) {
   // accordingly.
   if (vouches === null || vouches.length === 0) return null
 
+  const feature = HOME_SECTION_FEATURE['testimonials']
+
   return (
     <section
       className="section section--editorial testimonials-section"
       id="testimonials"
+      data-feature={feature}
       aria-labelledby="testimonials-heading"
     >
       <div className="section__inner">
@@ -62,7 +65,10 @@ export function Testimonials({ lang }: { lang: Lang }) {
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.testimonials}
           </div>
-          <div className="section__eyebrow">{t.eyebrow}</div>
+          <div className="section__eyebrow">
+            <FeatureDot feature={feature} lang={lang} size="sm" />
+            {t.eyebrow}
+          </div>
           <h2 id="testimonials-heading" className="section__display">
             {t.title}
           </h2>

@@ -3,7 +3,9 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { CapacityCounter } from './CapacityCounter'
 import { HeroShippedProject } from './HeroShippedProject'
+import { FeatureDot } from './FeatureDot'
 import { useAuth } from '../lib/authContext'
+import { PAGE_FEATURE } from '../lib/features'
 import { getCapacityLive, listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 
 const FACTS: Record<Lang, string[]> = {
@@ -182,9 +184,21 @@ export function Hero({ lang }: { lang: Lang }) {
             </a>
           )}
         </div>
-        <a className="hero__secondary-cta mono" href={SECONDARY_CTA[lang].href}>
-          {SECONDARY_CTA[lang].label}
-        </a>
+        {/* Secondary CTA lands on /projects (shipped cluster). The teal
+            dot signals "you're about to enter the shipped colour story" and
+            doubles as a /carte?feature=shipped shortcut. */}
+        <span className="hero__secondary-cta-wrap" data-feature={PAGE_FEATURE['page.projects']}>
+          <FeatureDot
+            feature={PAGE_FEATURE['page.projects']}
+            lang={lang}
+            size="sm"
+            decorative
+            className="hero__secondary-cta-dot"
+          />
+          <a className="hero__secondary-cta mono" href={SECONDARY_CTA[lang].href}>
+            {SECONDARY_CTA[lang].label}
+          </a>
+        </span>
         {shippedThisYear > 0 && (
           <p className="hero__shipped-counter mono">
             <span className="hero__shipped-counter-dot" aria-hidden="true" />

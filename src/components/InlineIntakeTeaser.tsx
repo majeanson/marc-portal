@@ -50,11 +50,7 @@ export function InlineIntakeTeaser({ lang }: { lang: Lang }) {
     >
       <div className="section__inner inline-teaser__inner">
         <div className="section__eyebrow inline-teaser__eyebrow">
-          <FeatureDot
-            feature={PAGE_FEATURE['page.intake']}
-            lang={lang}
-            size="sm"
-          />
+          <FeatureDot feature={PAGE_FEATURE['page.intake']} lang={lang} size="sm" />
           <span>{t.eyebrow}</span>
         </div>
         <h2 className="inline-teaser__title">{t.title}</h2>

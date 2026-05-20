@@ -85,131 +85,137 @@ export function VisionLayer({ data, lang, activeFeature }: Props) {
 
   return (
     <>
-    <svg
-      className="map-canvas map-canvas--vision map-vision__svg"
-      viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="xMidYMid meet"
-      role="img"
-      aria-label={lang === 'en' ? 'Big picture map' : 'Carte d’ensemble'}
-    >
-      <g className="map-vision__connectors">
-        {connectors.map((c) => (
-          <path key={c.id} className="map-vision__connector" d={c.d} fill="none" />
-        ))}
-      </g>
+      <svg
+        className="map-canvas map-canvas--vision map-vision__svg"
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label={lang === 'en' ? 'Big picture map' : 'Carte d’ensemble'}
+      >
+        <g className="map-vision__connectors">
+          {connectors.map((c) => (
+            <path key={c.id} className="map-vision__connector" d={c.d} fill="none" />
+          ))}
+        </g>
 
-      <g className="map-vision__bubbles">
-        {bubbles.map((b) => {
-          const cx = (b.pos.x / 100) * W
-          const cy = (b.pos.y / 100) * H
-          const r = RADIUS[b.size]
-          const inset = LABEL_INSET[b.size]
-          const labelW = r * 2 - inset * 2
-          const labelH = r * 1.85
-          const label = b.label[lang]
-          const sub = b.sub?.[lang]
-          const desc = b.desc?.[lang]
-          const href = b.href?.[lang]
-          const interactive = !!href
+        <g className="map-vision__bubbles">
+          {bubbles.map((b) => {
+            const cx = (b.pos.x / 100) * W
+            const cy = (b.pos.y / 100) * H
+            const r = RADIUS[b.size]
+            const inset = LABEL_INSET[b.size]
+            const labelW = r * 2 - inset * 2
+            const labelH = r * 1.85
+            const label = b.label[lang]
+            const sub = b.sub?.[lang]
+            const desc = b.desc?.[lang]
+            const href = b.href?.[lang]
+            const interactive = !!href
 
-          const onActivate = href ? () => navigate(href) : undefined
-          // Hover/screen-reader tooltip prefers the user-facing sub sentence;
-          // desc is a fallback for bubbles that lack a sub.
-          const tooltip = sub ?? desc ?? label
+            const onActivate = href ? () => navigate(href) : undefined
+            // Hover/screen-reader tooltip prefers the user-facing sub sentence;
+            // desc is a fallback for bubbles that lack a sub.
+            const tooltip = sub ?? desc ?? label
 
-          return (
-            <g
-              key={b.id}
-              className={`map-vision__bubble map-vision__bubble--${b.size}${
-                interactive ? ' map-vision__bubble--link' : ''
-              }${activeFeature && activeFeature !== b.feature ? ' map-vision__bubble--dim' : ''}`}
-              // data-feature drives the accent color via CSS custom-property
-              // overrides in styles.css (.map-vision__bubble[data-feature=...]).
-              // Children inside foreignObject inherit the custom properties.
-              data-feature={b.feature}
-              transform={`translate(${cx} ${cy})`}
-              role={interactive ? 'link' : undefined}
-              tabIndex={interactive ? 0 : undefined}
-              onClick={onActivate}
-              onKeyDown={
-                interactive
-                  ? (e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        onActivate?.()
+            return (
+              <g
+                key={b.id}
+                className={`map-vision__bubble map-vision__bubble--${b.size}${
+                  interactive ? ' map-vision__bubble--link' : ''
+                }${activeFeature && activeFeature !== b.feature ? ' map-vision__bubble--dim' : ''}`}
+                // data-feature drives the accent color via CSS custom-property
+                // overrides in styles.css (.map-vision__bubble[data-feature=...]).
+                // Children inside foreignObject inherit the custom properties.
+                data-feature={b.feature}
+                transform={`translate(${cx} ${cy})`}
+                role={interactive ? 'link' : undefined}
+                tabIndex={interactive ? 0 : undefined}
+                onClick={onActivate}
+                onKeyDown={
+                  interactive
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          onActivate?.()
+                        }
                       }
-                    }
-                  : undefined
-              }
-              aria-label={interactive ? `${b.index}. ${label}${sub ? ` — ${sub}` : ''}` : undefined}
-            >
-              <title>{tooltip === label ? label : `${label} — ${tooltip}`}</title>
-              <circle className="map-vision__bubble-bg" r={r} />
-              <text className="map-vision__bubble-index mono" x={-r + inset - 2} y={-r + inset + 6}>
-                {b.index}
-              </text>
-              <foreignObject x={-labelW / 2} y={-labelH / 2} width={labelW} height={labelH}>
-                <div className="map-vision__bubble-content">
-                  <div className="map-vision__bubble-label">{label}</div>
-                  {sub && <div className="map-vision__bubble-sub">{sub}</div>}
-                </div>
-              </foreignObject>
-            </g>
-          )
-        })}
-      </g>
-    </svg>
+                    : undefined
+                }
+                aria-label={
+                  interactive ? `${b.index}. ${label}${sub ? ` — ${sub}` : ''}` : undefined
+                }
+              >
+                <title>{tooltip === label ? label : `${label} — ${tooltip}`}</title>
+                <circle className="map-vision__bubble-bg" r={r} />
+                <text
+                  className="map-vision__bubble-index mono"
+                  x={-r + inset - 2}
+                  y={-r + inset + 6}
+                >
+                  {b.index}
+                </text>
+                <foreignObject x={-labelW / 2} y={-labelH / 2} width={labelW} height={labelH}>
+                  <div className="map-vision__bubble-content">
+                    <div className="map-vision__bubble-label">{label}</div>
+                    {sub && <div className="map-vision__bubble-sub">{sub}</div>}
+                  </div>
+                </foreignObject>
+              </g>
+            )
+          })}
+        </g>
+      </svg>
 
-    {/* Mobile vertical card stack. Visible at < 640px (CSS-controlled);
+      {/* Mobile vertical card stack. Visible at < 640px (CSS-controlled);
         hidden otherwise. Renders the same 6 bubbles as a numbered list
         of feature cards, each carrying the matching --ft-color via
         data-feature, so the colour story stays identical to the SVG
         view. The cards are real <Link>s when href is set so the
         navigation path matches the SVG version. */}
-    <ol
-      className="map-vision__cards"
-      aria-label={lang === 'en' ? 'Big picture map (list)' : "Carte d’ensemble (liste)"}
-    >
-      {bubbles.map((b) => {
-        const label = b.label[lang]
-        const sub = b.sub?.[lang]
-        const href = b.href?.[lang]
-        const dim = !!(activeFeature && activeFeature !== b.feature)
-        const featureName = b.feature ? FEATURES[b.feature].label[lang] : null
-        const inner = (
-          <>
-            <span className="map-vision__card-index mono" aria-hidden="true">
-              {String(b.index).padStart(2, '0')}
-            </span>
-            <span className="map-vision__card-body">
-              <span className="map-vision__card-label">{label}</span>
-              {sub && <span className="map-vision__card-sub">{sub}</span>}
-              {featureName && (
-                <span className="map-vision__card-feature mono">{featureName}</span>
+      <ol
+        className="map-vision__cards"
+        aria-label={lang === 'en' ? 'Big picture map (list)' : 'Carte d’ensemble (liste)'}
+      >
+        {bubbles.map((b) => {
+          const label = b.label[lang]
+          const sub = b.sub?.[lang]
+          const href = b.href?.[lang]
+          const dim = !!(activeFeature && activeFeature !== b.feature)
+          const featureName = b.feature ? FEATURES[b.feature].label[lang] : null
+          const inner = (
+            <>
+              <span className="map-vision__card-index mono" aria-hidden="true">
+                {String(b.index).padStart(2, '0')}
+              </span>
+              <span className="map-vision__card-body">
+                <span className="map-vision__card-label">{label}</span>
+                {sub && <span className="map-vision__card-sub">{sub}</span>}
+                {featureName && (
+                  <span className="map-vision__card-feature mono">{featureName}</span>
+                )}
+              </span>
+              <span className="map-vision__card-chevron" aria-hidden="true">
+                →
+              </span>
+            </>
+          )
+          return (
+            <li
+              key={b.id}
+              data-feature={b.feature}
+              className={`map-vision__card${dim ? ' map-vision__card--dim' : ''}`}
+            >
+              {href ? (
+                <Link className="map-vision__card-link" to={href}>
+                  {inner}
+                </Link>
+              ) : (
+                <div className="map-vision__card-link map-vision__card-link--static">{inner}</div>
               )}
-            </span>
-            <span className="map-vision__card-chevron" aria-hidden="true">
-              →
-            </span>
-          </>
-        )
-        return (
-          <li
-            key={b.id}
-            data-feature={b.feature}
-            className={`map-vision__card${dim ? ' map-vision__card--dim' : ''}`}
-          >
-            {href ? (
-              <Link className="map-vision__card-link" to={href}>
-                {inner}
-              </Link>
-            ) : (
-              <div className="map-vision__card-link map-vision__card-link--static">{inner}</div>
-            )}
-          </li>
-        )
-      })}
-    </ol>
+            </li>
+          )
+        })}
+      </ol>
     </>
   )
 }

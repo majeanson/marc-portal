@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
+import { PAGE_FEATURE } from '../lib/features'
 
 const DISMISS_KEY = 'mp-sticky-cta-dismissed'
 // Once the visitor passes this scroll ratio the label swaps to the
@@ -101,12 +102,16 @@ export function MobileStickyCta({
   }
 
   const label = ratio >= FAR_RATIO ? t.farLabel : t.label
+  // Destination is /intake — borrow that feature's colour so the sticky
+  // pill ties visually to the section it leads to.
+  const feature = PAGE_FEATURE['page.intake']
 
   if (dismissed) {
     return (
       <a
         className={`mobile-sticky-pebble${show ? ' is-visible' : ''}`}
         href={intakeHref}
+        data-feature={feature}
         aria-label={t.pebbleAriaLabel}
         aria-hidden={!show}
         tabIndex={show ? 0 : -1}
@@ -121,6 +126,7 @@ export function MobileStickyCta({
   return (
     <div
       className={`mobile-sticky-cta${show ? ' is-visible' : ''}`}
+      data-feature={feature}
       aria-hidden={!show}
       role="group"
       aria-label={t.ariaLabel}

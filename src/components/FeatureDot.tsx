@@ -36,13 +36,7 @@ interface Props {
   className?: string
 }
 
-export function FeatureDot({
-  feature,
-  lang,
-  size = 'sm',
-  decorative = false,
-  className,
-}: Props) {
+export function FeatureDot({ feature, lang, size = 'sm', decorative = false, className }: Props) {
   const cls = `feature-dot feature-dot--${size}${feature ? '' : ' feature-dot--neutral'}${
     className ? ` ${className}` : ''
   }`
@@ -65,13 +59,5 @@ export function FeatureDot({
       ? `Filter the site map to “${FEATURES[feature].label.en}”`
       : `Filtrer la carte du site sur « ${FEATURES[feature].label.fr} »`
 
-  return (
-    <Link
-      to={to}
-      className={cls}
-      data-feature={feature}
-      aria-label={label}
-      title={label}
-    />
-  )
+  return <Link to={to} className={cls} data-feature={feature} aria-label={label} title={label} />
 }

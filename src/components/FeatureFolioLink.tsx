@@ -55,7 +55,9 @@ export function FeatureFolioLink({
       : `Filtrer la carte du site sur ${FEATURES[feature].label.fr}`
   return (
     <Link className={className} to={to} aria-label={label} data-feature={feature}>
-      {withDot && <span className="page-folio-mark__dot" data-feature={feature} aria-hidden="true" />}
+      {withDot && (
+        <span className="page-folio-mark__dot" data-feature={feature} aria-hidden="true" />
+      )}
       <span className="page-folio-mark__text">{children}</span>
     </Link>
   )

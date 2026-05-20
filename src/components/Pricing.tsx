@@ -1,6 +1,8 @@
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
+import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
+import { FeatureDot } from './FeatureDot'
 
 export function Pricing({ lang }: { lang: Lang }) {
   const t = DICT[lang].pricing
@@ -10,14 +12,26 @@ export function Pricing({ lang }: { lang: Lang }) {
   // that level before they submit. Tier 0 is the exception — it routes to its
   // dedicated self-serve patterns page since it isn't a paid engagement.
   const recoLabel = lang === 'fr' ? 'Le bon point de départ' : 'The sweet spot'
+  const feature = HOME_SECTION_FEATURE['pricing']
+  // Custodian-mode cross-link points at /handoff — a different feature
+  // (keys). Reading from PAGE_FEATURE keeps the colour in sync if that
+  // page ever moves clusters.
+  const handoffFeature = PAGE_FEATURE['page.handoff']
   return (
-    <section className="section section--alt section--editorial" id="pricing">
+    <section
+      className="section section--alt section--editorial"
+      id="pricing"
+      data-feature={feature}
+    >
       <div className="section__inner">
         <header className="section__head">
           <div className="section__folio mono" aria-hidden="true">
             {HOME_FOLIOS.pricing}
           </div>
-          <div className="section__eyebrow">{t.eyebrow}</div>
+          <div className="section__eyebrow">
+            <FeatureDot feature={feature} lang={lang} size="sm" />
+            {t.eyebrow}
+          </div>
           <h2 className="section__display">{t.title}</h2>
           <p className="section__lead">{t.body}</p>
           <p className="tier__asof mono">
@@ -67,9 +81,18 @@ export function Pricing({ lang }: { lang: Lang }) {
           </h3>
           <p className="tier__custodian-body">
             {t.custodianNote}{' '}
-            <a href={`${langPrefix}/handoff`} className="tier__custodian-cta mono">
-              {t.custodianNoteCta}
-            </a>
+            <span data-feature={handoffFeature}>
+              <FeatureDot
+                feature={handoffFeature}
+                lang={lang}
+                size="sm"
+                decorative
+                className="tier__custodian-cta-dot"
+              />
+              <a href={`${langPrefix}/handoff`} className="tier__custodian-cta mono">
+                {t.custodianNoteCta}
+              </a>
+            </span>
           </p>
         </aside>
         <p className="tier__disclaimer">{t.disclaimer}</p>

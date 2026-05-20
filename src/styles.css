@@ -360,6 +360,32 @@ p {
 .session-subheader__tab--active:focus-visible {
   color: var(--accent-warm);
 }
+/* When the tab carries a feature (the central SESSION_TAB_FEATURE map),
+   the active underline + label colour borrow the matched feature hue so
+   "Paiement" reads plum, "Builds" ochre, etc. The base data-feature
+   cascade already sets --ft-color on the <a>. */
+.session-subheader__tab[data-feature] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.session-subheader__tab--active[data-feature] {
+  color: var(--ft-color);
+  border-bottom-color: var(--ft-color);
+}
+.session-subheader__tab--active[data-feature]:hover,
+.session-subheader__tab--active[data-feature]:focus-visible {
+  color: var(--ft-color);
+  filter: brightness(1.08);
+}
+.session-subheader__tab[data-feature]:hover,
+.session-subheader__tab[data-feature]:focus-visible {
+  color: var(--ft-color);
+}
+.session-subheader__tab-dot {
+  flex-shrink: 0;
+  transform: translateY(0);
+}
 
 :root[data-theme='night'] .session-subheader {
   background: rgba(24, 22, 19, 0.86);
@@ -440,6 +466,24 @@ p {
   border-bottom-color: var(--accent-warm);
   outline: none;
   text-decoration: none;
+}
+/* Section nav item: holds the FeatureDot + the anchor side-by-side. The
+   wrapping span carries data-feature so descendants (the dot, the link's
+   hover underline) read the matching --ft-color. The dot is a SEPARATE
+   target — clicks land on /carte?feature=X — while the anchor still
+   scrolls to the home section. */
+.site-header__section {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.site-header__section[data-feature] .site-header__section-link:hover,
+.site-header__section[data-feature] .site-header__section-link:focus-visible {
+  color: var(--ft-color);
+  border-bottom-color: var(--ft-color);
+}
+.site-header__section-dot {
+  flex-shrink: 0;
 }
 
 /* Session variant: the nav collapses to a single "← Mes sessions" back
@@ -862,6 +906,22 @@ p {
   border-bottom-color: var(--accent-warm);
   text-decoration: none;
   outline: none;
+}
+/* Wrapper holds the shipped-feature dot + the dotted secondary CTA on one
+   line. Dot inherits --ft-color from data-feature on the wrapper. */
+.hero__secondary-cta-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.hero__secondary-cta-wrap .hero__secondary-cta {
+  margin-top: 0;
+}
+.hero__secondary-cta-wrap:hover .hero__secondary-cta,
+.hero__secondary-cta-wrap:focus-within .hero__secondary-cta {
+  color: var(--ft-color, var(--accent-warm));
+  border-bottom-color: var(--ft-color, var(--accent-warm));
 }
 
 /* Capacity counter */
@@ -8488,6 +8548,22 @@ button.intake__progress-step:disabled {
 .faq__q-text {
   flex: 1 1 auto;
 }
+/* Inline feature dot in the FAQ summary — sits to the left of the question
+   text. Borrows --ft-color from the <details data-feature> wrapper so a
+   "price" Q is plum, "ownership" is terracotta, etc. Decorative — the
+   summary itself owns the click. */
+.faq__q-dot {
+  align-self: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.faq__item[data-feature]:hover > summary,
+.faq__item[data-feature] > summary:focus-visible {
+  color: var(--ft-color);
+}
+.faq__item[data-feature] .faq__q-marker {
+  color: var(--ft-color);
+}
 .faq__q-marker {
   font-family: var(--mono);
   font-size: 22px;
@@ -10177,7 +10253,7 @@ button.intake__progress-step:disabled {
   color: var(--text-mid);
 }
 .tier__custodian-cta {
-  color: var(--accent-warm);
+  color: var(--ft-color, var(--accent-warm));
   text-decoration: none;
   white-space: nowrap;
   margin-inline-start: 2px;
@@ -10185,6 +10261,13 @@ button.intake__progress-step:disabled {
 .tier__custodian-cta:hover,
 .tier__custodian-cta:focus-visible {
   text-decoration: underline;
+}
+/* Cross-feature dot: this link points at /handoff (keys), not at the
+   pricing slice the section sits in. The wrapping span carries
+   data-feature="keys" so the dot + the link both adopt the keys hue. */
+.tier__custodian-cta-dot {
+  margin-right: 4px;
+  vertical-align: 0.05em;
 }
 @media (max-width: 640px) {
   .tier__custodian-note {
@@ -10203,8 +10286,20 @@ button.intake__progress-step:disabled {
   line-height: 1.55;
 }
 .about__ownership-note a {
-  color: var(--accent-warm);
+  color: var(--ft-color, var(--accent-warm));
   white-space: nowrap;
+}
+/* Cross-feature handoff link — wrapper carries data-feature="keys" so the
+   inline dot + link both adopt the terracotta accent. The dot itself is
+   decorative; the anchor next to it is the click target. */
+.about__ownership-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.about__ownership-cta-dot {
+  vertical-align: 0.05em;
 }
 
 /* Intake form — handoff mode preference (reserved __handoff_mode key). */
