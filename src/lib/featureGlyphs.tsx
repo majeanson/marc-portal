@@ -41,10 +41,12 @@ const GLYPHS: Record<FeatureId, ReactElement> = {
   ),
   // conversation — a speech bubble. The async back-and-forth.
   conversation: (
-    <path
-      fill="currentColor"
-      d="M3.4 2.6h9.2c.8 0 1.4.6 1.4 1.4v5c0 .8-.6 1.4-1.4 1.4H7.2l-3 2.5c-.4.3-.9 0-.9-.5v-2H3.4C2.6 10.4 2 9.8 2 9V4c0-.8.6-1.4 1.4-1.4z"
-    />
+    <g transform="translate(0 0.19)">
+      <path
+        fill="currentColor"
+        d="M3.4 2.6h9.2c.8 0 1.4.6 1.4 1.4v5c0 .8-.6 1.4-1.4 1.4H7.2l-3 2.5c-.4.3-.9 0-.9-.5v-2H3.4C2.6 10.4 2 9.8 2 9V4c0-.8.6-1.4 1.4-1.4z"
+      />
+    </g>
   ),
   // iterative — an eye. "You see every build" as it happens.
   iterative: (
@@ -57,12 +59,17 @@ const GLYPHS: Record<FeatureId, ReactElement> = {
     </>
   ),
   // pricing — a literal dollar sign. The one colour that talks money.
+  // dominant-baseline:central + y:8 centres it on the box regardless of
+  // font metrics; fontSize is sized so the glyph (incl. the $'s tall
+  // strokes) fits inside the 16-unit viewBox instead of clipping. x is
+  // nudged right to cancel the $'s left-leaning side bearing.
   pricing: (
     <text
-      x="8"
-      y="12.4"
+      x="8.2"
+      y="8"
       textAnchor="middle"
-      fontSize="14"
+      dominantBaseline="central"
+      fontSize="10.3"
       fontWeight="900"
       fontFamily="'Libre Franklin', system-ui, sans-serif"
       fill="currentColor"
@@ -72,21 +79,23 @@ const GLYPHS: Record<FeatureId, ReactElement> = {
   ),
   // keys — a key. "You keep the keys": ownership of the code.
   keys: (
-    <>
+    <g transform="translate(0 0.25)">
       <circle cx="8" cy="4.6" r="3.3" fill="currentColor" />
       <circle cx="8" cy="4.6" r="1.4" fill={HOLE} />
       <path
         fill="currentColor"
         d="M7.05 7.1h1.9v6.6c0 .3-.2.5-.45.5h-1c-.25 0-.45-.2-.45-.5zM8.95 8.8h2.5v1.7h-2.5zM8.95 11.4h2v1.7h-2z"
       />
-    </>
+    </g>
   ),
   // shipped — a check mark. "See what's shipped": done, delivered.
   shipped: (
-    <path
-      fill="currentColor"
-      d="M13.9 4.4c.4.36.43.97.07 1.36l-6.7 7.2a.95.95 0 0 1-1.36.04L2.1 9.3a.96.96 0 1 1 1.32-1.4l3.07 2.9 6.05-6.5a.95.95 0 0 1 1.35-.07z"
-    />
+    <g transform="translate(0 -0.62)">
+      <path
+        fill="currentColor"
+        d="M13.9 4.4c.4.36.43.97.07 1.36l-6.7 7.2a.95.95 0 0 1-1.36.04L2.1 9.3a.96.96 0 1 1 1.32-1.4l3.07 2.9 6.05-6.5a.95.95 0 0 1 1.35-.07z"
+      />
+    </g>
   ),
   // meta — a gear. The backstage / "behind the scenes" layer.
   meta: (
