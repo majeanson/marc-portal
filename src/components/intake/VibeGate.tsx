@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
+import { SectionEyebrow } from '../SectionEyebrow'
 
 export function VibeGate({ lang, onAccept }: { lang: Lang; onAccept: () => void }) {
   const t = DICT[lang]
   const [agreed, setAgreed] = useState(false)
   return (
     <div className="intake__step">
-      <div className="section__eyebrow">{t.intake.vibe.eyebrow}</div>
+      <SectionEyebrow lang={lang} feature="intake">
+        {t.intake.vibe.eyebrow}
+      </SectionEyebrow>
       <h2>{t.vibe.title}</h2>
       <p>{t.vibe.body}</p>
       {/* Same poster treatment as the homepage VibeFilter — `.vibe--ledger`

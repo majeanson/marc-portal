@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FEATURE } from '../lib/features'
 import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
@@ -395,7 +396,9 @@ export function MePortal({ lang }: { lang: Lang }) {
           <article className="section intake session-frame">
             <div className="section__inner">
               <div className="intake__step">
-                <div className="section__eyebrow">{t.eyebrow}</div>
+                <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.me-portal']}>
+                  {t.eyebrow}
+                </SectionEyebrow>
                 <h1 className="session-frame__title">{t.title}</h1>
                 <p>{t.notLoggedIn}</p>
                 <p>
@@ -442,7 +445,9 @@ export function MePortal({ lang }: { lang: Lang }) {
           </div>
         )}
         <section className="me-portal__head">
-          <div className="section__eyebrow">{t.eyebrow}</div>
+          <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.me-portal']}>
+            {t.eyebrow}
+          </SectionEyebrow>
           <h1 className="me-portal__title">{t.title}</h1>
           <p className="me-portal__sub">{t.sub}</p>
           <p className="me-portal__intro mono">{t.intro(email)}</p>

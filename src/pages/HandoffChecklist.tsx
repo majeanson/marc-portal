@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { FeatureFolioLink } from '../components/FeatureFolioLink'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
 
@@ -323,7 +324,9 @@ export function HandoffChecklist({ lang }: { lang: Lang }) {
             </a>
 
             <header className="handoff__hero">
-              <div className="section__eyebrow">{t.eyebrow}</div>
+              <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.handoff-checklist']}>
+                {t.eyebrow}
+              </SectionEyebrow>
               <FeatureFolioLink
                 feature={PAGE_FEATURE['page.handoff-checklist']}
                 lang={lang}

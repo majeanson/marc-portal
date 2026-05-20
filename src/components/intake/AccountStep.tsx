@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
+import { SectionEyebrow } from '../SectionEyebrow'
 
 export interface Account {
   email: string
@@ -30,7 +31,9 @@ export function AccountStep({
   if (signedInAs && !useOther) {
     return (
       <div className="intake__step intake__step--signed-in">
-        <div className="section__eyebrow">{t.signedInAsEyebrow}</div>
+        <SectionEyebrow lang={lang} feature="intake">
+          {t.signedInAsEyebrow}
+        </SectionEyebrow>
         <div className="intake__signed-in-card">
           <div className="intake__signed-in-check" aria-hidden="true">
             ✓
@@ -80,7 +83,9 @@ export function AccountStep({
 
   return (
     <div className="intake__step">
-      <div className="section__eyebrow">{t.eyebrow}</div>
+      <SectionEyebrow lang={lang} feature="intake">
+        {t.eyebrow}
+      </SectionEyebrow>
       <h2>{t.title}</h2>
       <p>{t.body}</p>
 

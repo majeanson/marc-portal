@@ -30,6 +30,7 @@ import { PaymentActions } from '../components/PaymentActions'
 import { SessionWhatsNext } from '../components/SessionWhatsNext'
 import { getPaymentSummary, type PaymentSummary } from '../lib/paymentsApi'
 import { SessionHeader } from '../components/intake/SessionHeader'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDateTime, formatRelativeWindow } from '../lib/format'
 import { markSeen } from '../lib/unread'
@@ -646,7 +647,9 @@ export function SessionPage({ lang }: { lang: Lang }) {
           <article className="section intake session-frame">
             <div className="section__inner">
               <div className="intake__step">
-                <div className="section__eyebrow">{t.eyebrow}</div>
+                <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.session-page']}>
+                  {t.eyebrow}
+                </SectionEyebrow>
                 <h1 className="session-frame__title">{t.notFound}</h1>
               </div>
             </div>
@@ -665,7 +668,9 @@ export function SessionPage({ lang }: { lang: Lang }) {
           <article className="section intake session-frame">
             <div className="section__inner">
               <div className="intake__step">
-                <div className="section__eyebrow">{t.eyebrow}</div>
+                <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.session-page']}>
+                  {t.eyebrow}
+                </SectionEyebrow>
                 <h1 className="session-frame__title">{t.forbidden}</h1>
               </div>
             </div>
@@ -750,6 +755,8 @@ export function SessionPage({ lang }: { lang: Lang }) {
             )}
 
             <SessionHeader
+              lang={lang}
+              feature={PAGE_FEATURE['page.session-page']}
               eyebrow={
                 parsed
                   ? `${localized(getSchemaForType(parsed.type).title, lang)} · ${session.status}`

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FEATURE } from '../lib/features'
 import { TimeTravelScrubber } from '../components/TimeTravelScrubber'
 import { ShareModal } from '../components/ShareModal'
@@ -78,7 +79,9 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
           <div className="section__inner">
             <div className="session-frame__head-row">
               <div>
-                <div className="section__eyebrow">{t.heading}</div>
+                <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.public-advancements']}>
+                  {t.heading}
+                </SectionEyebrow>
                 <h1 className="session-frame__title">{t.heading}</h1>
                 <p className="field__hint">{t.subtitle}</p>
               </div>
@@ -206,7 +209,11 @@ function ShareTestimonials({
   const vouchHref = `${langPrefix}/vouch?for=${encodeURIComponent(sessionId)}`
   return (
     <section className="share-testimonials" aria-labelledby="share-testimonials-heading">
-      <div className="section__eyebrow">{t.eyebrow}</div>
+      {/* Neutral dot — this sub-section shows vouches inside an iterative
+          page, so it's cross-cutting rather than claiming a feature. */}
+      <SectionEyebrow lang={lang} feature={undefined}>
+        {t.eyebrow}
+      </SectionEyebrow>
       <h2 id="share-testimonials-heading" className="share-testimonials__heading">
         {t.heading}
       </h2>

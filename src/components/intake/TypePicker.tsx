@@ -1,5 +1,6 @@
 import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
+import { SectionEyebrow } from '../SectionEyebrow'
 import { SCHEMAS } from '../../lib/intakeSchemas'
 import type { ProblemType } from '../../lib/intakeSchemas'
 import { localized } from '../../lib/intakeSchemas'
@@ -18,7 +19,9 @@ export function TypePicker({
   const t = DICT[lang].intake.typePicker
   return (
     <div className="intake__step">
-      <div className="section__eyebrow">{t.eyebrow}</div>
+      <SectionEyebrow lang={lang} feature="intake">
+        {t.eyebrow}
+      </SectionEyebrow>
       <h2>{t.title}</h2>
       <p>{t.body}</p>
       <div className="type-grid">

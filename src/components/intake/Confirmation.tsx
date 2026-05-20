@@ -7,6 +7,7 @@ import type { FormData } from './TypeForm'
 import type { SessionStatus } from '../../lib/sessionsApi'
 import { IntakeSummary } from './IntakeSummary'
 import { SessionStatusStrip } from './SessionStatusStrip'
+import { SectionEyebrow } from '../SectionEyebrow'
 
 export function Confirmation({
   lang,
@@ -110,7 +111,9 @@ export function Confirmation({
           </svg>
         </div>
       )}
-      <div className="section__eyebrow">{waitlist ? t.eyebrowWaitlist : t.eyebrowAccepted}</div>
+      <SectionEyebrow lang={lang} feature="intake">
+        {waitlist ? t.eyebrowWaitlist : t.eyebrowAccepted}
+      </SectionEyebrow>
       <h2>{waitlist ? t.titleWaitlist : t.titleAccepted}</h2>
       <p>{waitlist ? t.bodyWaitlist : t.bodyAccepted}</p>
 
