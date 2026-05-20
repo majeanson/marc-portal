@@ -2,6 +2,8 @@ import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PAGE_FEATURE } from '../lib/features'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { DICT, type Lang } from '../i18n'
 import { clearDraft, loadDraft, saveDraft } from '../lib/draft'
 
@@ -130,12 +132,14 @@ export function Napkin({ lang }: { lang: Lang }) {
   }
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.napkin']}>
       <Header lang={lang} />
       <main id="main-content">
         <article className="section napkin">
           <div className="section__inner">
-            <div className="section__eyebrow">{t.eyebrow}</div>
+            <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.napkin']}>
+              {t.eyebrow}
+            </SectionEyebrow>
             <h1 className="napkin__title">{t.title}</h1>
             <p className="napkin__sub">{t.sub}</p>
 

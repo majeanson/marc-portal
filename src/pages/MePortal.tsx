@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
+import { PAGE_FEATURE } from '../lib/features'
 import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
 import {
@@ -372,7 +373,7 @@ export function MePortal({ lang }: { lang: Lang }) {
 
   if (loading || finalizing) {
     return (
-      <div className="app">
+      <div className="app" data-feature={PAGE_FEATURE['page.me-portal']}>
         <Header lang={lang} variant="session" />
         <main id="main-content">
           <article className="section intake session-frame">
@@ -388,7 +389,7 @@ export function MePortal({ lang }: { lang: Lang }) {
 
   if (!email) {
     return (
-      <div className="app">
+      <div className="app" data-feature={PAGE_FEATURE['page.me-portal']}>
         <Header lang={lang} variant="session" />
         <main id="main-content">
           <article className="section intake session-frame">

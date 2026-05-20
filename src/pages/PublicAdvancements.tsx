@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PAGE_FEATURE } from '../lib/features'
 import { TimeTravelScrubber } from '../components/TimeTravelScrubber'
 import { ShareModal } from '../components/ShareModal'
 import { DICT, type Lang } from '../i18n'
@@ -67,7 +68,7 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
   }, [id])
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.public-advancements']}>
       <Header lang={lang} />
       <main id="main-content">
         <article

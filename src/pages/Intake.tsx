@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PAGE_FEATURE } from '../lib/features'
 import { VibeGate } from '../components/intake/VibeGate'
 import { AccountStep } from '../components/intake/AccountStep'
 import type { Account } from '../components/intake/AccountStep'
@@ -410,7 +411,7 @@ export function Intake({ lang }: { lang: Lang }) {
   }
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.intake']}>
       <Header lang={lang} />
       <main id="main-content">
         <article className="section intake">

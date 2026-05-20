@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { DICT, type Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PAGE_FEATURE } from '../lib/features'
 import { SessionAdvancements } from '../components/SessionAdvancements'
 import { SessionShowcase } from '../components/SessionShowcase'
 import { useAuth } from '../lib/authContext'
@@ -623,7 +624,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
 
   if (authLoading || (!session && !error)) {
     return (
-      <div className="app">
+      <div className="app" data-feature={PAGE_FEATURE['page.session-page']}>
         <Header lang={lang} variant="session" />
         <main id="main-content">
           <article className="section intake session-frame">
@@ -639,7 +640,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
 
   if (error === 'notfound') {
     return (
-      <div className="app">
+      <div className="app" data-feature={PAGE_FEATURE['page.session-page']}>
         <Header lang={lang} variant="session" />
         <main id="main-content">
           <article className="section intake session-frame">
@@ -658,7 +659,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
 
   if (error === 'forbidden' || !session) {
     return (
-      <div className="app">
+      <div className="app" data-feature={PAGE_FEATURE['page.session-page']}>
         <Header lang={lang} variant="session" />
         <main id="main-content">
           <article className="section intake session-frame">
@@ -699,7 +700,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
   ) : null
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.session-page']}>
       <Header lang={lang} variant="session" />
       <main id="main-content">
         <article className="section intake session-frame">

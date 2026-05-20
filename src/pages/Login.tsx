@@ -4,6 +4,7 @@ import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
+import { PAGE_FEATURE } from '../lib/features'
 
 const COPY = {
   fr: {
@@ -68,7 +69,7 @@ export function Login({ lang }: { lang: Lang }) {
     return (
       <>
         <Header lang={lang} />
-        <main className="page">
+        <main className="page" data-feature={PAGE_FEATURE['page.login']}>
           <section className="page__panel">
             <h1>{t.title}</h1>
             <p>
@@ -95,7 +96,7 @@ export function Login({ lang }: { lang: Lang }) {
   return (
     <>
       <Header lang={lang} />
-      <main className="page">
+      <main className="page" data-feature={PAGE_FEATURE['page.login']}>
         <section className="page__panel">
           <h1>{t.title}</h1>
           <p>{t.intro}</p>

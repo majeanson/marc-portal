@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PAGE_FEATURE } from '../lib/features'
 
 const COPY = {
   fr: {
@@ -35,7 +36,7 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
   return (
     <>
       <Header lang={lang} />
-      <main className="page">
+      <main className="page" data-feature={PAGE_FEATURE['page.magic-link-sent']}>
         <section className="page__panel magic-link">
           {/* Hand-drawn envelope mark that "lands" once on mount — celebrates
               the moment the link is in flight without being corny. Decorative,

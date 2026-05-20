@@ -4,6 +4,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { PAGE_FEATURE } from '../lib/features'
 import { EngagementStatusBar } from '../components/engagement/EngagementStatusBar'
 import { EngagementThread } from '../components/engagement/EngagementThread'
 import { EngagementPreview } from '../components/engagement/EngagementPreview'
@@ -32,7 +33,7 @@ export function Engagement({ lang }: { lang: Lang }) {
 
   if (!engagement) {
     return (
-      <div className="app">
+      <div className="app" data-feature={PAGE_FEATURE['page.engagement']}>
         <Header lang={lang} />
         <main id="main-content" className="section">
           <div className="section__inner">
@@ -52,7 +53,7 @@ export function Engagement({ lang }: { lang: Lang }) {
   const problem = engagement.problem[lang] ?? engagement.problem.fr
 
   return (
-    <div className="app">
+    <div className="app" data-feature={PAGE_FEATURE['page.engagement']}>
       <Header lang={lang} />
       <main id="main-content">
         <article className="section showcase-page">

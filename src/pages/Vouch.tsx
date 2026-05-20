@@ -11,6 +11,7 @@ import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
+import { PAGE_FEATURE } from '../lib/features'
 import { DICT, type Lang } from '../i18n'
 import { ApiError } from '../lib/api'
 import {
@@ -164,7 +165,7 @@ export function Vouch({ lang }: { lang: Lang }) {
     return (
       <>
         <Header lang={lang} />
-        <main className="page">
+        <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
           <section className="page__panel">
             <h1>{ts.successHeading}</h1>
             <p>{ts.successBody}</p>
@@ -197,7 +198,7 @@ export function Vouch({ lang }: { lang: Lang }) {
   return (
     <>
       <Header lang={lang} />
-      <main className="page">
+      <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
         <section className="page__panel">
           <h1>{ts.heading}</h1>
           <p>{ts.lead}</p>
