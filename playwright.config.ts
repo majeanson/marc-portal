@@ -40,6 +40,9 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   expect: {
+    // 5s (the default) is too tight to capture + diff a ~12,600px full-page
+    // screenshot on a loaded runner — the home page timed out.
+    timeout: 20_000,
     // animations: 'disabled' fast-forwards CSS animation/transition to the
     // end; maxDiffPixelRatio absorbs sub-pixel anti-aliasing drift between
     // the machine that generated the baseline and the CI runner.

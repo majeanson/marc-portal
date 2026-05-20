@@ -36,10 +36,7 @@ const GLYPHS: Record<FeatureId, ReactElement> = {
         fill="currentColor"
         d="M2 4c0-.6.5-1.1 1.1-1.1h3c.4 0 .8.2 1 .5l.8 1.1h5C13.5 4.5 14 5 14 5.6V6H2z"
       />
-      <path
-        fill="currentColor"
-        d="M2 6.4h12v5.4c0 .7-.6 1.3-1.3 1.3H3.3C2.6 13.1 2 12.5 2 11.8z"
-      />
+      <path fill="currentColor" d="M2 6.4h12v5.4c0 .7-.6 1.3-1.3 1.3H3.3C2.6 13.1 2 12.5 2 11.8z" />
     </>
   ),
   // conversation — a speech bubble. The async back-and-forth.

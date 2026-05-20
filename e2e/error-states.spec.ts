@@ -6,6 +6,7 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { settle } from './prepare'
 
 const FOOTER_MASK = ['.site-footer__build', '.site-footer__qctime']
 
@@ -21,7 +22,7 @@ test.describe('error + empty states', () => {
         route.fulfill({ status: 500, json: { error: 'mock failure' } }),
       )
       await page.goto(p.path, { waitUntil: 'networkidle' })
-      await page.evaluate(() => document.fonts.ready)
+      await settle(page)
       await expect(page).toHaveScreenshot(`${p.name}-error.png`, {
         fullPage: true,
         mask: FOOTER_MASK.map((s) => page.locator(s)),
@@ -31,7 +32,7 @@ test.describe('error + empty states', () => {
     test(`${p.name} — empty`, async ({ page }) => {
       await page.route(p.api, (route) => route.fulfill({ json: { [p.key]: [] } }))
       await page.goto(p.path, { waitUntil: 'networkidle' })
-      await page.evaluate(() => document.fonts.ready)
+      await settle(page)
       await expect(page).toHaveScreenshot(`${p.name}-empty.png`, {
         fullPage: true,
         mask: FOOTER_MASK.map((s) => page.locator(s)),

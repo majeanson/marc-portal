@@ -11,6 +11,7 @@
 
 import { expect, test } from '@playwright/test'
 import { installApiMocks } from './mocks'
+import { settle } from './prepare'
 import { PUBLIC_ROUTES } from './routes'
 
 test.describe('page screenshots', () => {
@@ -23,9 +24,9 @@ test.describe('page screenshots', () => {
   for (const route of PUBLIC_ROUTES) {
     test(route.name, async ({ page }) => {
       await page.goto(route.path, { waitUntil: 'networkidle' })
-      // Custom display/mono fonts load async — wait or the first paint
-      // shows a fallback face and the baseline is unstable.
-      await page.evaluate(() => document.fonts.ready)
+      // Scroll the page through so lazy images + reveals settle and fonts
+      // load — otherwise the document height shifts between runs.
+      await settle(page)
       await expect(page).toHaveScreenshot(`${route.name}.png`, {
         fullPage: true,
         mask: [
