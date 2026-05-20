@@ -13229,6 +13229,20 @@ a.page-folio-mark:focus-visible .page-folio-mark__dot {
   font-size: 13px;
   color: var(--text-soft);
 }
+/* Session-tab entries — contextual, not links (a tab needs a live session
+   id). Rendered muted so they read as "also appears as" rather than a
+   missed clickable target. */
+.feature-index__item--static {
+  color: var(--text-soft);
+  cursor: default;
+}
+.feature-index__col-hint {
+  margin: 5px 0 0;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--text-faint);
+  max-width: 22ch;
+}
 
 /* Make the page-folio-mark clickable when it's a real link (carries
    feature filter to /carte). The underline only shows on hover, so a

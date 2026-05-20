@@ -195,6 +195,20 @@ export const SESSION_TAB_FEATURE: Record<string, FeatureId | undefined> = {
   'session-intake': 'intake',
 }
 
+/** Session sub-header tab labels — keyed by the SESSION_TAB_FEATURE slug.
+ *  The FeatureIndex lists these so a feature's full footprint includes
+ *  "shows up as the Paiement tab in any session". Tabs aren't standalone-
+ *  navigable (they need a session id), so the index renders them as
+ *  contextual, non-link entries. */
+export const SESSION_TAB_LABEL: Record<string, Bi> = {
+  'session-statut': { fr: 'Statut', en: 'Status' },
+  'session-conversation': { fr: 'Conversation', en: 'Conversation' },
+  'session-builds': { fr: 'Builds', en: 'Builds' },
+  'session-paiement': { fr: 'Paiement', en: 'Payment' },
+  'session-livraison': { fr: 'Livraison', en: 'Delivery' },
+  'session-intake': { fr: 'Intake', en: 'Intake' },
+}
+
 /** FAQ items by stable slug. Each Q/A maps to the feature it most clearly
  *  belongs to. A visitor scanning the FAQ sees the same plum dot on the
  *  price question that they saw on the Pricing section heading two
@@ -214,4 +228,16 @@ export const FAQ_FEATURE: Record<string, FeatureId | undefined> = {
   ownership: 'keys',
   // "Apporter mes propres designs?" — intake (what you bring with you).
   'bring-own': 'intake',
+}
+
+/** Short labels for FAQ items — keyed by the FAQ_FEATURE slug. Concise
+ *  (not the full question) so they fit the FeatureIndex column. The FAQ
+ *  item itself has an anchor `#faq-{slug}`, so these are deep-linkable. */
+export const FAQ_LABEL: Record<string, Bi> = {
+  price: { fr: 'Le prix annoncé', en: 'The quoted price' },
+  timeline: { fr: 'Si ça déborde', en: 'If it overruns' },
+  result: { fr: 'Si je n’aime pas', en: 'If I don’t like it' },
+  unclear: { fr: 'Idée encore floue', en: 'Idea still fuzzy' },
+  ownership: { fr: 'À qui le code', en: 'Who owns the code' },
+  'bring-own': { fr: 'Mes propres designs', en: 'My own designs' },
 }

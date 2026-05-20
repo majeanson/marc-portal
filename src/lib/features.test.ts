@@ -14,7 +14,15 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { FAQ_FEATURE, HOME_SECTION_FEATURE, SESSION_TAB_FEATURE, isFeatureId } from './features'
+import {
+  FAQ_FEATURE,
+  FAQ_LABEL,
+  HOME_SECTION_FEATURE,
+  HOME_SECTION_LABEL,
+  SESSION_TAB_FEATURE,
+  SESSION_TAB_LABEL,
+  isFeatureId,
+} from './features'
 import { DICT } from '../i18n'
 
 /** Section ids the Header nav surfaces (mirrors NAV_SECTION_IDS in
@@ -113,6 +121,35 @@ describe('FAQ_FEATURE map', () => {
     for (const [slug, fid] of Object.entries(FAQ_FEATURE)) {
       if (fid === undefined) continue
       expect(isFeatureId(fid), `${slug} → "${fid}" is not a real FeatureId`).toBe(true)
+    }
+  })
+})
+
+describe('FeatureIndex label maps', () => {
+  // The FeatureIndex panel lists every surface of a feature with a human
+  // label. A *-FEATURE key without a matching *-LABEL entry would render a
+  // raw slug ("session-paiement") to the visitor.
+  it('every HOME_SECTION_FEATURE slug has a bilingual HOME_SECTION_LABEL', () => {
+    for (const slug of Object.keys(HOME_SECTION_FEATURE)) {
+      const label = HOME_SECTION_LABEL[slug]
+      expect(label, `HOME_SECTION_FEATURE["${slug}"] has no HOME_SECTION_LABEL`).toBeDefined()
+      expect(label?.fr && label?.en, `HOME_SECTION_LABEL["${slug}"] missing fr/en`).toBeTruthy()
+    }
+  })
+
+  it('every FAQ_FEATURE slug has a bilingual FAQ_LABEL', () => {
+    for (const slug of Object.keys(FAQ_FEATURE)) {
+      const label = FAQ_LABEL[slug]
+      expect(label, `FAQ_FEATURE["${slug}"] has no FAQ_LABEL`).toBeDefined()
+      expect(label?.fr && label?.en, `FAQ_LABEL["${slug}"] missing fr/en`).toBeTruthy()
+    }
+  })
+
+  it('every SESSION_TAB_FEATURE slug has a bilingual SESSION_TAB_LABEL', () => {
+    for (const slug of Object.keys(SESSION_TAB_FEATURE)) {
+      const label = SESSION_TAB_LABEL[slug]
+      expect(label, `SESSION_TAB_FEATURE["${slug}"] has no SESSION_TAB_LABEL`).toBeDefined()
+      expect(label?.fr && label?.en, `SESSION_TAB_LABEL["${slug}"] missing fr/en`).toBeTruthy()
     }
   })
 })
