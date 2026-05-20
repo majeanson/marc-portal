@@ -1,0 +1,43 @@
+name: e2e-snapshots
+
+# Manually-triggered baseline regenerator. Visual baselines must be made on
+# the SAME environment that the e2e gate runs on — a full-page screenshot's
+# height rounds 1px differently between a local Windows box and the
+# windows-latest runner, which fails every diff. Running --update-snapshots
+# here, on the runner, and committing the result keeps baselines and the
+# gate on identical ground.
+#
+# Trigger: Actions tab → e2e-snapshots → Run workflow (or `gh workflow run`).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Regenerate visual baselines
+        continue-on-error: true
+        run: npx playwright test screenshots.spec.ts error-states.spec.ts --update-snapshots
+      - name: Commit regenerated baselines
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add e2e/__screenshots__
+          if git diff --cached --quiet; then
+            echo "no baseline changes"
+          else
+            git commit -m "chore(e2e): regenerate visual baselines on the CI runner"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
