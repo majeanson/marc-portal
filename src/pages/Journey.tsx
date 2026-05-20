@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { FeatureContinue } from '../components/FeatureContinue'
 import { PageMast } from '../components/PageMast'
 import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FOLIOS } from '../lib/folios'
@@ -257,6 +258,7 @@ export function Journey({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
+      <FeatureContinue feature={PAGE_FEATURE['page.journey']} lang={lang} />
       <Footer lang={lang} />
     </div>
   )

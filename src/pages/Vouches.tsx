@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Footer } from '../components/Footer'
+import { FeatureContinue } from '../components/FeatureContinue'
 import { Header } from '../components/Header'
 import { PageMast } from '../components/PageMast'
 import { SectionEyebrow } from '../components/SectionEyebrow'
@@ -88,6 +89,7 @@ export function Vouches({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
+      <FeatureContinue feature={PAGE_FEATURE['page.vouches']} lang={lang} />
       <Footer lang={lang} />
     </div>
   )

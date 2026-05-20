@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { FeatureContinue } from '../components/FeatureContinue'
 import { FeatureFolioLink } from '../components/FeatureFolioLink'
 import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FOLIOS } from '../lib/folios'
@@ -415,6 +416,7 @@ export function HandoffChecklist({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
+      <FeatureContinue feature={PAGE_FEATURE['page.handoff-checklist']} lang={lang} />
       <Footer lang={lang} />
     </div>
   )

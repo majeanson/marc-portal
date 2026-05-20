@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { FeatureContinue } from '../components/FeatureContinue'
 import { PageMast } from '../components/PageMast'
 import { SectionEyebrow } from '../components/SectionEyebrow'
 import { listPatterns, localizedPattern } from '../lib/patterns'
@@ -92,6 +93,7 @@ export function Tier0({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
+      <FeatureContinue feature={PAGE_FEATURE['page.tier0']} lang={lang} />
       <Footer lang={lang} />
     </div>
   )

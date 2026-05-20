@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams, useViewTransitionState } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { FeatureContinue } from '../components/FeatureContinue'
 import { MobileStickyCta } from '../components/MobileStickyCta'
 import { PageMast } from '../components/PageMast'
 import { SectionEyebrow } from '../components/SectionEyebrow'
@@ -160,6 +161,7 @@ export function Projects({ lang }: { lang: Lang }) {
           </div>
         </article>
       </main>
+      <FeatureContinue feature={PAGE_FEATURE['page.projects']} lang={lang} />
       <Footer lang={lang} />
       {/* Gallery has no hero, so a smaller scroll threshold makes the pill
           appear right after the first card. `.site-footer` is the hide-near

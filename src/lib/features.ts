@@ -122,6 +122,38 @@ export function groupToFeature(groupId: string): FeatureId | null {
 }
 
 /* -------------------------------------------------------------------------
+ * Cross-feature "continue" arc. The six features form one loop — the order
+ * a curious visitor naturally walks: bring a project → talk → see builds →
+ * pricing → keys → proof → (back to bring a project, as the conversion
+ * close). FeatureContinue reads this to render a "next up" pointer at the
+ * bottom of each content page, coloured with the DESTINATION feature.
+ * ------------------------------------------------------------------------- */
+
+/** Next feature in the arc. A single 6-cycle (guarded in features.test.ts). */
+export const FEATURE_NEXT: Record<FeatureId, FeatureId> = {
+  intake: 'conversation',
+  conversation: 'iterative',
+  iterative: 'pricing',
+  pricing: 'keys',
+  keys: 'shipped',
+  shipped: 'intake',
+}
+
+/** The page a "continue" nudge lands on for each feature — the most
+ *  representative, visitor-pleasant page in that feature's cluster.
+ *  Validated against the route skeleton in map.test.ts. */
+export const FEATURE_PRIMARY_PAGE: Record<FeatureId, Bi> = {
+  intake: { fr: '/intake', en: '/en/intake' },
+  // Conversation has no marketing page — its surfaces are all functional
+  // (login, sessions). /login is the honest "this is where it starts".
+  conversation: { fr: '/login', en: '/en/login' },
+  iterative: { fr: '/projects', en: '/en/projects' },
+  pricing: { fr: '/tier-0', en: '/en/tier-0' },
+  keys: { fr: '/handoff', en: '/en/handoff' },
+  shipped: { fr: '/vouches', en: '/en/vouches' },
+}
+
+/* -------------------------------------------------------------------------
  * Surface → feature maps. SINGLE SOURCE OF TRUTH for "where on the site
  * does a colour belong, beyond a real page?". Every nav/header/subheader/
  * accordion consumer reads from one of these so a colour never goes stale

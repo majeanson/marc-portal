@@ -18,7 +18,7 @@ import skeleton from '../../data/map-skeleton.json'
 import { buildMapData } from './data'
 import { filterForViewer } from './filter'
 import { CURATED } from './curated'
-import { FEATURE_IDS, PAGE_FEATURE, isFeatureId } from '../features'
+import { FEATURE_IDS, FEATURE_PRIMARY_PAGE, PAGE_FEATURE, isFeatureId } from '../features'
 
 describe('map skeleton', () => {
   it('has at least the load-bearing route components', () => {
@@ -205,6 +205,17 @@ describe('curated overlay coherence', () => {
     const pageIds = new Set(data.nodes.filter((n) => n.kind === 'page').map((n) => n.id))
     for (const [pageId] of Object.entries(PAGE_FEATURE)) {
       expect(pageIds, `PAGE_FEATURE has ${pageId} but no such page node exists`).toContain(pageId)
+    }
+  })
+
+  it('every FEATURE_PRIMARY_PAGE route resolves to a real route', () => {
+    // The continue-nudge lands here; a stale route would 404 the visitor.
+    const frPaths = new Set(skeleton.routes.filter((r) => r.lang === 'fr').map((r) => r.path))
+    const enPaths = new Set(skeleton.routes.filter((r) => r.lang === 'en').map((r) => r.path))
+    for (const fid of FEATURE_IDS) {
+      const page = FEATURE_PRIMARY_PAGE[fid]
+      expect(frPaths, `${fid} primary page ${page.fr} is not a known route`).toContain(page.fr)
+      expect(enPaths, `${fid} primary page ${page.en} is not a known route`).toContain(page.en)
     }
   })
 

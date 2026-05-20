@@ -13309,3 +13309,59 @@ a.feature-dot:focus-visible {
 .feature-dot + * {
   margin-left: 0;
 }
+
+/* FeatureContinue — page-outro "next up" pointer. Carries data-feature
+   of the DESTINATION feature so its accent comes from --ft-color. */
+.feature-continue {
+  max-width: var(--max-w);
+  margin: 8px auto 0;
+  padding: 0 var(--gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.feature-continue__eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.feature-continue__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  align-self: flex-start;
+  padding: 14px 20px;
+  background: var(--ft-soft);
+  border: 1px solid var(--ft-color);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+.feature-continue__link:hover,
+.feature-continue__link:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -16px rgba(31, 29, 24, 0.3);
+  outline: none;
+}
+.feature-continue__dot {
+  flex-shrink: 0;
+}
+.feature-continue__label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ft-color);
+  letter-spacing: -0.01em;
+}
+.feature-continue__arrow {
+  font-size: 20px;
+  color: var(--ft-color);
+  transition: transform 140ms ease;
+}
+.feature-continue__link:hover .feature-continue__arrow,
+.feature-continue__link:focus-visible .feature-continue__arrow {
+  transform: translateX(3px);
+}
