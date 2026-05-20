@@ -13,6 +13,7 @@
  * dot is grey but Pricing is plum on the next page over."
  */
 
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   FAQ_FEATURE,
@@ -20,27 +21,32 @@ import {
   FEATURE_NEXT,
   HOME_SECTION_FEATURE,
   HOME_SECTION_LABEL,
+  HOME_SECTION_ORDER,
   PRODUCT_FEATURE_IDS,
   SESSION_TAB_FEATURE,
   SESSION_TAB_LABEL,
   isFeatureId,
 } from './features'
+import { HOME_FOLIOS } from './folios'
 import { DICT } from '../i18n'
 
-/** Section ids the Header nav surfaces (mirrors NAV_SECTION_IDS in
- *  Header.tsx — kept in sync by hand since both files import from the
- *  central map). */
-const HEADER_SECTION_IDS = ['featured', 'how', 'pricing', 'vibe', 'about'] as const
+/** Section ids the Header nav surfaces (mirrors NAV_LINKS in Header.tsx;
+ *  the `Header NAV_LINKS mirror` test below ties this constant to the
+ *  actual source so the two can't drift). */
+const HEADER_SECTION_IDS = ['featured', 'how', 'vibe', 'pricing', 'about'] as const
 
 /** Section ids the SectionRail surfaces (mirrors the FR/EN ITEMS arrays
- *  in SectionRail.tsx). */
+ *  in SectionRail.tsx; the `SectionRail ITEMS mirror` test below ties this
+ *  constant to the actual source). */
 const RAIL_SECTION_IDS = [
   'featured',
   'how',
-  'pricing',
   'vibe',
+  'bring-anything',
+  'pricing',
   'about',
   'testimonials',
+  'faq',
   'cta',
 ] as const
 
@@ -178,6 +184,90 @@ describe('cross-feature continue arc', () => {
     // a "continue" that goes nowhere.
     for (const f of PRODUCT_FEATURE_IDS) {
       expect(FEATURE_NEXT[f], `feature ${f} points NEXT at itself`).not.toBe(f)
+    }
+  })
+})
+
+/**
+ * Home funnel ordering. HOME_SECTION_ORDER is the canonical sequence; the
+ * <Home /> JSX, the HOME_FOLIOS Roman numerals, the SectionRail and the
+ * Header nav must all agree with it. A reshuffle in any one of those four
+ * places without updating HOME_SECTION_ORDER fails here in CI rather than
+ * shipping a funnel where the rail says one order and the page another.
+ */
+describe('home section ordering', () => {
+  const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), 'utf8')
+  const homeSrc = read('../pages/Home.tsx')
+  const railSrc = read('../components/SectionRail.tsx')
+  const headerSrc = read('../components/Header.tsx')
+
+  /** Section component tag → anchor id, for the eight folio'd sections. */
+  const SECTION_COMPONENT: Record<string, string> = {
+    FeaturedProjects: 'featured',
+    HowItWorks: 'how',
+    VibeFilter: 'vibe',
+    BringAnything: 'bring-anything',
+    Pricing: 'pricing',
+    About: 'about',
+    Testimonials: 'testimonials',
+    FAQ: 'faq',
+  }
+
+  it('Home.tsx renders the folio sections in HOME_SECTION_ORDER', () => {
+    const rendered: string[] = []
+    for (const m of homeSrc.matchAll(/<([A-Z][A-Za-z]+) lang=/g)) {
+      const id = SECTION_COMPONENT[m[1]]
+      if (id) rendered.push(id)
+    }
+    expect(rendered).toEqual([...HOME_SECTION_ORDER])
+  })
+
+  it('HOME_FOLIOS key order matches HOME_SECTION_ORDER', () => {
+    // HOME_FOLIOS uses a camelCase key for bring-anything; every other key
+    // is the anchor id verbatim. Folio Roman numerals are assigned by this
+    // key order, so a mismatch would print the wrong numeral on a section.
+    const folioKeys = Object.keys(HOME_FOLIOS).map((k) =>
+      k === 'bringAnything' ? 'bring-anything' : k,
+    )
+    expect(folioKeys).toEqual([...HOME_SECTION_ORDER])
+  })
+
+  it('SectionRail ITEMS mirror RAIL_SECTION_IDS in both languages', () => {
+    const ids = [...railSrc.matchAll(/\{ id: '([^']+)'/g)].map((m) => m[1])
+    expect(ids.slice(0, RAIL_SECTION_IDS.length)).toEqual([...RAIL_SECTION_IDS])
+    expect(ids.slice(RAIL_SECTION_IDS.length)).toEqual([...RAIL_SECTION_IDS])
+  })
+
+  it('SectionRail lists every folio section in order, then the CTA', () => {
+    expect(RAIL_SECTION_IDS.slice(0, -1)).toEqual([...HOME_SECTION_ORDER])
+    expect(RAIL_SECTION_IDS.at(-1)).toBe('cta')
+  })
+
+  it('Header NAV_LINKS mirror HEADER_SECTION_IDS', () => {
+    const ids = [...headerSrc.matchAll(/\{ id: '([^']+)', labelKey:/g)].map((m) => m[1])
+    expect(ids).toEqual([...HEADER_SECTION_IDS])
+  })
+
+  it('Header nav is an ordered subsequence of HOME_SECTION_ORDER', () => {
+    // The nav surfaces a curated subset of sections; whatever it lists must
+    // appear in the same relative order as the page itself.
+    const order = [...HOME_SECTION_ORDER]
+    let last = -1
+    for (const id of HEADER_SECTION_IDS) {
+      const idx = order.indexOf(id)
+      expect(idx, `nav id "${id}" is not a folio section`).toBeGreaterThanOrEqual(0)
+      expect(idx, `nav id "${id}" breaks funnel order`).toBeGreaterThan(last)
+      last = idx
+    }
+  })
+
+  it('every HOME_SECTION_ORDER id has a feature, label and folio', () => {
+    for (const id of HOME_SECTION_ORDER) {
+      expect(
+        Object.prototype.hasOwnProperty.call(HOME_SECTION_FEATURE, id),
+        `${id} missing from HOME_SECTION_FEATURE`,
+      ).toBe(true)
+      expect(HOME_SECTION_LABEL[id], `${id} missing from HOME_SECTION_LABEL`).toBeDefined()
     }
   })
 })

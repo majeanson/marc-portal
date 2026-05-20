@@ -17,38 +17,47 @@ function sameIds(a: Set<string>, b: Set<string>): boolean {
   return true
 }
 
-/** Folio glyph for a given rail item id. For sections that have a real
- *  HOME_FOLIOS entry (featured/how/pricing/vibe/about/testimonials) the
- *  rail mirrors the masthead's Roman numeral so a glance at the rail
- *  shows the same issue mark the section header carries. The final CTA
- *  doesn't have a section folio — it gets a destination arrow instead. */
+/** Folio glyph for a given rail item id. The rail is the magazine's
+ *  table-of-contents, so it lists EVERY folio'd home section (II–IX) and
+ *  mirrors the masthead's Roman numeral, so a glance at the rail shows the
+ *  same issue mark the section header carries. The final CTA doesn't have
+ *  a section folio — it gets a destination arrow instead. */
 const RAIL_FOLIO: Record<string, string> = {
   featured: HOME_FOLIOS.featured,
   how: HOME_FOLIOS.how,
-  pricing: HOME_FOLIOS.pricing,
   vibe: HOME_FOLIOS.vibe,
+  'bring-anything': HOME_FOLIOS.bringAnything,
+  pricing: HOME_FOLIOS.pricing,
   about: HOME_FOLIOS.about,
   testimonials: HOME_FOLIOS.testimonials,
+  faq: HOME_FOLIOS.faq,
   cta: '→',
 }
 
+/** Rail items in render order — every folio'd section (II–IX) plus the
+ *  final CTA. Order MUST stay a prefix-then-CTA of HOME_SECTION_ORDER;
+ *  guarded in features.test.ts. */
 const ITEMS: Record<Lang, RailItem[]> = {
   fr: [
     { id: 'featured', label: 'Projets' },
     { id: 'how', label: 'Comment ça marche' },
-    { id: 'pricing', label: 'Prix' },
     { id: 'vibe', label: 'Je fais / Je fais pas' },
+    { id: 'bring-anything', label: 'Apporte n’importe quoi' },
+    { id: 'pricing', label: 'Prix' },
     { id: 'about', label: 'À propos' },
     { id: 'testimonials', label: 'Témoignages' },
+    { id: 'faq', label: 'FAQ' },
     { id: 'cta', label: 'Décris ton problème' },
   ],
   en: [
     { id: 'featured', label: 'Projects' },
     { id: 'how', label: 'How it works' },
-    { id: 'pricing', label: 'Pricing' },
     { id: 'vibe', label: 'What I do / don’t' },
+    { id: 'bring-anything', label: 'Bring anything' },
+    { id: 'pricing', label: 'Pricing' },
     { id: 'about', label: 'About' },
     { id: 'testimonials', label: 'Vouches' },
+    { id: 'faq', label: 'FAQ' },
     { id: 'cta', label: 'Describe your problem' },
   ],
 }

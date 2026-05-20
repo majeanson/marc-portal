@@ -219,23 +219,46 @@ export const FEATURE_PRIMARY_PAGE: Record<ProductFeatureId, Bi> = {
  * rhythm of "every title has a dot" never breaks.
  * ------------------------------------------------------------------------- */
 
+/**
+ * Home anchor sections in render order — the canonical funnel sequence.
+ * <Home /> renders these eight folio'd sections in exactly this order;
+ * HOME_FOLIOS, the SectionRail and the Header nav each surface this order
+ * (or an ordered subsequence of it). Guarded in features.test.ts.
+ *
+ * The arc: prove (featured) → explain (how) → qualify (vibe) → reassure
+ * (bring-anything) → price (pricing) → trust (about) → social-proof
+ * (testimonials) → objections (faq). Vibe sits before Pricing so the
+ * visitor self-qualifies before the numbers land.
+ */
+export const HOME_SECTION_ORDER = [
+  'featured',
+  'how',
+  'vibe',
+  'bring-anything',
+  'pricing',
+  'about',
+  'testimonials',
+  'faq',
+] as const
+
 /** Home page anchor sections → feature. Header nav links, SectionRail,
  *  and any future surface that points at #pricing / #vibe / etc. all
- *  agree on the colour by reading this map. */
+ *  agree on the colour by reading this map. Key order follows
+ *  HOME_SECTION_ORDER (plus the trailing non-folio'd `cta`). */
 export const HOME_SECTION_FEATURE: Record<string, FeatureId | undefined> = {
   // "Projets" — drills into the shipped gallery.
   featured: 'shipped',
   // "Comment ça marche" — explains the whole practice; that's the backstage
   // (meta) layer, not any single product feature.
   how: 'meta',
-  // "Prix" — the only place that ever talks plum.
-  pricing: 'pricing',
   // "Je fais / Je fais pas" — qualification gate, same role as the intake
   // form, hence intake.
   vibe: 'intake',
   // "Apporte n'importe quoi" — neutralises the vibe gate and pushes the
   // visitor toward /intake.
   'bring-anything': 'intake',
+  // "Prix" — the only place that ever talks plum.
+  pricing: 'pricing',
   // About — who's behind the practice — and FAQ — how it works in detail —
   // are both backstage (meta). Testimonials is proof of shipped work.
   about: 'meta',
@@ -253,9 +276,9 @@ export const HOME_SECTION_FEATURE: Record<string, FeatureId | undefined> = {
 export const HOME_SECTION_LABEL: Record<string, Bi> = {
   featured: { fr: 'Projets en vedette', en: 'Featured projects' },
   how: { fr: 'Comment ça marche', en: 'How it works' },
-  pricing: { fr: 'Prix', en: 'Pricing' },
   vibe: { fr: 'Je fais / je fais pas', en: 'What I do / don’t' },
   'bring-anything': { fr: 'Apporte n’importe quoi', en: 'Bring anything' },
+  pricing: { fr: 'Prix', en: 'Pricing' },
   about: { fr: 'À propos', en: 'About' },
   testimonials: { fr: 'Témoignages', en: 'Testimonials' },
   faq: { fr: 'FAQ', en: 'FAQ' },

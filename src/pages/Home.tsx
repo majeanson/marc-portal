@@ -75,36 +75,40 @@ export function Home({ lang }: { lang: Lang }) {
         <FeaturedProjects lang={lang} />
         {/* 3 — How: 4-step expectation-setter, very fast read */}
         <HowItWorks lang={lang} />
-        {/* 4 — Pricing: concrete numbers so visitors self-qualify */}
-        <Pricing lang={lang} />
-        {/* 5 — Vibe filter: do/don't lists — self-qualification gate */}
+        {/* 4 — Vibe filter: do/don't lists — self-qualification gate. Comes
+              BEFORE pricing: the visitor decides "is this for me?" first, so
+              the numbers land on someone already half-qualified rather than
+              gating the read with a price. */}
         <VibeFilter lang={lang} />
-        {/* 5b — "Bring me anything": neutralizes the self-filter the vibe
+        {/* 5 — "Bring me anything": neutralizes the self-filter the vibe
               ledger can trigger. Marc's framing: I want every idea in my
               inbox; the triage is my job, not the visitor's. Examples are
               aspirational ("things I'd take"), not fake-historic. */}
         <BringAnything lang={lang} />
-        {/* 5c — Inline intake teaser: low-friction "pick a type" CTA. Sits
-              last in the qualify→reassure→act run so the type-picker is the
-              final step before the visitor commits. Skips the type-picker
+        {/* 6 — Pricing: concrete numbers, read after the visitor has
+              self-qualified through the vibe gate. */}
+        <Pricing lang={lang} />
+        {/* 7 — Inline intake teaser: low-friction "pick a type" CTA. Sits
+              last in the qualify→reassure→price→act run so the type-picker is
+              the final step before the visitor commits. Skips the type-picker
               step inside /intake. */}
         <InlineIntakeTeaser lang={lang} />
-        {/* 5d — Pull-quote: a short voice break before About lands */}
+        {/* 7b — Pull-quote: a short voice break before About lands */}
         <PullQuote lang={lang} />
-        {/* 6 — About: short bio near the end (visitors who care, scroll) */}
+        {/* 8 — About: short bio near the end (visitors who care, scroll) */}
         <About lang={lang} />
-        {/* 6½ — Testimonials: social proof just before objections (FAQ).
+        {/* 8½ — Testimonials: social proof just before objections (FAQ).
               Component self-hides when zero approved vouches exist, so the
               section only appears once /vouches has something to show.
               SectionRail filters its index by element presence, so the
               rail entry hides in lockstep. */}
         <Testimonials lang={lang} />
-        {/* 6b — FAQ: handles common objections before the final CTA. JSON-LD
+        {/* 8b — FAQ: handles common objections before the final CTA. JSON-LD
               FAQPage schema is injected for SEO rich results. */}
         <FAQ lang={lang} />
-        {/* 7 — Final CTA: one last push before the footer */}
+        {/* 9 — Final CTA: one last push before the footer */}
         <CTA lang={lang} />
-        {/* 8 — Share-this-site affordance. Web Share API (mobile native
+        {/* 10 — Share-this-site affordance. Web Share API (mobile native
               sheet, desktop Chrome/Edge) with clipboard fallback.
               Surfaces the live /og/home card as the preview. */}
         <ShareSite lang={lang} />

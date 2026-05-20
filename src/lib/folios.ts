@@ -31,7 +31,7 @@
  * Updating: when you reorder sections, just renumber the values in
  * HOME_FOLIOS — every section component reads from here, so the rendered
  * marks update everywhere on the next deploy. Pricing's asOf disclaimer
- * also derives its "IV — " prefix from HOME_FOLIOS.pricing so the section
+ * also derives its "VI — " prefix from HOME_FOLIOS.pricing so the section
  * header and the disclaimer never drift apart.
  *
  * Hero is intentionally absent from HOME_FOLIOS: it uses a magazine-style
@@ -42,15 +42,19 @@
 
 /**
  * Home page section folios. Order MUST match <Home /> render order.
- * Currently: Hero (cover, № 01) → Featured → How → Pricing → Vibe →
- * BringAnything → About → Testimonials → FAQ.
+ * Currently: Hero (cover, № 01) → Featured → How → Vibe → BringAnything →
+ * Pricing → About → Testimonials → FAQ.
+ *
+ * Vibe + BringAnything sit before Pricing — the visitor self-qualifies
+ * ("is this for me?") before the numbers, so the funnel reads
+ * qualify → reassure → price → act.
  */
 export const HOME_FOLIOS = {
   featured: 'II',
   how: 'III',
-  pricing: 'IV',
-  vibe: 'V',
-  bringAnything: 'VI',
+  vibe: 'IV',
+  bringAnything: 'V',
+  pricing: 'VI',
   about: 'VII',
   testimonials: 'VIII',
   faq: 'IX',
