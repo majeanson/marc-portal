@@ -181,7 +181,7 @@ const PAGE_PATCHES = [
       'Politique de confidentialité — version visiteur de la Loi 25.',
       'Privacy policy — visitor-facing Loi 25 statement.',
     ),
-    group: 'group.transparency',
+    group: 'group.feat-meta',
   },
   {
     id: 'page.pia',
@@ -190,7 +190,7 @@ const PAGE_PATCHES = [
       'Évaluation d’impact relative à la vie privée (Loi 25).',
       'Privacy impact assessment (Loi 25).',
     ),
-    group: 'group.transparency',
+    group: 'group.feat-meta',
   },
 
   // 6 — Handoff (+ transparency pages a buyer would consult during takeover)
@@ -216,7 +216,7 @@ const PAGE_PATCHES = [
       'Manifeste de fonctionnalités LAC — généré depuis feat-*/feature.json.',
       'LAC feature manifest — generated from feat-*/feature.json.',
     ),
-    group: 'group.transparency',
+    group: 'group.feat-meta',
   },
   {
     id: 'page.map-page',
@@ -225,7 +225,7 @@ const PAGE_PATCHES = [
       'Cette carte — un atlas du site, pages, données, parcours.',
       'This map — an atlas of the site, pages, data, journeys.',
     ),
-    group: 'group.transparency',
+    group: 'group.feat-meta',
   },
 
   // 7 — Operator console (admin)
@@ -395,15 +395,15 @@ const SERVICE_NODES: MapNode[] = [
 // ─── Groups ───────────────────────────────────────────────────────────────────
 
 const GROUPS: MapGroup[] = [
-  // Pages layer — feature groups, 1-1 with the SIX Vision bubbles
-  // (intake, conversation, iterative, pricing, keys, shipped) plus a
-  // transparency group (privacy/PIA/meta/map — not features) and the
-  // admin-only operator console.
+  // Pages layer — seven feature groups, one per colour tag: the six
+  // product features (1-1 with the Vision bubbles) plus group.feat-meta
+  // (the backstage layer — privacy/PIA/meta/map). Then the admin-only
+  // operator console, which is the one group that carries no feature.
   //
-  // Group ids that start with "group.feat-{id}" are recognized by
-  // groupToFeature() in src/lib/features.ts; pages inside inherit that
-  // feature's accent color. "group.transparency" + "group.feat-operator"
-  // intentionally don't carry a feature accent.
+  // Group ids "group.feat-{id}" are recognized by groupToFeature() in
+  // src/lib/features.ts; pages inside inherit that feature's accent.
+  // "group.feat-operator" matches the prefix but 'operator' isn't a real
+  // FeatureId, so groupToFeature returns null — no accent, by design.
   {
     id: 'group.feat-intake',
     label: bi('Apporte un projet', 'Bring a project'),
@@ -453,8 +453,8 @@ const GROUPS: MapGroup[] = [
     nodeIds: ['page.projects', 'page.engagement', 'page.vouches', 'page.vouch'],
   },
   {
-    id: 'group.transparency',
-    label: bi('Transparence & docs', 'Transparency & docs'),
+    id: 'group.feat-meta',
+    label: bi('Les coulisses', 'Behind the scenes'),
     layer: 'pages',
     visibility: 'public',
     order: 6,

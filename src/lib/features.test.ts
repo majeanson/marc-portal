@@ -17,10 +17,10 @@ import { describe, expect, it } from 'vitest'
 import {
   FAQ_FEATURE,
   FAQ_LABEL,
-  FEATURE_IDS,
   FEATURE_NEXT,
   HOME_SECTION_FEATURE,
   HOME_SECTION_LABEL,
+  PRODUCT_FEATURE_IDS,
   SESSION_TAB_FEATURE,
   SESSION_TAB_LABEL,
   isFeatureId,
@@ -157,24 +157,26 @@ describe('FeatureIndex label maps', () => {
 })
 
 describe('cross-feature continue arc', () => {
-  it('FEATURE_NEXT is one closed 6-cycle through every feature', () => {
-    // Walking NEXT from any feature must visit all 6 exactly once and
-    // return home — otherwise the "continue the tour" loop has a dead end
-    // or a sub-loop that skips features.
+  it('FEATURE_NEXT is one closed cycle through every PRODUCT feature', () => {
+    // Walking NEXT from any product feature must visit all six exactly once
+    // and return home — a dead end or sub-loop would break the tour. `meta`
+    // is not part of the arc, so the cycle is over PRODUCT_FEATURE_IDS only.
     const seen: string[] = []
-    let cur = FEATURE_IDS[0]
-    for (let i = 0; i < FEATURE_IDS.length; i++) {
+    let cur = PRODUCT_FEATURE_IDS[0]
+    for (let i = 0; i < PRODUCT_FEATURE_IDS.length; i++) {
       seen.push(cur)
       cur = FEATURE_NEXT[cur]
     }
-    expect(cur, 'FEATURE_NEXT does not return to the start').toBe(FEATURE_IDS[0])
-    expect(new Set(seen).size, 'FEATURE_NEXT skips or repeats a feature').toBe(FEATURE_IDS.length)
+    expect(cur, 'FEATURE_NEXT does not return to the start').toBe(PRODUCT_FEATURE_IDS[0])
+    expect(new Set(seen).size, 'FEATURE_NEXT skips or repeats a feature').toBe(
+      PRODUCT_FEATURE_IDS.length,
+    )
   })
 
-  it('no feature points the continue nudge at its own primary page', () => {
-    // The nudge always advances to the NEXT feature's page — a self-link
-    // would be a "continue" that goes nowhere.
-    for (const f of FEATURE_IDS) {
+  it('no product feature points the continue nudge at itself', () => {
+    // The nudge always advances to the NEXT feature — a self-link would be
+    // a "continue" that goes nowhere.
+    for (const f of PRODUCT_FEATURE_IDS) {
       expect(FEATURE_NEXT[f], `feature ${f} points NEXT at itself`).not.toBe(f)
     }
   })

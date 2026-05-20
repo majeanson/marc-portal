@@ -18,7 +18,13 @@ import skeleton from '../../data/map-skeleton.json'
 import { buildMapData } from './data'
 import { filterForViewer } from './filter'
 import { CURATED } from './curated'
-import { FEATURE_IDS, FEATURE_PRIMARY_PAGE, PAGE_FEATURE, isFeatureId } from '../features'
+import {
+  FEATURE_IDS,
+  FEATURE_PRIMARY_PAGE,
+  PAGE_FEATURE,
+  PRODUCT_FEATURE_IDS,
+  isFeatureId,
+} from '../features'
 
 describe('map skeleton', () => {
   it('has at least the load-bearing route components', () => {
@@ -159,12 +165,15 @@ describe('curated overlay coherence', () => {
     }
   })
 
-  it('Vision bubbles cover every FeatureId exactly once', () => {
+  it('Vision bubbles cover every PRODUCT feature exactly once', () => {
+    // Vision = the product pitch — one bubble per PRODUCT feature. `meta`
+    // (the backstage layer) deliberately has no bubble.
     const features = new Set(data.vision.map((b) => b.feature))
-    expect(features.size).toBe(FEATURE_IDS.length)
-    for (const fid of FEATURE_IDS) {
-      expect(features, `FeatureId ${fid} has no Vision bubble`).toContain(fid)
+    expect(features.size).toBe(PRODUCT_FEATURE_IDS.length)
+    for (const fid of PRODUCT_FEATURE_IDS) {
+      expect(features, `product feature ${fid} has no Vision bubble`).toContain(fid)
     }
+    expect(features, 'meta should not have a Vision bubble').not.toContain('meta')
   })
 
   it('every group.feat-{FeatureId} group inherits the matching FeatureId', () => {
@@ -210,9 +219,10 @@ describe('curated overlay coherence', () => {
 
   it('every FEATURE_PRIMARY_PAGE route resolves to a real route', () => {
     // The continue-nudge lands here; a stale route would 404 the visitor.
+    // FEATURE_PRIMARY_PAGE is keyed by the six product features only.
     const frPaths = new Set(skeleton.routes.filter((r) => r.lang === 'fr').map((r) => r.path))
     const enPaths = new Set(skeleton.routes.filter((r) => r.lang === 'en').map((r) => r.path))
-    for (const fid of FEATURE_IDS) {
+    for (const fid of PRODUCT_FEATURE_IDS) {
       const page = FEATURE_PRIMARY_PAGE[fid]
       expect(frPaths, `${fid} primary page ${page.fr} is not a known route`).toContain(page.fr)
       expect(enPaths, `${fid} primary page ${page.en} is not a known route`).toContain(page.en)

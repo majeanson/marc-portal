@@ -30,7 +30,9 @@ const COPY = {
 } as const
 
 export function FeatureContinue({ feature, lang }: Props) {
-  if (!feature) return null
+  // `meta` pages (Privacy, About-style surfaces) aren't part of the product
+  // tour, so they get no continue nudge — only the six product features do.
+  if (!feature || feature === 'meta') return null
 
   const next = FEATURE_NEXT[feature]
   const to = FEATURE_PRIMARY_PAGE[next][lang]

@@ -22,9 +22,43 @@
 
 import type { Bi } from './map/types'
 
-export type FeatureId = 'intake' | 'conversation' | 'iterative' | 'pricing' | 'keys' | 'shipped'
+/**
+ * The colour taxonomy has SEVEN tags. Six are PRODUCT features — the things
+ * a visitor gets, the ones that headline the Vision layer and ride the
+ * "continue the tour" arc. The seventh, `meta`, is the backstage layer:
+ * How it works, About, FAQ, and the transparency/meta pages (Privacy, PIA,
+ * Meta, Map). It carries a colour like the others — so nothing renders an
+ * "uncoloured" dot — but it is NOT a Vision bubble and NOT in the arc,
+ * because it isn't something you're sold; it's how the practice explains
+ * itself.
+ */
+export type FeatureId =
+  | 'intake'
+  | 'conversation'
+  | 'iterative'
+  | 'pricing'
+  | 'keys'
+  | 'shipped'
+  | 'meta'
 
+/** The six PRODUCT features — everything except `meta`. Used by surfaces
+ *  that should only ever show the sellable features: the Vision bubbles
+ *  and the FEATURE_NEXT continue arc. */
+export type ProductFeatureId = Exclude<FeatureId, 'meta'>
+
+/** All seven colour tags. */
 export const FEATURE_IDS: readonly FeatureId[] = [
+  'intake',
+  'conversation',
+  'iterative',
+  'pricing',
+  'keys',
+  'shipped',
+  'meta',
+] as const
+
+/** The six product features, in Vision order. */
+export const PRODUCT_FEATURE_IDS: readonly ProductFeatureId[] = [
   'intake',
   'conversation',
   'iterative',
@@ -72,6 +106,13 @@ export const FEATURES: Record<FeatureId, Feature> = {
     label: { fr: 'Voir le déjà-fait', en: "See what's shipped" },
     hue: 'teal',
   },
+  // The backstage layer — not a product feature. How it works, About, FAQ,
+  // and the transparency/meta pages all carry this slate accent.
+  meta: {
+    id: 'meta',
+    label: { fr: 'Les coulisses', en: 'Behind the scenes' },
+    hue: 'slate',
+  },
 }
 
 /** Type guard for arbitrary strings (e.g. URL params). */
@@ -85,8 +126,9 @@ export function isFeatureId(s: string | null | undefined): s is FeatureId {
  * membership; this map is what page components import directly to colour
  * their folio-mark + wrapper without having to load the whole map graph.
  *
- * Pages absent from this map have no feature (Privacy, Pia, Meta, Map —
- * intentional: they're transparency / meta pages, not user-facing features).
+ * Privacy, Pia, Meta, and Map are the `meta` (backstage) feature — they
+ * explain the practice rather than being a product surface, but they still
+ * carry a colour so nothing renders uncoloured.
  */
 export const PAGE_FEATURE: Partial<Record<string, FeatureId>> = {
   // Intake
@@ -111,6 +153,11 @@ export const PAGE_FEATURE: Partial<Record<string, FeatureId>> = {
   'page.engagement': 'shipped',
   'page.vouches': 'shipped',
   'page.vouch': 'shipped',
+  // Meta (backstage — transparency + how-it-works pages)
+  'page.privacy': 'meta',
+  'page.pia': 'meta',
+  'page.meta': 'meta',
+  'page.map-page': 'meta',
 }
 
 /** Parse a `group.feat-X` id and return its FeatureId, or null if the id
@@ -129,8 +176,10 @@ export function groupToFeature(groupId: string): FeatureId | null {
  * bottom of each content page, coloured with the DESTINATION feature.
  * ------------------------------------------------------------------------- */
 
-/** Next feature in the arc. A single 6-cycle (guarded in features.test.ts). */
-export const FEATURE_NEXT: Record<FeatureId, FeatureId> = {
+/** Next feature in the arc. A single 6-cycle over the PRODUCT features
+ *  (meta is excluded — it isn't part of the tour). Guarded in
+ *  features.test.ts. */
+export const FEATURE_NEXT: Record<ProductFeatureId, ProductFeatureId> = {
   intake: 'conversation',
   conversation: 'iterative',
   iterative: 'pricing',
@@ -139,10 +188,10 @@ export const FEATURE_NEXT: Record<FeatureId, FeatureId> = {
   shipped: 'intake',
 }
 
-/** The page a "continue" nudge lands on for each feature — the most
- *  representative, visitor-pleasant page in that feature's cluster.
+/** The page a "continue" nudge lands on for each PRODUCT feature — the
+ *  most representative, visitor-pleasant page in that feature's cluster.
  *  Validated against the route skeleton in map.test.ts. */
-export const FEATURE_PRIMARY_PAGE: Record<FeatureId, Bi> = {
+export const FEATURE_PRIMARY_PAGE: Record<ProductFeatureId, Bi> = {
   intake: { fr: '/intake', en: '/en/intake' },
   // Conversation has no marketing page — its surfaces are all functional
   // (login, sessions). /login is the honest "this is where it starts".
@@ -176,9 +225,9 @@ export const FEATURE_PRIMARY_PAGE: Record<FeatureId, Bi> = {
 export const HOME_SECTION_FEATURE: Record<string, FeatureId | undefined> = {
   // "Projets" — drills into the shipped gallery.
   featured: 'shipped',
-  // "Comment ça marche" — covers the whole arc (intake → conversation →
-  // builds → handoff). Pinning to one colour would be a half-truth.
-  how: undefined,
+  // "Comment ça marche" — explains the whole practice; that's the backstage
+  // (meta) layer, not any single product feature.
+  how: 'meta',
   // "Prix" — the only place that ever talks plum.
   pricing: 'pricing',
   // "Je fais / Je fais pas" — qualification gate, same role as the intake
@@ -187,11 +236,11 @@ export const HOME_SECTION_FEATURE: Record<string, FeatureId | undefined> = {
   // "Apporte n'importe quoi" — neutralises the vibe gate and pushes the
   // visitor toward /intake.
   'bring-anything': 'intake',
-  // Pull-quote, About, Testimonials, ShareSite, FAQ — see below; only
-  // ones with a clean feature-equivalent appear here.
-  about: undefined,
+  // About — who's behind the practice — and FAQ — how it works in detail —
+  // are both backstage (meta). Testimonials is proof of shipped work.
+  about: 'meta',
   testimonials: 'shipped',
-  faq: undefined,
+  faq: 'meta',
   // Final CTA — points at /intake.
   cta: 'intake',
 }

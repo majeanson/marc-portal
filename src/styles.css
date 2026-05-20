@@ -62,6 +62,8 @@
   --feat-keys-soft: var(--warm-soft);
   --feat-shipped: #2f7068; /* teal */
   --feat-shipped-soft: #cce4df;
+  --feat-meta: #5d6b78; /* slate — the backstage layer */
+  --feat-meta-soft: #dde2e7;
 }
 
 :root[data-theme='night'] {
@@ -94,6 +96,8 @@
   --feat-pricing-soft: #3d2530;
   --feat-shipped: #6dada3;
   --feat-shipped-soft: #1f3633;
+  --feat-meta: #97a4b1;
+  --feat-meta-soft: #2a2f36;
   color-scheme: dark;
 }
 /* Sticky header glass — re-tinted in night so the blur doesn't read white. */
@@ -7674,7 +7678,12 @@ button.intake__progress-step:disabled {
   font-weight: 500;
   white-space: nowrap;
   color: inherit;
-  text-align: right;
+  /* Left-aligned so the label hugs its FeatureDot (column 1) instead of
+     floating away from it — the label column is max-content (sized to the
+     widest label), so right-aligning short labels stranded the dot a whole
+     column-width away. Leader gap now falls between label and tick, the
+     classic table-of-contents look. */
+  text-align: left;
   opacity: 0;
   transform: translateX(6px);
   transition:
@@ -13073,6 +13082,10 @@ a.page-folio-mark:focus-visible .page-folio-mark__dot {
   --ft-color: var(--feat-shipped);
   --ft-soft: var(--feat-shipped-soft);
 }
+[data-feature='meta'] {
+  --ft-color: var(--feat-meta);
+  --ft-soft: var(--feat-meta-soft);
+}
 
 /* Pages-layer group accent — only "featured" groups (those backed by a
    feat-* id) get the soft fill + colored label. Transparency + operator
@@ -13287,9 +13300,14 @@ a.feature-dot:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ft-color, var(--text-soft)) 22%, transparent);
   outline: none;
 }
+/* Neutral dot — for surfaces that are real but cross-cutting (How it
+   works, About): they span every feature, so no single colour is honest.
+   A *filled* muted dot reads as a deliberate "overview" marker; a hollow
+   ring read as an unfinished / missing colour. Same size + ring as a
+   coloured dot so the row rhythm holds. */
 .feature-dot--neutral {
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--text-faint);
+  background: var(--text-soft);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-soft) 28%, transparent);
 }
 .feature-dot--sm {
   width: 8px;
