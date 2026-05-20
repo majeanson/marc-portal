@@ -10,9 +10,16 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { installApiMocks } from './mocks'
 import { PUBLIC_ROUTES } from './routes'
 
 test.describe('page screenshots', () => {
+  // Fulfil public API + OG-image requests with fixed fixtures so API-fed
+  // pages render representative content instead of their error states.
+  test.beforeEach(async ({ page }) => {
+    await installApiMocks(page)
+  })
+
   for (const route of PUBLIC_ROUTES) {
     test(route.name, async ({ page }) => {
       await page.goto(route.path, { waitUntil: 'networkidle' })
