@@ -57,7 +57,7 @@ export function Pia({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section">
           <div className="section__inner privacy">
-            <FeatureFolioLink feature={PAGE_FEATURE['page.pia']} lang={lang}>
+            <FeatureFolioLink feature={PAGE_FEATURE['page.pia']} lang={lang} withDot>
               № {PAGE_FOLIOS.pia}
             </FeatureFolioLink>
             <h1>{t.title}</h1>

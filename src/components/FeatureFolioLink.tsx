@@ -23,6 +23,12 @@ interface Props {
   children: ReactNode
   /** Override the CSS class — defaults to .page-folio-mark + .mono. */
   className?: string
+  /** When true, prepend a clickable feature dot (or neutral placeholder)
+   *  so the colour cue is visible even on hand-rolled pages that don't
+   *  use PageMast. Hand-rolled headers (Privacy, PIA, Map,
+   *  HandoffChecklist) opt in. Default false to keep older callers byte-
+   *  for-byte compatible. */
+  withDot?: boolean
 }
 
 export function FeatureFolioLink({
@@ -30,11 +36,15 @@ export function FeatureFolioLink({
   lang,
   children,
   className = 'page-folio-mark mono',
+  withDot = false,
 }: Props) {
   if (!feature) {
+    // Neutral folio mark — still optionally prefixed with a hollow dot so
+    // the visual rhythm matches feature-tagged pages on the same site.
     return (
-      <p className={className} aria-hidden="true">
-        {children}
+      <p className={`${className} page-folio-mark--neutral`} aria-hidden="true">
+        {withDot && <span className="page-folio-mark__dot page-folio-mark__dot--neutral" />}
+        <span className="page-folio-mark__text">{children}</span>
       </p>
     )
   }
@@ -44,8 +54,9 @@ export function FeatureFolioLink({
       ? `Filter the site map to ${FEATURES[feature].label.en}`
       : `Filtrer la carte du site sur ${FEATURES[feature].label.fr}`
   return (
-    <Link className={className} to={to} aria-label={label}>
-      {children}
+    <Link className={className} to={to} aria-label={label} data-feature={feature}>
+      {withDot && <span className="page-folio-mark__dot" data-feature={feature} aria-hidden="true" />}
+      <span className="page-folio-mark__text">{children}</span>
     </Link>
   )
 }

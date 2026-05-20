@@ -3,6 +3,8 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
 import { useLangSwitch } from '../lib/useLangSwitch'
+import { FeatureDot } from './FeatureDot'
+import { PAGE_FEATURE } from '../lib/features'
 
 // CF resolves `:account` to the user's actual account ID on login, so we
 // don't need to hardcode it. Sentry's `/issues/` redirects to the default
@@ -99,10 +101,39 @@ export function Footer({ lang }: { lang: Lang }) {
       <div className="site-footer__flourish" aria-hidden="true" />
       <div className="site-footer__inner">
         <p className="site-footer__line">{t.contact}</p>
-        <p className="site-footer__line">
-          {t.legal} · <a href={privacyHref}>{privacyLabel}</a> · <a href={piaHref}>{piaLabel}</a> ·{' '}
-          <a href={handoffHref}>{handoffLabel}</a> · <a href={metaHref}>{metaLabel}</a> ·{' '}
-          <a href={vouchesHref}>{vouchesLabel}</a> · <a href={mapHref}>{mapLabel}</a>
+        <p className="site-footer__line site-footer__pages">
+          <span className="site-footer__pages-eyebrow">{t.legal}</span>
+          {/* Each page name carries its feature dot. Dots for the four meta
+              pages (privacy/pia/meta/map) render as neutral hollow circles
+              so the visual rhythm of "every title has a dot" holds without
+              implying a feature these pages don't belong to. The dot itself
+              is a clickable shortcut to /carte?feature=X for the featured
+              pages — the colour you see in the footer is the colour you
+              find in the atlas. */}
+          <span className="site-footer__page">
+            <FeatureDot feature={PAGE_FEATURE['page.privacy']} lang={lang} />
+            <a href={privacyHref}>{privacyLabel}</a>
+          </span>
+          <span className="site-footer__page">
+            <FeatureDot feature={PAGE_FEATURE['page.pia']} lang={lang} />
+            <a href={piaHref}>{piaLabel}</a>
+          </span>
+          <span className="site-footer__page">
+            <FeatureDot feature={PAGE_FEATURE['page.handoff']} lang={lang} />
+            <a href={handoffHref}>{handoffLabel}</a>
+          </span>
+          <span className="site-footer__page">
+            <FeatureDot feature={PAGE_FEATURE['page.meta']} lang={lang} />
+            <a href={metaHref}>{metaLabel}</a>
+          </span>
+          <span className="site-footer__page">
+            <FeatureDot feature={PAGE_FEATURE['page.vouches']} lang={lang} />
+            <a href={vouchesHref}>{vouchesLabel}</a>
+          </span>
+          <span className="site-footer__page">
+            <FeatureDot feature={PAGE_FEATURE['page.map-page']} lang={lang} />
+            <a href={mapHref}>{mapLabel}</a>
+          </span>
         </p>
         <p className="site-footer__line site-footer__line--meta">
           <span>{t.copyright}</span>

@@ -138,7 +138,7 @@ export function Map({ lang }: { lang: Lang }) {
         <article className="map-page">
           <header className="map-page__head">
             <div className="section__eyebrow">{t.eyebrow}</div>
-            <FeatureFolioLink feature={PAGE_FEATURE['page.map-page']} lang={lang}>
+            <FeatureFolioLink feature={PAGE_FEATURE['page.map-page']} lang={lang} withDot>
               № {PAGE_FOLIOS.map}
             </FeatureFolioLink>
             <h1 className="map-page__title">{t.title}</h1>
@@ -185,7 +185,21 @@ export function Map({ lang }: { lang: Lang }) {
             </p>
           )}
 
-          <div className="map-page__canvas" data-active-feature={activeFeature ?? undefined}>
+          <div
+            className="map-page__canvas"
+            data-active-feature={activeFeature ?? undefined}
+            data-layer={layer}
+          >
+            {/* Mobile scroll hint — visible only on narrow screens AND
+                only on layers that horizontally scroll (Pages, Data,
+                Journeys). Vision swaps to a vertical card stack on
+                mobile so it doesn't need the hint; Admin is an HTML
+                grid that reflows naturally. */}
+            {(layer === 'pages' || layer === 'data' || layer === 'journeys') && (
+              <p className="map-page__scroll-hint mono" aria-hidden="true">
+                {lang === 'en' ? '← scroll to pan →' : '← glisser pour voir →'}
+              </p>
+            )}
             <MapCanvas
               layer={layer}
               data={filtered}

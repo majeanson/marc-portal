@@ -243,6 +243,12 @@ p {
   margin-bottom: 14px;
   font-weight: 600;
 }
+/* Eyebrow that includes a feature dot — the dot sits inline with the
+   uppercase mono label, separated by a small gap so it doesn't crowd. */
+.section__eyebrow .feature-dot {
+  margin-right: 8px;
+  transform: translateY(-1px);
+}
 .section > .section__inner > p {
   font-size: 18px;
   line-height: 1.65;
@@ -1285,6 +1291,31 @@ p {
 .site-footer__line {
   margin: 0;
   letter-spacing: 0.02em;
+}
+/* Pages line — replaces the old "·-separated" inline list. The new layout
+   is a flex/wrap row of "<dot> <name>" pairs so each page sits with its
+   feature colour. On mobile the row wraps to two/three lines instead of
+   forcing a horizontal scroll. */
+.site-footer__pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 14px;
+  max-width: 100%;
+}
+.site-footer__pages-eyebrow {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 11.5px;
+  color: var(--text-soft);
+  margin-right: 4px;
+}
+.site-footer__page {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
 }
 .site-footer__line--meta {
   display: inline-flex;
@@ -6267,6 +6298,32 @@ button.intake__progress-step:disabled {
   position: relative;
   z-index: 1;
 }
+/* Feature cue strip — sits above the eyebrow/h1 on a featured page. The
+   dot + colour name make explicit the relationship between this page and
+   the /carte cluster it belongs to. The h1 underline below already
+   inherits --ft-color, so the whole header reads as one colour story. */
+.page-mast__feature-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 2px 0;
+}
+.page-mast__feature-name {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ft-color, var(--text-soft));
+  font-weight: 600;
+}
+[data-feature] .page-mast__content h1::after {
+  background: linear-gradient(
+    to right,
+    var(--ft-color) 0%,
+    color-mix(in srgb, var(--ft-color) 70%, var(--text)) 60%,
+    transparent
+  );
+}
 /* Animated underline on the page h1 — draws in on mount. The pseudo-
    element sits below the headline as a thin sage rule that scales from
    0 → 1 on the x-axis with a small delay so the eye lands on the
@@ -7048,6 +7105,16 @@ button.intake__progress-step:disabled {
 .home .home-drill-card-text {
   grid-area: text;
 }
+.home .home-drill-card-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.home .home-drill-card-feature .home-drill-card-eyebrow {
+  margin-bottom: 0;
+  color: var(--ft-color, var(--accent-warm));
+}
 .home .home-drill-card-eyebrow {
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -7649,9 +7716,11 @@ button.intake__progress-step:disabled {
      ticks centered, numbers anchored to the rail's right edge. Subgrid lets
      each row inherit these columns so all six numbers stack at the same x.
      Num column widened from 22px → 30px to fit Roman numerals (VIII is the
-     widest the masthead motif currently emits). */
+     widest the masthead motif currently emits). A leading 10px column hosts
+     the per-section FeatureDot — clicking it jumps to /carte?feature=X
+     while the rest of the row (label/tick/num) still anchors the page. */
   display: grid;
-  grid-template-columns: max-content 32px 30px;
+  grid-template-columns: 10px max-content 32px 30px;
   column-gap: 8px;
   row-gap: 6px;
   pointer-events: auto;
@@ -7661,10 +7730,16 @@ button.intake__progress-step:disabled {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
+  align-items: center;
+}
+.section-rail__dot {
+  grid-column: 1;
+  justify-self: center;
+  align-self: center;
 }
 .section-rail__link {
   display: grid;
-  grid-column: 1 / -1;
+  grid-column: 2 / -1;
   grid-template-columns: subgrid;
   align-items: center;
   padding: 4px 0;
@@ -12589,13 +12664,43 @@ a.map-node:focus-visible {
 }
 @media (max-width: 720px) {
   .map-legend {
-    gap: 10px;
+    gap: 8px;
+  }
+  .map-legend__layers {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .map-legend__chip {
+    padding: 7px 11px;
+    font-size: 11.5px;
   }
   .map-legend__preview {
     margin-left: 0;
   }
   .map-page__canvas {
     padding: 8px;
+  }
+  /* Filter pill — wrap its inner labels so a long feature name doesn't
+     blow out the page width on a 360px phone. */
+  .map-page__filter-pill {
+    flex-wrap: wrap;
+    row-gap: 4px;
+    padding: 6px 8px 6px 12px;
+  }
+  .map-page__filter-name {
+    word-break: break-word;
+  }
+}
+@media (max-width: 480px) {
+  .map-page {
+    padding: 20px var(--gutter) 40px;
+  }
+  .map-page__title {
+    font-size: clamp(20px, 5.5vw, 26px);
+  }
+  .map-page__sub {
+    font-size: 13.5px;
   }
 }
 
@@ -12628,6 +12733,26 @@ a.map-node:focus-visible {
 @media (max-width: 720px) {
   .map-canvas {
     min-width: 720px;
+  }
+}
+
+/* "← scroll to pan →" hint — only visible on narrow screens, only inside
+   .map-page__canvas. The hint is hidden on the Vision layer (which uses
+   the vertical card stack on mobile) and Admin (HTML grid). */
+.map-page__scroll-hint {
+  display: none;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  text-align: center;
+  margin: 0 0 6px;
+  opacity: 0.75;
+}
+@media (max-width: 720px) {
+  .map-page__canvas[data-layer='pages'] .map-page__scroll-hint,
+  .map-page__canvas[data-layer='data'] .map-page__scroll-hint,
+  .map-page__canvas[data-layer='journeys'] .map-page__scroll-hint {
+    display: block;
   }
 }
 
@@ -12741,16 +12866,153 @@ a.map-node:focus-visible {
   }
 }
 
+/* Vision layer — mobile vertical card stack.
+   Hidden by default (≥640px shows the SVG); shown at narrow widths in
+   place of the SVG. Each card carries the bubble's data-feature, so the
+   --ft-color cascade lights up the index, label accent, and chevron. */
+.map-vision__cards {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 12px;
+}
+.map-vision__card {
+  background: var(--ft-soft, var(--bg-card));
+  border: 1.5px solid var(--ft-color, var(--border));
+  border-radius: var(--radius);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    opacity 200ms ease;
+}
+.map-vision__card-link {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 14px 12px;
+  text-decoration: none;
+  color: var(--text);
+}
+.map-vision__card-link--static {
+  cursor: default;
+}
+.map-vision__card:hover,
+.map-vision__card:focus-within {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px -16px color-mix(in srgb, var(--ft-color) 50%, transparent);
+}
+.map-vision__card-index {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ft-color);
+  letter-spacing: 0.06em;
+  align-self: flex-start;
+  padding-top: 2px;
+  opacity: 0.85;
+}
+.map-vision__card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.map-vision__card-label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--ft-color);
+  letter-spacing: -0.005em;
+}
+.map-vision__card-sub {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-mid);
+  font-style: italic;
+}
+.map-vision__card-feature {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ft-color);
+  opacity: 0.7;
+  margin-top: 2px;
+}
+.map-vision__card-chevron {
+  font-size: 18px;
+  color: var(--ft-color);
+  opacity: 0.55;
+  font-family: var(--mono);
+}
+.map-vision__card--dim {
+  opacity: 0.32;
+}
+.map-vision__card--dim .map-vision__card-link {
+  pointer-events: none;
+}
+
+/* At narrow widths, swap SVG vision for the vertical card stack. The
+   non-vision SVG layers (Pages, Data, Journeys) still scroll
+   horizontally; only Vision gets a layout swap because it's the entry
+   layer and benefits most from a mobile-native list. */
+@media (max-width: 640px) {
+  .map-vision__svg {
+    display: none;
+  }
+  .map-vision__cards {
+    display: flex;
+    flex-direction: column;
+  }
+  /* The canvas frame holds an HTML list now, not an SVG; let it grow to
+     the column width without forcing horizontal scroll. */
+  .map-page__canvas:has(.map-vision__cards) {
+    overflow-x: visible;
+    padding: 10px;
+  }
+}
+
 /* Small editorial folio mark for pages that don't use <PageMast> — Privacy,
    Pia, HandoffChecklist, Map. Sits as a low-key magazine number above the
    h1 so the page still reads as "issue № NN" without the full mast chrome. */
 .page-folio-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 11px;
   letter-spacing: 0.14em;
   color: var(--accent-warm);
   font-weight: 600;
   margin: 0 0 6px;
   opacity: 0.85;
+}
+/* Coloured dot prefix for hand-rolled page headers — same colour math as
+   FeatureDot but rendered inside the folio-mark link so the dot and the
+   "№ NN" share a single click target. The dot also exists in a neutral
+   hollow variant for transparency/meta pages (Privacy, PIA, Meta, Map),
+   keeping the visual cadence steady across featured + non-featured pages. */
+.page-folio-mark__dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ft-color, var(--accent-warm));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ft-color, var(--accent-warm)) 28%, transparent);
+  flex-shrink: 0;
+  transition: transform 140ms ease;
+}
+.page-folio-mark__dot--neutral {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--text-faint);
+}
+a.page-folio-mark:hover .page-folio-mark__dot,
+a.page-folio-mark:focus-visible .page-folio-mark__dot {
+  transform: scale(1.15);
+}
+.page-folio-mark__text {
+  display: inline-block;
 }
 
 /* Feature accent dispatch — any element with data-feature="X" (or any
@@ -12904,4 +13166,56 @@ a.page-folio-mark:hover,
 a.page-folio-mark:focus-visible {
   border-bottom-color: currentColor;
   outline: none;
+}
+
+/* Feature dots — the cross-cutting "colour" of the network of pages.
+   Every dot beside a page title carries the page's feature accent (sage =
+   intake, ochre = iterative, teal = shipped, plum = pricing, terracotta =
+   keys, dusty-blue = conversation). Clicking a dot lands on /carte with
+   the matching ?feature= filter applied. Neutral pages (Privacy, PIA,
+   Meta, Map) render a hollow placeholder dot to keep the title rhythm. */
+.feature-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--ft-color, var(--text-soft));
+  /* Tiny shadow ring so the dot reads on coloured/soft backgrounds too. */
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ft-color, var(--text-soft)) 28%, transparent);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
+}
+a.feature-dot {
+  cursor: pointer;
+  text-decoration: none;
+}
+a.feature-dot:hover,
+a.feature-dot:focus-visible {
+  transform: scale(1.18);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ft-color, var(--text-soft)) 22%, transparent);
+  outline: none;
+}
+.feature-dot--neutral {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--text-faint);
+}
+.feature-dot--sm {
+  width: 8px;
+  height: 8px;
+}
+.feature-dot--md {
+  width: 10px;
+  height: 10px;
+}
+.feature-dot--lg {
+  width: 14px;
+  height: 14px;
+}
+/* When a dot sits inline with text, give it a hair of right margin so the
+   title sentence breathes. Use --feature-dot-gap on the wrapper to override
+   the default 8px without rewriting the rule. */
+.feature-dot + * {
+  margin-left: 0;
 }

@@ -153,7 +153,7 @@ export function Privacy({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section">
           <div className="section__inner privacy">
-            <FeatureFolioLink feature={PAGE_FEATURE['page.privacy']} lang={lang}>
+            <FeatureFolioLink feature={PAGE_FEATURE['page.privacy']} lang={lang} withDot>
               № {PAGE_FOLIOS.privacy}
             </FeatureFolioLink>
             <h1>{t.title}</h1>

@@ -2,6 +2,8 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { cssVars } from '../lib/styleVars'
 import { HOME_FOLIOS } from '../lib/folios'
+import { FeatureDot } from './FeatureDot'
+import { PAGE_FEATURE } from '../lib/features'
 
 export function HowItWorks({ lang }: { lang: Lang }) {
   const t = DICT[lang].how
@@ -29,22 +31,35 @@ export function HowItWorks({ lang }: { lang: Lang }) {
             </li>
           ))}
         </ol>
-        <a className="home-drill-card" href={journeyHref}>
-          <div className="home-drill-card-text">
-            <div className="home-drill-card-eyebrow mono">{t.journeyCard.eyebrow}</div>
-            <h3 className="home-drill-card-title">{t.journeyCard.title}</h3>
-            <p className="home-drill-card-body">{t.journeyCard.body}</p>
-          </div>
-          <ul className="home-drill-card-stats" aria-hidden="true">
-            {t.journeyCard.stats.map((s) => (
-              <li key={s.label} className="home-drill-card-stat">
-                <span className="home-drill-card-stat-val">{s.val}</span>
-                <span className="home-drill-card-stat-label mono">{s.label}</span>
-              </li>
-            ))}
-          </ul>
-          <span className="home-drill-card-cta mono">{t.journeyCard.cta}</span>
-        </a>
+        {/* Drill-card to /parcours (Journey) — that page belongs to the
+            intake feature, so the dot carries the sage accent and the
+            eyebrow inherits --ft-color via data-feature on the wrapper. */}
+        <div className="home-drill-card-wrap" data-feature={PAGE_FEATURE['page.journey']}>
+          <a className="home-drill-card" href={journeyHref}>
+            <div className="home-drill-card-text">
+              <span className="home-drill-card-feature">
+                <FeatureDot
+                  feature={PAGE_FEATURE['page.journey']}
+                  lang={lang}
+                  size="sm"
+                  decorative
+                />
+                <span className="home-drill-card-eyebrow mono">{t.journeyCard.eyebrow}</span>
+              </span>
+              <h3 className="home-drill-card-title">{t.journeyCard.title}</h3>
+              <p className="home-drill-card-body">{t.journeyCard.body}</p>
+            </div>
+            <ul className="home-drill-card-stats" aria-hidden="true">
+              {t.journeyCard.stats.map((s) => (
+                <li key={s.label} className="home-drill-card-stat">
+                  <span className="home-drill-card-stat-val">{s.val}</span>
+                  <span className="home-drill-card-stat-label mono">{s.label}</span>
+                </li>
+              ))}
+            </ul>
+            <span className="home-drill-card-cta mono">{t.journeyCard.cta}</span>
+          </a>
+        </div>
       </div>
     </section>
   )

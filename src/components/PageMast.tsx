@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { FEATURES, type FeatureId } from '../lib/features'
+import { FeatureDot } from './FeatureDot'
 
 /**
  * Editorial masthead used at the top of public subpages. Ports the same
@@ -150,7 +151,22 @@ export function PageMast({
           )}
         </g>
       </svg>
-      <div className="page-mast__content">{children}</div>
+      <div className="page-mast__content" data-feature={feature}>
+        {/* When the page has a feature, render a clickable dot at the top
+            of the content stack so the user can jump straight to the
+            cluster on /carte. The folio top-right is the existing link;
+            the dot reinforces "this colour means something" right next to
+            the eyebrow + h1. */}
+        {feature && lang && (
+          <div className="page-mast__feature-cue">
+            <FeatureDot feature={feature} lang={lang} size="lg" />
+            <span className="page-mast__feature-name mono">
+              {FEATURES[feature].label[lang]}
+            </span>
+          </div>
+        )}
+        {children}
+      </div>
     </header>
   )
 }

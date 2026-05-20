@@ -12,11 +12,19 @@
  *
  * Intentionally low-fi compared to the other layers — this layer wants to
  * read as a napkin sketch, not a UML diagram.
+ *
+ * Mobile fallback: at narrow widths the SVG is replaced by a vertical
+ * HTML card stack (.map-vision-cards) since horizontally scrolling a
+ * 960px atlas on a phone hides 2/3 of the bubbles. Same data, same
+ * navigation — only the layout differs. Both are rendered; CSS chooses
+ * which one is visible via the .map-vision__svg / .map-vision__cards
+ * display rules.
  */
 
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import type { Lang } from '../../../i18n'
 import type { FeatureId } from '../../../lib/features'
+import { FEATURES } from '../../../lib/features'
 import type { MapData, VisionBubble } from '../../../lib/map/types'
 
 interface Props {
@@ -76,8 +84,9 @@ export function VisionLayer({ data, lang, activeFeature }: Props) {
   })
 
   return (
+    <>
     <svg
-      className="map-canvas map-canvas--vision"
+      className="map-canvas map-canvas--vision map-vision__svg"
       viewBox={`0 0 ${W} ${H}`}
       preserveAspectRatio="xMidYMid meet"
       role="img"
@@ -150,5 +159,57 @@ export function VisionLayer({ data, lang, activeFeature }: Props) {
         })}
       </g>
     </svg>
+
+    {/* Mobile vertical card stack. Visible at < 640px (CSS-controlled);
+        hidden otherwise. Renders the same 6 bubbles as a numbered list
+        of feature cards, each carrying the matching --ft-color via
+        data-feature, so the colour story stays identical to the SVG
+        view. The cards are real <Link>s when href is set so the
+        navigation path matches the SVG version. */}
+    <ol
+      className="map-vision__cards"
+      aria-label={lang === 'en' ? 'Big picture map (list)' : "Carte d’ensemble (liste)"}
+    >
+      {bubbles.map((b) => {
+        const label = b.label[lang]
+        const sub = b.sub?.[lang]
+        const href = b.href?.[lang]
+        const dim = !!(activeFeature && activeFeature !== b.feature)
+        const featureName = b.feature ? FEATURES[b.feature].label[lang] : null
+        const inner = (
+          <>
+            <span className="map-vision__card-index mono" aria-hidden="true">
+              {String(b.index).padStart(2, '0')}
+            </span>
+            <span className="map-vision__card-body">
+              <span className="map-vision__card-label">{label}</span>
+              {sub && <span className="map-vision__card-sub">{sub}</span>}
+              {featureName && (
+                <span className="map-vision__card-feature mono">{featureName}</span>
+              )}
+            </span>
+            <span className="map-vision__card-chevron" aria-hidden="true">
+              →
+            </span>
+          </>
+        )
+        return (
+          <li
+            key={b.id}
+            data-feature={b.feature}
+            className={`map-vision__card${dim ? ' map-vision__card--dim' : ''}`}
+          >
+            {href ? (
+              <Link className="map-vision__card-link" to={href}>
+                {inner}
+              </Link>
+            ) : (
+              <div className="map-vision__card-link map-vision__card-link--static">{inner}</div>
+            )}
+          </li>
+        )
+      })}
+    </ol>
+    </>
   )
 }
