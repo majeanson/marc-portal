@@ -41,3 +41,11 @@ jobs:
             git commit -m "chore(e2e): regenerate visual baselines on the CI runner"
             git push origin HEAD:${{ github.ref_name }}
           fi
+      # A push made with the default GITHUB_TOKEN does NOT trigger other
+      # workflows (GitHub's loop-guard), so kick the e2e gate explicitly so
+      # the freshly-committed baselines actually get verified.
+      - name: Trigger the e2e gate
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run e2e.yml --ref ${{ github.ref_name }}
