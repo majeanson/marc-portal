@@ -436,8 +436,6 @@ const FR = {
     title: 'Ton problème est trop petit pour engager un dev — voici comment le régler toi-même',
     intro:
       "Pas de honte. Si ton budget est sous 200 $ et que ton problème entre dans une de ces 4 catégories, voici la recette. Tu n'as rien à acheter et tu n'as pas besoin de moi.",
-    principle:
-      "Principe : la bonne solution pour un problème de 50 $ est gratuite. Si ton problème grandit (5+ employés, plusieurs équipes, données critiques), reviens me voir — c'est là que je vaux mon prix.",
     problemLabel: 'Le problème',
     recipeLabel: 'La recette',
     growBack:
@@ -704,7 +702,7 @@ const FR = {
     backHome: '← Retour à l’accueil',
     eyebrow: 'le parcours complet',
     title: 'De la première visite au projet livré et payé',
-    sub: '12 étapes. Tu en fais 6, je fais les 6 autres. Ton temps total pour faire ta part : ~20 minutes. Le reste, c’est moi qui bosse — pendant que tu vis ta vie.',
+    sub: 'Chaque étape détaillée : qui fait le geste, à quel moment, combien de temps ça prend.',
     statYou: 'tes gestes',
     statYouVal: '6',
     statYouUnit: 'sur 12 étapes',
@@ -847,15 +845,16 @@ const FR = {
     ],
     outro: {
       title: 'C’est tout.',
-      body: 'Si tu comptes, tu fais 6 gestes sur 12 — et la plupart prennent une minute. Les 6 autres, c’est moi qui bosse, pendant que tu fais autre chose. C’est ça, le contrat.',
+      body: 'La plupart de tes gestes prennent une minute. Tout le reste se passe pendant que tu fais autre chose. C’est ça, le contrat.',
       cta: 'Décris ton problème →',
     },
   },
 
   vouches: {
     pageTitle: 'Recommandations',
+    eyebrow: 'témoignages',
     heading: 'Quelques mots de gens qui ont travaillé avec moi',
-    lead: "Le portail est rapide à essayer ; ces témoignages aident à savoir si on va cliquer ensemble. Marc lit, peut resserrer le texte avant qu'il paraisse — et ton courriel n'apparaît jamais ici.",
+    lead: 'Le portail est rapide à essayer ; ces témoignages aident à savoir si on va cliquer ensemble.',
     empty: 'Pas encore de témoignages publiés. Reviens dans quelques semaines.',
     relationshipLabels: {
       client: 'Client',
@@ -1311,8 +1310,6 @@ const EN: Copy = {
     title: "Your problem is too small to hire a dev — here's how to handle it yourself",
     intro:
       "No shame. If your budget is under $200 and your problem fits one of these 4 categories, here's the recipe. You don't need to buy anything and you don't need me.",
-    principle:
-      "Principle: the right solution for a $50 problem is free. If your problem grows (5+ employees, multiple teams, critical data), come back — that's where I earn my price.",
     problemLabel: 'The problem',
     recipeLabel: 'The recipe',
     growBack:
@@ -1576,7 +1573,7 @@ const EN: Copy = {
     backHome: '← Back home',
     eyebrow: 'the full journey',
     title: 'From your first visit to a shipped, paid project',
-    sub: '12 steps. You take 6, I take 6. Your total time across all your steps: ~20 minutes. The rest is me, working — while you live your life.',
+    sub: 'Every step in detail: who makes the move, when, and how long it takes.',
     statYou: 'your moves',
     statYouVal: '6',
     statYouUnit: 'out of 12 steps',
@@ -1719,15 +1716,16 @@ const EN: Copy = {
     ],
     outro: {
       title: 'That’s it.',
-      body: 'If you’re counting, you take 6 moves out of 12 — and most are one minute. The other 6 are me, working, while you do something else. That’s the deal.',
+      body: 'Most of your moves take a minute. Everything else happens while you do something else. That’s the deal.',
       cta: 'Describe your problem →',
     },
   },
 
   vouches: {
     pageTitle: 'Vouches',
+    eyebrow: 'testimonials',
     heading: 'A few words from people who worked with me',
-    lead: 'The portal is quick to try; these vouches help you decide if the contact fits. Marc reads them, may tighten the wording before publishing — and your email never appears here.',
+    lead: 'The portal is quick to try; these vouches help you decide if the contact fits.',
     empty: 'No vouches published yet. Check back in a few weeks.',
     relationshipLabels: {
       client: 'Client',

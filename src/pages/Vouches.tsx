@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
 import { PageMast } from '../components/PageMast'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { DICT, type Lang } from '../i18n'
 import { cssVars } from '../lib/styleVars'
 import { PAGE_FOLIOS } from '../lib/folios'
@@ -56,6 +57,9 @@ export function Vouches({ lang }: { lang: Lang }) {
               feature={PAGE_FEATURE['page.vouches']}
               lang={lang}
             >
+              <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.vouches']}>
+                {t.eyebrow}
+              </SectionEyebrow>
               <h1>{t.heading}</h1>
               <p>{t.lead}</p>
               <p>

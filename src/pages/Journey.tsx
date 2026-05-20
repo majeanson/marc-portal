@@ -4,6 +4,7 @@ import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
 
@@ -60,7 +61,9 @@ export function Journey({ lang }: { lang: Lang }) {
               feature={PAGE_FEATURE['page.journey']}
               lang={lang}
             >
-              <div className="section__eyebrow">{j.eyebrow}</div>
+              <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.journey']}>
+                {j.eyebrow}
+              </SectionEyebrow>
               <h1 className="journey__title">{j.title}</h1>
               <p className="journey__sub">{j.sub}</p>
               {/* Stats + legend sit inside the masthead block as a small

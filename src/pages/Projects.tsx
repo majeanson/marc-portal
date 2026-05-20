@@ -4,6 +4,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { MobileStickyCta } from '../components/MobileStickyCta'
 import { PageMast } from '../components/PageMast'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { ProjectCardPreview } from '../components/ProjectCardPreview'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
@@ -108,7 +109,9 @@ export function Projects({ lang }: { lang: Lang }) {
               feature={PAGE_FEATURE['page.projects']}
               lang={lang}
             >
-              <div className="section__eyebrow">{t.eyebrow}</div>
+              <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.projects']}>
+                {t.eyebrow}
+              </SectionEyebrow>
               <h1 className="projects__title">{t.heading}</h1>
               <p className="projects__intro">{t.intro}</p>
             </PageMast>
@@ -270,7 +273,9 @@ function TierPlaceholders({ lang, langPrefix }: { lang: Lang; langPrefix: string
   return (
     <section className="projects-placeholders" aria-labelledby="projects-placeholders-heading">
       <header className="projects-placeholders__head">
-        <div className="section__eyebrow">{t.placeholderEyebrow}</div>
+        <SectionEyebrow lang={lang} feature={undefined}>
+          {t.placeholderEyebrow}
+        </SectionEyebrow>
         <h2 id="projects-placeholders-heading" className="projects-placeholders__title">
           {t.placeholderHeading}
         </h2>

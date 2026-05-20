@@ -4,6 +4,7 @@ import { DICT } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { listPatterns, localizedPattern } from '../lib/patterns'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
@@ -42,10 +43,11 @@ export function Tier0({ lang }: { lang: Lang }) {
               feature={PAGE_FEATURE['page.tier0']}
               lang={lang}
             >
-              <div className="section__eyebrow">{t.tier0.eyebrow}</div>
+              <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.tier0']}>
+                {t.tier0.eyebrow}
+              </SectionEyebrow>
               <h1>{t.tier0.title}</h1>
               <p>{t.tier0.intro}</p>
-              <p>{t.tier0.principle}</p>
             </PageMast>
 
             <ul className="patterns">

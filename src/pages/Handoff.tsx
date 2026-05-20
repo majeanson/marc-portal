@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PageMast } from '../components/PageMast'
+import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
 
@@ -22,7 +23,7 @@ const COPY = {
     backHome: "← Retour à l'accueil",
     eyebrow: 'comment ça finit',
     title: "Tu n'es jamais pris au piège",
-    lead: "À la fin de chaque engagement, deux modes possibles. Par défaut, je m'en occupe (mode dépositaire, 200 $/an) — c'est ce qui me permet de te livrer sans avoir à t'expliquer DNS, Cloudflare et Resend. Tu peux choisir « Tout à toi » à la place, si tu maîtrises déjà tes outils. Et tu peux changer d'idée n'importe quand, gratuit, en environ une semaine.",
+    lead: "À la livraison, deux modes : je m'en occupe, ou tout à toi. Aucun ne te coince — et tu peux changer d'idée n'importe quand.",
     asOf: 'En vigueur : 2026-05-15.',
 
     modes: {
@@ -137,11 +138,6 @@ const COPY = {
       ],
     },
 
-    switching: {
-      title: "Changer d'avis",
-      body: "Le mode n'est pas un engagement à vie. Si tu es en « Je m'en occupe » et tu veux récupérer les clés, écris-moi — je lance la procédure de transfert dans la journée et c'est fini en environ une semaine. Sans frais. Sans question. L'inverse fonctionne aussi : si tu as les clés et tu veux que je reprenne la garde, on en reparle au tarif annuel.",
-    },
-
     dormancy: {
       title: 'Et si je deviens injoignable?',
       body: "C'est la situation à laquelle « Je m'en occupe » doit résister. Si je ne réponds pas à un courriel dans les 30 jours, une procédure publiée te permet de prendre la pleine propriété toi-même, unilatéralement. La page « Checklist de transfert » contient la procédure exacte (tu peux l'imprimer) — tu n'as rien à demander à personne. C'est la sécurité qui rend ce mode honnête.",
@@ -171,7 +167,7 @@ const COPY = {
 
     cta: {
       title: 'Tu peux décider à la fin',
-      body: "Par défaut tu pars en mode dépositaire (200 $/an) à la livraison. Si tu préfères « Tout à toi » à la place, tu coches une case de compétences techniques (DNS, Cloudflare, D1, Resend, rotation de clés) avant de confirmer — sinon, je m'en occupe.",
+      body: "Le mode se choisit à la livraison, pas maintenant — et il n'est jamais définitif. Décris ton problème ; on verra le reste ensemble.",
       intakeCta: 'Ouvrir le formulaire →',
       pricingCta: 'Voir les prix',
       journeyCta: 'Voir le parcours complet (les 12 étapes) →',
@@ -183,7 +179,7 @@ const COPY = {
     backHome: '← Back home',
     eyebrow: 'how it ends',
     title: 'You are never trapped',
-    lead: 'At the end of every engagement, two possible modes. By default, I handle it (custodian mode, $200/yr) — that\'s what lets me ship without having to teach you DNS, Cloudflare, and Resend. You can opt out for "All yours" instead, if you already own your stack. And you can switch your mind anytime, free, in about a week.',
+    lead: 'At delivery, two modes: I handle it, or all yours. Neither traps you — and you can switch your mind anytime.',
     asOf: 'Effective: 2026-05-15.',
 
     modes: {
@@ -298,11 +294,6 @@ const COPY = {
       ],
     },
 
-    switching: {
-      title: 'Changing your mind',
-      body: "The mode is not a lifetime commitment. If you're on 'I handle it' and want the keys, write to me — I start the transfer that day and it's done in about a week. No fee. No questions. The reverse works too: if you hold the keys and want me to take custody back, we talk it through at the annual rate.",
-    },
-
     dormancy: {
       title: 'What if I become unreachable?',
       body: "This is the scenario 'I handle it' must survive. If I don't reply to an email within 30 days, a published procedure lets you take full ownership yourself, unilaterally. The 'Handoff checklist' page carries the exact procedure (printable) — you don't have to ask anyone. It's the safety mechanism that makes this mode honest.",
@@ -332,7 +323,7 @@ const COPY = {
 
     cta: {
       title: 'You can decide at the end',
-      body: 'By default you go into custodian mode ($200/yr) at delivery. If you\'d rather pick "All yours" instead, you tick a technical-skills checkbox (DNS, Cloudflare, D1, Resend, key rotation) before confirming — otherwise, I handle it.',
+      body: "You pick the mode at delivery, not now — and it's never final. Describe your problem; we'll sort the rest together.",
       intakeCta: 'Open the form →',
       pricingCta: 'See pricing',
       journeyCta: 'See the full journey (all 12 steps) →',
@@ -369,7 +360,9 @@ export function Handoff({ lang }: { lang: Lang }) {
               feature={PAGE_FEATURE['page.handoff']}
               lang={lang}
             >
-              <div className="section__eyebrow">{t.eyebrow}</div>
+              <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.handoff']}>
+                {t.eyebrow}
+              </SectionEyebrow>
               <h1>{t.title}</h1>
               <p className="privacy__intro">{t.lead}</p>
               <p className="mono privacy__asof">{t.asOf}</p>
@@ -442,11 +435,6 @@ export function Handoff({ lang }: { lang: Lang }) {
                   </li>
                 ))}
               </ol>
-            </section>
-
-            <section className="privacy__section handoff__section">
-              <h2>{t.switching.title}</h2>
-              <p>{t.switching.body}</p>
             </section>
 
             <section className="privacy__section handoff__section">
