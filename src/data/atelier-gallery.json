@@ -90,7 +90,7 @@
       "full": "/atelier/full/phone/root.png",
       "thumbW": 510,
       "thumbH": 816,
-      "fullH": 14780,
+      "fullH": 14640,
       "cropped": true
     },
     {
@@ -108,7 +108,7 @@
       "full": "/atelier/full/phone/en.png",
       "thumbW": 510,
       "thumbH": 816,
-      "fullH": 14100,
+      "fullH": 13960,
       "cropped": true
     },
     {
@@ -181,42 +181,6 @@
       "thumbW": 390,
       "thumbH": 624,
       "fullH": 1695,
-      "cropped": true
-    },
-    {
-      "slug": "napkin",
-      "viewport": "phone",
-      "route": "/napkin",
-      "component": "Napkin",
-      "lang": "fr",
-      "variant": null,
-      "label": {
-        "fr": "La napkin",
-        "en": "The napkin sketch"
-      },
-      "thumb": "/atelier/thumbs/phone/napkin.webp",
-      "full": "/atelier/full/phone/napkin.png",
-      "thumbW": 390,
-      "thumbH": 624,
-      "fullH": 1697,
-      "cropped": true
-    },
-    {
-      "slug": "en-napkin",
-      "viewport": "phone",
-      "route": "/en/napkin",
-      "component": "Napkin",
-      "lang": "en",
-      "variant": null,
-      "label": {
-        "fr": "La napkin",
-        "en": "The napkin sketch"
-      },
-      "thumb": "/atelier/thumbs/phone/en-napkin.webp",
-      "full": "/atelier/full/phone/en-napkin.png",
-      "thumbW": 390,
-      "thumbH": 624,
-      "fullH": 1642,
       "cropped": true
     },
     {
@@ -342,7 +306,7 @@
       "full": "/atelier/full/phone/vouches.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1968,
+      "fullH": 1932,
       "cropped": true
     },
     {
@@ -360,7 +324,7 @@
       "full": "/atelier/full/phone/vouches-empty.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1381,
+      "fullH": 1357,
       "cropped": true
     },
     {
@@ -378,7 +342,7 @@
       "full": "/atelier/full/phone/vouches-error.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1464,
+      "fullH": 1432,
       "cropped": true
     },
     {
@@ -396,7 +360,7 @@
       "full": "/atelier/full/phone/en-vouches.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1896,
+      "fullH": 1860,
       "cropped": true
     },
     {
@@ -828,7 +792,7 @@
       "full": "/atelier/full/narrow/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12620,
+      "fullH": 12608,
       "cropped": true
     },
     {
@@ -901,42 +865,6 @@
       "thumbW": 600,
       "thumbH": 764,
       "fullH": 1273,
-      "cropped": false
-    },
-    {
-      "slug": "napkin",
-      "viewport": "narrow",
-      "route": "/napkin",
-      "component": "Napkin",
-      "lang": "fr",
-      "variant": null,
-      "label": {
-        "fr": "La napkin",
-        "en": "The napkin sketch"
-      },
-      "thumb": "/atelier/thumbs/narrow/napkin.webp",
-      "full": "/atelier/full/narrow/napkin.png",
-      "thumbW": 600,
-      "thumbH": 938,
-      "fullH": 1563,
-      "cropped": false
-    },
-    {
-      "slug": "en-napkin",
-      "viewport": "narrow",
-      "route": "/en/napkin",
-      "component": "Napkin",
-      "lang": "en",
-      "variant": null,
-      "label": {
-        "fr": "La napkin",
-        "en": "The napkin sketch"
-      },
-      "thumb": "/atelier/thumbs/narrow/en-napkin.webp",
-      "full": "/atelier/full/narrow/en-napkin.png",
-      "thumbW": 600,
-      "thumbH": 926,
-      "fullH": 1543,
       "cropped": false
     },
     {
@@ -1062,7 +990,7 @@
       "full": "/atelier/full/narrow/vouches.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1711,
+      "fullH": 1728,
       "cropped": true
     },
     {
@@ -1079,8 +1007,8 @@
       "thumb": "/atelier/thumbs/narrow/vouches-empty.webp",
       "full": "/atelier/full/narrow/vouches-empty.png",
       "thumbW": 600,
-      "thumbH": 758,
-      "fullH": 1263,
+      "thumbH": 743,
+      "fullH": 1239,
       "cropped": false
     },
     {
@@ -1097,8 +1025,8 @@
       "thumb": "/atelier/thumbs/narrow/vouches-error.webp",
       "full": "/atelier/full/narrow/vouches-error.png",
       "thumbW": 600,
-      "thumbH": 805,
-      "fullH": 1342,
+      "thumbH": 786,
+      "fullH": 1310,
       "cropped": false
     },
     {
@@ -1116,7 +1044,7 @@
       "full": "/atelier/full/narrow/en-vouches.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1672,
+      "fullH": 1689,
       "cropped": true
     },
     {
@@ -1548,7 +1476,7 @@
       "full": "/atelier/full/wide/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12877,
+      "fullH": 12866,
       "cropped": true
     },
     {
@@ -1621,42 +1549,6 @@
       "thumbW": 600,
       "thumbH": 506,
       "fullH": 1214,
-      "cropped": false
-    },
-    {
-      "slug": "napkin",
-      "viewport": "wide",
-      "route": "/napkin",
-      "component": "Napkin",
-      "lang": "fr",
-      "variant": null,
-      "label": {
-        "fr": "La napkin",
-        "en": "The napkin sketch"
-      },
-      "thumb": "/atelier/thumbs/wide/napkin.webp",
-      "full": "/atelier/full/wide/napkin.png",
-      "thumbW": 600,
-      "thumbH": 626,
-      "fullH": 1503,
-      "cropped": false
-    },
-    {
-      "slug": "en-napkin",
-      "viewport": "wide",
-      "route": "/en/napkin",
-      "component": "Napkin",
-      "lang": "en",
-      "variant": null,
-      "label": {
-        "fr": "La napkin",
-        "en": "The napkin sketch"
-      },
-      "thumb": "/atelier/thumbs/wide/en-napkin.webp",
-      "full": "/atelier/full/wide/en-napkin.png",
-      "thumbW": 600,
-      "thumbH": 618,
-      "fullH": 1484,
       "cropped": false
     },
     {
@@ -1781,8 +1673,8 @@
       "thumb": "/atelier/thumbs/wide/vouches.webp",
       "full": "/atelier/full/wide/vouches.png",
       "thumbW": 600,
-      "thumbH": 688,
-      "fullH": 1652,
+      "thumbH": 695,
+      "fullH": 1668,
       "cropped": false
     },
     {
@@ -1799,8 +1691,8 @@
       "thumb": "/atelier/thumbs/wide/vouches-empty.webp",
       "full": "/atelier/full/wide/vouches-empty.png",
       "thumbW": 600,
-      "thumbH": 501,
-      "fullH": 1203,
+      "thumbH": 491,
+      "fullH": 1179,
       "cropped": false
     },
     {
@@ -1817,8 +1709,8 @@
       "thumb": "/atelier/thumbs/wide/vouches-error.webp",
       "full": "/atelier/full/wide/vouches-error.png",
       "thumbW": 600,
-      "thumbH": 534,
-      "fullH": 1282,
+      "thumbH": 521,
+      "fullH": 1250,
       "cropped": false
     },
     {
@@ -1835,8 +1727,8 @@
       "thumb": "/atelier/thumbs/wide/en-vouches.webp",
       "full": "/atelier/full/wide/en-vouches.png",
       "thumbW": 600,
-      "thumbH": 672,
-      "fullH": 1612,
+      "thumbH": 679,
+      "fullH": 1629,
       "cropped": false
     },
     {
@@ -2268,7 +2160,7 @@
       "full": "/atelier/full/dark/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12877,
+      "fullH": 12866,
       "cropped": true
     },
     {
@@ -2341,42 +2233,6 @@
       "thumbW": 600,
       "thumbH": 506,
       "fullH": 1214,
-      "cropped": false
-    },
-    {
-      "slug": "napkin",
-      "viewport": "dark",
-      "route": "/napkin",
-      "component": "Napkin",
-      "lang": "fr",
-      "variant": null,
-      "label": {
-        "fr": "La napkin",
-        "en": "The napkin sketch"
-      },
-      "thumb": "/atelier/thumbs/dark/napkin.webp",
-      "full": "/atelier/full/dark/napkin.png",
-      "thumbW": 600,
-      "thumbH": 626,
-      "fullH": 1503,
-      "cropped": false
-    },
-    {
-      "slug": "en-napkin",
-      "viewport": "dark",
-      "route": "/en/napkin",
-      "component": "Napkin",
-      "lang": "en",
-      "variant": null,
-      "label": {
-        "fr": "La napkin",
-        "en": "The napkin sketch"
-      },
-      "thumb": "/atelier/thumbs/dark/en-napkin.webp",
-      "full": "/atelier/full/dark/en-napkin.png",
-      "thumbW": 600,
-      "thumbH": 618,
-      "fullH": 1484,
       "cropped": false
     },
     {
@@ -2465,8 +2321,8 @@
       "thumb": "/atelier/thumbs/dark/vouches.webp",
       "full": "/atelier/full/dark/vouches.png",
       "thumbW": 600,
-      "thumbH": 688,
-      "fullH": 1652,
+      "thumbH": 695,
+      "fullH": 1668,
       "cropped": false
     },
     {
@@ -2483,8 +2339,8 @@
       "thumb": "/atelier/thumbs/dark/en-vouches.webp",
       "full": "/atelier/full/dark/en-vouches.png",
       "thumbW": 600,
-      "thumbH": 672,
-      "fullH": 1612,
+      "thumbH": 679,
+      "fullH": 1629,
       "cropped": false
     },
     {
@@ -2848,5 +2704,5 @@
       "cropped": true
     }
   ],
-  "count": 156
+  "count": 148
 }

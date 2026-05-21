@@ -15,7 +15,7 @@
  *     Map below — the "issues" of the magazine.
  *   - **Functional flows** do NOT get folios. These are forms and
  *     account-state surfaces (Intake, Login, MagicLinkSent, MePortal,
- *     SessionPage, PublicAdvancements, Vouch form, Engagement, Napkin).
+ *     SessionPage, PublicAdvancements, Vouch form, Engagement).
  *     A folio on a form would feel like flair on a tax return.
  *   - **Admin surfaces** never get folios — they're operator tools, not
  *     publication content.

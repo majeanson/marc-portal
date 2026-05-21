@@ -60,15 +60,6 @@ const PAGE_PATCHES = [
     group: 'group.feat-intake',
   },
   {
-    id: 'page.napkin',
-    label: bi('Napperon', 'Napkin'),
-    desc: bi(
-      'Tableau Excalidraw partagé — pour griffonner une idée avant l’intake.',
-      'Shared Excalidraw whiteboard — to sketch an idea before the intake.',
-    ),
-    group: 'group.feat-intake',
-  },
-  {
     id: 'page.journey',
     label: bi('Le parcours', 'The journey'),
     desc: bi(
@@ -419,7 +410,7 @@ const GROUPS: MapGroup[] = [
     layer: 'pages',
     visibility: 'public',
     order: 0,
-    nodeIds: ['page.root-by-template', 'page.intake', 'page.napkin', 'page.journey'],
+    nodeIds: ['page.root-by-template', 'page.intake', 'page.journey'],
   },
   {
     id: 'group.feat-conversation',

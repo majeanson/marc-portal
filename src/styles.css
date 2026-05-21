@@ -10446,29 +10446,12 @@ button.intake__progress-step:disabled {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   NAPKIN — /napkin whiteboard intake. Excalidraw renders inside
-   .napkin__canvas-wrap; we tame its chrome with --color-* tokens that match
-   the atelier palette so it doesn't look like a stray app embedded in the
-   page.
+   NAPKIN — the Excalidraw sketch surface. Once a standalone /napkin page,
+   now folded into the intake form as the collapsible .intake__sketch panel
+   below. Excalidraw renders inside .napkin__canvas-wrap; we tame its chrome
+   with --color-* tokens that match the atelier palette so it doesn't look
+   like a stray app embedded in the page.
    ────────────────────────────────────────────────────────────────────── */
-.napkin {
-  padding-top: 56px;
-  padding-bottom: 80px;
-}
-.napkin__title {
-  font-family: var(--display);
-  font-size: clamp(32px, 5vw, 48px);
-  letter-spacing: -0.015em;
-  margin: 8px 0 12px;
-  color: var(--text);
-  text-wrap: balance;
-}
-.napkin__sub {
-  color: var(--text-mid);
-  font-size: 17px;
-  max-width: 56ch;
-  margin: 0 0 28px;
-}
 .napkin__canvas-wrap {
   position: relative;
   height: clamp(360px, 60vh, 620px);
@@ -10523,38 +10506,71 @@ button.intake__progress-step:disabled {
   outline: 2px solid var(--accent-soft);
   outline-offset: 0;
 }
-.napkin__err {
-  color: var(--warm);
-  font-size: 13px;
-  margin: 0 0 12px;
-}
-.napkin__submit {
-  appearance: none;
-  background: var(--accent-warm);
-  color: #fffaf0;
-  border: 0;
-  border-radius: 999px;
-  padding: 14px 28px;
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  transition:
-    background 160ms ease,
-    transform 160ms ease;
-}
-.napkin__submit:hover:not(:disabled),
-.napkin__submit:focus-visible:not(:disabled) {
-  background: var(--accent);
-  transform: translateY(-1px);
-  outline: none;
-}
-.napkin__submit:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
 :root[data-theme='night'] .napkin__canvas-wrap {
   background: #f3ecd9;
+}
+
+/* Inline sketch — the collapsible Excalidraw panel inside the intake form
+   step. Collapsed, it's a single quiet "sketch it" affordance; open, it
+   reuses the .napkin__* canvas + caption styles above. */
+.intake__sketch {
+  margin: 20px 0 4px;
+}
+.intake__sketch-toggle {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.intake__sketch-toggle:hover,
+.intake__sketch-toggle:focus-visible {
+  color: var(--accent-warm);
+}
+.intake__sketch-panel {
+  margin-top: 8px;
+}
+.intake__sketch-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.intake__sketch-title {
+  font-family: var(--display);
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--text);
+}
+.intake__sketch-actions {
+  display: flex;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.intake__sketch-link {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+.intake__sketch-link:hover,
+.intake__sketch-link:focus-visible {
+  color: var(--text);
+}
+.intake__sketch-link--remove:hover,
+.intake__sketch-link--remove:focus-visible {
+  color: var(--warm);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

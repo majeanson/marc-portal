@@ -29,20 +29,6 @@
       "inAdminShell": false
     },
     {
-      "path": "/napkin",
-      "component": "Napkin",
-      "lang": "fr",
-      "dynamic": false,
-      "inAdminShell": false
-    },
-    {
-      "path": "/en/napkin",
-      "component": "Napkin",
-      "lang": "en",
-      "dynamic": false,
-      "inAdminShell": false
-    },
-    {
       "path": "/tier-0",
       "component": "Tier0",
       "lang": "fr",

@@ -134,7 +134,6 @@ export const PAGE_FEATURE: Partial<Record<string, FeatureId>> = {
   // Intake
   'page.root-by-template': 'intake',
   'page.intake': 'intake',
-  'page.napkin': 'intake',
   'page.journey': 'intake',
   // Conversation
   'page.login': 'conversation',

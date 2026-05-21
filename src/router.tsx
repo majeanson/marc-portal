@@ -4,7 +4,13 @@
 // router config anyway (it'd recreate the router and lose route state).
 /* eslint-disable react-refresh/only-export-components */
 import { Suspense, lazy, type ReactNode } from 'react'
-import { Outlet, Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
+import {
+  Navigate,
+  Outlet,
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+} from 'react-router-dom'
 
 // Hot-path pages — keep eager so the home/intake/login critical path stays
 // fast and FCP-friendly.
@@ -60,7 +66,6 @@ const PublicAdvancements = lazy(() =>
   import('./pages/PublicAdvancements').then((m) => ({ default: m.PublicAdvancements })),
 )
 const Projects = lazy(() => import('./pages/Projects').then((m) => ({ default: m.Projects })))
-const Napkin = lazy(() => import('./pages/Napkin').then((m) => ({ default: m.Napkin })))
 const Journey = lazy(() => import('./pages/Journey').then((m) => ({ default: m.Journey })))
 const Vouches = lazy(() => import('./pages/Vouches').then((m) => ({ default: m.Vouches })))
 const Vouch = lazy(() => import('./pages/Vouch').then((m) => ({ default: m.Vouch })))
@@ -106,22 +111,11 @@ export const router = createBrowserRouter(
       <Route path="/en" element={<RootByTemplate lang="en" />} />
       <Route path="/intake" element={<Intake lang="fr" />} />
       <Route path="/en/intake" element={<Intake lang="en" />} />
-      <Route
-        path="/napkin"
-        element={
-          <L>
-            <Napkin lang="fr" />
-          </L>
-        }
-      />
-      <Route
-        path="/en/napkin"
-        element={
-          <L>
-            <Napkin lang="en" />
-          </L>
-        }
-      />
+      {/* /napkin folded into the intake form (the sketch is now an inline
+          step inside /intake). The old route stays as a redirect so existing
+          links, the home teaser and indexed URLs don't 404. */}
+      <Route path="/napkin" element={<Navigate to="/intake" replace />} />
+      <Route path="/en/napkin" element={<Navigate to="/en/intake" replace />} />
       <Route
         path="/tier-0"
         element={

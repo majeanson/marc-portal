@@ -60,7 +60,6 @@ const ROUTE_LABELS = {
   RootByTemplate: { fr: 'La page d’accueil', en: 'The home page' },
   Tier0: { fr: 'Tier 0 — le premier échange', en: 'Tier 0 — the first chat' },
   Intake: { fr: 'Le formulaire d’intake', en: 'The intake form' },
-  Napkin: { fr: 'La napkin', en: 'The napkin sketch' },
   Journey: { fr: 'Le parcours', en: 'The journey' },
   Projects: { fr: 'La galerie de projets', en: 'The projects gallery' },
   Vouches: { fr: 'Les témoignages', en: 'The testimonials' },

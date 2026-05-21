@@ -27,8 +27,6 @@ const urls = [
   urlEntry('/en/projects'),
   urlEntry('/intake'),
   urlEntry('/en/intake'),
-  urlEntry('/napkin'),
-  urlEntry('/en/napkin'),
   urlEntry('/parcours'),
   urlEntry('/en/journey'),
   urlEntry('/tier-0'),

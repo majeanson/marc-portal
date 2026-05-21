@@ -29,9 +29,9 @@ test.describe('accessibility', () => {
     test(route.name, async ({ page }) => {
       await page.goto(route.path, { waitUntil: 'networkidle' })
       const { violations } = await new AxeBuilder({ page })
-        // Excalidraw (the /napkin sketch widget) is a vendored third-party
-        // component — its internal toolbar buttons are its own a11y concern,
-        // not ours. Audit our markup, not theirs.
+        // Excalidraw (the inline sketch widget on the intake form) is a
+        // vendored third-party component — its internal toolbar buttons are
+        // its own a11y concern, not ours. Audit our markup, not theirs.
         .exclude('.excalidraw')
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
         .analyze()

@@ -1,7 +1,17 @@
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
 import { getSchemaForType, localized } from '../../lib/intakeSchemas'
 import type { FieldDef, ProblemType } from '../../lib/intakeSchemas'
+import { exportApiToPng } from '../../lib/napkin'
+import type { ExcalidrawAPI, NapkinSketch } from '../../lib/napkin'
+
+// Excalidraw is heavy — keep <SketchCanvas> (and the ~600 KB chunk it pulls)
+// behind React.lazy so word-first visitors who never open the sketch panel
+// don't download it.
+const SketchCanvas = lazy(() =>
+  import('../SketchCanvas').then((m) => ({ default: m.SketchCanvas })),
+)
 
 export type FormData = Record<string, string>
 
@@ -31,6 +41,8 @@ export function TypeForm({
   onContinue,
   submitting = false,
   submitError = null,
+  sketch = null,
+  onSketchChange,
 }: {
   lang: Lang
   type: ProblemType
@@ -40,15 +52,99 @@ export function TypeForm({
   onContinue: () => void
   submitting?: boolean
   submitError?: string | null
+  /** The visitor's attached sketch, carried in the intake draft. */
+  sketch?: NapkinSketch | null
+  /** Persist (or clear, with null) the sketch into the draft. When omitted,
+   *  the inline sketch panel is not rendered at all. */
+  onSketchChange?: (sketch: NapkinSketch | null) => void
 }) {
   const t = DICT[lang].intake.form
   const tConf = DICT[lang].intake.confirmation
+  const tNapkin = DICT[lang].napkin
   const schema = getSchemaForType(type)
   const handoffMode = (values[HANDOFF_MODE_KEY] as HandoffMode) || HANDOFF_DEFAULT
   const handoffHref = lang === 'fr' ? '/handoff' : '/en/handoff'
 
   const setField = (id: string, value: string) => {
     onChange({ ...values, [id]: value })
+  }
+
+  // ── Inline sketch ──────────────────────────────────────────────────────
+  // A collapsible Excalidraw surface. The drawing + caption ride in the
+  // intake draft (draft.sketch), autosaved with the rest of the form.
+  // Excalidraw only mounts while the panel is open.
+  const hasSketch = !!sketch && (sketch.scene.elements.length > 0 || sketch.text.trim().length > 0)
+  const [sketchOpen, setSketchOpen] = useState(hasSketch)
+  const apiRef = useRef<ExcalidrawAPI | null>(null)
+  const captureTimer = useRef<number | null>(null)
+  // Latest sketch mirrored into a ref so the debounced drawing capture (which
+  // fires up to 500 ms after a render) merges against current state — e.g. a
+  // caption typed after the last pen stroke — instead of a stale closure.
+  const sketchRef = useRef<NapkinSketch | null>(sketch)
+  useEffect(() => {
+    sketchRef.current = sketch
+  }, [sketch])
+
+  const emitSketch = (next: NapkinSketch) => {
+    // An empty drawing with no caption is "no sketch" — store null so the
+    // intake payload stays clean.
+    onSketchChange?.(next.scene.elements.length === 0 && !next.text.trim() ? null : next)
+  }
+
+  const captureDrawing = async () => {
+    const api = apiRef.current
+    if (!api) return
+    const elements = [...api.getSceneElements()]
+    const prev = sketchRef.current
+    let png = prev?.png ?? ''
+    if (elements.length > 0) {
+      try {
+        png = await exportApiToPng(api)
+      } catch {
+        // Export hiccup — keep the prior PNG; the scene is still saved.
+      }
+    } else {
+      png = ''
+    }
+    emitSketch({
+      scene: { elements },
+      png,
+      text: prev?.text ?? '',
+      savedAt: new Date().toISOString(),
+    })
+  }
+
+  const scheduleCapture = () => {
+    if (captureTimer.current) window.clearTimeout(captureTimer.current)
+    captureTimer.current = window.setTimeout(() => {
+      void captureDrawing()
+    }, 500)
+  }
+
+  const setCaption = (text: string) => {
+    const prev = sketchRef.current
+    emitSketch({
+      scene: prev?.scene ?? { elements: [] },
+      png: prev?.png ?? '',
+      text,
+      savedAt: new Date().toISOString(),
+    })
+  }
+
+  const toggleSketch = () => {
+    if (sketchOpen && captureTimer.current) {
+      // Closing — drop the pending capture and the now-stale API handle.
+      window.clearTimeout(captureTimer.current)
+      apiRef.current = null
+    }
+    setSketchOpen((open) => !open)
+  }
+
+  const removeSketch = () => {
+    if (captureTimer.current) window.clearTimeout(captureTimer.current)
+    apiRef.current = null
+    setSketchOpen(false)
+    onSketchChange?.(null)
   }
 
   const allRequiredFilled = schema.fields.every(
@@ -115,6 +211,63 @@ export function TypeForm({
           </div>
         </fieldset>
       </div>
+
+      {onSketchChange && (
+        <div className="intake__sketch">
+          {!sketchOpen ? (
+            <button type="button" className="intake__sketch-toggle mono" onClick={toggleSketch}>
+              {hasSketch ? tNapkin.formReopen : tNapkin.formTeaser}
+            </button>
+          ) : (
+            <div className="intake__sketch-panel">
+              <div className="intake__sketch-head">
+                <h3 className="intake__sketch-title">{tNapkin.title}</h3>
+                <div className="intake__sketch-actions mono">
+                  <button type="button" className="intake__sketch-link" onClick={toggleSketch}>
+                    {tNapkin.formHide}
+                  </button>
+                  {hasSketch && (
+                    <button
+                      type="button"
+                      className="intake__sketch-link intake__sketch-link--remove"
+                      onClick={removeSketch}
+                    >
+                      {tNapkin.formRemove}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <Suspense
+                fallback={
+                  <div className="napkin__canvas-wrap">
+                    <div className="napkin__loading mono">{tNapkin.loadingCanvas}</div>
+                  </div>
+                }
+              >
+                <SketchCanvas
+                  initialScene={sketch?.scene ?? null}
+                  loadingLabel={tNapkin.loadingCanvas}
+                  onApiReady={(api) => {
+                    apiRef.current = api
+                  }}
+                  onChange={scheduleCapture}
+                />
+              </Suspense>
+              <p className="napkin__instruction">{tNapkin.instruction}</p>
+              <label className="napkin__desc">
+                <span className="napkin__desc-label">{tNapkin.descLabel}</span>
+                <textarea
+                  value={sketch?.text ?? ''}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder={tNapkin.descPlaceholder}
+                  rows={2}
+                  className="napkin__desc-input"
+                />
+              </label>
+            </div>
+          )}
+        </div>
+      )}
 
       {submitError && (
         <p className="form__error" role="alert">
