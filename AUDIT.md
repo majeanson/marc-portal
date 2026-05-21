@@ -68,6 +68,9 @@
   (P3.5) refuses oversized napkins at the server boundary. Re-open when
   napkin volume actually hurts query times, OR when we touch session POST
   for another reason and can fold this in cleanly.
+  - 2026-05-21 — mildly more pressing: the napkin fold into the intake form
+    means the *editable scene JSON* now rides in `intake_json` alongside the
+    PNG, so payloads grew. The P3.5 cap still holds the line meanwhile.
 
 ### Iframe sandbox
 - ⏭ **P1.9** — Drop `allow-same-origin` from iframe sandboxes. **Deferred with
@@ -178,8 +181,9 @@
   build-time placeholder + Functions runtime substitution; Excalidraw injects
   inline styles into the document at runtime which would still need an
   `'unsafe-inline'` exception, defeating the point. Worth revisiting once
-  Excalidraw is moved off `/napkin` (or replaced) and Google Fonts is
-  self-hosted (P2.7-ish work).
+  Excalidraw is dropped or replaced (as of 2026-05-21 it's an inline panel
+  in the intake form rather than its own page — still injecting inline
+  styles) and Google Fonts is self-hosted (P2.7-ish work).
 - ✅ **P2.21** — `public/robots.txt` now disallows `/admin/`, `/en/admin/`,
   `/api/`, `/me`, `/en/me`, `/session/`, `/en/session/`, `/login`, `/en/login`.
   Anything that requires auth or shows per-user content is now off the crawl
@@ -220,6 +224,11 @@
   `marc-portal:napkin-scene` every 800ms when shapes exist; restored via
   `updateScene` once the dynamic Excalidraw chunk's API is wired. Cleared
   on successful submit so a fresh visit starts clean.
+  - 2026-05-21 — superseded by the napkin fold into the intake form. The
+    scene no longer has its own `marc-portal:napkin-scene` key; it lives in
+    the intake draft (`draft.sketch`), debounced ~500ms and autosaved with
+    the rest of the form. The editable scene ships in the payload and is
+    re-openable on the session view.
 - ✅ **P3.5** — Server-side cap on intake payload (1 MB) in `POST /api/sessions`.
   Refuses oversized data-URL napkins with 400. Less critical once P1.8 lands
   but defends against misbehaving clients in the meantime.
@@ -378,6 +387,14 @@
   revoke), P2.3–2.5 (data model premature), P3.11–3.15 (test infra heavy
   for current value). Each item now has a clear "reopen when X" trigger
   so future-me knows what to watch for.
+- 2026-05-21 — Napkin folded into the intake form. The standalone `/napkin`
+  page is gone (now a redirect to the intake); the Excalidraw sketch is a
+  collapsible panel in the intake's form step. The editable scene travels
+  with the intake draft and ships in `intake_json`, and the session view can
+  re-open it interactively (read-only canvas) instead of only showing the
+  flat PNG. Touches P3.4 (autosave moved into the draft) and P1.8 (scene
+  JSON now rides alongside the PNG). Typecheck + lint + build clean; e2e
+  visual baselines regenerated on the CI runner.
 
 ## Session totals (2026-05-15)
 

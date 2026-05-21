@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DICT, type Lang } from '../i18n'
 import { Header } from '../components/Header'
@@ -41,11 +41,21 @@ import {
   uploadAttachment,
   type AttachmentRow,
 } from '../lib/attachmentsApi'
+import type { NapkinScene } from '../lib/napkin'
+
+// Excalidraw is heavy (~600 KB). Keep <SketchCanvas> behind React.lazy so the
+// session view only pays for it when Marc opens a sketch's interactive scene.
+const SketchCanvas = lazy(() =>
+  import('../components/SketchCanvas').then((m) => ({ default: m.SketchCanvas })),
+)
 
 interface ParsedNapkin {
   png: string
   text: string
   savedAt: string
+  /** Editable Excalidraw scene, present on intakes submitted after the napkin
+   * was folded into the form. Older sessions only have the flat PNG. */
+  scene?: NapkinScene
 }
 
 interface ParsedIntake {
@@ -55,9 +65,8 @@ interface ParsedIntake {
   submittedAt: string
   waitlist?: boolean
   lang?: Lang
-  /** Optional Excalidraw sketch attached at intake time via /napkin. PNG is
-   * stored inline as a data URL — small enough for typical drawings; the
-   * SessionPage just renders it. */
+  /** Optional Excalidraw sketch attached on the intake form. The PNG renders
+   * at a glance; the editable scene (newer intakes) can be opened interactively. */
   napkin?: ParsedNapkin
 }
 
@@ -81,10 +90,19 @@ function tryParseIntake(raw: string | null): ParsedIntake | null {
         typeof (n as ParsedNapkin).png === 'string' &&
         typeof (n as ParsedNapkin).text === 'string'
       ) {
+        // The editable scene only rides on intakes submitted after the napkin
+        // was folded into the form; guard its shape so older PNG-only sessions
+        // (and any malformed payload) still parse.
+        const sc = (n as { scene?: unknown }).scene
+        const scene =
+          sc && typeof sc === 'object' && Array.isArray((sc as NapkinScene).elements)
+            ? { elements: (sc as NapkinScene).elements }
+            : undefined
         napkin = {
           png: (n as ParsedNapkin).png,
           text: (n as ParsedNapkin).text,
           savedAt: (n as ParsedNapkin).savedAt ?? '',
+          scene,
         }
       }
       return {
@@ -1250,32 +1268,62 @@ function AttachmentTile({
 /**
  * Renders the visitor's napkin sketch (if attached at intake time) inside the
  * SessionPage intake panel. The PNG sits at full width — Marc reviews it the
- * same way he'd read the prose. Click "Open PNG" to view full-size in a new
- * tab; right-click → "Save image as…" to download.
+ * same way he'd read the prose. Click "View sketch" to open the PNG full-size
+ * in a new tab; right-click → "Save image as…" to download.
+ *
+ * Intakes submitted after the napkin was folded into the form also carry the
+ * editable Excalidraw scene — "Open the interactive sketch" swaps the flat PNG
+ * for a pan/zoomable canvas, so the sketch stays the living object it was when
+ * drawn. The ~600 KB Excalidraw chunk only loads when that's clicked.
  */
 function NapkinSection({ lang, napkin }: { lang: Lang; napkin: ParsedNapkin }) {
   const t = DICT[lang].napkin
+  const hasScene = !!napkin.scene && napkin.scene.elements.length > 0
+  const [sceneOpen, setSceneOpen] = useState(false)
   return (
     <div className="session-napkin">
       <div className="session-napkin__head">
         <span className="section__eyebrow">{t.eyebrow}</span>
-        <a
-          className="mono session-napkin__open"
-          href={napkin.png}
-          target="_blank"
-          rel="noreferrer"
-          download={`napkin-${napkin.savedAt.slice(0, 10) || 'sketch'}.png`}
-        >
-          {t.pillView} ↗
-        </a>
+        <div className="session-napkin__actions">
+          {hasScene && (
+            <button
+              type="button"
+              className="mono session-napkin__toggle"
+              onClick={() => setSceneOpen((open) => !open)}
+            >
+              {sceneOpen ? t.sceneHide : t.sceneOpen}
+            </button>
+          )}
+          <a
+            className="mono session-napkin__open"
+            href={napkin.png}
+            target="_blank"
+            rel="noreferrer"
+            download={`napkin-${napkin.savedAt.slice(0, 10) || 'sketch'}.png`}
+          >
+            {t.pillView} ↗
+          </a>
+        </div>
       </div>
       {napkin.text && <p className="session-napkin__caption">{napkin.text}</p>}
       <div className="session-napkin__frame">
-        <img
-          src={napkin.png}
-          alt={napkin.text || 'Napkin sketch'}
-          className="session-napkin__img"
-        />
+        {sceneOpen && napkin.scene ? (
+          <Suspense
+            fallback={
+              <div className="napkin__canvas-wrap">
+                <div className="napkin__loading mono">{t.loadingCanvas}</div>
+              </div>
+            }
+          >
+            <SketchCanvas readOnly initialScene={napkin.scene} loadingLabel={t.loadingCanvas} />
+          </Suspense>
+        ) : (
+          <img
+            src={napkin.png}
+            alt={napkin.text || 'Napkin sketch'}
+            className="session-napkin__img"
+          />
+        )}
       </div>
     </div>
   )

@@ -301,6 +301,8 @@ const FR = {
     formHide: 'Masquer le croquis',
     formRemove: 'Retirer le croquis',
     pillView: 'Voir le dessin',
+    sceneOpen: 'Ouvrir le croquis interactif →',
+    sceneHide: 'Masquer le croquis interactif',
   },
 
   projectsFilter: {
@@ -1177,6 +1179,8 @@ const EN: Copy = {
     formHide: 'Hide the sketch',
     formRemove: 'Remove the sketch',
     pillView: 'View sketch',
+    sceneOpen: 'Open the interactive sketch →',
+    sceneHide: 'Hide the interactive sketch',
   },
 
   projectsFilter: {
