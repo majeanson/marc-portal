@@ -1,4 +1,4 @@
-import { Suspense, lazy, useRef } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import type { ExcalidrawAPI, NapkinScene } from '../lib/napkin'
 
 // Excalidraw is heavy (~600 KB before assets). Lazy-import the named export so
@@ -28,10 +28,14 @@ export interface SketchCanvasProps {
 
 /**
  * Shared Excalidraw wrapper. Owns the lazy import, the brand canvas styling
- * (warm paper background, dark ink), and the race-safe hydration of a saved
- * scene — done via `updateScene()` inside the `excalidrawAPI` callback rather
- * than `initialData.elements`, so it works regardless of when the dynamic
- * Excalidraw chunk resolves.
+ * (warm paper background, dark ink), and hydration of a saved scene.
+ *
+ * Hydration goes through `initialData`, not a post-mount `updateScene()`: an
+ * `updateScene` called synchronously inside the `excalidrawAPI` callback fires
+ * before Excalidraw's first paint and is silently dropped, so the saved
+ * drawing never appears. `initialData` is read on mount; `scrollToContent`
+ * then fits the camera to it, so a hydrated sketch both renders and lands in
+ * view (otherwise it can sit entirely off-screen at the origin).
  */
 export function SketchCanvas({
   initialScene,
@@ -40,34 +44,26 @@ export function SketchCanvas({
   onApiReady,
   onChange,
 }: SketchCanvasProps) {
-  // Snapshot the initial scene once — later prop changes shouldn't re-hydrate
-  // and stomp the visitor's in-progress edits.
-  const initialSceneRef = useRef<NapkinScene | null>(initialScene ?? null)
+  // Snapshot the initial elements once — later prop changes shouldn't
+  // re-hydrate and stomp the visitor's in-progress edits (or a replay in
+  // flight). Excalidraw reads `initialData` only on mount, so a state
+  // snapshot is both render-safe and the right lifetime.
+  const [initialElements] = useState(() => initialScene?.elements ?? undefined)
 
   return (
     <div className="napkin__canvas-wrap">
       <Suspense fallback={<div className="napkin__loading mono">{loadingLabel}</div>}>
         <Excalidraw
-          excalidrawAPI={(api) => {
-            const typed = api as unknown as ExcalidrawAPI
-            const saved = initialSceneRef.current
-            if (saved && saved.elements.length > 0) {
-              try {
-                typed.updateScene({ elements: saved.elements })
-              } catch {
-                // Stale or shape-mismatched scene — ignore so the canvas
-                // still opens blank instead of throwing.
-              }
-            }
-            onApiReady?.(typed)
-          }}
+          excalidrawAPI={(api) => onApiReady?.(api as unknown as ExcalidrawAPI)}
           viewModeEnabled={readOnly}
           onChange={onChange ? () => onChange() : undefined}
           initialData={{
+            elements: initialElements as never,
             appState: {
               viewBackgroundColor: '#fbf7ec',
               currentItemStrokeColor: '#1f1d18',
             },
+            scrollToContent: true,
           }}
           UIOptions={{
             canvasActions: {

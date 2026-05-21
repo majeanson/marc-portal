@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DICT, type Lang } from '../i18n'
 import { Header } from '../components/Header'
@@ -42,12 +42,7 @@ import {
   type AttachmentRow,
 } from '../lib/attachmentsApi'
 import type { NapkinScene } from '../lib/napkin'
-
-// Excalidraw is heavy (~600 KB). Keep <SketchCanvas> behind React.lazy so the
-// session view only pays for it when Marc opens a sketch's interactive scene.
-const SketchCanvas = lazy(() =>
-  import('../components/SketchCanvas').then((m) => ({ default: m.SketchCanvas })),
-)
+import { NapkinReplay } from '../components/NapkinReplay'
 
 interface ParsedNapkin {
   png: string
@@ -1273,8 +1268,8 @@ function AttachmentTile({
  *
  * Intakes submitted after the napkin was folded into the form also carry the
  * editable Excalidraw scene — "Open the interactive sketch" swaps the flat PNG
- * for a pan/zoomable canvas, so the sketch stays the living object it was when
- * drawn. The ~600 KB Excalidraw chunk only loads when that's clicked.
+ * for a pan/zoomable canvas (<NapkinReplay>) that can also play the drawing
+ * back stroke by stroke. The ~600 KB Excalidraw chunk only loads on that click.
  */
 function NapkinSection({ lang, napkin }: { lang: Lang; napkin: ParsedNapkin }) {
   const t = DICT[lang].napkin
@@ -1308,15 +1303,7 @@ function NapkinSection({ lang, napkin }: { lang: Lang; napkin: ParsedNapkin }) {
       {napkin.text && <p className="session-napkin__caption">{napkin.text}</p>}
       <div className="session-napkin__frame">
         {sceneOpen && napkin.scene ? (
-          <Suspense
-            fallback={
-              <div className="napkin__canvas-wrap">
-                <div className="napkin__loading mono">{t.loadingCanvas}</div>
-              </div>
-            }
-          >
-            <SketchCanvas readOnly initialScene={napkin.scene} loadingLabel={t.loadingCanvas} />
-          </Suspense>
+          <NapkinReplay lang={lang} scene={napkin.scene} />
         ) : (
           <img
             src={napkin.png}

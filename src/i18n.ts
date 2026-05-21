@@ -303,6 +303,8 @@ const FR = {
     pillView: 'Voir le dessin',
     sceneOpen: 'Ouvrir le croquis interactif →',
     sceneHide: 'Masquer le croquis interactif',
+    replayPlay: 'Rejouer le tracé ▶',
+    replayDrawing: 'Tracé en cours…',
   },
 
   projectsFilter: {
@@ -1181,6 +1183,8 @@ const EN: Copy = {
     pillView: 'View sketch',
     sceneOpen: 'Open the interactive sketch →',
     sceneHide: 'Hide the interactive sketch',
+    replayPlay: 'Replay the sketch ▶',
+    replayDrawing: 'Drawing…',
   },
 
   projectsFilter: {
