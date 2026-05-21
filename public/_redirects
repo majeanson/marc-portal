@@ -1,7 +1,10 @@
-# SPA fallback. Cloudflare Pages serves an existing file before applying a
-# rule, so `/` → dist/index.html and `/en` → dist/en/index.html (both
-# prerendered homepages, see scripts/prerender.mjs) are served directly.
-# Only non-file routes hit this rule and fall back to app.html — the clean
-# Vite shell with an empty #root, so deep-route direct loads boot the SPA
-# without flashing prerendered homepage content.
-/*    /app.html   200
+# SPA fallback — every non-file route serves index.html so the client
+# router resolves it. index.html is prerendered (scripts/prerender.mjs):
+# `/` gets a fast static paint; `/en` has its own prerendered
+# en/index.html. Deep routes briefly show the prerendered homepage before
+# the router corrects — see PLAN_PRERENDER.md for the clean-shell follow-up.
+#
+# NOTE: the fallback target MUST be /index.html. Cloudflare Pages rewrites
+# a `200` rule that points at any other `.html` asset (e.g. /app.html) into
+# a `308` to the extension-stripped URL (/app), which loops the whole site.
+/*    /index.html   200
