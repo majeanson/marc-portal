@@ -18,11 +18,14 @@ function sameIds(a: Set<string>, b: Set<string>): boolean {
 }
 
 /** Folio glyph for a given rail item id. The rail is the magazine's
- *  table-of-contents, so it lists EVERY folio'd home section (II–IX) and
- *  mirrors the masthead's Roman numeral, so a glance at the rail shows the
- *  same issue mark the section header carries. The final CTA doesn't have
- *  a section folio — it gets a destination arrow instead. */
+ *  table-of-contents, so it lists the hero cover (I), EVERY folio'd home
+ *  section (II–IX) and mirrors the masthead's Roman numeral, so a glance at
+ *  the rail shows the same issue mark the section header carries. The hero
+ *  cover gets "I" (it carries the "№ 01" cover folio, not a HOME_FOLIOS
+ *  entry); the final CTA has no section folio — it gets a destination
+ *  arrow instead. */
 const RAIL_FOLIO: Record<string, string> = {
+  hero: 'I',
   featured: HOME_FOLIOS.featured,
   how: HOME_FOLIOS.how,
   vibe: HOME_FOLIOS.vibe,
@@ -34,11 +37,12 @@ const RAIL_FOLIO: Record<string, string> = {
   cta: '→',
 }
 
-/** Rail items in render order — every folio'd section (II–IX) plus the
- *  final CTA. Order MUST stay a prefix-then-CTA of HOME_SECTION_ORDER;
- *  guarded in features.test.ts. */
+/** Rail items in render order — the hero cover (I), every folio'd section
+ *  (II–IX) and the final CTA. Order MUST stay hero-then-HOME_SECTION_ORDER
+ *  -then-CTA; guarded in features.test.ts. */
 const ITEMS: Record<Lang, RailItem[]> = {
   fr: [
+    { id: 'hero', label: 'Accueil' },
     { id: 'featured', label: 'Projets' },
     { id: 'how', label: 'Comment ça marche' },
     { id: 'vibe', label: 'Je fais / Je fais pas' },
@@ -50,6 +54,7 @@ const ITEMS: Record<Lang, RailItem[]> = {
     { id: 'cta', label: 'Décris ton problème' },
   ],
   en: [
+    { id: 'hero', label: 'Home' },
     { id: 'featured', label: 'Projects' },
     { id: 'how', label: 'How it works' },
     { id: 'vibe', label: 'What I do / don’t' },
@@ -213,8 +218,18 @@ export function SectionRail({ lang }: { lang: Lang }) {
               {/* Dot lives next to the rail link (not inside it) so a
                   visitor can either jump to the anchor (the link) OR
                   jump to the /carte cluster (the dot). Two destinations,
-                  two targets — no accidental click-stealing. */}
-              <FeatureDot feature={feature} lang={lang} size="sm" className="section-rail__dot" />
+                  two targets — no accidental click-stealing.
+
+                  The dot is hidden by CSS unless the row is active (or
+                  hovered) — at rest the rail is a clean numeral index,
+                  and `is-active` is what unhides the current section's
+                  feature dot. */}
+              <FeatureDot
+                feature={feature}
+                lang={lang}
+                size="sm"
+                className={`section-rail__dot${isActive ? ' is-active' : ''}`}
+              />
             </li>
           )
         })}

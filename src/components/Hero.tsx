@@ -69,7 +69,7 @@ export function Hero({ lang }: { lang: Lang }) {
   const salut = pickSalut(lang)
 
   return (
-    <section className="section hero hero--editorial" aria-labelledby="hero-title">
+    <section className="section hero hero--editorial" id="hero" aria-labelledby="hero-title">
       <div className="hero__folio mono" aria-hidden="true">
         {t.folio}
       </div>

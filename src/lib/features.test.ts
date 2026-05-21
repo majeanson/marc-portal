@@ -43,8 +43,10 @@ const HEADER_SECTION_IDS = ['featured', 'how', 'vibe', 'pricing', 'about'] as co
 
 /** Section ids the SectionRail surfaces (mirrors the FR/EN ITEMS arrays
  *  in SectionRail.tsx; the `SectionRail ITEMS mirror` test below ties this
- *  constant to the actual source). */
+ *  constant to the actual source). Brackets HOME_SECTION_ORDER with the
+ *  non-folio'd `hero` cover and the trailing `cta`. */
 const RAIL_SECTION_IDS = [
+  'hero',
   'featured',
   'how',
   'vibe',
@@ -244,8 +246,9 @@ describe('home section ordering', () => {
     expect(ids.slice(RAIL_SECTION_IDS.length)).toEqual([...RAIL_SECTION_IDS])
   })
 
-  it('SectionRail lists every folio section in order, then the CTA', () => {
-    expect(RAIL_SECTION_IDS.slice(0, -1)).toEqual([...HOME_SECTION_ORDER])
+  it('SectionRail brackets the folio sections with the hero cover and the CTA', () => {
+    expect(RAIL_SECTION_IDS[0]).toBe('hero')
+    expect(RAIL_SECTION_IDS.slice(1, -1)).toEqual([...HOME_SECTION_ORDER])
     expect(RAIL_SECTION_IDS.at(-1)).toBe('cta')
   })
 

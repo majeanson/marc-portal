@@ -1,1 +1,7 @@
-/*    /index.html   200
+# SPA fallback. Cloudflare Pages serves an existing file before applying a
+# rule, so `/` → dist/index.html and `/en` → dist/en/index.html (both
+# prerendered homepages, see scripts/prerender.mjs) are served directly.
+# Only non-file routes hit this rule and fall back to app.html — the clean
+# Vite shell with an empty #root, so deep-route direct loads boot the SPA
+# without flashing prerendered homepage content.
+/*    /app.html   200

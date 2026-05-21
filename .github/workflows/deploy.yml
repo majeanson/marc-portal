@@ -26,6 +26,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Chromium for the homepage prerender — `npm run build` triggers the
+      # `postbuild` script (scripts/prerender.mjs), which drives Playwright to
+      # snapshot the homepage to static HTML. Mirrors e2e.yml. ~30s added.
+      - run: npx playwright install --with-deps chromium
       - run: npm run build
 
       # Apply any pending D1 migrations before the deploy. Idempotent — wrangler

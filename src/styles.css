@@ -8681,6 +8681,17 @@ button.intake__progress-step:disabled {
   grid-row: 1;
   justify-self: center;
   align-self: center;
+  /* At rest the rail is a clean Roman-numeral index — the feature dots
+     only appear for the section the visitor is currently on (the active
+     row) or the row they're pointing at. The dot keeps its grid cell
+     either way, so numerals never shift when one fades in. */
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.section-rail__dot.is-active,
+.section-rail__item:hover .section-rail__dot,
+.section-rail__item:focus-within .section-rail__dot {
+  opacity: 1;
 }
 /* The rail is a quiet index — dots stay neutral at rest and reveal the
    section's feature hue only when the row is hovered or focused. */

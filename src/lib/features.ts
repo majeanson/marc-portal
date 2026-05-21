@@ -294,8 +294,13 @@ export const HOME_SECTION_ORDER = [
 /** Home page anchor sections → feature. Header nav links, SectionRail,
  *  and any future surface that points at #pricing / #vibe / etc. all
  *  agree on the colour by reading this map. Key order follows
- *  HOME_SECTION_ORDER (plus the trailing non-folio'd `cta`). */
+ *  HOME_SECTION_ORDER, bracketed by the non-folio'd `hero` cover and the
+ *  trailing `cta`. */
 export const HOME_SECTION_FEATURE: Record<string, FeatureId | undefined> = {
+  // Hero — the magazine cover: the offer + primary CTA. It crosses every
+  // feature rather than belonging to one, so it carries the neutral hollow
+  // dot (undefined — see the header note above).
+  hero: undefined,
   // "Projets" — drills into the shipped gallery.
   featured: 'shipped',
   // "Comment ça marche" — explains the whole practice; that's the backstage
@@ -324,6 +329,7 @@ export const HOME_SECTION_FEATURE: Record<string, FeatureId | undefined> = {
  *  Kept here (not i18n.ts) so the section↔feature↔label triple stays in
  *  one file and can't drift. */
 export const HOME_SECTION_LABEL: Record<string, Bi> = {
+  hero: { fr: 'Accueil', en: 'Home' },
   featured: { fr: 'Projets en vedette', en: 'Featured projects' },
   how: { fr: 'Comment ça marche', en: 'How it works' },
   vibe: { fr: 'Je fais / je fais pas', en: 'What I do / don’t' },

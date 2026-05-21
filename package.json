@@ -13,6 +13,7 @@
     "dev:cf": "wrangler pages dev --proxy 5180 --port 8788",
     "prebuild": "node scripts/build-sitemap.mjs && node scripts/check-og-image.mjs && node scripts/build-lac-meta.mjs && node scripts/build-portal-stats.mjs && node scripts/build-map-skeleton.mjs && node scripts/build-atelier-gallery.mjs",
     "build": "tsc -b && vite build",
+    "postbuild": "node scripts/prerender.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
