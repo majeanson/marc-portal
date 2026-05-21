@@ -31,7 +31,10 @@ function pct(score) {
 }
 
 function resolveCommit() {
-  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7)
+  // LH_COMMIT is set by the workflow to the commit that was actually
+  // deployed; GITHUB_SHA is the runner fallback; git is the local fallback.
+  const sha = process.env.LH_COMMIT || process.env.GITHUB_SHA
+  if (sha) return sha.slice(0, 7)
   try {
     return execSync('git rev-parse --short HEAD', { cwd: portalRoot }).toString().trim()
   } catch {
