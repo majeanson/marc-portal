@@ -60,13 +60,16 @@ jobs:
           # Scope the guard to feature.jsons only — `npm run build` regenerates
           # other files (e.g. public/sitemap.xml via prebuild) and we don't want
           # that drift to make `git commit` fail with "nothing to commit".
-          if git diff --quiet -- feature.json 'feat-*/feature.json'; then
+          # feature.json files are co-located next to their code now
+          # (src/**/*.feature.json, functions/**/*.feature.json) plus the root
+          # feature.json; the '*.feature.json' git pathspec matches all of them.
+          if git diff --quiet -- feature.json '*.feature.json'; then
             echo "No revisions to stamp."
             exit 0
           fi
           git config user.name 'lac-stamp-bot'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add feature.json feat-*/feature.json
+          git add feature.json '*.feature.json'
           git commit -m "chore(lac): stamp revisions for ${GITHUB_SHA::7} [skip ci]"
           git push
 
