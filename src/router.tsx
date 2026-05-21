@@ -18,13 +18,17 @@ import { Home } from './pages/Home'
 import { Intake } from './pages/Intake'
 import { Login } from './pages/Login'
 import { MagicLinkSent } from './pages/MagicLinkSent'
-import { MePortal } from './pages/MePortal'
-import { SessionPage } from './pages/SessionPage'
 import { NotFound } from './pages/NotFound'
 import { RouteError } from './pages/RouteError'
 
 // Cold-path pages — lazy. Cuts the initial bundle (demos, all admin
-// surfaces) at the cost of one network round-trip when first visited.
+// surfaces, the auth-gated dashboard + session views) at the cost of one
+// network round-trip when first visited. MePortal and SessionPage are only
+// reached after sign-in, so they stay off the home/intake/login path.
+const MePortal = lazy(() => import('./pages/MePortal').then((m) => ({ default: m.MePortal })))
+const SessionPage = lazy(() =>
+  import('./pages/SessionPage').then((m) => ({ default: m.SessionPage })),
+)
 const Engagement = lazy(() => import('./pages/Engagement').then((m) => ({ default: m.Engagement })))
 const Tier0 = lazy(() => import('./pages/Tier0').then((m) => ({ default: m.Tier0 })))
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
