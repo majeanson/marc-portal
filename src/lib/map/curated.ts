@@ -744,6 +744,56 @@ const JOURNEYS: MapJourney[] = [
       },
     ],
   },
+  // The post-shipment arc — picks up where visitor-intake ends (the
+  // session page) and walks the "Tu gardes les clés" handoff story.
+  {
+    id: 'journey.buyer-handoff',
+    label: bi('Livraison → tu reprends les clés', 'Delivery → you take the keys'),
+    visibility: 'public',
+    steps: [
+      {
+        nodeId: 'page.me-portal',
+        note: bi('Tu reviens dans tes sessions.', 'You come back to your sessions.'),
+      },
+      {
+        nodeId: 'page.session-page',
+        note: bi('Le projet est livré.', 'The project ships.'),
+      },
+      {
+        nodeId: 'page.handoff',
+        note: bi('Tu lis le guide de reprise.', 'You read the takeover guide.'),
+      },
+      {
+        nodeId: 'page.handoff-checklist',
+        note: bi('Tu coches chaque étape.', 'You tick off each step.'),
+      },
+    ],
+  },
+  // The operator's daily loop — admin-only, so filterForViewer drops it
+  // from the visitor view (same gate as the operator-console group).
+  {
+    id: 'journey.operator-triage',
+    label: bi('La boucle de triage de l’opérateur', 'The operator’s triage loop'),
+    visibility: 'admin',
+    steps: [
+      {
+        nodeId: 'page.admin-hub',
+        note: bi('Tu ouvres la console.', 'You open the console.'),
+      },
+      {
+        nodeId: 'page.admin-inbox',
+        note: bi('Tu vois les sessions en triage.', 'You see the sessions in triage.'),
+      },
+      {
+        nodeId: 'page.session-page',
+        note: bi('Tu réponds dans le fil.', 'You reply in the thread.'),
+      },
+      {
+        nodeId: 'page.admin-audit',
+        note: bi('L’action est journalisée.', 'The action is logged.'),
+      },
+    ],
+  },
 ]
 
 // ─── Vision — the “big picture” layer ────────────────────────────────────────
