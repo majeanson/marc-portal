@@ -7494,7 +7494,10 @@ button.intake__progress-step:disabled {
 }
 
 .hero__actions {
-  display: inline-flex;
+  /* Block-level flex — NOT inline-flex. As an inline box it sat on the same
+     line as the inline-flex .hero__shipped-counter that follows it, so the
+     slot pill and the "N projects shipped" counter ran together. */
+  display: flex;
   align-items: center;
   gap: 18px;
   flex-wrap: wrap;
@@ -8452,6 +8455,11 @@ button.intake__progress-step:disabled {
   color: inherit;
   opacity: 0.7;
   transition: opacity 0.2s ease;
+  /* Tight line box. With the inherited ~1.6 line-height the numeral sat in a
+     16.8px box; grid-centring then aligned that *box*, leaving the caps-only
+     Roman glyph (no descender) optically ~2px high of the dot. line-height:1
+     hugs the glyph so its optical centre lands on the row centre. */
+  line-height: 1;
 }
 .section-rail__tick {
   height: 1px;
