@@ -40,6 +40,42 @@
   ],
   "shots": [
     {
+      "slug": "me-data",
+      "viewport": "phone",
+      "route": "/me/data",
+      "component": "MyData",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "MyData",
+        "en": "MyData"
+      },
+      "thumb": "/atelier/thumbs/phone/me-data.webp",
+      "full": "/atelier/full/phone/me-data.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 902,
+      "cropped": true
+    },
+    {
+      "slug": "en-me-data",
+      "viewport": "phone",
+      "route": "/en/me/data",
+      "component": "MyData",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "MyData",
+        "en": "MyData"
+      },
+      "thumb": "/atelier/thumbs/phone/en-me-data.webp",
+      "full": "/atelier/full/phone/en-me-data.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 848,
+      "cropped": true
+    },
+    {
       "slug": "root",
       "viewport": "phone",
       "route": "/",
@@ -722,6 +758,42 @@
       "thumbH": 856,
       "fullH": 14096,
       "cropped": true
+    },
+    {
+      "slug": "me-data",
+      "viewport": "narrow",
+      "route": "/me/data",
+      "component": "MyData",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "MyData",
+        "en": "MyData"
+      },
+      "thumb": "/atelier/thumbs/narrow/me-data.webp",
+      "full": "/atelier/full/narrow/me-data.png",
+      "thumbW": 600,
+      "thumbH": 540,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
+      "slug": "en-me-data",
+      "viewport": "narrow",
+      "route": "/en/me/data",
+      "component": "MyData",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "MyData",
+        "en": "MyData"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-me-data.webp",
+      "full": "/atelier/full/narrow/en-me-data.png",
+      "thumbW": 600,
+      "thumbH": 540,
+      "fullH": 900,
+      "cropped": false
     },
     {
       "slug": "root",
@@ -1408,6 +1480,42 @@
       "cropped": true
     },
     {
+      "slug": "me-data",
+      "viewport": "wide",
+      "route": "/me/data",
+      "component": "MyData",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "MyData",
+        "en": "MyData"
+      },
+      "thumb": "/atelier/thumbs/wide/me-data.webp",
+      "full": "/atelier/full/wide/me-data.png",
+      "thumbW": 600,
+      "thumbH": 375,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
+      "slug": "en-me-data",
+      "viewport": "wide",
+      "route": "/en/me/data",
+      "component": "MyData",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "MyData",
+        "en": "MyData"
+      },
+      "thumb": "/atelier/thumbs/wide/en-me-data.webp",
+      "full": "/atelier/full/wide/en-me-data.png",
+      "thumbW": 600,
+      "thumbH": 375,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
       "slug": "root",
       "viewport": "wide",
       "route": "/",
@@ -2092,6 +2200,42 @@
       "cropped": true
     },
     {
+      "slug": "me-data",
+      "viewport": "dark",
+      "route": "/me/data",
+      "component": "MyData",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "MyData",
+        "en": "MyData"
+      },
+      "thumb": "/atelier/thumbs/dark/me-data.webp",
+      "full": "/atelier/full/dark/me-data.png",
+      "thumbW": 600,
+      "thumbH": 375,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
+      "slug": "en-me-data",
+      "viewport": "dark",
+      "route": "/en/me/data",
+      "component": "MyData",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "MyData",
+        "en": "MyData"
+      },
+      "thumb": "/atelier/thumbs/dark/en-me-data.webp",
+      "full": "/atelier/full/dark/en-me-data.png",
+      "thumbW": 600,
+      "thumbH": 375,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
       "slug": "root",
       "viewport": "dark",
       "route": "/",
@@ -2704,5 +2848,5 @@
       "cropped": true
     }
   ],
-  "count": 148
+  "count": 156
 }
