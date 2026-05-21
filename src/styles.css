@@ -6880,16 +6880,25 @@ button.intake__progress-step:disabled {
   padding: 40px 0 32px;
   margin-bottom: 28px;
   border-bottom: 1px solid var(--border-soft);
-  overflow: hidden;
+  /* Clip the corner glow to the masthead's top/bottom/left edges but NOT its
+     right, so the ::after glow can bleed out to the real viewport corner.
+     A plain overflow:hidden clipped all four sides and pinned the glow to the
+     centred column edge — a green "corner" floating short of the actual
+     corner. inset() with a negative right value leaves the right side open. */
+  clip-path: inset(0 -100vw 0 0);
 }
 .page-mast::after {
-  /* Soft sage glow — atmosphere, not decoration. Echo of hero--editorial::after. */
+  /* Soft sage glow — atmosphere, not decoration. Echo of hero--editorial::after.
+     The hero glow lands in the viewport corner because the hero section is
+     full-bleed; the page-mast is a header inside the centred column, so the
+     glow is pushed out to the viewport's right edge explicitly: 50% (half the
+     column) minus 50vw (half the viewport) is the negative gutter width. */
   content: '';
   position: absolute;
   top: -120px;
-  right: -120px;
-  width: 380px;
-  height: 380px;
+  right: calc(50% - 50vw);
+  width: 420px;
+  height: 420px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(61, 110, 78, 0.13), transparent 65%);
   z-index: 0;
@@ -6959,10 +6968,10 @@ button.intake__progress-step:disabled {
     padding: 28px 0 24px;
   }
   .page-mast::after {
-    width: 260px;
-    height: 260px;
+    width: 300px;
+    height: 300px;
     top: -90px;
-    right: -90px;
+    /* right inherits the viewport-edge calc from the base rule. */
   }
   .page-mast__stamp {
     width: 140px;
