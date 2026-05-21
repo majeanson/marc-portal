@@ -117,7 +117,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
     ? `<div style="display:flex;margin-top:28px;font-size:28px;color:#3f3c34;line-height:1.35;max-width:1040px;font-weight:400;">${escapeHtml(safeTagline)}</div>`
     : ''
   const html =
-    `<div style="display:flex;flex-direction:column;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
+    `<div style="display:flex;flex-direction:column;position:relative;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
+    // brand watermark — one oversized faint glyph filling the right side.
+    // No rotation, no stroke, no image: a single text node, deliberately the
+    // cheapest possible element given the reverted-stamp 1102 history below.
+    `<div style="display:flex;position:absolute;top:0;right:0;width:560px;height:630px;align-items:center;justify-content:center;"><div style="display:flex;font-size:560px;font-weight:700;color:#3d6e4e;opacity:0.08;line-height:1;">M</div></div>` +
     `<div style="display:flex;align-items:center;gap:18px;color:#7a7568;font-size:22px;letter-spacing:3px;font-weight:400;">` +
     `<div style="display:flex;">${tierLabel}</div>` +
     `<div style="display:flex;">·</div>` +

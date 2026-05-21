@@ -18,6 +18,12 @@
     <line x1="0" y1="510" x2="1200" y2="510"/>
   </g>
 
+  <!-- Brand watermark — oversized faint monogram filling the right side.
+       Drawn before the text so every other element sits on top of it. -->
+  <text x="912" y="516" text-anchor="middle"
+        font-family="-apple-system, Segoe UI, system-ui, sans-serif"
+        font-size="560" font-weight="700" fill="#3d6e4e" opacity="0.08">M</text>
+
   <!-- top eyebrow -->
   <text x="80" y="100" font-family="Cascadia Code, JetBrains Mono, monospace" font-size="22" fill="#7a7568" letter-spacing="3">
     SIDE-PRACTICE · QUÉBEC · ASYNC

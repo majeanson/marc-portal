@@ -142,7 +142,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   // string and force display:flex on every container. Same convention
   // as functions/og/share/[id].ts — see the long comment there.
   const html =
-    `<div style="display:flex;flex-direction:column;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
+    `<div style="display:flex;flex-direction:column;position:relative;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
+    // brand watermark — one oversized faint glyph filling the right side.
+    // No rotation, no stroke, no image: a single text node, so satori render
+    // cost stays negligible (see the 1102 note in og/share/[id].ts).
+    `<div style="display:flex;position:absolute;top:0;right:0;width:560px;height:630px;align-items:center;justify-content:center;"><div style="display:flex;font-size:560px;font-weight:700;color:#3d6e4e;opacity:0.08;line-height:1;">M</div></div>` +
     // top eyebrow
     `<div style="display:flex;color:#7a7568;font-size:22px;letter-spacing:3px;font-weight:400;">${escapeHtml(c.eyebrow)}</div>` +
     // brand
