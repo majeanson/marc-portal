@@ -42,6 +42,12 @@ describe('swapLangPath', () => {
     it('EN /en/privacy → FR /confidentialite', () => {
       expect(swapLangPath('/en/privacy', '', '', false)).toBe('/confidentialite')
     })
+    it('FR /carte → EN /en/map', () => {
+      expect(swapLangPath('/carte', '', '', true)).toBe('/en/map')
+    })
+    it('EN /en/map → FR /carte', () => {
+      expect(swapLangPath('/en/map', '', '', false)).toBe('/carte')
+    })
   })
 
   describe('preserves query + hash', () => {

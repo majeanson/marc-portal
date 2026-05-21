@@ -148,6 +148,8 @@ export function Meta({ lang }: { lang: Lang }) {
               }
               stampLabel="LAC"
               stampSub={lang === 'fr' ? 'LIFE · AS · CODE' : 'LIFE · AS · CODE'}
+              feature="meta"
+              lang={lang}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}
             >
               <div className="section__eyebrow">{t.eyebrow}</div>

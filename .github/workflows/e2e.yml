@@ -1,8 +1,11 @@
 name: e2e
 
-# Visual-regression + smoke E2E. Runs on windows-latest so Chromium's
-# rasterisation matches the Windows machine the baselines were generated
-# on — a Linux runner would diff every screenshot on font anti-aliasing.
+# Full E2E gate — `npm run e2e` runs every spec under e2e/: the smoke
+# wayfinding checks, the full-tour click coverage (full-tour.spec.ts), the
+# axe a11y scan, and the visual-regression + error-state screenshots.
+# Runs on windows-latest so Chromium's rasterisation matches the Windows
+# machine the baselines were generated on — a Linux runner would diff every
+# screenshot on font anti-aliasing.
 
 on:
   push:

@@ -8,6 +8,7 @@
  *
  *   FR `/parcours`        ↔  EN `/en/journey`
  *   FR `/confidentialite` ↔  EN `/en/privacy`
+ *   FR `/carte`           ↔  EN `/en/map`
  *
  * Those live in `TRANSLATED_PATHS` (FR → EN). When swapping, we look up the
  * current base in the appropriate direction before re-prefixing — otherwise
@@ -18,6 +19,7 @@
 const TRANSLATED_PATHS: Record<string, string> = {
   '/parcours': '/journey',
   '/confidentialite': '/privacy',
+  '/carte': '/map',
 }
 
 export function swapLangPath(
