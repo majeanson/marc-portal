@@ -13535,6 +13535,13 @@ a.map-node:focus-visible {
 .map-node--service .map-node__label {
   color: var(--accent-warm);
 }
+/* Home-page anchor sections — an in-page #anchor surfaced next to a
+   feature's real pages. Dashed border + tinted ground reads as "jump into
+   a section of the home page" rather than "open a standalone page". */
+.map-node--section {
+  background: var(--bg-section);
+  border-style: dashed;
+}
 .map-node--teaser {
   opacity: 0.55;
   font-style: italic;
@@ -13848,6 +13855,10 @@ a.map-card:focus-visible {
 }
 .map-card--teaser {
   background: transparent;
+  border-style: dashed;
+}
+/* Home-page anchor section card — mirrors .map-node--section on mobile. */
+.map-card--section {
   border-style: dashed;
 }
 .map-card__badge {

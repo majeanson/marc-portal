@@ -21,6 +21,7 @@ import { CURATED } from './curated'
 import {
   FEATURE_IDS,
   FEATURE_PRIMARY_PAGE,
+  HOME_SECTION_FEATURE,
   HOME_SECTION_ORDER,
   META_PAGE_LINK,
   PAGE_FEATURE,
@@ -258,6 +259,30 @@ describe('curated overlay coherence', () => {
     for (const [id, link] of Object.entries(META_PAGE_LINK)) {
       expect(frPaths, `${id} → ${link.path.fr} is not a known route`).toContain(link.path.fr)
       expect(enPaths, `${id} → ${link.path.en} is not a known route`).toContain(link.path.en)
+    }
+  })
+
+  it('surfaces every home section as a navigable node in its feature group', () => {
+    // The Pages layer should offer a feature's home-page section right next
+    // to its real pages — e.g. "Clear pricing" shows the Tier 0 page AND
+    // the home page's #pricing anchor.
+    const nodeById = new Map(data.nodes.map((n) => [n.id, n]))
+    for (const slug of HOME_SECTION_ORDER) {
+      const id = `home.${slug}`
+      const node = nodeById.get(id)
+      expect(node, `home section ${slug} has no map node`).toBeDefined()
+      expect(node!.kind).toBe('section')
+      // Navigable in both languages, landing on the home #anchor.
+      const href = node!.href as { fr: string; en: string }
+      expect(href.fr).toBe(`/#${slug}`)
+      expect(href.en).toBe(`/en/#${slug}`)
+      // Slotted into the matching feature's Pages-layer group, after the
+      // real pages, and inheriting that group's feature accent.
+      const fid = HOME_SECTION_FEATURE[slug]
+      const group = data.groups.find((g) => g.id === `group.feat-${fid}`)
+      expect(group, `group.feat-${fid} missing for section ${slug}`).toBeDefined()
+      expect(group!.nodeIds, `${id} not slotted into group.feat-${fid}`).toContain(id)
+      expect(node!.feature).toBe(fid)
     }
   })
 

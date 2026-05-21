@@ -12,7 +12,13 @@
  */
 
 import skeleton from '../../data/map-skeleton.json'
-import { groupToFeature, type FeatureId } from '../features'
+import {
+  groupToFeature,
+  HOME_SECTION_FEATURE,
+  HOME_SECTION_LABEL,
+  HOME_SECTION_ORDER,
+  type FeatureId,
+} from '../features'
 import { PAGE_FOLIOS } from '../folios'
 import { CURATED } from './curated'
 import type {
@@ -125,6 +131,33 @@ const PAGE_FOLIO_BY_ID: Record<string, string> = {
   'page.map-page': PAGE_FOLIOS.map,
 }
 
+/** Home-page anchor sections, materialized as `section` nodes so the Pages
+ *  layer can offer a feature's home-page section right next to its real
+ *  pages — the "Clear pricing" cluster then shows the Tier 0 page AND the
+ *  home page's #pricing anchor. Labels come from HOME_SECTION_LABEL and the
+ *  section→feature placement from HOME_SECTION_FEATURE, so the map reuses
+ *  the same single source of truth the SectionRail + FeatureIndex read. */
+function homeSectionNodes(): MapNode[] {
+  return HOME_SECTION_ORDER.map((slug): MapNode => {
+    const label = HOME_SECTION_LABEL[slug] ?? { fr: slug, en: slug }
+    return {
+      id: `home.${slug}`,
+      kind: 'section',
+      label,
+      desc: {
+        fr: `La section « ${label.fr} » de la page d’accueil.`,
+        en: `The “${label.en}” section of the home page.`,
+      },
+      visibility: 'public',
+      badge: '#',
+      // In-app hash link. The home page's useHashScroll() handles the
+      // scroll-to-anchor once it mounts.
+      href: { fr: `/#${slug}`, en: `/en/#${slug}` },
+      layers: ['pages'],
+    }
+  })
+}
+
 function applyPatch(node: MapNode, patch: OverlayPatch): MapNode {
   // Defined fields on the patch win; the rest stays from the baseline.
   const merged: MapNode = { ...node }
@@ -176,20 +209,38 @@ export function buildMapData(
     }
   }
 
+  // Home-page anchor sections become `section` nodes appended to the
+  // matching feature's Pages-layer group (after its real pages), so the
+  // Pages layer surfaces both. Section→group via HOME_SECTION_FEATURE:
+  // `pricing` → group.feat-pricing, `featured` → group.feat-shipped, etc.
+  const sections = homeSectionNodes()
+  const sectionIdsByGroup = new Map<string, string[]>()
+  for (const slug of HOME_SECTION_ORDER) {
+    const fid = HOME_SECTION_FEATURE[slug]
+    if (!fid) continue
+    const gid = `group.feat-${fid}`
+    const arr = sectionIdsByGroup.get(gid) ?? []
+    arr.push(`home.${slug}`)
+    sectionIdsByGroup.set(gid, arr)
+  }
+
   // Stamp the cross-cutting feature accent onto groups + nodes from group
   // membership. Group id `group.feat-{id}` carries that feature; pages
-  // inside the group inherit it. Groups outside the feat-* convention
-  // (transparency, operator console) have no feature accent.
+  // (and the home-section nodes slotted in above) inside the group inherit
+  // it. Groups outside the feat-* convention (transparency, operator
+  // console) have no feature accent.
   const groupsWithFeature: MapGroup[] = curated.groups.map((g) => {
     const feature = groupToFeature(g.id)
-    return feature ? { ...g, feature } : g
+    const extraIds = sectionIdsByGroup.get(g.id)
+    const base = extraIds ? { ...g, nodeIds: [...g.nodeIds, ...extraIds] } : g
+    return feature ? { ...base, feature } : base
   })
   const nodeFeature = new Map<string, FeatureId>()
   for (const g of groupsWithFeature) {
     if (!g.feature) continue
     for (const id of g.nodeIds) nodeFeature.set(id, g.feature)
   }
-  const featuredNodes: MapNode[] = patched.map((n) => {
+  const featuredNodes: MapNode[] = [...patched, ...sections].map((n) => {
     const fid = nodeFeature.get(n.id)
     return fid ? { ...n, feature: fid } : n
   })

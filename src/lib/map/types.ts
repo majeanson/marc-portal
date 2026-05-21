@@ -36,11 +36,12 @@ export type NodeKind =
   | 'table' // D1 table
   | 'binding' // wrangler.toml binding (D1/R2/var)
   | 'service' // External service (Stripe, Resend, Sentry, R2 bucket)
+  | 'section' // Home-page anchor section (#pricing, #vibe, …)
   | 'admin-tile' // Entry in AdminHub's grouped tile index
 
 export interface MapNode {
   /** Stable id. Pattern: `page.<comp>`, `api.<path>`, `table.<name>`,
-   *  `binding.<binding>`, `svc.<vendor>`, `tile.<slug>`. */
+   *  `binding.<binding>`, `svc.<vendor>`, `home.<section>`, `tile.<slug>`. */
   id: string
   kind: NodeKind
   label: Bi
