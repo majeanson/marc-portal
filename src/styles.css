@@ -248,6 +248,13 @@ p {
 .section--alt {
   background: var(--bg-section);
 }
+/* A page that opens with the editorial masthead carries its own top
+   breathing room inside .page-mast. The section's own 72px top padding then
+   stacked on top of it, leaving a large dead gap below the header — so drop
+   it whenever the section leads with a .page-mast. */
+.section:has(> .section__inner > .page-mast) {
+  padding-top: 0;
+}
 .section__inner {
   max-width: var(--max-w);
   margin: 0 auto;
