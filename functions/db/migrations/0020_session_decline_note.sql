@@ -1,0 +1,12 @@
+-- Operator-written "generous no" note. When Marc declines an intake, a bare
+-- "rejected" status is a dead end for the visitor. This column holds a
+-- tailored note he writes per decline — what he'd actually do if he were
+-- them: which Tier 0 pattern fits, which template to look at, who else to
+-- talk to. A no that still leaves the visitor better off.
+--
+-- Shown to the visitor on /session/:id only when status = 'rejected'.
+-- NULL = no note written (the visitor still sees the standing pointers —
+-- Tier 0, the patterns page — that the decline panel always carries).
+-- Admin-only to set; persisted as-is. The decline panel renders it as
+-- Marc's own words, framed by the standing self-serve links.
+ALTER TABLE sessions ADD COLUMN decline_note TEXT;

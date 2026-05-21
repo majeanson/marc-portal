@@ -63,6 +63,9 @@ interface PatchBody {
    *  Only the session owner or admin can set this. Best-effort email to
    *  Marc on the first-time set. */
   acknowledgeAllYours?: unknown
+  /** Admin-only: the "generous no" note shown to the visitor on a rejected
+   *  session. A string sets it; null or empty string clears it. */
+  declineNote?: unknown
 }
 
 export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params }) => {
@@ -299,6 +302,24 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
         .bind(now, id)
         .run()
     }
+  }
+
+  // Operator-written decline note (the "generous no"). Admin-only. A string
+  // sets the note; null or an empty/whitespace string clears it to NULL.
+  if (body.declineNote !== undefined) {
+    if (!admin) return forbidden('only admin can set declineNote')
+    let note: string | null
+    if (body.declineNote === null) {
+      note = null
+    } else if (typeof body.declineNote === 'string') {
+      const trimmed = body.declineNote.trim()
+      note = trimmed.length > 0 ? trimmed.slice(0, 4000) : null
+    } else {
+      return badRequest('declineNote must be a string or null')
+    }
+    await env.DB.prepare(`UPDATE sessions SET decline_note = ?, updated_at = ? WHERE id = ?`)
+      .bind(note, now, id)
+      .run()
   }
 
   const fresh = await loadSession(env.DB, id)

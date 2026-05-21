@@ -9751,6 +9751,102 @@ button.intake__progress-step:disabled {
   outline: none;
 }
 
+/* The generous "no" — the panel a rejected session shows. Warm, not harsh:
+   a decline that still points somewhere useful. */
+.decline-panel {
+  border-left: 3px solid var(--warm);
+}
+.decline-panel__lead {
+  color: var(--text-mid);
+  max-width: 60ch;
+  line-height: 1.6;
+}
+.decline-panel__note {
+  margin: 14px 0 0;
+  padding: 14px 18px;
+  background: var(--warm-soft);
+  border-radius: var(--radius-sm);
+  border: none;
+}
+.decline-panel__note-from {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warm);
+  margin-bottom: 6px;
+}
+.decline-panel__note p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.decline-panel__pointers {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.decline-panel__pointers-heading {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.decline-panel__pointer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 12px 14px;
+  background: var(--bg-section);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+}
+.decline-panel__pointer p {
+  margin: 0;
+  flex: 1 1 240px;
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+.decline-panel__pointer-link {
+  font-size: 13px;
+  color: var(--accent-warm);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 1px dotted var(--accent-warm);
+  padding-bottom: 1px;
+}
+.decline-panel__pointer-link:hover {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+/* Admin-only note editor. */
+.decline-panel__editor {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.decline-panel__editor-label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+}
+.decline-panel__editor-empty {
+  font-size: 11.5px;
+  color: var(--text-soft);
+  margin: 0;
+}
+.decline-panel__textarea {
+  width: 100%;
+  resize: vertical;
+  font-family: var(--sans);
+}
+
 .session-napkin {
   margin-top: 32px;
   padding: 20px;

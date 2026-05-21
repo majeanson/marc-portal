@@ -46,6 +46,10 @@ export interface SessionRow {
    *  Set via PATCH `acknowledgeAllYours: true`. Historical signal — the
    *  *current* mode is always read from custodian_status. */
   all_yours_acknowledged_at: number | null
+  /** Operator-written "generous no" note, shown to the visitor when the
+   *  session is `rejected`. NULL = no note. Admin-only to set, via PATCH
+   *  `declineNote`. */
+  decline_note: string | null
 }
 
 export interface AttachmentRow {
@@ -107,6 +111,9 @@ export function patchSession(
     /** Visitor-self or admin: explicit Tout-à-toi confirmation (the visitor
      *  opts out of Custodian). true sets the timestamp; false clears. */
     acknowledgeAllYours?: boolean
+    /** Admin-only: the "generous no" note shown on a rejected session.
+     *  Pass null or '' to clear. */
+    declineNote?: string | null
   },
 ): Promise<{ session: SessionRow }> {
   return api(`/api/sessions/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch })

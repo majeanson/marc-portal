@@ -56,6 +56,11 @@ export interface SessionRow {
    *  via PATCH `acknowledgeAllYours`; persisted forever — the live mode is
    *  always custodian_status, this is a historical-decision marker. */
   all_yours_acknowledged_at: number | null
+  /** Operator-written note shown to the visitor when the session is
+   *  `rejected` — a tailored "here's what I'd do instead" rather than a
+   *  bare no. NULL = no note (the visitor sees only the standing pointers).
+   *  Set via PATCH `declineNote`; admin-only. */
+  decline_note: string | null
 }
 
 export interface MessageRow {
@@ -120,7 +125,8 @@ export async function loadSession(db: D1Database, id: string): Promise<SessionRo
       `SELECT id, email, intake_json, status, created_at, updated_at,
               deleted_at, status_history,
               showcased_at, showcase_title, showcase_tagline, tier,
-              tier3_amount_cents, custodian_status, all_yours_acknowledged_at
+              tier3_amount_cents, custodian_status, all_yours_acknowledged_at,
+              decline_note
        FROM sessions WHERE id = ?`,
     )
     .bind(id)

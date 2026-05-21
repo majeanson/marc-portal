@@ -121,6 +121,24 @@ const COPY = {
     certificateBody:
       'Une page signée — le projet, la date, et tout ce qui t’a été remis. À télécharger et à garder.',
     certificateDownload: 'Télécharger le certificat ↓',
+    declineHeading: 'Pas retenu — mais pas un cul-de-sac',
+    declineLead:
+      'Ce projet n’est pas un fit pour moi cette fois. Ça n’enlève rien à l’idée — juste, ce n’est pas moi qui devrais la bâtir.',
+    declineNoteFrom: 'Le mot de Marc',
+    declinePointersHeading: 'Où aller à partir d’ici',
+    declinePointerTier0:
+      'Les outils gratuits du Tier 0 règlent souvent les plus petits besoins, sans personne au milieu.',
+    declinePointerTier0Link: 'Voir le Tier 0 →',
+    declinePointerIntake:
+      'Si l’idée évolue ou grossit, la porte reste ouverte — une nouvelle demande, quand tu veux.',
+    declinePointerIntakeLink: 'Nouvelle demande →',
+    declineNoteEditorLabel: 'Note de refus — le « non » généreux, visible par le visiteur',
+    declineNoteEditorPlaceholder:
+      'Ce que tu ferais à sa place : quel patron Tier 0, quel gabarit, qui d’autre aller voir…',
+    declineNoteEmpty:
+      'Aucune note pour l’instant — le visiteur ne voit que les repères ci-dessous.',
+    declineNoteSave: 'Enregistrer la note',
+    declineNoteSaving: 'Enregistrement…',
     none: 'Marc répond en moins de 72h. Laisse-lui un mot ici dès que tu en as un.',
     placeholder: 'Écris un message…',
     sending: 'Envoi…',
@@ -197,6 +215,23 @@ const COPY = {
     certificateBody:
       'A signed page — the project, the date, and everything handed to you. Download it and keep it.',
     certificateDownload: 'Download the certificate ↓',
+    declineHeading: 'Not taken on — but not a dead end',
+    declineLead:
+      'This one isn’t a fit for me this time. That takes nothing away from the idea — it just shouldn’t be me building it.',
+    declineNoteFrom: 'A note from Marc',
+    declinePointersHeading: 'Where to go from here',
+    declinePointerTier0:
+      'The free Tier 0 tools often settle the smaller needs, with no one in the middle.',
+    declinePointerTier0Link: 'See Tier 0 →',
+    declinePointerIntake:
+      'If the idea grows or shifts, the door stays open — a new request, whenever you like.',
+    declinePointerIntakeLink: 'New request →',
+    declineNoteEditorLabel: 'Decline note — the generous "no", visible to the visitor',
+    declineNoteEditorPlaceholder:
+      'What you’d do in their place: which Tier 0 pattern, which template, who else to see…',
+    declineNoteEmpty: 'No note yet — the visitor sees only the pointers below.',
+    declineNoteSave: 'Save the note',
+    declineNoteSaving: 'Saving…',
     none: 'Marc replies within 72h. Drop him a note here whenever you have one.',
     placeholder: 'Write a message…',
     sending: 'Sending…',
@@ -819,6 +854,11 @@ export function SessionPage({ lang }: { lang: Lang }) {
               }
             />
 
+            {/* The generous no — a rejected session is not a dead end. */}
+            {session.status === 'rejected' && (
+              <DeclinePanel session={session} lang={lang} isAdmin={isAdmin} onSaved={setSession} />
+            )}
+
             {/* The napkin as the through-line — pinned high on the session,
                 and at shipped it completes into a from-sketch-to-shipped
                 pairing. */}
@@ -1303,6 +1343,100 @@ function NapkinArc({
           </>
         )}
       </div>
+    </section>
+  )
+}
+
+/**
+ * The "generous no" — shown when a session is `rejected`. A decline isn't a
+ * dead end: the visitor sees Marc's tailored note (if he wrote one) framed
+ * by standing pointers — the free Tier 0 tools, the always-open door to a
+ * fresh request. Admin sees the same panel plus an editor for the note.
+ */
+function DeclinePanel({
+  session,
+  lang,
+  isAdmin,
+  onSaved,
+}: {
+  session: SessionRow
+  lang: Lang
+  isAdmin: boolean
+  onSaved: (s: SessionRow) => void
+}) {
+  const t = COPY[lang]
+  const langPrefix = lang === 'en' ? '/en' : ''
+  const [draft, setDraft] = useState(session.decline_note ?? '')
+  const [saving, setSaving] = useState(false)
+  const note = session.decline_note?.trim()
+
+  const save = async () => {
+    setSaving(true)
+    try {
+      const r = await patchSession(session.id, {
+        declineNote: draft.trim() || null,
+        ifUpdatedAt: session.updated_at,
+      })
+      onSaved(r.session)
+    } catch {
+      // Leave the draft in place so the operator can retry.
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <section className="intake__step session-frame__panel decline-panel">
+      <h2>{t.declineHeading}</h2>
+      {note ? (
+        <blockquote className="decline-panel__note">
+          <span className="mono decline-panel__note-from">{t.declineNoteFrom}</span>
+          <p>{note}</p>
+        </blockquote>
+      ) : (
+        <p className="decline-panel__lead">{t.declineLead}</p>
+      )}
+
+      <div className="decline-panel__pointers">
+        <span className="mono decline-panel__pointers-heading">{t.declinePointersHeading}</span>
+        <div className="decline-panel__pointer">
+          <p>{t.declinePointerTier0}</p>
+          <a className="decline-panel__pointer-link" href={`${langPrefix}/tier-0`}>
+            {t.declinePointerTier0Link}
+          </a>
+        </div>
+        <div className="decline-panel__pointer">
+          <p>{t.declinePointerIntake}</p>
+          <a className="decline-panel__pointer-link" href={`${langPrefix}/intake`}>
+            {t.declinePointerIntakeLink}
+          </a>
+        </div>
+      </div>
+
+      {isAdmin && (
+        <div className="decline-panel__editor">
+          <label className="mono decline-panel__editor-label" htmlFor="decline-note">
+            {t.declineNoteEditorLabel}
+          </label>
+          {!note && <p className="mono decline-panel__editor-empty">{t.declineNoteEmpty}</p>}
+          <textarea
+            id="decline-note"
+            className="field__input decline-panel__textarea"
+            rows={5}
+            value={draft}
+            placeholder={t.declineNoteEditorPlaceholder}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <button
+            type="button"
+            className="link-btn mono"
+            onClick={save}
+            disabled={saving || draft.trim() === (session.decline_note ?? '').trim()}
+          >
+            {saving ? t.declineNoteSaving : t.declineNoteSave}
+          </button>
+        </div>
+      )}
     </section>
   )
 }
