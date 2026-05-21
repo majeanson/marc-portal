@@ -11,22 +11,26 @@
 // `main.tsx` keeps `createRoot().render()` (not `hydrateRoot`) — the
 // prerendered HTML gives the fast paint, then React re-renders `#root`.
 //
-// The SPA-fallback sharp edge: `public/_redirects` falls every non-file route
-// back to a single HTML file. If that file held prerendered homepage content,
-// every deep-route direct load would flash the homepage. So:
-//   - dist/index.html     → prerendered FR homepage (Pages serves it for `/`)
-//   - dist/en/index.html  → prerendered EN homepage (served for `/en`)
-//   - dist/app.html       → the clean Vite shell, empty #root
-//   - _redirects          → `/*  /app.html  200`
-// Cloudflare Pages serves an existing file before applying a rule, so `/` and
-// `/en` hit their prerendered files directly; only non-file routes fall back
-// to the clean shell.
+// Render-blocking CSS: prerendered content can only paint once the
+// browser has the stylesheets — an external <link> still gates FCP behind
+// a round-trip. So this script also INLINES every same-origin stylesheet
+// (<link rel="stylesheet">) into a <style> tag. The CSP allows
+// `style-src 'unsafe-inline'`, so this is safe; it removes the
+// render-blocking request and lets the prerendered DOM paint as soon as
+// the HTML arrives.
+//
+// The SPA-fallback sharp edge: `public/_redirects` is `/* /index.html 200`,
+// so every non-file route serves index.html. index.html is the prerendered
+// FR homepage; `/en` has its own prerendered en/index.html. dist/app.html is
+// the inlined clean shell — currently unused by routing (the `/app.html`
+// fallback looped on Cloudflare's .html-stripping; see PLAN_PRERENDER.md),
+// kept for the clean-shell follow-up.
 //
 // Fail-soft: if the snapshot fails for any reason, dist/index.html is left as
-// the clean Vite shell and the script exits 0. A deploy must never be blocked
+// the Vite-built shell and the script exits 0. A deploy must never be blocked
 // by prerender — a slower-but-correct SPA homepage beats a failed deploy.
 
-import { copyFileSync, mkdirSync, renameSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { chromium } from 'playwright'
 import { preview } from 'vite'
@@ -42,8 +46,30 @@ const PAGES = [
 ]
 
 /**
+ * Replace every same-origin `<link rel="stylesheet">` with an inline
+ * `<style>` carrying the file's contents. Removes the render-blocking
+ * round-trip so prerendered content paints as soon as the HTML is parsed.
+ * A stylesheet that can't be read locally is left as a <link> untouched.
+ */
+function inlineStylesheets(html) {
+  return html.replace(/<link\b[^>]*>/gi, (tag) => {
+    if (!/\brel\s*=\s*["']?stylesheet\b/i.test(tag)) return tag
+    const href = /\bhref\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1]
+    // Only same-origin, root-absolute asset paths map to a dist file.
+    if (!href || !href.startsWith('/')) return tag
+    try {
+      const css = readFileSync(join(DIST, href.split('?')[0]), 'utf8')
+      return `<style>${css}</style>`
+    } catch {
+      return tag
+    }
+  })
+}
+
+/**
  * Load `url` in a real browser, wait until the homepage has fully painted,
- * and return its complete static HTML (doctype + rendered <html>).
+ * and return its complete static HTML (doctype + rendered <html>), with
+ * stylesheets inlined.
  */
 async function snapshot(browser, url) {
   const page = await browser.newPage()
@@ -62,7 +88,8 @@ async function snapshot(browser, url) {
     // captured markup, so the SPA still boots and re-renders over the
     // snapshot. The post-useEffect <head> (title, meta description, og tags)
     // is baked in too — an SEO bonus for crawlers that don't run JS.
-    return '<!doctype html>\n' + (await page.evaluate(() => document.documentElement.outerHTML))
+    const outer = await page.evaluate(() => document.documentElement.outerHTML)
+    return inlineStylesheets('<!doctype html>\n' + outer)
   } finally {
     await page.close()
   }
@@ -78,11 +105,11 @@ function writeAtomic(out, html) {
 }
 
 async function main() {
-  // Phase 1a — the clean shell must exist BEFORE anything else: it is the
-  // deep-route fallback (`_redirects` → /app.html). Copy it unconditionally
-  // and first, so even a later failure can't leave deep routes 404-ing.
-  copyFileSync(INDEX, APP_SHELL)
-  console.log('prerender: dist/app.html written (clean shell)')
+  // Phase 1a — write the clean shell FIRST: the Vite-built index.html with
+  // stylesheets inlined, empty #root. Done before anything else so a later
+  // failure can't leave it missing.
+  writeAtomic(APP_SHELL, inlineStylesheets(readFileSync(INDEX, 'utf8')))
+  console.log('prerender: dist/app.html written (inlined clean shell)')
 
   let server
   let browser
@@ -105,15 +132,15 @@ async function main() {
     for (const { path, out } of PAGES) {
       const html = await snapshot(browser, base + path)
       captured.push({ out, html })
-      console.log(`prerender: captured ${path} (${html.length} bytes)`)
+      console.log(`prerender: captured ${path} (${html.length} bytes, CSS inlined)`)
     }
     for (const { out, html } of captured) writeAtomic(out, html)
     console.log('prerender: dist/index.html + dist/en/index.html written')
   } catch (err) {
-    // Fail-soft. dist/index.html is still the clean Vite shell (we only
+    // Fail-soft. dist/index.html is still the Vite-built shell (we only
     // overwrite it at the very end, after both snapshots succeed), so the
     // site stays correct as a plain SPA. Never block the deploy.
-    console.warn('prerender: snapshot failed, leaving the clean shell in place')
+    console.warn('prerender: snapshot failed, leaving the Vite-built shell in place')
     console.warn(err instanceof Error ? err.stack : String(err))
   } finally {
     if (browser) await browser.close()
