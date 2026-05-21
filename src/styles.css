@@ -2942,9 +2942,10 @@ button.intake__progress-step:focus-visible {
    static under reduced-motion. */
 @media (prefers-reduced-motion: no-preference) {
   .session-timeline__entry {
-    opacity: 0;
-    transform: translateX(-8px);
-    animation: session-timeline-rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    /* Resting state visible — hidden start is the keyframe `from`, held by
+       `backwards` fill during the delay. An interrupted animation degrades to
+       a shown entry, never a vanished slice of project history. */
+    animation: session-timeline-rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
   }
   .session-timeline__entry:nth-child(1) {
     animation-delay: 60ms;
@@ -2965,6 +2966,10 @@ button.intake__progress-step:focus-visible {
     animation-delay: 410ms;
   }
   @keyframes session-timeline-rise {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
     to {
       opacity: 1;
       transform: translateX(0);
@@ -7668,15 +7673,21 @@ button.intake__progress-step:disabled {
   transform: translateX(6px) scale(1.04);
 }
 /* Staggered fade-up on first paint — same pattern as Vouches cards. --i
-   is set inline from the map index in HowItWorks.tsx. */
+   is set inline from the map index in HowItWorks.tsx.
+   The hidden start state lives in the keyframe `from` (held during the delay
+   by `backwards` fill), NOT as a base `opacity: 0`. So the resting state is
+   visible: if the animation is ever cut short — a frozen screenshot, an
+   interrupted paint — the steps fall back to shown, never to a blank void. */
 @media (prefers-reduced-motion: no-preference) {
   .home .step--editorial {
-    opacity: 0;
-    transform: translateY(14px);
-    animation: how-step-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation: how-step-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
     animation-delay: calc(var(--i, 0) * 90ms + 120ms);
   }
   @keyframes how-step-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
     to {
       opacity: 1;
       transform: translateY(0);
@@ -11978,15 +11989,20 @@ button.intake__progress-step:disabled {
 /* Staggered fade-up on mount — cards rise into place sequentially so the
    list reads as testimonials coming alive instead of pasted in. --i is
    set inline from the React render index. Skip the animation under
-   reduced-motion: cards remain fully visible. */
+   reduced-motion: cards remain fully visible.
+   Resting state is visible — the hidden start lives in the keyframe `from`,
+   held during the delay by `backwards` fill — so an interrupted animation
+   degrades to a shown card, never a blank one. */
 @media (prefers-reduced-motion: no-preference) {
   .vouch-card {
-    opacity: 0;
-    transform: translateY(12px);
-    animation: vouch-card-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation: vouch-card-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
     animation-delay: calc(var(--i, 0) * 70ms + 80ms);
   }
   @keyframes vouch-card-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
     to {
       opacity: 1;
       transform: translateY(0);
