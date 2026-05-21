@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
+import { HOME_SECTION_FEATURE, type FeatureId } from '../lib/features'
 
 /**
- * Thin progress thread that fills horizontally as the visitor scrolls. Reads
- * as the napperon palette (sage → warm terracotta) — like a coffee ring
- * drying along the placemat's edge.
+ * Thin progress thread that fills horizontally as the visitor scrolls.
+ *
+ * On most pages it reads as the napperon palette (sage → warm terracotta) —
+ * like a coffee ring drying along the placemat's edge. On the HOME page it
+ * does something extra: the thread takes the colour of the funnel section
+ * the visitor is currently in, so they watch themselves move through the
+ * practice's seven feature colours as they scroll. Off the home page (no
+ * funnel sections in the DOM) it falls back to the gradient.
  *
  * When the visitor reaches the bottom (>=98% scrolled) a tiny LU / READ
  * stamp fades in at the right terminus, reusing the VÉRIFIÉ stamp family
@@ -12,13 +18,35 @@ import type { Lang } from '../i18n'
  */
 export function ScrollProgress({ lang }: { lang: Lang }) {
   const [ratio, setRatio] = useState(0)
+  // null = not on the home funnel → the gradient shows.
+  const [feature, setFeature] = useState<FeatureId | null>(null)
 
   useEffect(() => {
     let rafId: number | null = null
+    // Funnel section ids, in render order — HOME_SECTION_FEATURE is the
+    // single source of truth, so adding/reordering a section needs no
+    // change here.
+    const sectionIds = Object.keys(HOME_SECTION_FEATURE)
     const compute = () => {
       const scroll = window.scrollY
       const max = document.documentElement.scrollHeight - window.innerHeight
       setRatio(max > 0 ? Math.min(1, Math.max(0, scroll / max)) : 0)
+
+      // Which funnel section is the visitor in? The last one whose top has
+      // crossed the viewport midline. No section element in the DOM → this
+      // isn't the home page, so we leave the gradient in place.
+      const mid = window.innerHeight * 0.5
+      let onFunnel = false
+      let current: FeatureId | null = null
+      for (const id of sectionIds) {
+        const el = document.getElementById(id)
+        if (!el) continue
+        onFunnel = true
+        if (el.getBoundingClientRect().top <= mid) {
+          current = HOME_SECTION_FEATURE[id] ?? current
+        }
+      }
+      setFeature(onFunnel ? current : null)
       rafId = null
     }
     const onScroll = () => {
@@ -39,7 +67,11 @@ export function ScrollProgress({ lang }: { lang: Lang }) {
 
   return (
     <div className="scroll-progress" aria-hidden="true">
-      <div className="scroll-progress__fill" style={{ transform: `scaleX(${ratio})` }} />
+      <div
+        className="scroll-progress__fill"
+        data-feature={feature ?? undefined}
+        style={{ transform: `scaleX(${ratio})` }}
+      />
       <svg
         className={`scroll-progress__stamp${done ? ' is-done' : ''}`}
         viewBox="0 0 60 28"

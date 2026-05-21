@@ -912,6 +912,11 @@ const FR = {
     body: 'Le lien que tu as suivi pointe sur quelque chose qui n’existe pas. Probablement une vieille URL.',
     homeCta: '← Retour à l’accueil',
     intakeCta: 'Démarrer une demande →',
+    mapEyebrow: 'un coin de la carte',
+    mapHere: 'tu es ici… en fait non',
+    mapHome: 'L’accueil',
+    mapProjects: 'Les projets',
+    mapAtlas: 'La carte du site',
   },
 
   errorBoundary: {
@@ -1781,6 +1786,11 @@ const EN: Copy = {
     body: "The link you followed points at something that isn't here. Probably an old URL.",
     homeCta: '← Back home',
     intakeCta: 'Start a request →',
+    mapEyebrow: 'a corner of the map',
+    mapHere: 'you are here… actually, no',
+    mapHome: 'Home',
+    mapProjects: 'Projects',
+    mapAtlas: 'The site map',
   },
 
   errorBoundary: {
