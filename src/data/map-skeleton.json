@@ -211,6 +211,20 @@
       "inAdminShell": false
     },
     {
+      "path": "/me/data",
+      "component": "MyData",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/me/data",
+      "component": "MyData",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
       "path": "/session/:id",
       "component": "SessionPage",
       "lang": "fr",

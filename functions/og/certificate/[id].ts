@@ -94,7 +94,6 @@ interface CertFields {
   project: string
   name: string
   shippedAt: number
-  ownerEmail: string
 }
 
 interface StatusHistoryEntry {
@@ -192,7 +191,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
           project: session.showcase_title?.trim() || t.fallbackProject,
           name: visitorName(session.intake_json, session.email),
           shippedAt: shippedTimestamp(session.status_history, session.updated_at),
-          ownerEmail: session.email,
         }
       }
     }
