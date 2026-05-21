@@ -15,6 +15,14 @@
       "accessibility": 92,
       "bestPractices": 100,
       "seo": 92
+    },
+    {
+      "commit": "89d5dd9",
+      "date": "2026-05-21T19:05:43.390Z",
+      "performance": 44,
+      "accessibility": 92,
+      "bestPractices": 93,
+      "seo": 83
     }
   ]
 }
