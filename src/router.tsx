@@ -63,6 +63,7 @@ const Napkin = lazy(() => import('./pages/Napkin').then((m) => ({ default: m.Nap
 const Journey = lazy(() => import('./pages/Journey').then((m) => ({ default: m.Journey })))
 const Vouches = lazy(() => import('./pages/Vouches').then((m) => ({ default: m.Vouches })))
 const Vouch = lazy(() => import('./pages/Vouch').then((m) => ({ default: m.Vouch })))
+const MyData = lazy(() => import('./pages/MyData').then((m) => ({ default: m.MyData })))
 const AdminVouches = lazy(() =>
   import('./pages/AdminVouches').then((m) => ({ default: m.AdminVouches })),
 )
@@ -271,6 +272,22 @@ export const router = createBrowserRouter(
       <Route path="/en/login/sent" element={<MagicLinkSent lang="en" />} />
       <Route path="/me" element={<MePortal lang="fr" />} />
       <Route path="/en/me" element={<MePortal lang="en" />} />
+      <Route
+        path="/me/data"
+        element={
+          <L>
+            <MyData lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/me/data"
+        element={
+          <L>
+            <MyData lang="en" />
+          </L>
+        }
+      />
       <Route path="/session/:id" element={<SessionPage lang="fr" />} />
       <Route path="/en/session/:id" element={<SessionPage lang="en" />} />
       <Route

@@ -17,7 +17,6 @@ import { clearDraft, loadDraftWithTTL } from '../lib/draft'
 import { PENDING_INTAKE_KEY, type PendingIntake } from './Intake'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDate, formatRelativeWindow } from '../lib/format'
-import { downloadJson, exportMyData } from '../lib/export'
 import { isUnread, seedIfMissing } from '../lib/unread'
 import { PaymentActions } from '../components/PaymentActions'
 import { LangPrefCard } from '../components/LangPrefCard'
@@ -39,8 +38,8 @@ const COPY = {
     tileNewAction: 'Commencer →',
     tileDataTitle: 'Mes données',
     tileDataBody:
-      'Loi 25 — droit d’accès. Télécharge un export JSON de toutes tes sessions et messages.',
-    tileDataAction: 'Télécharger',
+      'Loi 25 — droit d’accès. Tout ce que je détiens sur toi, en clair, sur une page — et en JSON si tu veux.',
+    tileDataAction: 'Voir mes données →',
     tilePrivacyTitle: 'Confidentialité',
     tilePrivacyBody: 'Politique de confidentialité, hébergement, mes droits.',
     tilePrivacyAction: 'Lire la politique ↗',
@@ -79,8 +78,6 @@ const COPY = {
     noMatches: 'Aucune session ne correspond.',
     slaDueLabel: 'Réponse de Marc',
     slaOverdue: 'En retard',
-    exportData: 'Télécharger mes données',
-    exporting: 'Préparation…',
     deleteHeading: 'Supprimer mon compte et toutes mes données',
     deleteBody:
       'Loi 25 — droit à l’effacement. Cette action est immédiate et irréversible. Toutes tes sessions, messages et pièces jointes sont supprimés du serveur.',
@@ -119,7 +116,7 @@ const COPY = {
       },
       {
         q: 'Mes données ?',
-        a: 'Tu peux télécharger un export JSON de toutes tes sessions (incluant le fil) avec le bouton ci-dessous.',
+        a: 'La tuile « Mes données » ouvre une page qui montre, en clair, tout ce que je détiens sur toi — avec un export JSON si tu en veux une copie.',
       },
     ],
   },
@@ -139,8 +136,8 @@ const COPY = {
     tileNewAction: 'Start →',
     tileDataTitle: 'My data',
     tileDataBody:
-      'Bill 25 — right of access. Download a JSON export of all your sessions and messages.',
-    tileDataAction: 'Download',
+      'Bill 25 — right of access. Everything I hold about you, in plain words, on one page — and as JSON if you want it.',
+    tileDataAction: 'See my data →',
     tilePrivacyTitle: 'Privacy',
     tilePrivacyBody: 'Privacy policy, hosting, your rights.',
     tilePrivacyAction: 'Read the policy ↗',
@@ -179,8 +176,6 @@ const COPY = {
     noMatches: 'No sessions match.',
     slaDueLabel: "Marc's reply",
     slaOverdue: 'Overdue',
-    exportData: 'Download my data',
-    exporting: 'Preparing…',
     deleteHeading: 'Delete my account and all my data',
     deleteBody:
       'Bill 25 — right to erasure. This action is immediate and irreversible. All your sessions, messages, and attachments are deleted from the server.',
@@ -217,7 +212,7 @@ const COPY = {
       },
       {
         q: 'My data?',
-        a: 'You can download a JSON export of all your sessions (including the thread) with the button below.',
+        a: 'The "My data" tile opens a page that shows, in plain words, everything I hold about you — with a JSON export if you want a copy.',
       },
     ],
   },
@@ -256,7 +251,6 @@ export function MePortal({ lang }: { lang: Lang }) {
   )
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<SessionStatus | 'all'>('all')
-  const [exporting, setExporting] = useState(false)
   const [deleteState, setDeleteState] = useState<'idle' | 'confirming' | 'deleting' | 'error'>(
     'idle',
   )
@@ -303,17 +297,6 @@ export function MePortal({ lang }: { lang: Lang }) {
       window.location.href = lang === 'fr' ? '/' : '/en'
     } catch {
       setDeleteState('error')
-    }
-  }
-
-  const onExport = async () => {
-    if (!email || exporting) return
-    setExporting(true)
-    try {
-      const bundle = await exportMyData(email)
-      downloadJson(bundle)
-    } finally {
-      setExporting(false)
     }
   }
 
@@ -483,20 +466,13 @@ export function MePortal({ lang }: { lang: Lang }) {
           </li>
 
           <li className="me-portal__tile">
-            <button
-              type="button"
-              className="me-portal__tile-link me-portal__tile-link--btn"
-              onClick={onExport}
-              disabled={exporting || sessions === null || sessions.length === 0}
-            >
+            <a href={`${langPrefix}/me/data`} className="me-portal__tile-link">
               <div className="me-portal__tile-head">
                 <h2 className="me-portal__tile-title">{t.tileDataTitle}</h2>
               </div>
               <p className="me-portal__tile-body">{t.tileDataBody}</p>
-              <span className="mono me-portal__tile-action">
-                {exporting ? t.exporting : t.tileDataAction}
-              </span>
-            </button>
+              <span className="mono me-portal__tile-action">{t.tileDataAction}</span>
+            </a>
           </li>
 
           <li className="me-portal__tile">

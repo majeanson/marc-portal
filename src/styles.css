@@ -1716,8 +1716,24 @@ button.intake__progress-step:focus-visible {
   border: 1px solid var(--border);
   /* a hand-torn paper edge along the top and bottom */
   clip-path: polygon(
-    0% 5%, 11% 1%, 24% 6%, 38% 1%, 52% 5%, 66% 1%, 80% 6%, 92% 2%, 100% 5%,
-    100% 95%, 90% 99%, 77% 94%, 63% 99%, 49% 95%, 35% 99%, 21% 94%, 9% 99%, 0% 95%
+    0% 5%,
+    11% 1%,
+    24% 6%,
+    38% 1%,
+    52% 5%,
+    66% 1%,
+    80% 6%,
+    92% 2%,
+    100% 5%,
+    100% 95%,
+    90% 99%,
+    77% 94%,
+    63% 99%,
+    49% 95%,
+    35% 99%,
+    21% 94%,
+    9% 99%,
+    0% 95%
   );
 }
 .not-found__map-lines {
@@ -13674,4 +13690,189 @@ a.feature-dot:focus-visible {
 .feature-continue__home:focus-visible {
   color: var(--text);
   text-decoration: underline;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   /me/data — "Mes données". The Loi 25 right-of-access as a designed,
+   print-friendly document rather than a raw JSON dump.
+   ────────────────────────────────────────────────────────────────────── */
+.mydata__pending {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+.mydata__back {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--text-soft);
+  text-decoration: none;
+  margin-bottom: 14px;
+}
+.mydata__back:hover {
+  color: var(--accent-warm);
+}
+.mydata__meta {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin: 6px 0 0;
+}
+.mydata__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 8px;
+}
+.mydata__btn {
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font: 600 12.5px/1 var(--mono);
+  letter-spacing: 0.03em;
+}
+.mydata__btn:hover {
+  background: var(--accent-warm);
+  border-color: var(--accent-warm);
+}
+.mydata__btn--ghost {
+  background: transparent;
+  color: var(--text-mid);
+  border-color: var(--border);
+}
+.mydata__btn--ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.mydata__empty {
+  margin-top: 20px;
+  color: var(--text-mid);
+  max-width: 60ch;
+}
+/* One session = one document entry. */
+.mydata__entry {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.mydata__entry-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mydata__entry-title {
+  margin: 0;
+  font-size: 19px;
+}
+.mydata__entry-status {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.mydata__entry-dates {
+  font-size: 11.5px;
+  color: var(--text-soft);
+  margin: 4px 0 14px;
+}
+.mydata__intake {
+  background: var(--bg-section);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 4px 18px 14px;
+}
+.mydata__muted {
+  color: var(--text-soft);
+  font-style: italic;
+}
+.mydata__napkin {
+  margin: 16px 0 0;
+}
+.mydata__napkin figcaption {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+}
+.mydata__napkin img {
+  display: block;
+  max-width: 100%;
+  width: 420px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+.mydata__thread-heading {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-family: var(--mono);
+  margin: 22px 0 10px;
+}
+.mydata__thread {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.mydata__msg {
+  border-left: 2px solid var(--border);
+  padding-left: 14px;
+}
+.mydata__msg-meta {
+  font-size: 11px;
+  color: var(--text-soft);
+  margin: 0 0 3px;
+}
+.mydata__msg-body {
+  margin: 0;
+  color: var(--text);
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+.mydata__rights {
+  margin-top: 36px;
+  padding: 20px 22px;
+  background: var(--bg-section);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+}
+.mydata__rights h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+.mydata__rights p {
+  margin: 0;
+  color: var(--text-mid);
+  max-width: 60ch;
+}
+.mydata__rights-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 12px !important;
+  font-size: 13px;
+}
+/* Print — a visitor can keep a paper copy. Drop the site chrome and the
+   on-screen controls; keep the document itself. */
+@media print {
+  .site-header,
+  .site-footer,
+  .scroll-progress,
+  .mydata__actions,
+  .mydata__back {
+    display: none !important;
+  }
+  .mydata__entry,
+  .mydata__rights {
+    break-inside: avoid;
+  }
 }
