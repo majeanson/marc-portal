@@ -66,7 +66,12 @@ const PAGES = {
 
 const DATA = {
   NODE_W: 240,
-  NODE_H: 64,
+  // Was 64 — too short for a node with a label AND a description: the desc
+  // overflowed and `.map-node { overflow: hidden }` clipped it mid-sentence,
+  // with the absolute bottom-right badge landing on top of the text. The
+  // 2026-05 polish pass bumped the Pages node to 116 but missed Data. 112
+  // fits a label + a 2–3 line clamped desc, clear of the badge.
+  NODE_H: 112,
   ROW_GAP: 14,
   COL_W: 260,
   COL_GAP: 96,
