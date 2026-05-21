@@ -15,6 +15,29 @@ vi.mock('../data/portal-stats.json', () => ({
   },
 }))
 
+vi.mock('../data/lighthouse-history.json', () => ({
+  default: {
+    runs: [
+      {
+        commit: 'aaa1111',
+        date: '2026-05-18T12:00:00.000Z',
+        performance: 91,
+        accessibility: 100,
+        bestPractices: 96,
+        seo: 100,
+      },
+      {
+        commit: 'bbb2222',
+        date: '2026-05-21T12:00:00.000Z',
+        performance: 96,
+        accessibility: 100,
+        bestPractices: 100,
+        seo: 100,
+      },
+    ],
+  },
+}))
+
 import { Scorecard } from './Scorecard'
 
 function mockFetch(handlers: Record<string, { ok: boolean; body: unknown }>) {
@@ -43,6 +66,16 @@ describe('Scorecard', () => {
     render(<Scorecard lang="fr" />)
     expect(screen.getByText('381')).toBeInTheDocument()
     expect(screen.getByText('abc1234')).toBeInTheDocument()
+  })
+
+  it('shows the latest Lighthouse performance score', () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject(new Error('offline'))),
+    )
+    render(<Scorecard lang="en" />)
+    // Last run in the mocked history wins; 96 ≥ 90 so it reads as a pass.
+    expect(screen.getByText('96')).toBeInTheDocument()
   })
 
   it('shows the service as operational when /api/health is ok', async () => {

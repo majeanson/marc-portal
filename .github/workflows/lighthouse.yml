@@ -1,0 +1,64 @@
+name: lighthouse
+
+# Runs Lighthouse against a production build of the homepage on every push to
+# main, appends the four category scores to src/data/lighthouse-history.json,
+# and commits that file back. The git history of that file is the score
+# timeline; the /meta scorecard imports it and shows the latest run.
+#
+# Loop guard: the commit message carries [skip ci] (GitHub skips all workflows
+# for that commit) and the workflow also paths-ignores the history file — so
+# the commit this workflow makes never re-triggers it.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'src/data/lighthouse-history.json'
+  workflow_dispatch:
+
+# Serialise runs so two pushes can't race the commit-back push.
+concurrency:
+  group: lighthouse
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      - name: Serve the build and run Lighthouse
+        run: |
+          npx vite preview --port 4173 &
+          npx --yes wait-on http://localhost:4173 --timeout 60000
+          npx --yes lighthouse@12 http://localhost:4173 \
+            --output=json --output-path=./lh-report.json --quiet \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --chrome-flags="--headless --no-sandbox"
+
+      - name: Append the run to the history
+        run: node scripts/append-lighthouse.mjs ./lh-report.json
+
+      - name: Commit the history back
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/lighthouse-history.json
+          if git diff --cached --quiet; then
+            echo "lighthouse: no change to commit"
+          else
+            git commit -m "chore(lighthouse): record scores for ${GITHUB_SHA::7} [skip ci]"
+            git pull --rebase --autostash origin main
+            git push
+          fi
