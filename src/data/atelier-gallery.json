@@ -90,7 +90,7 @@
       "full": "/atelier/full/phone/root.png",
       "thumbW": 510,
       "thumbH": 816,
-      "fullH": 14640,
+      "fullH": 14780,
       "cropped": true
     },
     {
@@ -108,7 +108,7 @@
       "full": "/atelier/full/phone/en.png",
       "thumbW": 510,
       "thumbH": 816,
-      "fullH": 13960,
+      "fullH": 14120,
       "cropped": true
     },
     {
@@ -792,7 +792,7 @@
       "full": "/atelier/full/narrow/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12608,
+      "fullH": 12620,
       "cropped": true
     },
     {
@@ -1476,7 +1476,7 @@
       "full": "/atelier/full/wide/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12866,
+      "fullH": 12877,
       "cropped": true
     },
     {
@@ -2160,7 +2160,7 @@
       "full": "/atelier/full/dark/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12866,
+      "fullH": 12877,
       "cropped": true
     },
     {

@@ -30,17 +30,23 @@ jobs:
       - name: Regenerate visual baselines
         continue-on-error: true
         run: npx playwright test screenshots.spec.ts error-states.spec.ts --update-snapshots
+      # The atelier gallery manifest's `fullH` is derived from each baseline
+      # PNG's pixel height. Regenerate it here so it doesn't silently drift
+      # from the screenshots this run just refreshed.
+      - name: Sync the atelier gallery manifest
+        if: always()
+        run: node scripts/build-atelier-gallery.mjs
       - name: Commit regenerated baselines
         if: always()
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add e2e/__screenshots__
+          git add e2e/__screenshots__ src/data/atelier-gallery.json
           if git diff --cached --quiet; then
             echo "no baseline changes"
           else
-            git commit -m "chore(e2e): regenerate visual baselines on the CI runner"
+            git commit -m "chore(e2e): regenerate visual baselines + atelier manifest on the CI runner"
             git push origin HEAD:${{ github.ref_name }}
           fi
       # A push made with the default GITHUB_TOKEN does NOT trigger other
