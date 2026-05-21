@@ -111,6 +111,12 @@ const COPY = {
     notFound: 'Session introuvable.',
     forbidden: 'Tu n’as pas accès à cette session.',
     threadHeading: 'Discussion',
+    arcPinnedHeading: 'Le croquis de départ',
+    arcShippedHeading: 'Du croquis au livré',
+    arcSketchLabel: 'Le croquis',
+    arcShippedLabel: 'Le livré',
+    arcViewLive: 'Voir en ligne ↗',
+    arcShippedFallback: 'Projet livré',
     none: 'Marc répond en moins de 72h. Laisse-lui un mot ici dès que tu en as un.',
     placeholder: 'Écris un message…',
     sending: 'Envoi…',
@@ -177,6 +183,12 @@ const COPY = {
     notFound: 'Session not found.',
     forbidden: "You don't have access to this session.",
     threadHeading: 'Thread',
+    arcPinnedHeading: 'The starting sketch',
+    arcShippedHeading: 'From sketch to shipped',
+    arcSketchLabel: 'The sketch',
+    arcShippedLabel: 'Shipped',
+    arcViewLive: 'See it live ↗',
+    arcShippedFallback: 'Project shipped',
     none: 'Marc replies within 72h. Drop him a note here whenever you have one.',
     placeholder: 'Write a message…',
     sending: 'Sending…',
@@ -799,6 +811,18 @@ export function SessionPage({ lang }: { lang: Lang }) {
               }
             />
 
+            {/* The napkin as the through-line — pinned high on the session,
+                and at shipped it completes into a from-sketch-to-shipped
+                pairing. */}
+            {parsed?.napkin && (
+              <NapkinArc
+                lang={lang}
+                napkin={parsed.napkin}
+                session={session}
+                currentBuild={currentBuild}
+              />
+            )}
+
             <section id="session-intake" className="intake__step session-frame__panel">
               <header className="session-page__intake-head">
                 <h2>{t.intakeHeading}</h2>
@@ -855,7 +879,6 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     requiredEmptyConfirm={t.requiredEmptyConfirm}
                     onChange={onIntakeChange}
                   />
-                  {parsed.napkin && <NapkinSection lang={lang} napkin={parsed.napkin} />}
                 </>
               ) : intakePretty ? (
                 <pre className="mono session-page__intake">{intakePretty}</pre>
@@ -1192,6 +1215,72 @@ function NapkinSection({ lang, napkin }: { lang: Lang; napkin: ParsedNapkin }) {
         />
       </div>
     </div>
+  )
+}
+
+/**
+ * The napkin as the through-line. Pinned high on the session so the sketch
+ * the visitor arrived with stays present the whole way through. Once the
+ * session ships it completes into a from-sketch-to-shipped pairing — the
+ * first scribble beside what it became, a small keepsake of the arc.
+ */
+function NapkinArc({
+  lang,
+  napkin,
+  session,
+  currentBuild,
+}: {
+  lang: Lang
+  napkin: ParsedNapkin
+  session: SessionRow
+  currentBuild: AdvancementRow | null
+}) {
+  const t = COPY[lang]
+  const shipped = session.status === 'shipped'
+  const buildHref = currentBuild?.build_url
+    ? `${currentBuild.build_url}${currentBuild.iframe_path ?? ''}`
+    : null
+  return (
+    <section
+      className="intake__step session-frame__panel session-arc"
+      data-shipped={shipped || undefined}
+    >
+      <h2>{shipped ? t.arcShippedHeading : t.arcPinnedHeading}</h2>
+      <div className="session-arc__pair">
+        <div className="session-arc__col">
+          {shipped && <span className="mono session-arc__col-label">{t.arcSketchLabel}</span>}
+          <NapkinSection lang={lang} napkin={napkin} />
+        </div>
+        {shipped && (
+          <>
+            <div className="session-arc__arrow" aria-hidden="true">
+              →
+            </div>
+            <div className="session-arc__col session-arc__col--shipped">
+              <span className="mono session-arc__col-label">{t.arcShippedLabel}</span>
+              <div className="session-arc__shipped">
+                <h3 className="session-arc__shipped-title">
+                  {session.showcase_title?.trim() || t.arcShippedFallback}
+                </h3>
+                {session.showcase_tagline?.trim() && (
+                  <p className="session-arc__shipped-tagline">{session.showcase_tagline}</p>
+                )}
+                {buildHref && (
+                  <a
+                    className="mono session-arc__shipped-link"
+                    href={buildHref}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {t.arcViewLive}
+                  </a>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </section>
   )
 }
 

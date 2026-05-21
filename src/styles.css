@@ -9647,6 +9647,82 @@ button.intake__progress-step:disabled {
    SESSION NAPKIN — admin/visitor view inside SessionPage. Renders the
    napkin sketch attached at intake time (parsed.napkin in intake_json).
    ────────────────────────────────────────────────────────────────────── */
+/* The napkin-arc panel — the sketch pinned high on the session, and (once
+   shipped) the from-sketch-to-shipped pairing. */
+.session-arc[data-shipped] {
+  border-left: 3px solid var(--accent);
+}
+.session-arc__pair {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 18px;
+  margin-top: 14px;
+}
+.session-arc__col {
+  flex: 1 1 280px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.session-arc__col-label {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+/* Inside the arc the napkin card sits flush — the panel already frames it. */
+.session-arc .session-napkin {
+  margin-top: 0;
+  flex: 1;
+}
+.session-arc__arrow {
+  align-self: center;
+  font-size: 26px;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.session-arc__shipped {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  background: var(--bg-active);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.session-arc__shipped-title {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text);
+}
+.session-arc__shipped-tagline {
+  margin: 0;
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+.session-arc__shipped-link {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--accent-warm);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--accent-warm);
+  align-self: flex-start;
+  padding-bottom: 1px;
+}
+.session-arc__shipped-link:hover {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+@media (max-width: 640px) {
+  .session-arc__arrow {
+    transform: rotate(90deg);
+  }
+}
+
 .session-napkin {
   margin-top: 32px;
   padding: 20px;
