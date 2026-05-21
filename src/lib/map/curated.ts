@@ -219,6 +219,15 @@ const PAGE_PATCHES = [
     group: 'group.feat-meta',
   },
   {
+    id: 'page.atelier',
+    label: bi('Atelier', 'Workshop'),
+    desc: bi(
+      'Le système visuel du portail + chaque écran vérifié à chaque commit.',
+      'The portal’s visual system + every screen verified on each commit.',
+    ),
+    group: 'group.feat-meta',
+  },
+  {
     id: 'page.map-page',
     label: bi('Carte', 'Map'),
     desc: bi(
@@ -458,7 +467,7 @@ const GROUPS: MapGroup[] = [
     layer: 'pages',
     visibility: 'public',
     order: 6,
-    nodeIds: ['page.privacy', 'page.pia', 'page.meta', 'page.map-page'],
+    nodeIds: ['page.privacy', 'page.pia', 'page.meta', 'page.atelier', 'page.map-page'],
   },
   {
     id: 'group.feat-operator',

@@ -339,6 +339,7 @@ describe('page wayfinding', () => {
     'Handoff.tsx': 'page.handoff',
     'HandoffChecklist.tsx': 'page.handoff-checklist',
     'Meta.tsx': 'page.meta',
+    'Atelier.tsx': 'page.atelier',
     'Privacy.tsx': 'page.privacy',
     'Pia.tsx': 'page.pia',
     'Map.tsx': 'page.map-page',

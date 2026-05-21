@@ -25,6 +25,12 @@
     <loc>https://marcportal.com/en/napkin</loc>
   </url>
   <url>
+    <loc>https://marcportal.com/parcours</loc>
+  </url>
+  <url>
+    <loc>https://marcportal.com/en/journey</loc>
+  </url>
+  <url>
     <loc>https://marcportal.com/tier-0</loc>
   </url>
   <url>
@@ -35,6 +41,12 @@
   </url>
   <url>
     <loc>https://marcportal.com/en/privacy</loc>
+  </url>
+  <url>
+    <loc>https://marcportal.com/pia</loc>
+  </url>
+  <url>
+    <loc>https://marcportal.com/en/pia</loc>
   </url>
   <url>
     <loc>https://marcportal.com/handoff</loc>
@@ -53,6 +65,12 @@
   </url>
   <url>
     <loc>https://marcportal.com/en/meta</loc>
+  </url>
+  <url>
+    <loc>https://marcportal.com/atelier</loc>
+  </url>
+  <url>
+    <loc>https://marcportal.com/en/atelier</loc>
   </url>
   <url>
     <loc>https://marcportal.com/carte</loc>

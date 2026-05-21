@@ -33,6 +33,7 @@ const AdminCustodians = lazy(() =>
   import('./pages/AdminCustodians').then((m) => ({ default: m.AdminCustodians })),
 )
 const Meta = lazy(() => import('./pages/Meta').then((m) => ({ default: m.Meta })))
+const Atelier = lazy(() => import('./pages/Atelier').then((m) => ({ default: m.Atelier })))
 // Aliased to MapPage at import to avoid shadowing the global Map constructor.
 const MapPage = lazy(() => import('./pages/Map').then((m) => ({ default: m.Map })))
 const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
@@ -230,6 +231,22 @@ export const router = createBrowserRouter(
         element={
           <L>
             <Meta lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/atelier"
+        element={
+          <L>
+            <Atelier lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/atelier"
+        element={
+          <L>
+            <Atelier lang="en" />
           </L>
         }
       />

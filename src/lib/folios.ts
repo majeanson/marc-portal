@@ -76,6 +76,7 @@ export type HomeFolioKey = keyof typeof HOME_FOLIOS
  *   08 privacy   (Loi 25 visitor statement)
  *   09 pia       (companion to privacy — PIA)
  *   10 map       (the carte / atlas — meta-meta)
+ *   11 atelier   (the workshop — design system + visual-baseline gallery)
  *
  * When adding a new content page, take the next sequential number; don't
  * recycle. When adding a functional flow (form, portal surface), DO NOT
@@ -93,6 +94,7 @@ export const PAGE_FOLIOS = {
   privacy: '08',
   pia: '09',
   map: '10',
+  atelier: '11',
 } as const
 
 export type PageFolioKey = keyof typeof PAGE_FOLIOS

@@ -121,6 +121,7 @@ const PAGE_FOLIO_BY_ID: Record<string, string> = {
   'page.handoff-checklist': PAGE_FOLIOS.handoffChecklist,
   'page.privacy': PAGE_FOLIOS.privacy,
   'page.pia': PAGE_FOLIOS.pia,
+  'page.atelier': PAGE_FOLIOS.atelier,
   'page.map-page': PAGE_FOLIOS.map,
 }
 

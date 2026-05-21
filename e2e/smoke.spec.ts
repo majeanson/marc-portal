@@ -60,4 +60,12 @@ test.describe('site wayfinding', () => {
     await page.goto('/carte')
     await expect(page.locator('.map-page')).toBeVisible()
   })
+
+  test('the atelier page renders both of its sections', async ({ page }) => {
+    // /atelier is excluded from the screenshot suite (see routes.ts), so this
+    // is its load-bearing check: the design-system exhibit + the gallery grid.
+    await page.goto('/atelier')
+    await expect(page.locator('.atelier-lang')).toBeVisible()
+    await expect(page.locator('.atelier-grid')).toBeVisible()
+  })
 })
