@@ -5,9 +5,7 @@ import type { ExcalidrawAPI, NapkinScene } from '../lib/napkin'
 
 // Excalidraw is heavy (~600 KB). Keep <SketchCanvas> behind React.lazy so the
 // session view only pays for it when the sketch panel is actually opened.
-const SketchCanvas = lazy(() =>
-  import('./SketchCanvas').then((m) => ({ default: m.SketchCanvas })),
-)
+const SketchCanvas = lazy(() => import('./SketchCanvas').then((m) => ({ default: m.SketchCanvas })))
 
 /** Total wall-clock length of one replay, in ms. Element count is paced to
  *  fit this window, so a 6-stroke sketch and a 60-stroke one both take the
