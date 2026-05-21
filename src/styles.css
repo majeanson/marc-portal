@@ -14504,7 +14504,10 @@ a.feature-dot:focus-visible {
      .section__inner. */
   width: 100%;
   max-width: var(--max-w);
-  margin: 8px auto 0;
+  /* Bottom margin clears the .site-footer__flourish, which is absolutely
+     positioned at top:-8px of the footer and pokes ~12px up. Without it
+     the flourish curves overlap this aside's "back to home" line. */
+  margin: 8px auto 28px;
   padding: 0 var(--gutter);
   display: flex;
   flex-direction: column;
