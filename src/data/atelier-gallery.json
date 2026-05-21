@@ -1,0 +1,2708 @@
+{
+  "viewports": [
+    {
+      "id": "phone",
+      "label": {
+        "fr": "Téléphone",
+        "en": "Phone"
+      },
+      "width": 390,
+      "height": 844
+    },
+    {
+      "id": "narrow",
+      "label": {
+        "fr": "Écran étroit",
+        "en": "Narrow"
+      },
+      "width": 1000,
+      "height": 900
+    },
+    {
+      "id": "wide",
+      "label": {
+        "fr": "Grand écran",
+        "en": "Wide"
+      },
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "id": "dark",
+      "label": {
+        "fr": "Mode soir",
+        "en": "Dark"
+      },
+      "width": 1440,
+      "height": 900,
+      "theme": "dark"
+    }
+  ],
+  "shots": [
+    {
+      "slug": "root",
+      "viewport": "phone",
+      "route": "/",
+      "component": "RootByTemplate",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La page d’accueil",
+        "en": "The home page"
+      },
+      "thumb": "/atelier/thumbs/phone/root.webp",
+      "full": "/atelier/full/phone/root.png",
+      "thumbW": 510,
+      "thumbH": 816,
+      "fullH": 14780,
+      "cropped": true
+    },
+    {
+      "slug": "en",
+      "viewport": "phone",
+      "route": "/en",
+      "component": "RootByTemplate",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La page d’accueil",
+        "en": "The home page"
+      },
+      "thumb": "/atelier/thumbs/phone/en.webp",
+      "full": "/atelier/full/phone/en.png",
+      "thumbW": 510,
+      "thumbH": 816,
+      "fullH": 14100,
+      "cropped": true
+    },
+    {
+      "slug": "tier-0",
+      "viewport": "phone",
+      "route": "/tier-0",
+      "component": "Tier0",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Tier 0 — le premier échange",
+        "en": "Tier 0 — the first chat"
+      },
+      "thumb": "/atelier/thumbs/phone/tier-0.webp",
+      "full": "/atelier/full/phone/tier-0.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 6745,
+      "cropped": true
+    },
+    {
+      "slug": "en-tier-0",
+      "viewport": "phone",
+      "route": "/en/tier-0",
+      "component": "Tier0",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Tier 0 — le premier échange",
+        "en": "Tier 0 — the first chat"
+      },
+      "thumb": "/atelier/thumbs/phone/en-tier-0.webp",
+      "full": "/atelier/full/phone/en-tier-0.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 6422,
+      "cropped": true
+    },
+    {
+      "slug": "intake",
+      "viewport": "phone",
+      "route": "/intake",
+      "component": "Intake",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Le formulaire d’intake",
+        "en": "The intake form"
+      },
+      "thumb": "/atelier/thumbs/phone/intake.webp",
+      "full": "/atelier/full/phone/intake.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1720,
+      "cropped": true
+    },
+    {
+      "slug": "en-intake",
+      "viewport": "phone",
+      "route": "/en/intake",
+      "component": "Intake",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Le formulaire d’intake",
+        "en": "The intake form"
+      },
+      "thumb": "/atelier/thumbs/phone/en-intake.webp",
+      "full": "/atelier/full/phone/en-intake.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1695,
+      "cropped": true
+    },
+    {
+      "slug": "napkin",
+      "viewport": "phone",
+      "route": "/napkin",
+      "component": "Napkin",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La napkin",
+        "en": "The napkin sketch"
+      },
+      "thumb": "/atelier/thumbs/phone/napkin.webp",
+      "full": "/atelier/full/phone/napkin.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1697,
+      "cropped": true
+    },
+    {
+      "slug": "en-napkin",
+      "viewport": "phone",
+      "route": "/en/napkin",
+      "component": "Napkin",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La napkin",
+        "en": "The napkin sketch"
+      },
+      "thumb": "/atelier/thumbs/phone/en-napkin.webp",
+      "full": "/atelier/full/phone/en-napkin.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1642,
+      "cropped": true
+    },
+    {
+      "slug": "parcours",
+      "viewport": "phone",
+      "route": "/parcours",
+      "component": "Journey",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Le parcours",
+        "en": "The journey"
+      },
+      "thumb": "/atelier/thumbs/phone/parcours.webp",
+      "full": "/atelier/full/phone/parcours.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 5845,
+      "cropped": true
+    },
+    {
+      "slug": "en-journey",
+      "viewport": "phone",
+      "route": "/en/journey",
+      "component": "Journey",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Le parcours",
+        "en": "The journey"
+      },
+      "thumb": "/atelier/thumbs/phone/en-journey.webp",
+      "full": "/atelier/full/phone/en-journey.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 5667,
+      "cropped": true
+    },
+    {
+      "slug": "projects",
+      "viewport": "phone",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/phone/projects.webp",
+      "full": "/atelier/full/phone/projects.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 3907,
+      "cropped": true
+    },
+    {
+      "slug": "projects-empty",
+      "viewport": "phone",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": "empty",
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/phone/projects-empty.webp",
+      "full": "/atelier/full/phone/projects-empty.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1912,
+      "cropped": true
+    },
+    {
+      "slug": "projects-error",
+      "viewport": "phone",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": "error",
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/phone/projects-error.webp",
+      "full": "/atelier/full/phone/projects-error.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1928,
+      "cropped": true
+    },
+    {
+      "slug": "en-projects",
+      "viewport": "phone",
+      "route": "/en/projects",
+      "component": "Projects",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/phone/en-projects.webp",
+      "full": "/atelier/full/phone/en-projects.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 3862,
+      "cropped": true
+    },
+    {
+      "slug": "vouches",
+      "viewport": "phone",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/phone/vouches.webp",
+      "full": "/atelier/full/phone/vouches.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1968,
+      "cropped": true
+    },
+    {
+      "slug": "vouches-empty",
+      "viewport": "phone",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": "empty",
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/phone/vouches-empty.webp",
+      "full": "/atelier/full/phone/vouches-empty.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1381,
+      "cropped": true
+    },
+    {
+      "slug": "vouches-error",
+      "viewport": "phone",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": "error",
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/phone/vouches-error.webp",
+      "full": "/atelier/full/phone/vouches-error.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1464,
+      "cropped": true
+    },
+    {
+      "slug": "en-vouches",
+      "viewport": "phone",
+      "route": "/en/vouches",
+      "component": "Vouches",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/phone/en-vouches.webp",
+      "full": "/atelier/full/phone/en-vouches.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1896,
+      "cropped": true
+    },
+    {
+      "slug": "vouch",
+      "viewport": "phone",
+      "route": "/vouch",
+      "component": "Vouch",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Laisser un mot",
+        "en": "Leave a vouch"
+      },
+      "thumb": "/atelier/thumbs/phone/vouch.webp",
+      "full": "/atelier/full/phone/vouch.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1897,
+      "cropped": true
+    },
+    {
+      "slug": "en-vouch",
+      "viewport": "phone",
+      "route": "/en/vouch",
+      "component": "Vouch",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Laisser un mot",
+        "en": "Leave a vouch"
+      },
+      "thumb": "/atelier/thumbs/phone/en-vouch.webp",
+      "full": "/atelier/full/phone/en-vouch.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1845,
+      "cropped": true
+    },
+    {
+      "slug": "handoff",
+      "viewport": "phone",
+      "route": "/handoff",
+      "component": "Handoff",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La passation",
+        "en": "The handoff"
+      },
+      "thumb": "/atelier/thumbs/phone/handoff.webp",
+      "full": "/atelier/full/phone/handoff.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 5820,
+      "cropped": true
+    },
+    {
+      "slug": "en-handoff",
+      "viewport": "phone",
+      "route": "/en/handoff",
+      "component": "Handoff",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La passation",
+        "en": "The handoff"
+      },
+      "thumb": "/atelier/thumbs/phone/en-handoff.webp",
+      "full": "/atelier/full/phone/en-handoff.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 5461,
+      "cropped": true
+    },
+    {
+      "slug": "handoff-checklist",
+      "viewport": "phone",
+      "route": "/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La liste de passation",
+        "en": "The handoff checklist"
+      },
+      "thumb": "/atelier/thumbs/phone/handoff-checklist.webp",
+      "full": "/atelier/full/phone/handoff-checklist.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 3753,
+      "cropped": true
+    },
+    {
+      "slug": "en-handoff-checklist",
+      "viewport": "phone",
+      "route": "/en/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La liste de passation",
+        "en": "The handoff checklist"
+      },
+      "thumb": "/atelier/thumbs/phone/en-handoff-checklist.webp",
+      "full": "/atelier/full/phone/en-handoff-checklist.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 3539,
+      "cropped": true
+    },
+    {
+      "slug": "login",
+      "viewport": "phone",
+      "route": "/login",
+      "component": "Login",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La connexion",
+        "en": "The login"
+      },
+      "thumb": "/atelier/thumbs/phone/login.webp",
+      "full": "/atelier/full/phone/login.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1156,
+      "cropped": true
+    },
+    {
+      "slug": "en-login",
+      "viewport": "phone",
+      "route": "/en/login",
+      "component": "Login",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La connexion",
+        "en": "The login"
+      },
+      "thumb": "/atelier/thumbs/phone/en-login.webp",
+      "full": "/atelier/full/phone/en-login.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1131,
+      "cropped": true
+    },
+    {
+      "slug": "login-sent",
+      "viewport": "phone",
+      "route": "/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Lien magique envoyé",
+        "en": "Magic link sent"
+      },
+      "thumb": "/atelier/thumbs/phone/login-sent.webp",
+      "full": "/atelier/full/phone/login-sent.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1173,
+      "cropped": true
+    },
+    {
+      "slug": "en-login-sent",
+      "viewport": "phone",
+      "route": "/en/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Lien magique envoyé",
+        "en": "Magic link sent"
+      },
+      "thumb": "/atelier/thumbs/phone/en-login-sent.webp",
+      "full": "/atelier/full/phone/en-login-sent.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1131,
+      "cropped": true
+    },
+    {
+      "slug": "me",
+      "viewport": "phone",
+      "route": "/me",
+      "component": "MePortal",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Mon espace",
+        "en": "My space"
+      },
+      "thumb": "/atelier/thumbs/phone/me.webp",
+      "full": "/atelier/full/phone/me.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 870,
+      "cropped": true
+    },
+    {
+      "slug": "en-me",
+      "viewport": "phone",
+      "route": "/en/me",
+      "component": "MePortal",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Mon espace",
+        "en": "My space"
+      },
+      "thumb": "/atelier/thumbs/phone/en-me.webp",
+      "full": "/atelier/full/phone/en-me.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 845,
+      "cropped": true
+    },
+    {
+      "slug": "meta",
+      "viewport": "phone",
+      "route": "/meta",
+      "component": "Meta",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Sous le capot",
+        "en": "Under the hood"
+      },
+      "thumb": "/atelier/thumbs/phone/meta.webp",
+      "full": "/atelier/full/phone/meta.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 9784,
+      "cropped": true
+    },
+    {
+      "slug": "en-meta",
+      "viewport": "phone",
+      "route": "/en/meta",
+      "component": "Meta",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Sous le capot",
+        "en": "Under the hood"
+      },
+      "thumb": "/atelier/thumbs/phone/en-meta.webp",
+      "full": "/atelier/full/phone/en-meta.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 9732,
+      "cropped": true
+    },
+    {
+      "slug": "carte",
+      "viewport": "phone",
+      "route": "/carte",
+      "component": "MapPage",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La carte du site",
+        "en": "The site map"
+      },
+      "thumb": "/atelier/thumbs/phone/carte.webp",
+      "full": "/atelier/full/phone/carte.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1853,
+      "cropped": true
+    },
+    {
+      "slug": "en-map",
+      "viewport": "phone",
+      "route": "/en/map",
+      "component": "MapPage",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La carte du site",
+        "en": "The site map"
+      },
+      "thumb": "/atelier/thumbs/phone/en-map.webp",
+      "full": "/atelier/full/phone/en-map.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1810,
+      "cropped": true
+    },
+    {
+      "slug": "confidentialite",
+      "viewport": "phone",
+      "route": "/confidentialite",
+      "component": "Privacy",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La vie privée",
+        "en": "Privacy"
+      },
+      "thumb": "/atelier/thumbs/phone/confidentialite.webp",
+      "full": "/atelier/full/phone/confidentialite.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 6226,
+      "cropped": true
+    },
+    {
+      "slug": "en-privacy",
+      "viewport": "phone",
+      "route": "/en/privacy",
+      "component": "Privacy",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La vie privée",
+        "en": "Privacy"
+      },
+      "thumb": "/atelier/thumbs/phone/en-privacy.webp",
+      "full": "/atelier/full/phone/en-privacy.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 5666,
+      "cropped": true
+    },
+    {
+      "slug": "pia",
+      "viewport": "phone",
+      "route": "/pia",
+      "component": "Pia",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La protection des données",
+        "en": "Data protection"
+      },
+      "thumb": "/atelier/thumbs/phone/pia.webp",
+      "full": "/atelier/full/phone/pia.png",
+      "thumbW": 535,
+      "thumbH": 856,
+      "fullH": 14211,
+      "cropped": true
+    },
+    {
+      "slug": "en-pia",
+      "viewport": "phone",
+      "route": "/en/pia",
+      "component": "Pia",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La protection des données",
+        "en": "Data protection"
+      },
+      "thumb": "/atelier/thumbs/phone/en-pia.webp",
+      "full": "/atelier/full/phone/en-pia.png",
+      "thumbW": 535,
+      "thumbH": 856,
+      "fullH": 14096,
+      "cropped": true
+    },
+    {
+      "slug": "root",
+      "viewport": "narrow",
+      "route": "/",
+      "component": "RootByTemplate",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La page d’accueil",
+        "en": "The home page"
+      },
+      "thumb": "/atelier/thumbs/narrow/root.webp",
+      "full": "/atelier/full/narrow/root.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 12801,
+      "cropped": true
+    },
+    {
+      "slug": "en",
+      "viewport": "narrow",
+      "route": "/en",
+      "component": "RootByTemplate",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La page d’accueil",
+        "en": "The home page"
+      },
+      "thumb": "/atelier/thumbs/narrow/en.webp",
+      "full": "/atelier/full/narrow/en.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 12620,
+      "cropped": true
+    },
+    {
+      "slug": "tier-0",
+      "viewport": "narrow",
+      "route": "/tier-0",
+      "component": "Tier0",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Tier 0 — le premier échange",
+        "en": "Tier 0 — the first chat"
+      },
+      "thumb": "/atelier/thumbs/narrow/tier-0.webp",
+      "full": "/atelier/full/narrow/tier-0.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5528,
+      "cropped": true
+    },
+    {
+      "slug": "en-tier-0",
+      "viewport": "narrow",
+      "route": "/en/tier-0",
+      "component": "Tier0",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Tier 0 — le premier échange",
+        "en": "Tier 0 — the first chat"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-tier-0.webp",
+      "full": "/atelier/full/narrow/en-tier-0.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5282,
+      "cropped": true
+    },
+    {
+      "slug": "intake",
+      "viewport": "narrow",
+      "route": "/intake",
+      "component": "Intake",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Le formulaire d’intake",
+        "en": "The intake form"
+      },
+      "thumb": "/atelier/thumbs/narrow/intake.webp",
+      "full": "/atelier/full/narrow/intake.png",
+      "thumbW": 600,
+      "thumbH": 807,
+      "fullH": 1345,
+      "cropped": false
+    },
+    {
+      "slug": "en-intake",
+      "viewport": "narrow",
+      "route": "/en/intake",
+      "component": "Intake",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Le formulaire d’intake",
+        "en": "The intake form"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-intake.webp",
+      "full": "/atelier/full/narrow/en-intake.png",
+      "thumbW": 600,
+      "thumbH": 764,
+      "fullH": 1273,
+      "cropped": false
+    },
+    {
+      "slug": "napkin",
+      "viewport": "narrow",
+      "route": "/napkin",
+      "component": "Napkin",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La napkin",
+        "en": "The napkin sketch"
+      },
+      "thumb": "/atelier/thumbs/narrow/napkin.webp",
+      "full": "/atelier/full/narrow/napkin.png",
+      "thumbW": 600,
+      "thumbH": 938,
+      "fullH": 1563,
+      "cropped": false
+    },
+    {
+      "slug": "en-napkin",
+      "viewport": "narrow",
+      "route": "/en/napkin",
+      "component": "Napkin",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La napkin",
+        "en": "The napkin sketch"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-napkin.webp",
+      "full": "/atelier/full/narrow/en-napkin.png",
+      "thumbW": 600,
+      "thumbH": 926,
+      "fullH": 1543,
+      "cropped": false
+    },
+    {
+      "slug": "parcours",
+      "viewport": "narrow",
+      "route": "/parcours",
+      "component": "Journey",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Le parcours",
+        "en": "The journey"
+      },
+      "thumb": "/atelier/thumbs/narrow/parcours.webp",
+      "full": "/atelier/full/narrow/parcours.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4448,
+      "cropped": true
+    },
+    {
+      "slug": "en-journey",
+      "viewport": "narrow",
+      "route": "/en/journey",
+      "component": "Journey",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Le parcours",
+        "en": "The journey"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-journey.webp",
+      "full": "/atelier/full/narrow/en-journey.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4267,
+      "cropped": true
+    },
+    {
+      "slug": "projects",
+      "viewport": "narrow",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/narrow/projects.webp",
+      "full": "/atelier/full/narrow/projects.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 2642,
+      "cropped": true
+    },
+    {
+      "slug": "projects-empty",
+      "viewport": "narrow",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": "empty",
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/narrow/projects-empty.webp",
+      "full": "/atelier/full/narrow/projects-empty.png",
+      "thumbW": 600,
+      "thumbH": 931,
+      "fullH": 1552,
+      "cropped": false
+    },
+    {
+      "slug": "projects-error",
+      "viewport": "narrow",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": "error",
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/narrow/projects-error.webp",
+      "full": "/atelier/full/narrow/projects-error.png",
+      "thumbW": 600,
+      "thumbH": 941,
+      "fullH": 1568,
+      "cropped": false
+    },
+    {
+      "slug": "en-projects",
+      "viewport": "narrow",
+      "route": "/en/projects",
+      "component": "Projects",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-projects.webp",
+      "full": "/atelier/full/narrow/en-projects.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 2603,
+      "cropped": true
+    },
+    {
+      "slug": "vouches",
+      "viewport": "narrow",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/narrow/vouches.webp",
+      "full": "/atelier/full/narrow/vouches.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 1711,
+      "cropped": true
+    },
+    {
+      "slug": "vouches-empty",
+      "viewport": "narrow",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": "empty",
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/narrow/vouches-empty.webp",
+      "full": "/atelier/full/narrow/vouches-empty.png",
+      "thumbW": 600,
+      "thumbH": 758,
+      "fullH": 1263,
+      "cropped": false
+    },
+    {
+      "slug": "vouches-error",
+      "viewport": "narrow",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": "error",
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/narrow/vouches-error.webp",
+      "full": "/atelier/full/narrow/vouches-error.png",
+      "thumbW": 600,
+      "thumbH": 805,
+      "fullH": 1342,
+      "cropped": false
+    },
+    {
+      "slug": "en-vouches",
+      "viewport": "narrow",
+      "route": "/en/vouches",
+      "component": "Vouches",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-vouches.webp",
+      "full": "/atelier/full/narrow/en-vouches.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 1672,
+      "cropped": true
+    },
+    {
+      "slug": "vouch",
+      "viewport": "narrow",
+      "route": "/vouch",
+      "component": "Vouch",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Laisser un mot",
+        "en": "Leave a vouch"
+      },
+      "thumb": "/atelier/thumbs/narrow/vouch.webp",
+      "full": "/atelier/full/narrow/vouch.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 1655,
+      "cropped": true
+    },
+    {
+      "slug": "en-vouch",
+      "viewport": "narrow",
+      "route": "/en/vouch",
+      "component": "Vouch",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Laisser un mot",
+        "en": "Leave a vouch"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-vouch.webp",
+      "full": "/atelier/full/narrow/en-vouch.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 1609,
+      "cropped": true
+    },
+    {
+      "slug": "handoff",
+      "viewport": "narrow",
+      "route": "/handoff",
+      "component": "Handoff",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La passation",
+        "en": "The handoff"
+      },
+      "thumb": "/atelier/thumbs/narrow/handoff.webp",
+      "full": "/atelier/full/narrow/handoff.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4312,
+      "cropped": true
+    },
+    {
+      "slug": "en-handoff",
+      "viewport": "narrow",
+      "route": "/en/handoff",
+      "component": "Handoff",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La passation",
+        "en": "The handoff"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-handoff.webp",
+      "full": "/atelier/full/narrow/en-handoff.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4032,
+      "cropped": true
+    },
+    {
+      "slug": "handoff-checklist",
+      "viewport": "narrow",
+      "route": "/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La liste de passation",
+        "en": "The handoff checklist"
+      },
+      "thumb": "/atelier/thumbs/narrow/handoff-checklist.webp",
+      "full": "/atelier/full/narrow/handoff-checklist.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3108,
+      "cropped": true
+    },
+    {
+      "slug": "en-handoff-checklist",
+      "viewport": "narrow",
+      "route": "/en/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La liste de passation",
+        "en": "The handoff checklist"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-handoff-checklist.webp",
+      "full": "/atelier/full/narrow/en-handoff-checklist.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 2907,
+      "cropped": true
+    },
+    {
+      "slug": "login",
+      "viewport": "narrow",
+      "route": "/login",
+      "component": "Login",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La connexion",
+        "en": "The login"
+      },
+      "thumb": "/atelier/thumbs/narrow/login.webp",
+      "full": "/atelier/full/narrow/login.png",
+      "thumbW": 600,
+      "thumbH": 674,
+      "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "en-login",
+      "viewport": "narrow",
+      "route": "/en/login",
+      "component": "Login",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La connexion",
+        "en": "The login"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-login.webp",
+      "full": "/atelier/full/narrow/en-login.png",
+      "thumbW": 600,
+      "thumbH": 662,
+      "fullH": 1104,
+      "cropped": false
+    },
+    {
+      "slug": "login-sent",
+      "viewport": "narrow",
+      "route": "/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Lien magique envoyé",
+        "en": "Magic link sent"
+      },
+      "thumb": "/atelier/thumbs/narrow/login-sent.webp",
+      "full": "/atelier/full/narrow/login-sent.png",
+      "thumbW": 600,
+      "thumbH": 674,
+      "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "en-login-sent",
+      "viewport": "narrow",
+      "route": "/en/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Lien magique envoyé",
+        "en": "Magic link sent"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-login-sent.webp",
+      "full": "/atelier/full/narrow/en-login-sent.png",
+      "thumbW": 600,
+      "thumbH": 662,
+      "fullH": 1104,
+      "cropped": false
+    },
+    {
+      "slug": "me",
+      "viewport": "narrow",
+      "route": "/me",
+      "component": "MePortal",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Mon espace",
+        "en": "My space"
+      },
+      "thumb": "/atelier/thumbs/narrow/me.webp",
+      "full": "/atelier/full/narrow/me.png",
+      "thumbW": 600,
+      "thumbH": 540,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
+      "slug": "en-me",
+      "viewport": "narrow",
+      "route": "/en/me",
+      "component": "MePortal",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Mon espace",
+        "en": "My space"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-me.webp",
+      "full": "/atelier/full/narrow/en-me.png",
+      "thumbW": 600,
+      "thumbH": 540,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
+      "slug": "meta",
+      "viewport": "narrow",
+      "route": "/meta",
+      "component": "Meta",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Sous le capot",
+        "en": "Under the hood"
+      },
+      "thumb": "/atelier/thumbs/narrow/meta.webp",
+      "full": "/atelier/full/narrow/meta.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5155,
+      "cropped": true
+    },
+    {
+      "slug": "en-meta",
+      "viewport": "narrow",
+      "route": "/en/meta",
+      "component": "Meta",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Sous le capot",
+        "en": "Under the hood"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-meta.webp",
+      "full": "/atelier/full/narrow/en-meta.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5108,
+      "cropped": true
+    },
+    {
+      "slug": "carte",
+      "viewport": "narrow",
+      "route": "/carte",
+      "component": "MapPage",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La carte du site",
+        "en": "The site map"
+      },
+      "thumb": "/atelier/thumbs/narrow/carte.webp",
+      "full": "/atelier/full/narrow/carte.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 1702,
+      "cropped": true
+    },
+    {
+      "slug": "en-map",
+      "viewport": "narrow",
+      "route": "/en/map",
+      "component": "MapPage",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La carte du site",
+        "en": "The site map"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-map.webp",
+      "full": "/atelier/full/narrow/en-map.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 1683,
+      "cropped": true
+    },
+    {
+      "slug": "confidentialite",
+      "viewport": "narrow",
+      "route": "/confidentialite",
+      "component": "Privacy",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La vie privée",
+        "en": "Privacy"
+      },
+      "thumb": "/atelier/thumbs/narrow/confidentialite.webp",
+      "full": "/atelier/full/narrow/confidentialite.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4257,
+      "cropped": true
+    },
+    {
+      "slug": "en-privacy",
+      "viewport": "narrow",
+      "route": "/en/privacy",
+      "component": "Privacy",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La vie privée",
+        "en": "Privacy"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-privacy.webp",
+      "full": "/atelier/full/narrow/en-privacy.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4001,
+      "cropped": true
+    },
+    {
+      "slug": "pia",
+      "viewport": "narrow",
+      "route": "/pia",
+      "component": "Pia",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La protection des données",
+        "en": "Data protection"
+      },
+      "thumb": "/atelier/thumbs/narrow/pia.webp",
+      "full": "/atelier/full/narrow/pia.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 9861,
+      "cropped": true
+    },
+    {
+      "slug": "en-pia",
+      "viewport": "narrow",
+      "route": "/en/pia",
+      "component": "Pia",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La protection des données",
+        "en": "Data protection"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-pia.webp",
+      "full": "/atelier/full/narrow/en-pia.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 9759,
+      "cropped": true
+    },
+    {
+      "slug": "root",
+      "viewport": "wide",
+      "route": "/",
+      "component": "RootByTemplate",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La page d’accueil",
+        "en": "The home page"
+      },
+      "thumb": "/atelier/thumbs/wide/root.webp",
+      "full": "/atelier/full/wide/root.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 13058,
+      "cropped": true
+    },
+    {
+      "slug": "en",
+      "viewport": "wide",
+      "route": "/en",
+      "component": "RootByTemplate",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La page d’accueil",
+        "en": "The home page"
+      },
+      "thumb": "/atelier/thumbs/wide/en.webp",
+      "full": "/atelier/full/wide/en.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 12877,
+      "cropped": true
+    },
+    {
+      "slug": "tier-0",
+      "viewport": "wide",
+      "route": "/tier-0",
+      "component": "Tier0",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Tier 0 — le premier échange",
+        "en": "Tier 0 — the first chat"
+      },
+      "thumb": "/atelier/thumbs/wide/tier-0.webp",
+      "full": "/atelier/full/wide/tier-0.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5468,
+      "cropped": true
+    },
+    {
+      "slug": "en-tier-0",
+      "viewport": "wide",
+      "route": "/en/tier-0",
+      "component": "Tier0",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Tier 0 — le premier échange",
+        "en": "Tier 0 — the first chat"
+      },
+      "thumb": "/atelier/thumbs/wide/en-tier-0.webp",
+      "full": "/atelier/full/wide/en-tier-0.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5223,
+      "cropped": true
+    },
+    {
+      "slug": "intake",
+      "viewport": "wide",
+      "route": "/intake",
+      "component": "Intake",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Le formulaire d’intake",
+        "en": "The intake form"
+      },
+      "thumb": "/atelier/thumbs/wide/intake.webp",
+      "full": "/atelier/full/wide/intake.png",
+      "thumbW": 600,
+      "thumbH": 535,
+      "fullH": 1285,
+      "cropped": false
+    },
+    {
+      "slug": "en-intake",
+      "viewport": "wide",
+      "route": "/en/intake",
+      "component": "Intake",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Le formulaire d’intake",
+        "en": "The intake form"
+      },
+      "thumb": "/atelier/thumbs/wide/en-intake.webp",
+      "full": "/atelier/full/wide/en-intake.png",
+      "thumbW": 600,
+      "thumbH": 506,
+      "fullH": 1214,
+      "cropped": false
+    },
+    {
+      "slug": "napkin",
+      "viewport": "wide",
+      "route": "/napkin",
+      "component": "Napkin",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La napkin",
+        "en": "The napkin sketch"
+      },
+      "thumb": "/atelier/thumbs/wide/napkin.webp",
+      "full": "/atelier/full/wide/napkin.png",
+      "thumbW": 600,
+      "thumbH": 626,
+      "fullH": 1503,
+      "cropped": false
+    },
+    {
+      "slug": "en-napkin",
+      "viewport": "wide",
+      "route": "/en/napkin",
+      "component": "Napkin",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La napkin",
+        "en": "The napkin sketch"
+      },
+      "thumb": "/atelier/thumbs/wide/en-napkin.webp",
+      "full": "/atelier/full/wide/en-napkin.png",
+      "thumbW": 600,
+      "thumbH": 618,
+      "fullH": 1484,
+      "cropped": false
+    },
+    {
+      "slug": "parcours",
+      "viewport": "wide",
+      "route": "/parcours",
+      "component": "Journey",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Le parcours",
+        "en": "The journey"
+      },
+      "thumb": "/atelier/thumbs/wide/parcours.webp",
+      "full": "/atelier/full/wide/parcours.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4428,
+      "cropped": true
+    },
+    {
+      "slug": "en-journey",
+      "viewport": "wide",
+      "route": "/en/journey",
+      "component": "Journey",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Le parcours",
+        "en": "The journey"
+      },
+      "thumb": "/atelier/thumbs/wide/en-journey.webp",
+      "full": "/atelier/full/wide/en-journey.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4248,
+      "cropped": true
+    },
+    {
+      "slug": "projects",
+      "viewport": "wide",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/wide/projects.webp",
+      "full": "/atelier/full/wide/projects.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 2583,
+      "cropped": true
+    },
+    {
+      "slug": "projects-empty",
+      "viewport": "wide",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": "empty",
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/wide/projects-empty.webp",
+      "full": "/atelier/full/wide/projects-empty.png",
+      "thumbW": 600,
+      "thumbH": 622,
+      "fullH": 1492,
+      "cropped": false
+    },
+    {
+      "slug": "projects-error",
+      "viewport": "wide",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": "error",
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/wide/projects-error.webp",
+      "full": "/atelier/full/wide/projects-error.png",
+      "thumbW": 600,
+      "thumbH": 628,
+      "fullH": 1508,
+      "cropped": false
+    },
+    {
+      "slug": "en-projects",
+      "viewport": "wide",
+      "route": "/en/projects",
+      "component": "Projects",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/wide/en-projects.webp",
+      "full": "/atelier/full/wide/en-projects.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 2543,
+      "cropped": true
+    },
+    {
+      "slug": "vouches",
+      "viewport": "wide",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/wide/vouches.webp",
+      "full": "/atelier/full/wide/vouches.png",
+      "thumbW": 600,
+      "thumbH": 688,
+      "fullH": 1652,
+      "cropped": false
+    },
+    {
+      "slug": "vouches-empty",
+      "viewport": "wide",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": "empty",
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/wide/vouches-empty.webp",
+      "full": "/atelier/full/wide/vouches-empty.png",
+      "thumbW": 600,
+      "thumbH": 501,
+      "fullH": 1203,
+      "cropped": false
+    },
+    {
+      "slug": "vouches-error",
+      "viewport": "wide",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": "error",
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/wide/vouches-error.webp",
+      "full": "/atelier/full/wide/vouches-error.png",
+      "thumbW": 600,
+      "thumbH": 534,
+      "fullH": 1282,
+      "cropped": false
+    },
+    {
+      "slug": "en-vouches",
+      "viewport": "wide",
+      "route": "/en/vouches",
+      "component": "Vouches",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/wide/en-vouches.webp",
+      "full": "/atelier/full/wide/en-vouches.png",
+      "thumbW": 600,
+      "thumbH": 672,
+      "fullH": 1612,
+      "cropped": false
+    },
+    {
+      "slug": "vouch",
+      "viewport": "wide",
+      "route": "/vouch",
+      "component": "Vouch",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Laisser un mot",
+        "en": "Leave a vouch"
+      },
+      "thumb": "/atelier/thumbs/wide/vouch.webp",
+      "full": "/atelier/full/wide/vouch.png",
+      "thumbW": 600,
+      "thumbH": 665,
+      "fullH": 1596,
+      "cropped": false
+    },
+    {
+      "slug": "en-vouch",
+      "viewport": "wide",
+      "route": "/en/vouch",
+      "component": "Vouch",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Laisser un mot",
+        "en": "Leave a vouch"
+      },
+      "thumb": "/atelier/thumbs/wide/en-vouch.webp",
+      "full": "/atelier/full/wide/en-vouch.png",
+      "thumbW": 600,
+      "thumbH": 645,
+      "fullH": 1549,
+      "cropped": false
+    },
+    {
+      "slug": "handoff",
+      "viewport": "wide",
+      "route": "/handoff",
+      "component": "Handoff",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La passation",
+        "en": "The handoff"
+      },
+      "thumb": "/atelier/thumbs/wide/handoff.webp",
+      "full": "/atelier/full/wide/handoff.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4253,
+      "cropped": true
+    },
+    {
+      "slug": "en-handoff",
+      "viewport": "wide",
+      "route": "/en/handoff",
+      "component": "Handoff",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La passation",
+        "en": "The handoff"
+      },
+      "thumb": "/atelier/thumbs/wide/en-handoff.webp",
+      "full": "/atelier/full/wide/en-handoff.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3973,
+      "cropped": true
+    },
+    {
+      "slug": "handoff-checklist",
+      "viewport": "wide",
+      "route": "/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La liste de passation",
+        "en": "The handoff checklist"
+      },
+      "thumb": "/atelier/thumbs/wide/handoff-checklist.webp",
+      "full": "/atelier/full/wide/handoff-checklist.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3048,
+      "cropped": true
+    },
+    {
+      "slug": "en-handoff-checklist",
+      "viewport": "wide",
+      "route": "/en/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La liste de passation",
+        "en": "The handoff checklist"
+      },
+      "thumb": "/atelier/thumbs/wide/en-handoff-checklist.webp",
+      "full": "/atelier/full/wide/en-handoff-checklist.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 2848,
+      "cropped": true
+    },
+    {
+      "slug": "login",
+      "viewport": "wide",
+      "route": "/login",
+      "component": "Login",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La connexion",
+        "en": "The login"
+      },
+      "thumb": "/atelier/thumbs/wide/login.webp",
+      "full": "/atelier/full/wide/login.png",
+      "thumbW": 600,
+      "thumbH": 443,
+      "fullH": 1063,
+      "cropped": false
+    },
+    {
+      "slug": "en-login",
+      "viewport": "wide",
+      "route": "/en/login",
+      "component": "Login",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La connexion",
+        "en": "The login"
+      },
+      "thumb": "/atelier/thumbs/wide/en-login.webp",
+      "full": "/atelier/full/wide/en-login.png",
+      "thumbW": 600,
+      "thumbH": 435,
+      "fullH": 1044,
+      "cropped": false
+    },
+    {
+      "slug": "login-sent",
+      "viewport": "wide",
+      "route": "/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Lien magique envoyé",
+        "en": "Magic link sent"
+      },
+      "thumb": "/atelier/thumbs/wide/login-sent.webp",
+      "full": "/atelier/full/wide/login-sent.png",
+      "thumbW": 600,
+      "thumbH": 443,
+      "fullH": 1063,
+      "cropped": false
+    },
+    {
+      "slug": "en-login-sent",
+      "viewport": "wide",
+      "route": "/en/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Lien magique envoyé",
+        "en": "Magic link sent"
+      },
+      "thumb": "/atelier/thumbs/wide/en-login-sent.webp",
+      "full": "/atelier/full/wide/en-login-sent.png",
+      "thumbW": 600,
+      "thumbH": 435,
+      "fullH": 1044,
+      "cropped": false
+    },
+    {
+      "slug": "me",
+      "viewport": "wide",
+      "route": "/me",
+      "component": "MePortal",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Mon espace",
+        "en": "My space"
+      },
+      "thumb": "/atelier/thumbs/wide/me.webp",
+      "full": "/atelier/full/wide/me.png",
+      "thumbW": 600,
+      "thumbH": 375,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
+      "slug": "en-me",
+      "viewport": "wide",
+      "route": "/en/me",
+      "component": "MePortal",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Mon espace",
+        "en": "My space"
+      },
+      "thumb": "/atelier/thumbs/wide/en-me.webp",
+      "full": "/atelier/full/wide/en-me.png",
+      "thumbW": 600,
+      "thumbH": 375,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
+      "slug": "meta",
+      "viewport": "wide",
+      "route": "/meta",
+      "component": "Meta",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Sous le capot",
+        "en": "Under the hood"
+      },
+      "thumb": "/atelier/thumbs/wide/meta.webp",
+      "full": "/atelier/full/wide/meta.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5095,
+      "cropped": true
+    },
+    {
+      "slug": "en-meta",
+      "viewport": "wide",
+      "route": "/en/meta",
+      "component": "Meta",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Sous le capot",
+        "en": "Under the hood"
+      },
+      "thumb": "/atelier/thumbs/wide/en-meta.webp",
+      "full": "/atelier/full/wide/en-meta.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5049,
+      "cropped": true
+    },
+    {
+      "slug": "carte",
+      "viewport": "wide",
+      "route": "/carte",
+      "component": "MapPage",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La carte du site",
+        "en": "The site map"
+      },
+      "thumb": "/atelier/thumbs/wide/carte.webp",
+      "full": "/atelier/full/wide/carte.png",
+      "thumbW": 600,
+      "thumbH": 761,
+      "fullH": 1827,
+      "cropped": false
+    },
+    {
+      "slug": "en-map",
+      "viewport": "wide",
+      "route": "/en/map",
+      "component": "MapPage",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La carte du site",
+        "en": "The site map"
+      },
+      "thumb": "/atelier/thumbs/wide/en-map.webp",
+      "full": "/atelier/full/wide/en-map.png",
+      "thumbW": 600,
+      "thumbH": 753,
+      "fullH": 1808,
+      "cropped": false
+    },
+    {
+      "slug": "confidentialite",
+      "viewport": "wide",
+      "route": "/confidentialite",
+      "component": "Privacy",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La vie privée",
+        "en": "Privacy"
+      },
+      "thumb": "/atelier/thumbs/wide/confidentialite.webp",
+      "full": "/atelier/full/wide/confidentialite.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4197,
+      "cropped": true
+    },
+    {
+      "slug": "en-privacy",
+      "viewport": "wide",
+      "route": "/en/privacy",
+      "component": "Privacy",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La vie privée",
+        "en": "Privacy"
+      },
+      "thumb": "/atelier/thumbs/wide/en-privacy.webp",
+      "full": "/atelier/full/wide/en-privacy.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3941,
+      "cropped": true
+    },
+    {
+      "slug": "pia",
+      "viewport": "wide",
+      "route": "/pia",
+      "component": "Pia",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La protection des données",
+        "en": "Data protection"
+      },
+      "thumb": "/atelier/thumbs/wide/pia.webp",
+      "full": "/atelier/full/wide/pia.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 9801,
+      "cropped": true
+    },
+    {
+      "slug": "en-pia",
+      "viewport": "wide",
+      "route": "/en/pia",
+      "component": "Pia",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La protection des données",
+        "en": "Data protection"
+      },
+      "thumb": "/atelier/thumbs/wide/en-pia.webp",
+      "full": "/atelier/full/wide/en-pia.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 9699,
+      "cropped": true
+    },
+    {
+      "slug": "root",
+      "viewport": "dark",
+      "route": "/",
+      "component": "RootByTemplate",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La page d’accueil",
+        "en": "The home page"
+      },
+      "thumb": "/atelier/thumbs/dark/root.webp",
+      "full": "/atelier/full/dark/root.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 13058,
+      "cropped": true
+    },
+    {
+      "slug": "en",
+      "viewport": "dark",
+      "route": "/en",
+      "component": "RootByTemplate",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La page d’accueil",
+        "en": "The home page"
+      },
+      "thumb": "/atelier/thumbs/dark/en.webp",
+      "full": "/atelier/full/dark/en.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 12877,
+      "cropped": true
+    },
+    {
+      "slug": "tier-0",
+      "viewport": "dark",
+      "route": "/tier-0",
+      "component": "Tier0",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Tier 0 — le premier échange",
+        "en": "Tier 0 — the first chat"
+      },
+      "thumb": "/atelier/thumbs/dark/tier-0.webp",
+      "full": "/atelier/full/dark/tier-0.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5468,
+      "cropped": true
+    },
+    {
+      "slug": "en-tier-0",
+      "viewport": "dark",
+      "route": "/en/tier-0",
+      "component": "Tier0",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Tier 0 — le premier échange",
+        "en": "Tier 0 — the first chat"
+      },
+      "thumb": "/atelier/thumbs/dark/en-tier-0.webp",
+      "full": "/atelier/full/dark/en-tier-0.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5223,
+      "cropped": true
+    },
+    {
+      "slug": "intake",
+      "viewport": "dark",
+      "route": "/intake",
+      "component": "Intake",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Le formulaire d’intake",
+        "en": "The intake form"
+      },
+      "thumb": "/atelier/thumbs/dark/intake.webp",
+      "full": "/atelier/full/dark/intake.png",
+      "thumbW": 600,
+      "thumbH": 535,
+      "fullH": 1285,
+      "cropped": false
+    },
+    {
+      "slug": "en-intake",
+      "viewport": "dark",
+      "route": "/en/intake",
+      "component": "Intake",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Le formulaire d’intake",
+        "en": "The intake form"
+      },
+      "thumb": "/atelier/thumbs/dark/en-intake.webp",
+      "full": "/atelier/full/dark/en-intake.png",
+      "thumbW": 600,
+      "thumbH": 506,
+      "fullH": 1214,
+      "cropped": false
+    },
+    {
+      "slug": "napkin",
+      "viewport": "dark",
+      "route": "/napkin",
+      "component": "Napkin",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La napkin",
+        "en": "The napkin sketch"
+      },
+      "thumb": "/atelier/thumbs/dark/napkin.webp",
+      "full": "/atelier/full/dark/napkin.png",
+      "thumbW": 600,
+      "thumbH": 626,
+      "fullH": 1503,
+      "cropped": false
+    },
+    {
+      "slug": "en-napkin",
+      "viewport": "dark",
+      "route": "/en/napkin",
+      "component": "Napkin",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La napkin",
+        "en": "The napkin sketch"
+      },
+      "thumb": "/atelier/thumbs/dark/en-napkin.webp",
+      "full": "/atelier/full/dark/en-napkin.png",
+      "thumbW": 600,
+      "thumbH": 618,
+      "fullH": 1484,
+      "cropped": false
+    },
+    {
+      "slug": "parcours",
+      "viewport": "dark",
+      "route": "/parcours",
+      "component": "Journey",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Le parcours",
+        "en": "The journey"
+      },
+      "thumb": "/atelier/thumbs/dark/parcours.webp",
+      "full": "/atelier/full/dark/parcours.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4428,
+      "cropped": true
+    },
+    {
+      "slug": "en-journey",
+      "viewport": "dark",
+      "route": "/en/journey",
+      "component": "Journey",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Le parcours",
+        "en": "The journey"
+      },
+      "thumb": "/atelier/thumbs/dark/en-journey.webp",
+      "full": "/atelier/full/dark/en-journey.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4248,
+      "cropped": true
+    },
+    {
+      "slug": "projects",
+      "viewport": "dark",
+      "route": "/projects",
+      "component": "Projects",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/dark/projects.webp",
+      "full": "/atelier/full/dark/projects.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 2583,
+      "cropped": true
+    },
+    {
+      "slug": "en-projects",
+      "viewport": "dark",
+      "route": "/en/projects",
+      "component": "Projects",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La galerie de projets",
+        "en": "The projects gallery"
+      },
+      "thumb": "/atelier/thumbs/dark/en-projects.webp",
+      "full": "/atelier/full/dark/en-projects.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 2543,
+      "cropped": true
+    },
+    {
+      "slug": "vouches",
+      "viewport": "dark",
+      "route": "/vouches",
+      "component": "Vouches",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/dark/vouches.webp",
+      "full": "/atelier/full/dark/vouches.png",
+      "thumbW": 600,
+      "thumbH": 688,
+      "fullH": 1652,
+      "cropped": false
+    },
+    {
+      "slug": "en-vouches",
+      "viewport": "dark",
+      "route": "/en/vouches",
+      "component": "Vouches",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Les témoignages",
+        "en": "The testimonials"
+      },
+      "thumb": "/atelier/thumbs/dark/en-vouches.webp",
+      "full": "/atelier/full/dark/en-vouches.png",
+      "thumbW": 600,
+      "thumbH": 672,
+      "fullH": 1612,
+      "cropped": false
+    },
+    {
+      "slug": "vouch",
+      "viewport": "dark",
+      "route": "/vouch",
+      "component": "Vouch",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Laisser un mot",
+        "en": "Leave a vouch"
+      },
+      "thumb": "/atelier/thumbs/dark/vouch.webp",
+      "full": "/atelier/full/dark/vouch.png",
+      "thumbW": 600,
+      "thumbH": 665,
+      "fullH": 1596,
+      "cropped": false
+    },
+    {
+      "slug": "en-vouch",
+      "viewport": "dark",
+      "route": "/en/vouch",
+      "component": "Vouch",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Laisser un mot",
+        "en": "Leave a vouch"
+      },
+      "thumb": "/atelier/thumbs/dark/en-vouch.webp",
+      "full": "/atelier/full/dark/en-vouch.png",
+      "thumbW": 600,
+      "thumbH": 645,
+      "fullH": 1549,
+      "cropped": false
+    },
+    {
+      "slug": "handoff",
+      "viewport": "dark",
+      "route": "/handoff",
+      "component": "Handoff",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La passation",
+        "en": "The handoff"
+      },
+      "thumb": "/atelier/thumbs/dark/handoff.webp",
+      "full": "/atelier/full/dark/handoff.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4253,
+      "cropped": true
+    },
+    {
+      "slug": "en-handoff",
+      "viewport": "dark",
+      "route": "/en/handoff",
+      "component": "Handoff",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La passation",
+        "en": "The handoff"
+      },
+      "thumb": "/atelier/thumbs/dark/en-handoff.webp",
+      "full": "/atelier/full/dark/en-handoff.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3973,
+      "cropped": true
+    },
+    {
+      "slug": "handoff-checklist",
+      "viewport": "dark",
+      "route": "/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La liste de passation",
+        "en": "The handoff checklist"
+      },
+      "thumb": "/atelier/thumbs/dark/handoff-checklist.webp",
+      "full": "/atelier/full/dark/handoff-checklist.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3048,
+      "cropped": true
+    },
+    {
+      "slug": "en-handoff-checklist",
+      "viewport": "dark",
+      "route": "/en/handoff/checklist",
+      "component": "HandoffChecklist",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La liste de passation",
+        "en": "The handoff checklist"
+      },
+      "thumb": "/atelier/thumbs/dark/en-handoff-checklist.webp",
+      "full": "/atelier/full/dark/en-handoff-checklist.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 2848,
+      "cropped": true
+    },
+    {
+      "slug": "login",
+      "viewport": "dark",
+      "route": "/login",
+      "component": "Login",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La connexion",
+        "en": "The login"
+      },
+      "thumb": "/atelier/thumbs/dark/login.webp",
+      "full": "/atelier/full/dark/login.png",
+      "thumbW": 600,
+      "thumbH": 443,
+      "fullH": 1063,
+      "cropped": false
+    },
+    {
+      "slug": "en-login",
+      "viewport": "dark",
+      "route": "/en/login",
+      "component": "Login",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La connexion",
+        "en": "The login"
+      },
+      "thumb": "/atelier/thumbs/dark/en-login.webp",
+      "full": "/atelier/full/dark/en-login.png",
+      "thumbW": 600,
+      "thumbH": 435,
+      "fullH": 1044,
+      "cropped": false
+    },
+    {
+      "slug": "login-sent",
+      "viewport": "dark",
+      "route": "/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Lien magique envoyé",
+        "en": "Magic link sent"
+      },
+      "thumb": "/atelier/thumbs/dark/login-sent.webp",
+      "full": "/atelier/full/dark/login-sent.png",
+      "thumbW": 600,
+      "thumbH": 443,
+      "fullH": 1063,
+      "cropped": false
+    },
+    {
+      "slug": "en-login-sent",
+      "viewport": "dark",
+      "route": "/en/login/sent",
+      "component": "MagicLinkSent",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Lien magique envoyé",
+        "en": "Magic link sent"
+      },
+      "thumb": "/atelier/thumbs/dark/en-login-sent.webp",
+      "full": "/atelier/full/dark/en-login-sent.png",
+      "thumbW": 600,
+      "thumbH": 435,
+      "fullH": 1044,
+      "cropped": false
+    },
+    {
+      "slug": "me",
+      "viewport": "dark",
+      "route": "/me",
+      "component": "MePortal",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Mon espace",
+        "en": "My space"
+      },
+      "thumb": "/atelier/thumbs/dark/me.webp",
+      "full": "/atelier/full/dark/me.png",
+      "thumbW": 600,
+      "thumbH": 375,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
+      "slug": "en-me",
+      "viewport": "dark",
+      "route": "/en/me",
+      "component": "MePortal",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Mon espace",
+        "en": "My space"
+      },
+      "thumb": "/atelier/thumbs/dark/en-me.webp",
+      "full": "/atelier/full/dark/en-me.png",
+      "thumbW": 600,
+      "thumbH": 375,
+      "fullH": 900,
+      "cropped": false
+    },
+    {
+      "slug": "meta",
+      "viewport": "dark",
+      "route": "/meta",
+      "component": "Meta",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Sous le capot",
+        "en": "Under the hood"
+      },
+      "thumb": "/atelier/thumbs/dark/meta.webp",
+      "full": "/atelier/full/dark/meta.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5095,
+      "cropped": true
+    },
+    {
+      "slug": "en-meta",
+      "viewport": "dark",
+      "route": "/en/meta",
+      "component": "Meta",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Sous le capot",
+        "en": "Under the hood"
+      },
+      "thumb": "/atelier/thumbs/dark/en-meta.webp",
+      "full": "/atelier/full/dark/en-meta.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 5049,
+      "cropped": true
+    },
+    {
+      "slug": "carte",
+      "viewport": "dark",
+      "route": "/carte",
+      "component": "MapPage",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La carte du site",
+        "en": "The site map"
+      },
+      "thumb": "/atelier/thumbs/dark/carte.webp",
+      "full": "/atelier/full/dark/carte.png",
+      "thumbW": 600,
+      "thumbH": 761,
+      "fullH": 1827,
+      "cropped": false
+    },
+    {
+      "slug": "en-map",
+      "viewport": "dark",
+      "route": "/en/map",
+      "component": "MapPage",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La carte du site",
+        "en": "The site map"
+      },
+      "thumb": "/atelier/thumbs/dark/en-map.webp",
+      "full": "/atelier/full/dark/en-map.png",
+      "thumbW": 600,
+      "thumbH": 753,
+      "fullH": 1808,
+      "cropped": false
+    },
+    {
+      "slug": "confidentialite",
+      "viewport": "dark",
+      "route": "/confidentialite",
+      "component": "Privacy",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La vie privée",
+        "en": "Privacy"
+      },
+      "thumb": "/atelier/thumbs/dark/confidentialite.webp",
+      "full": "/atelier/full/dark/confidentialite.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 4197,
+      "cropped": true
+    },
+    {
+      "slug": "en-privacy",
+      "viewport": "dark",
+      "route": "/en/privacy",
+      "component": "Privacy",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La vie privée",
+        "en": "Privacy"
+      },
+      "thumb": "/atelier/thumbs/dark/en-privacy.webp",
+      "full": "/atelier/full/dark/en-privacy.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3941,
+      "cropped": true
+    },
+    {
+      "slug": "pia",
+      "viewport": "dark",
+      "route": "/pia",
+      "component": "Pia",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "La protection des données",
+        "en": "Data protection"
+      },
+      "thumb": "/atelier/thumbs/dark/pia.webp",
+      "full": "/atelier/full/dark/pia.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 9801,
+      "cropped": true
+    },
+    {
+      "slug": "en-pia",
+      "viewport": "dark",
+      "route": "/en/pia",
+      "component": "Pia",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "La protection des données",
+        "en": "Data protection"
+      },
+      "thumb": "/atelier/thumbs/dark/en-pia.webp",
+      "full": "/atelier/full/dark/en-pia.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 9699,
+      "cropped": true
+    }
+  ],
+  "count": 148
+}

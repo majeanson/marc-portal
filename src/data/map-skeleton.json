@@ -141,6 +141,20 @@
       "inAdminShell": false
     },
     {
+      "path": "/atelier",
+      "component": "Atelier",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/atelier",
+      "component": "Atelier",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
       "path": "/carte",
       "component": "MapPage",
       "lang": "fr",

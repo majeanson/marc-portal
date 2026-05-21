@@ -157,6 +157,7 @@ export const PAGE_FEATURE: Partial<Record<string, FeatureId>> = {
   'page.privacy': 'meta',
   'page.pia': 'meta',
   'page.meta': 'meta',
+  'page.atelier': 'meta',
   'page.map-page': 'meta',
 }
 
@@ -209,17 +210,19 @@ export const FEATURE_PRIMARY_PAGE: Record<ProductFeatureId, Bi> = {
 }
 
 /* -------------------------------------------------------------------------
- * Backstage (meta) page loop. The four `meta` pages aren't on the product
+ * Backstage (meta) page loop. The five `meta` pages aren't on the product
  * arc, but they shouldn't be dead ends either. They form their own small
- * loop — site map → under the hood → privacy → PIA → back to the map — so
- * the page-outro "where next" pointer works for backstage pages too.
+ * loop — site map → under the hood → the workshop → privacy → PIA → back to
+ * the map — so the page-outro "where next" pointer works for backstage
+ * pages too.
  * ------------------------------------------------------------------------- */
 
 /** Next backstage page in the loop, keyed by page-node id. A single
- *  4-cycle over the meta pages; guarded in features.test.ts. */
+ *  5-cycle over the meta pages; guarded in features.test.ts. */
 export const META_PAGE_NEXT: Record<string, string> = {
   'page.map-page': 'page.meta',
-  'page.meta': 'page.privacy',
+  'page.meta': 'page.atelier',
+  'page.atelier': 'page.privacy',
   'page.privacy': 'page.pia',
   'page.pia': 'page.map-page',
 }
@@ -235,6 +238,10 @@ export const META_PAGE_LINK: Record<string, { label: Bi; path: Bi }> = {
   'page.meta': {
     label: { fr: 'Sous le capot', en: 'Under the hood' },
     path: { fr: '/meta', en: '/en/meta' },
+  },
+  'page.atelier': {
+    label: { fr: 'L’atelier', en: 'The workshop' },
+    path: { fr: '/atelier', en: '/en/atelier' },
   },
   'page.privacy': {
     label: { fr: 'Vie privée', en: 'Privacy' },

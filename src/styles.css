@@ -4176,6 +4176,556 @@ button.intake__progress-step:focus-visible {
   margin-top: 18px;
 }
 
+/* ──────────────────────────────────────────────────────────────────────
+   L'atelier — /atelier + /en/atelier. Two exhibits on one page: the
+   portal's own visual system (glyphs, colour tokens, type) and the
+   gallery of committed visual-regression baselines.
+   ────────────────────────────────────────────────────────────────────── */
+.atelier-page h2 {
+  font-size: 21px;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+.atelier-lang,
+.atelier-gallery {
+  margin-top: 44px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-soft);
+}
+.atelier-section__lead {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-mid);
+  max-width: 64ch;
+  margin: 8px 0 0;
+}
+.atelier-sub {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-family: var(--mono);
+  margin: 30px 0 14px;
+}
+
+/* — Glyphs — */
+.atelier-glyphs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 16px;
+}
+.atelier-glyph {
+  display: flex;
+}
+/* Each glyph card is a link into /carte?feature=X — follow the colour. */
+.atelier-glyph__link {
+  width: 100%;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 18px;
+  background: var(--bg-section);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.atelier-glyph__link:hover,
+.atelier-glyph__link:focus-visible {
+  border-color: var(--gl);
+  transform: translateY(-2px);
+  outline: none;
+}
+/* Per-feature accent pair — the tile paints the glyph in the feature hue
+   with the soft tint as the punched-through hole colour. */
+.atelier-glyph[data-feature='intake'] {
+  --gl: var(--feat-intake);
+  --gl-soft: var(--feat-intake-soft);
+}
+.atelier-glyph[data-feature='conversation'] {
+  --gl: var(--feat-conversation);
+  --gl-soft: var(--feat-conversation-soft);
+}
+.atelier-glyph[data-feature='iterative'] {
+  --gl: var(--feat-iterative);
+  --gl-soft: var(--feat-iterative-soft);
+}
+.atelier-glyph[data-feature='pricing'] {
+  --gl: var(--feat-pricing);
+  --gl-soft: var(--feat-pricing-soft);
+}
+.atelier-glyph[data-feature='keys'] {
+  --gl: var(--feat-keys);
+  --gl-soft: var(--feat-keys-soft);
+}
+.atelier-glyph[data-feature='shipped'] {
+  --gl: var(--feat-shipped);
+  --gl-soft: var(--feat-shipped-soft);
+}
+.atelier-glyph[data-feature='meta'] {
+  --gl: var(--feat-meta);
+  --gl-soft: var(--feat-meta-soft);
+}
+.atelier-glyph__tile {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gl-soft);
+  color: var(--gl);
+  --feature-glyph-hole: var(--gl-soft);
+  margin-bottom: 4px;
+}
+.atelier-glyph__tile .feature-glyph {
+  width: 38px;
+  height: 38px;
+}
+.atelier-glyph__name {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.atelier-glyph__metaphor {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-mid);
+}
+.atelier-glyph__hue {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: var(--text-soft);
+}
+
+/* — Colour swatches — */
+.atelier-swatches {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+.atelier-swatch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--bg-section);
+}
+.atelier-swatch__chip {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  flex: none;
+}
+.atelier-swatch__role {
+  font-size: 12.5px;
+  color: var(--text);
+  font-weight: 600;
+}
+.atelier-swatch__token {
+  font-size: 10.5px;
+  color: var(--text-soft);
+  margin-left: auto;
+}
+.atelier-swatch__hex {
+  font-size: 10.5px;
+  color: var(--text-mid);
+  min-width: 7ch;
+  text-align: right;
+}
+
+/* — Type specimens — */
+.atelier-type {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.atelier-type__row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--border-soft);
+}
+.atelier-type__sample {
+  font-size: 24px;
+  color: var(--text);
+  min-width: 12ch;
+}
+.atelier-type__role {
+  font-size: 13px;
+  color: var(--text-mid);
+}
+.atelier-type__token {
+  font-size: 11px;
+  color: var(--text-soft);
+  margin-left: auto;
+}
+
+/* — Gallery filters — */
+.atelier-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
+}
+.atelier-filter {
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-section);
+  color: var(--text-mid);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.atelier-filter:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.atelier-filter[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.atelier-filter__dim {
+  font-size: 10px;
+  opacity: 0.7;
+}
+.atelier-gallery__count {
+  margin: 14px 0 0;
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.atelier-gallery__legend {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  max-width: 64ch;
+}
+.atelier-gallery__mask-chip {
+  width: 26px;
+  height: 13px;
+  border-radius: 3px;
+  /* Playwright's default mask colour — the same magenta visible in the
+     baselines below, so the legend chip reads as a direct key. */
+  background: #ff00ff;
+  flex: none;
+  margin-top: 2px;
+}
+.atelier-gallery__empty {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  color: var(--text-soft);
+}
+
+/* — Headline figures — */
+.atelier-stats {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+.atelier-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.atelier-stat__num {
+  font-family: var(--display);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+}
+.atelier-stat__label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+/* — Gallery grid — */
+.atelier-grid {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 18px;
+}
+.atelier-shot {
+  display: flex;
+}
+.atelier-shot__btn {
+  appearance: none;
+  cursor: zoom-in;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.atelier-shot__btn:hover,
+.atelier-shot__btn:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  outline: none;
+}
+.atelier-shot__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-hover);
+}
+.atelier-shot__caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px 12px;
+}
+.atelier-shot__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+}
+/* Empty/error captures are intentional — a designed edge state, not a bug.
+   A small warm badge + warm-tinted card border say so. */
+.atelier-shot__variant {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--warm);
+  border: 1px solid var(--warm-soft);
+  background: var(--warm-soft);
+  border-radius: 999px;
+  padding: 1px 6px;
+  vertical-align: 1px;
+}
+.atelier-shot[data-variant] .atelier-shot__btn {
+  border-color: var(--warm-soft);
+}
+.atelier-shot__route {
+  font-size: 10.5px;
+  color: var(--text-soft);
+}
+.atelier-shot__hint {
+  font-size: 9.5px;
+  letter-spacing: 0.03em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+
+/* — Lightbox (native <dialog>) — */
+.atelier-lightbox {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: 92vw;
+  max-height: 92vh;
+}
+.atelier-lightbox::backdrop {
+  background: rgba(20, 18, 14, 0.78);
+}
+.atelier-lightbox__inner {
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+.atelier-lightbox__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-section);
+  flex: none;
+}
+.atelier-lightbox__title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.atelier-lightbox__variant {
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--warm);
+  border: 1px solid var(--warm-soft);
+  background: var(--warm-soft);
+  border-radius: 999px;
+  padding: 1px 6px;
+  vertical-align: 1px;
+}
+.atelier-lightbox__meta {
+  display: block;
+  margin-top: 2px;
+  font-weight: 400;
+  font-size: 10.5px;
+  color: var(--text-soft);
+}
+.atelier-lightbox__close {
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-mid);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  flex: none;
+}
+.atelier-lightbox__close:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+/* Inspector controls strip — prev/next, viewport switcher, live-page link. */
+.atelier-lightbox__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-section);
+  flex: none;
+}
+.atelier-lightbox__nav {
+  display: flex;
+  gap: 4px;
+}
+.atelier-lightbox__step {
+  appearance: none;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-mid);
+  border-radius: 6px;
+  font-size: 15px;
+  line-height: 1;
+}
+.atelier-lightbox__step:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.atelier-lightbox__step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.atelier-lightbox__vps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.atelier-lightbox__vp {
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-soft);
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+}
+.atelier-lightbox__vp:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.atelier-lightbox__vp[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.atelier-lightbox__open {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--accent-warm);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--accent-warm);
+  padding-bottom: 1px;
+}
+.atelier-lightbox__open:hover {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+.atelier-lightbox__scroll {
+  overflow: auto;
+  background: var(--bg-hover);
+}
+.atelier-lightbox__scroll img {
+  display: block;
+  /* Natural width, capped — never upscale a narrow phone capture into a
+     blurry wide one; only down-scale the big desktop captures. */
+  width: auto;
+  max-width: min(1100px, 88vw);
+  height: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier-shot__btn,
+  .atelier-glyph__link {
+    transition: none;
+  }
+}
+@media (max-width: 640px) {
+  .atelier-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+}
+
 /* Primary CTA — used by tier payments + custodian activate. */
 .me-portal__pay-btn {
   appearance: none;
