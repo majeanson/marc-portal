@@ -117,6 +117,10 @@ const COPY = {
     arcShippedLabel: 'Le livré',
     arcViewLive: 'Voir en ligne ↗',
     arcShippedFallback: 'Projet livré',
+    certificateHeading: 'Le certificat de passation',
+    certificateBody:
+      'Une page signée — le projet, la date, et tout ce qui t’a été remis. À télécharger et à garder.',
+    certificateDownload: 'Télécharger le certificat ↓',
     none: 'Marc répond en moins de 72h. Laisse-lui un mot ici dès que tu en as un.',
     placeholder: 'Écris un message…',
     sending: 'Envoi…',
@@ -189,6 +193,10 @@ const COPY = {
     arcShippedLabel: 'Shipped',
     arcViewLive: 'See it live ↗',
     arcShippedFallback: 'Project shipped',
+    certificateHeading: 'The handoff certificate',
+    certificateBody:
+      'A signed page — the project, the date, and everything handed to you. Download it and keep it.',
+    certificateDownload: 'Download the certificate ↓',
     none: 'Marc replies within 72h. Drop him a note here whenever you have one.',
     placeholder: 'Write a message…',
     sending: 'Sending…',
@@ -821,6 +829,21 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 session={session}
                 currentBuild={currentBuild}
               />
+            )}
+
+            {/* Handoff certificate — a downloadable keepsake, once shipped. */}
+            {session.status === 'shipped' && (
+              <section className="intake__step session-frame__panel session-certificate">
+                <h2>{t.certificateHeading}</h2>
+                <p className="session-certificate__body">{t.certificateBody}</p>
+                <a
+                  className="session-certificate__btn mono"
+                  href={`/og/certificate/${session.id}?lang=${lang}`}
+                  download="certificat-passation.png"
+                >
+                  {t.certificateDownload}
+                </a>
+              </section>
             )}
 
             <section id="session-intake" className="intake__step session-frame__panel">

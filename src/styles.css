@@ -9723,6 +9723,34 @@ button.intake__progress-step:disabled {
   }
 }
 
+/* Handoff certificate — the download panel shown on a shipped session. */
+.session-certificate {
+  border-left: 3px solid var(--accent);
+}
+.session-certificate__body {
+  color: var(--text-mid);
+  max-width: 56ch;
+  margin: 6px 0 14px;
+}
+.session-certificate__btn {
+  display: inline-block;
+  appearance: none;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+}
+.session-certificate__btn:hover,
+.session-certificate__btn:focus-visible {
+  background: var(--accent-warm);
+  border-color: var(--accent-warm);
+  outline: none;
+}
+
 .session-napkin {
   margin-top: 32px;
   padding: 20px;
