@@ -1644,8 +1644,10 @@ button.intake__progress-step:focus-visible {
 .page {
   min-height: calc(100vh - 200px);
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 28px;
   padding: 56px var(--gutter) 64px;
   background: var(--bg);
 }
@@ -11780,7 +11782,11 @@ button.intake__progress-step:disabled {
 /* Vouches — public list cards. The card itself is intentionally quiet:
    the body text carries the weight; attribution is a small footer. */
 .vouches-list {
-  margin: 32px 0;
+  /* Match the .page__panel reading column so the list sits centered under
+     the editorial masthead instead of running to the viewport edges. */
+  width: 100%;
+  max-width: 520px;
+  margin: 0;
 }
 .vouches-list__items {
   list-style: none;
