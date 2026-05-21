@@ -15,7 +15,7 @@
 
 import { describe, expect, it } from 'vitest'
 import skeleton from '../../data/map-skeleton.json'
-import { buildMapData } from './data'
+import { buildMapData, SECTION_GROUP_OVERRIDE } from './data'
 import { filterForViewer } from './filter'
 import { CURATED } from './curated'
 import {
@@ -33,7 +33,7 @@ describe('map skeleton', () => {
   it('has at least the load-bearing route components', () => {
     const components = new Set(skeleton.routes.map((r) => r.component))
     for (const c of [
-      'RootByTemplate',
+      'Home',
       'Intake',
       'Login',
       'MagicLinkSent',
@@ -262,7 +262,7 @@ describe('curated overlay coherence', () => {
     }
   })
 
-  it('surfaces every home section as a navigable node in its feature group', () => {
+  it('surfaces every home section as a navigable node in its Pages-layer group', () => {
     // The Pages layer should offer a feature's home-page section right next
     // to its real pages — e.g. "Clear pricing" shows the Tier 0 page AND
     // the home page's #pricing anchor.
@@ -276,13 +276,16 @@ describe('curated overlay coherence', () => {
       const href = node!.href as { fr: string; en: string }
       expect(href.fr).toBe(`/#${slug}`)
       expect(href.en).toBe(`/en/#${slug}`)
-      // Slotted into the matching feature's Pages-layer group, after the
-      // real pages, and inheriting that group's feature accent.
+      // Slotted, after the real pages, into the matching feature's group —
+      // or into the SECTION_GROUP_OVERRIDE target (`#how` → group.howto).
+      // The section inherits its group's accent, which is undefined for a
+      // non-feature group like group.howto.
       const fid = HOME_SECTION_FEATURE[slug]
-      const group = data.groups.find((g) => g.id === `group.feat-${fid}`)
-      expect(group, `group.feat-${fid} missing for section ${slug}`).toBeDefined()
-      expect(group!.nodeIds, `${id} not slotted into group.feat-${fid}`).toContain(id)
-      expect(node!.feature).toBe(fid)
+      const gid = SECTION_GROUP_OVERRIDE[slug] ?? `group.feat-${fid}`
+      const group = data.groups.find((g) => g.id === gid)
+      expect(group, `${gid} missing for section ${slug}`).toBeDefined()
+      expect(group!.nodeIds, `${id} not slotted into ${gid}`).toContain(id)
+      expect(node!.feature).toBe(group!.feature)
     }
   })
 

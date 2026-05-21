@@ -3,15 +3,18 @@
  *
  * Reads src/data/lac-features.json (generated at prebuild by
  * scripts/build-lac-meta.mjs) and renders a public grid of the portal's
- * `feat-` dirs and their feature.json files: status, problem snippet, tag
- * chips, decision count, last-transition date with a green/amber/red
- * freshness pill.
+ * features. Each feature.json now lives co-located next to the code it
+ * documents (src/.../<Component>.feature.json) and is written from what
+ * that code actually does. Clicking a card expands it in place to show
+ * the readable feature.json — problem, how it's built, decisions, success
+ * criteria, known limitations, the state history — plus a "voir en direct"
+ * link to the live surface.
  *
- * Why this exists: Marc's tool of trade (the Life-as-Code ecosystem)
- * is built around feature.json as a structured artifact. The portal uses
- * it on itself. Publishing the result is (a) honest "build in public",
- * (b) very low-competition long-tail SEO, (c) defensive — no other solo-
- * dev portal can clone it without adopting LAC first. Plan §4.1.
+ * Why this exists: Marc's tool of trade (the Life-as-Code ecosystem) is
+ * built around feature.json as a structured artifact. The portal uses it
+ * on itself. Publishing the result is (a) honest "build in public", (b)
+ * very low-competition long-tail SEO, (c) defensive — no other solo-dev
+ * portal can clone it without adopting LAC first.
  *
  * No runtime API call — the manifest is static at deploy time.
  */
@@ -22,22 +25,41 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { FeatureContinue } from '../components/FeatureContinue'
 import { PageMast } from '../components/PageMast'
+import { Scorecard } from '../components/Scorecard'
 import manifest from '../data/lac-features.json'
 import { formatDate } from '../lib/format'
 import { PAGE_FOLIOS } from '../lib/folios'
 
+interface Decision {
+  decision: string
+  rationale: string
+  recommendation: string
+  alternativesConsidered?: string[]
+}
+
+interface StatusTransition {
+  from: string
+  to: string
+  date: string
+  reason?: string
+}
+
 interface FeatureRow {
   featureKey: string
-  /** Actual on-disk folder name — used to build the GitHub source URL.
-   *  The dir slugs are word-form ("feat-app-shell") while featureKey is
-   *  date-form ("feat-2026-009"), so we can't derive one from the other. */
-  dirSlug: string
   title: string
   status: string
   domain: string | null
   tags: string[]
+  /** Path to the code this feature.json is co-located with. */
+  componentFile: string | null
+  /** In-app route where the feature can be seen running. */
+  liveUrl: string | null
   problem: string
-  decisionsCount: number
+  analysis: string
+  decisions: Decision[]
+  successCriteria: string
+  knownLimitations: string[]
+  statusHistory: StatusTransition[]
   lastTransitionDate: string | null
 }
 
@@ -50,18 +72,28 @@ const COPY = {
   fr: {
     pageTitle: 'Sous le capot — Marc',
     metaDescription:
-      'Le portail marc.portal documenté par lui-même : chaque fonctionnalité, sa raison, ses décisions. Format LAC (Life-as-Code).',
+      'Le portail marc.portal documenté par lui-même : chaque fonctionnalité, son problème, ses décisions. Format LAC (Life-as-Code).',
     backHome: "← Retour à l'accueil",
     eyebrow: 'méta · le portail, raconté par lui-même',
     title: 'Sous le capot',
-    lead: "Ce portail utilise mon propre outil (LAC — Life-as-Code) pour documenter ses propres décisions. Chaque fonctionnalité ci-dessous est un fichier `feature.json` versionné au même niveau que le code. C'est ce qui me permet de te dire « oui c'est solide » sans avoir à le démontrer chaque fois.",
+    lead: "Ce portail utilise mon propre outil (LAC — Life-as-Code) pour se documenter. Chaque fonctionnalité ci-dessous est un fichier `feature.json`, écrit à partir de ce que le code fait vraiment et rangé juste à côté de ce code. C'est ce qui me permet de te dire « oui c'est solide » sans avoir à le prouver à chaque fois.",
     leadSecond:
-      "Tu peux lire le source de chaque fichier sur GitHub. La date à droite indique la dernière transition d'état (active, frozen, etc.) — vert sous 90 jours, jaune entre 90 et 180, ambre au-delà.",
+      "Clique une carte pour l'ouvrir : le problème, comment c'est bâti, les décisions prises, les limites connues. La date à droite est la dernière transition d'état — vert sous 90 jours, jaune entre 90 et 180, ambre au-delà.",
     countLabel: (n: number) => `${n} fonctionnalité${n === 1 ? '' : 's'}`,
     asOf: (iso: string) => `Manifeste généré le ${formatDate(iso, 'fr')}.`,
-    sourceLinkLabel: 'voir feature.json ↗',
-    decisionsLabel: (n: number) =>
-      `${n} décision${n === 1 ? '' : 's'} consignée${n === 1 ? '' : 's'}`,
+    decisionsLabel: (n: number) => `${n} décision${n === 1 ? '' : 's'}`,
+    toggleLabel: 'détails',
+    sectionProblem: 'Le problème',
+    sectionAnalysis: "Comment c'est bâti",
+    sectionDecisions: 'Décisions prises',
+    decisionWhy: 'Pourquoi',
+    decisionReco: 'Ce qu’on en retient',
+    decisionAlt: 'Autres pistes considérées',
+    sectionCriteria: 'Critères de réussite',
+    sectionLimits: 'Limites connues',
+    sectionHistory: 'Historique des états',
+    inCode: 'Dans le code',
+    liveLabel: 'voir en direct →',
     freshFresh: 'frais',
     freshWarm: 'tiède',
     freshStale: 'à revoir',
@@ -78,17 +110,28 @@ const COPY = {
   en: {
     pageTitle: 'Under the hood — Marc',
     metaDescription:
-      'The marc.portal site documented in its own format: every feature, its rationale, its decisions. LAC (Life-as-Code) format.',
+      'The marc.portal site documented in its own format: every feature, its problem, its decisions. LAC (Life-as-Code) format.',
     backHome: '← Back home',
     eyebrow: 'meta · the portal, in its own words',
     title: 'Under the hood',
-    lead: 'This portal uses my own tool (LAC — Life-as-Code) to document its own decisions. Each feature below is a `feature.json` file versioned next to the code. That\'s what lets me say "yes it\'s solid" without having to prove it from scratch each time.',
+    lead: 'This portal uses my own tool (LAC — Life-as-Code) to document itself. Each feature below is a `feature.json` file, written from what the code actually does and kept right next to that code. That\'s what lets me say "yes it\'s solid" without having to prove it from scratch each time.',
     leadSecond:
-      'You can read the source of each file on GitHub. The date on the right is the last status transition (active, frozen, etc.) — green within 90 days, yellow between 90 and 180, amber beyond.',
+      "Click a card to open it: the problem, how it's built, the decisions taken, the known limitations. The date on the right is the last status transition — green within 90 days, yellow between 90 and 180, amber beyond.",
     countLabel: (n: number) => `${n} feature${n === 1 ? '' : 's'}`,
     asOf: (iso: string) => `Manifest generated on ${formatDate(iso, 'en')}.`,
-    sourceLinkLabel: 'view feature.json ↗',
-    decisionsLabel: (n: number) => `${n} recorded decision${n === 1 ? '' : 's'}`,
+    decisionsLabel: (n: number) => `${n} decision${n === 1 ? '' : 's'}`,
+    toggleLabel: 'details',
+    sectionProblem: 'The problem',
+    sectionAnalysis: "How it's built",
+    sectionDecisions: 'Decisions taken',
+    decisionWhy: 'Why',
+    decisionReco: 'What we keep from it',
+    decisionAlt: 'Other options considered',
+    sectionCriteria: 'Success criteria',
+    sectionLimits: 'Known limitations',
+    sectionHistory: 'Status history',
+    inCode: 'In the code',
+    liveLabel: 'see it live →',
     freshFresh: 'fresh',
     freshWarm: 'warm',
     freshStale: 'stale',
@@ -104,10 +147,9 @@ const COPY = {
   },
 } as const
 
-const REPO_URL = 'https://github.com/majeanson/marc-portal'
-
 const NINETY_DAYS_MS = 90 * 24 * 3600 * 1000
 const ONE_EIGHTY_DAYS_MS = 180 * 24 * 3600 * 1000
+const PROBLEM_SNIPPET = 240 // chars shown collapsed; full text shows on expand
 
 function freshness(dateStr: string | null, now: number): 'fresh' | 'warm' | 'stale' {
   if (!dateStr) return 'stale'
@@ -117,6 +159,22 @@ function freshness(dateStr: string | null, now: number): 'fresh' | 'warm' | 'sta
   if (age < NINETY_DAYS_MS) return 'fresh'
   if (age < ONE_EIGHTY_DAYS_MS) return 'warm'
   return 'stale'
+}
+
+/** The manifest stores FR-canonical routes; map them to the EN mirror. */
+function localizeUrl(url: string, lang: Lang): string {
+  if (lang === 'fr') return url
+  if (url === '/') return '/en'
+  if (url.startsWith('/#')) return `/en${url.slice(1)}`
+  return `/en${url}`
+}
+
+/** successCriteria is one string of "- " bullet lines; split for rendering. */
+function criteriaLines(raw: string): string[] {
+  return raw
+    .split('\n')
+    .map((l) => l.replace(/^[-•]\s*/, '').trim())
+    .filter(Boolean)
 }
 
 export function Meta({ lang }: { lang: Lang }) {
@@ -147,7 +205,7 @@ export function Meta({ lang }: { lang: Lang }) {
                   : `№ ${PAGE_FOLIOS.meta} — under the hood`
               }
               stampLabel="LAC"
-              stampSub={lang === 'fr' ? 'LIFE · AS · CODE' : 'LIFE · AS · CODE'}
+              stampSub="LIFE · AS · CODE"
               feature="meta"
               lang={lang}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}
@@ -161,54 +219,170 @@ export function Meta({ lang }: { lang: Lang }) {
               </p>
             </PageMast>
 
+            <Scorecard lang={lang} />
+
             <ul className="meta-features">
               {m.features.map((f) => {
                 const fresh = freshness(f.lastTransitionDate, now)
-                // dirSlug is captured at build time (word-form, "feat-app-shell")
-                // since the on-disk folders don't match the date-form featureKey.
-                const sourceUrl = `${REPO_URL}/blob/main/${f.dirSlug}/feature.json`
                 const statusLabel = t.statusLabels[f.status] ?? f.status
+                const snippet =
+                  f.problem.length > PROBLEM_SNIPPET
+                    ? f.problem.slice(0, PROBLEM_SNIPPET - 1).trimEnd() + '…'
+                    : f.problem
+                const criteria = criteriaLines(f.successCriteria)
                 return (
                   <li
                     key={f.featureKey}
                     className={`meta-feature meta-feature--${f.status} meta-feature--${fresh}`}
                   >
-                    <div className="meta-feature__head">
-                      <h3 className="meta-feature__title">{f.title}</h3>
-                      <span className="meta-feature__status mono">{statusLabel}</span>
-                    </div>
-                    <p className="meta-feature__key mono">{f.featureKey}</p>
-                    {f.problem && <p className="meta-feature__problem">{f.problem}</p>}
-                    {f.tags.length > 0 && (
-                      <ul className="meta-feature__tags">
-                        {f.tags.map((tag) => (
-                          <li key={tag} className="mono">
-                            {tag}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    <div className="meta-feature__foot">
-                      <span className="mono">{t.decisionsLabel(f.decisionsCount)}</span>
-                      {f.lastTransitionDate && (
-                        <span className={`mono meta-feature__fresh meta-feature__fresh--${fresh}`}>
-                          {formatDate(f.lastTransitionDate, lang)} ·{' '}
-                          {fresh === 'fresh'
-                            ? t.freshFresh
-                            : fresh === 'warm'
-                              ? t.freshWarm
-                              : t.freshStale}
-                        </span>
-                      )}
-                      <a
-                        className="mono meta-feature__source"
-                        href={sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {t.sourceLinkLabel}
-                      </a>
-                    </div>
+                    <details className="meta-feature__details">
+                      <summary className="meta-feature__summary">
+                        <div className="meta-feature__head">
+                          <h3 className="meta-feature__title">{f.title}</h3>
+                          <span className="meta-feature__status mono">{statusLabel}</span>
+                        </div>
+                        <p className="meta-feature__key mono">{f.featureKey}</p>
+                        <p className="meta-feature__problem">{snippet}</p>
+                        {f.tags.length > 0 && (
+                          <ul className="meta-feature__tags">
+                            {f.tags.slice(0, 6).map((tag) => (
+                              <li key={tag} className="mono">
+                                {tag}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        <div className="meta-feature__foot">
+                          <span className="mono">{t.decisionsLabel(f.decisions.length)}</span>
+                          {f.lastTransitionDate && (
+                            <span
+                              className={`mono meta-feature__fresh meta-feature__fresh--${fresh}`}
+                            >
+                              {formatDate(f.lastTransitionDate, lang)} ·{' '}
+                              {fresh === 'fresh'
+                                ? t.freshFresh
+                                : fresh === 'warm'
+                                  ? t.freshWarm
+                                  : t.freshStale}
+                            </span>
+                          )}
+                          <span className="mono meta-feature__toggle">{t.toggleLabel}</span>
+                        </div>
+                      </summary>
+
+                      <div className="meta-feature__body">
+                        <section className="meta-block">
+                          <h4 className="meta-block__label mono">{t.sectionProblem}</h4>
+                          <p className="meta-block__text">{f.problem}</p>
+                        </section>
+
+                        {f.analysis && (
+                          <section className="meta-block">
+                            <h4 className="meta-block__label mono">{t.sectionAnalysis}</h4>
+                            <p className="meta-block__text">{f.analysis}</p>
+                          </section>
+                        )}
+
+                        {f.decisions.length > 0 && (
+                          <section className="meta-block">
+                            <h4 className="meta-block__label mono">{t.sectionDecisions}</h4>
+                            <ol className="meta-decisions">
+                              {f.decisions.map((d, i) => (
+                                <li key={i} className="meta-decision">
+                                  <p className="meta-decision__title">{d.decision}</p>
+                                  {d.rationale && (
+                                    <p className="meta-decision__line">
+                                      <span className="mono meta-decision__tag">
+                                        {t.decisionWhy}
+                                      </span>{' '}
+                                      {d.rationale}
+                                    </p>
+                                  )}
+                                  {d.recommendation && (
+                                    <p className="meta-decision__line">
+                                      <span className="mono meta-decision__tag">
+                                        {t.decisionReco}
+                                      </span>{' '}
+                                      {d.recommendation}
+                                    </p>
+                                  )}
+                                  {d.alternativesConsidered &&
+                                    d.alternativesConsidered.length > 0 && (
+                                      <p className="meta-decision__line meta-decision__line--alt">
+                                        <span className="mono meta-decision__tag">
+                                          {t.decisionAlt}
+                                        </span>{' '}
+                                        {d.alternativesConsidered.join(' · ')}
+                                      </p>
+                                    )}
+                                </li>
+                              ))}
+                            </ol>
+                          </section>
+                        )}
+
+                        {criteria.length > 0 && (
+                          <section className="meta-block">
+                            <h4 className="meta-block__label mono">{t.sectionCriteria}</h4>
+                            <ul className="meta-list">
+                              {criteria.map((c, i) => (
+                                <li key={i}>{c}</li>
+                              ))}
+                            </ul>
+                          </section>
+                        )}
+
+                        {f.knownLimitations.length > 0 && (
+                          <section className="meta-block">
+                            <h4 className="meta-block__label mono">{t.sectionLimits}</h4>
+                            <ul className="meta-list meta-list--limits">
+                              {f.knownLimitations.map((k, i) => (
+                                <li key={i}>{k}</li>
+                              ))}
+                            </ul>
+                          </section>
+                        )}
+
+                        {f.statusHistory.length > 0 && (
+                          <section className="meta-block">
+                            <h4 className="meta-block__label mono">{t.sectionHistory}</h4>
+                            <ol className="meta-history">
+                              {f.statusHistory.map((s, i) => (
+                                <li key={i} className="meta-history__item">
+                                  <span className="mono meta-history__when">
+                                    {formatDate(s.date, lang)}
+                                  </span>
+                                  <span className="mono meta-history__arrow">
+                                    {(t.statusLabels[s.from] ?? s.from) +
+                                      ' → ' +
+                                      (t.statusLabels[s.to] ?? s.to)}
+                                  </span>
+                                  {s.reason && (
+                                    <span className="meta-history__reason">{s.reason}</span>
+                                  )}
+                                </li>
+                              ))}
+                            </ol>
+                          </section>
+                        )}
+
+                        <div className="meta-feature__links">
+                          {f.componentFile && (
+                            <span className="mono meta-feature__component">
+                              {t.inCode}: <code>{f.componentFile}</code>
+                            </span>
+                          )}
+                          {f.liveUrl && (
+                            <a
+                              className="mono meta-feature__live"
+                              href={localizeUrl(f.liveUrl, lang)}
+                            >
+                              {t.liveLabel}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </details>
                   </li>
                 )
               })}

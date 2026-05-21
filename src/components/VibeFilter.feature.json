@@ -1,0 +1,82 @@
+{
+  "featureKey": "feat-2026-007",
+  "title": "Vibe filter — a 'we do / we don't' self-qualifier",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "primitive/qualification",
+  "componentFile": "src/components/VibeFilter.tsx",
+  "liveUrl": "/#vibe",
+  "problem": "Most 'ideal client' filters are demographic — industry, company size, budget. This one is temperamental: it filters for cultural fit, not budget fit. A public 'we do / we don't' list lets a visitor self-qualify before investing any effort in the intake form, which saves both sides the goodwill cost of a triage rejection. Someone who reads the list and thinks 'yes, exactly' is the right client regardless of price; someone who thinks 'but my project is special, you'll see' is the wrong client regardless of how much they would pay. A cheap-but-pushy client is worse than a well-aligned one, because the wrong client is what breaks family-first.",
+  "tags": ["self-qualify", "cultural-fit", "we-do-we-dont", "goodwill", "reusable-pattern"],
+  "analysis": "A two-column ledger on the homepage — what the practice does, and what it does not — placed before the pricing block so a visitor meets the cultural fit question before the price question. Each line is one concrete constraint drawn from how the practice actually works: no calls or meetings, async only, no urgent fixes, no scope changes mid-build, nothing real-time. The items are deliberately about temperament, not demographics. The same ledger appears again, in a lighter form, as an optional non-blocking checkbox at the start of the intake flow, so a visitor passes the self-qualification idea twice — once while browsing and once just before committing.",
+  "decisions": [
+    {
+      "decision": "The filter is temperamental, not demographic",
+      "rationale": "A cheap-but-pushy client is worse than a well-aligned one — the wrong client breaks family-first regardless of revenue, and demographic filters miss exactly the temperament that matters.",
+      "recommendation": "Keep every list item tied to a real engagement constraint; avoid filtering by industry, size, or budget.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "The list is published before the intake form, not after",
+      "rationale": "Self-qualification only works if the visitor sees it before investing effort in the form. A 'we do / we don't' list shown afterward is useless.",
+      "recommendation": "Place the ledger above the pricing block in the homepage flow, and offer an optional 'I read this and I agree' confirmation at the start of intake.",
+      "date": "2026-05-06"
+    }
+  ],
+  "implementation": "src/components/VibeFilter.tsx renders the homepage section (id 'vibe') as a two-column ledger — a 'we do' column and a 'we don't' column — with hand-drawn check and cross marks. The list items live in the bilingual dictionary in src/i18n.ts under the vibe keys, so both languages stay in one place. The component is placed in the homepage composition before the pricing section. The intake flow reuses the same ledger as a separate component, src/components/intake/VibeGate.tsx: a non-blocking checkbox that lets a visitor confirm they have read the list and it matches — the confirmation is a self-qualification nudge, not a hard gate, since the real filter is the consultant's triage read.",
+  "successCriteria": "- The 'we do' and 'we don't' lists are visible on the public homepage\n- Both lists derive from documented engagement constraints, not marketing instinct\n- The lists appear before the pricing block in the page flow\n- The intake flow offers an optional confirmation that reuses the same ledger\n- Reusable as a pattern for any service that filters for cultural fit",
+  "userGuide": "Edit the do / don't items in src/i18n.ts under the vibe keys (French and the English mirror); each item should be an engagement constraint, not a demographic filter. The component is rendered on the homepage by src/pages/Home.tsx. The optional 'I read this and I agree' confirmation is a separate component, VibeGate, used as the first step of the intake flow.",
+  "knownLimitations": [
+    "The confirmation gate is non-blocking — checking it is encouraged but a visitor can proceed without it, because the real filter is the triage read",
+    "The lists are the same content in both languages — there are no language-specific items where culture-specific wording might land better",
+    "There is no A/B variation tracking — the lists are tuned by hand"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Vibe filter live on the homepage; the confirmation gate is wired into the intake flow."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "frozen",
+      "to": "frozen",
+      "date": "2026-05-21",
+      "reason": "Code-first verification — feature.json co-located at src/components/VibeFilter.feature.json. Confirmed the homepage ledger and the reused VibeGate against the shipped components."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-21",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from the brainstorming session — the vibe-filter self-qualification principle."
+    },
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide"],
+      "reason": "Built as src/components/VibeFilter.tsx with the do / don't lists in the i18n dictionary."
+    },
+    {
+      "date": "2026-05-21",
+      "author": "marc+claude",
+      "fields_changed": [
+        "problem",
+        "analysis",
+        "implementation",
+        "successCriteria",
+        "knownLimitations",
+        "userGuide"
+      ],
+      "reason": "Code-first overhaul: co-located next to VibeFilter.tsx, added liveUrl, and documented the reused VibeGate component in the intake flow."
+    }
+  ],
+  "annotations": []
+}

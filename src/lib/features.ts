@@ -132,7 +132,7 @@ export function isFeatureId(s: string | null | undefined): s is FeatureId {
  */
 export const PAGE_FEATURE: Partial<Record<string, FeatureId>> = {
   // Intake
-  'page.root-by-template': 'intake',
+  'page.home': 'intake',
   'page.intake': 'intake',
   'page.journey': 'intake',
   // Conversation

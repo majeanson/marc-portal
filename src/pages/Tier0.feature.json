@@ -1,0 +1,83 @@
+{
+  "featureKey": "feat-2026-008",
+  "title": "Self-service redirect — the Tier 0 off-ramp",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "primitive/tier-0",
+  "componentFile": "src/pages/Tier0.tsx",
+  "liveUrl": "/tier-0",
+  "problem": "Some visitors have a real problem but no commercial budget — civic coordination, household logistics, a hobby project. A consultant facing one of these usually either takes the job and loses money or rejects it and burns goodwill. The self-service redirect is a third move: a free, curated library of small patterns that says, in effect, 'your problem is small enough that hiring me would cost more than it is worth — here is how people solve this one themselves, come back if it outgrows you.' The visitor leaves with something usable, the goodwill is intact, and the page quietly earns long-tail search traffic.",
+  "tags": ["self-service", "tier-0", "off-ramp", "goodwill", "free-value", "reusable-pattern"],
+  "analysis": "Tier 0 replaces the binary accept/reject triage outcome with a curated off-ramp. The page lists a set of small, recognisable everyday problems, each presented as three plain blocks — the problem, a recipe to solve it, and a link to a free no-code tool that fits. The patterns are hand-picked, not generated: the value is the match, not the volume. The page opens with the principle behind it (a fifty-dollar problem deserves a free solution) and closes with an invitation to come back through the intake form when a pattern outgrows the visitor. Educating a visitor out of needing the consultant is the correct move when hiring would cost more than the problem is worth.",
+  "decisions": [
+    {
+      "decision": "The redirect library is curated, not algorithmic",
+      "rationale": "The value of an off-ramp is the well-matched pattern, not the number of patterns. A short list of patterns the consultant actually chose feels respectful; a long auto-generated list feels dismissive.",
+      "recommendation": "Add a pattern only when a real recurring request justifies it; keep each entry concrete enough to act on.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Each pattern points to a free, no-code tool",
+      "rationale": "A Tier 0 visitor has no budget and often no technical skill. Pointing at a spreadsheet template or a free poll tool gives them a result today without involving the consultant at all.",
+      "recommendation": "Prefer well-known free tools; accept that an external tool can change its URL and keep the recipe useful even if a link rots.",
+      "date": "2026-05-06"
+    }
+  ],
+  "implementation": "src/pages/Tier0.tsx renders the page at /tier-0 (and /en/tier-0). The patterns live in src/lib/patterns.ts as a typed, bilingual array — each entry has a one-word category tag, an accent tone, a title, a problem statement, a recipe, and an optional external template link. About a dozen curated patterns ship today, covering cases such as a snow-shovelling rotation, an event RSVP poll, a small-team hours tracker, a neighbourhood lending board, shared expenses, and a few more. Each renders as a card with the three labelled blocks. The page carries an opening principle line and a closing call to action that links back to /intake. The pricing table's Tier 0 card links here directly.",
+  "successCriteria": "- A budget-mismatched visitor lands on a curated off-ramp instead of a flat rejection\n- Each pattern gives the visitor a concrete recipe and a free tool to use today\n- Adding or removing a pattern is a single edit to one data file\n- The page invites the visitor back to /intake when a pattern outgrows them\n- Reusable as a pattern for any practice that wants a Tier 0 without losing money",
+  "userGuide": "Visit /tier-0 (or /en/tier-0) to browse the free pattern library. To add a pattern, append an entry to the array in src/lib/patterns.ts with a tag, tone, and bilingual title, problem, and recipe, plus an optional external template link; the page renders it automatically. To remove one, delete its entry. The Tier 0 card in the homepage pricing table links straight here.",
+  "knownLimitations": [
+    "There is no click-through analytics, so the page cannot yet surface which patterns are most in demand",
+    "Patterns are defined in code — fine for a curated list of this size, but not editable without a deploy",
+    "Template links point to third-party tools, which can change their URLs over time",
+    "There is no automatic inbound flow from triage into Tier 0 — a budget mismatch does not yet route a visitor here on its own"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "/tier-0 live with a curated pattern library; the pricing Tier 0 card links here."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "frozen",
+      "to": "frozen",
+      "date": "2026-05-21",
+      "reason": "Code-first verification — feature.json co-located at src/pages/Tier0.feature.json. The pattern library has grown to roughly a dozen entries; re-checked against patterns.ts."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-21",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from the brainstorming session — the graceful Tier 0 off-ramp principle."
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "reason": "Built as src/pages/Tier0.tsx plus a pattern library in src/lib/patterns.ts, with four curated patterns."
+    },
+    {
+      "date": "2026-05-21",
+      "author": "marc+claude",
+      "fields_changed": [
+        "problem",
+        "analysis",
+        "implementation",
+        "successCriteria",
+        "knownLimitations",
+        "userGuide"
+      ],
+      "reason": "Code-first overhaul: co-located next to Tier0.tsx, added liveUrl, and updated the pattern count and examples to match the grown library."
+    }
+  ],
+  "annotations": []
+}

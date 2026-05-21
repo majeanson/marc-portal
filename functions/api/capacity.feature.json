@@ -1,0 +1,90 @@
+{
+  "featureKey": "feat-2026-005",
+  "title": "Triage queue with a hard capacity cap",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "primitive/capacity-control",
+  "componentFile": "functions/api/capacity.ts",
+  "liveUrl": "/",
+  "problem": "Without a hard limit on concurrent work, a side-practice consultant accepts every engagement that looks 'doable' and ends up with three clients at once eating evenings and weekends — and family-first, the value the whole practice is built to protect, quietly falsifies. This feature makes the load-bearing rule structural rather than aspirational: one active build plus one in triage, no more. The homepage shows the current state so a visitor knows immediately whether a slot is open, and the server refuses to create a new engagement past the cap. The public waitlist is not a flaw to hide — scarcity reads as seriousness. This is the single rule of the portal that does not bend.",
+  "tags": ["capacity-cap", "waitlist", "load-bearing-rule", "family-first", "reusable-pattern"],
+  "analysis": "The cap is enforced where it cannot be wished away — in the server. The current load is not a number someone maintains by hand; it is counted directly from the engagement records, so it is always true and it decrements on its own when an engagement ships. A public endpoint reports whether the practice is at capacity, and the homepage hero turns that into a plain-language slot indicator. When a visitor submits an intake while at capacity, the server declines to create a new engagement and the visitor is routed to a waitlist acknowledgement instead. Crucially there is no override: no admin toggle raises the cap, because the rule that must not bend should not have a soft switch in the code.",
+  "decisions": [
+    {
+      "decision": "Hard cap of one active build plus one in triage, with no exception path",
+      "rationale": "This is the bedrock defence. If it breaks, family-first collapses — three concurrent clients against side-practice hours consumes weekends. The failure pattern it structurally prevents is the optimism of 'I can squeeze this one in'.",
+      "recommendation": "Enforce it server-side, not as a soft warning, and provide no override anywhere in the admin surface.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "The public capacity indicator is an asset, not a bug to hide",
+      "rationale": "Scarcity adds credibility. A visible 'currently full, waitlist open' positions the consultant as serious rather than unavailable, and the waitlist itself becomes acquisition infrastructure.",
+      "recommendation": "Keep the indicator on the homepage hero and let it read straight from real engagement counts so it is never stale.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Current load is derived from engagement records, never hand-maintained",
+      "rationale": "A hand-edited capacity figure drifts the moment someone forgets to update it after an engagement ships. Counting active and triage engagements directly makes the figure self-correcting and removes a standing source of error.",
+      "recommendation": "Keep the cap thresholds as named constants next to the counting logic so raising them is a deliberate, reviewable code change.",
+      "date": "2026-05-06"
+    }
+  ],
+  "implementation": "The capacity primitive is server-side. functions/api/capacity.ts answers GET /api/capacity with the live active and triage counts, the cap thresholds, and an at-capacity flag. The counting and the cap constants (one active, one in triage) live in functions/_lib/sessions.ts and are derived from the engagement records in the database. When an intake is submitted, POST /api/sessions checks the same counts and answers with a 409 when a tier is full, so no engagement is created past the cap. On the client side, the homepage hero (src/components/Hero.tsx) fetches /api/capacity on mount and renders a slot indicator — an open slot, or 'full, waitlist open'. The intake form reads the same endpoint to set expectations before submission. There is deliberately no admin endpoint or toggle that raises the cap.",
+  "successCriteria": "- The active-plus-triage cap is enforced by the server, not by policy or a soft warning\n- Submitting an intake at capacity is declined cleanly and routed to a waitlist acknowledgement\n- The homepage shows the current capacity state, read from real engagement counts\n- The current load decrements on its own when an engagement ships — nobody maintains it by hand\n- There is no override path anywhere that can raise the cap\n- Reusable as a pattern for any solo-operator service that wants the same structural rule",
+  "userGuide": "The capacity state is computed automatically from engagement records — there is nothing to update by hand. GET /api/capacity returns the current counts and the at-capacity flag; the homepage hero and the intake form both read it. The one-active-plus-one-triage limit and the rule that submissions past it become waitlist entries are enforced inside the sessions endpoint. To change the cap, edit the thresholds in functions/_lib/sessions.ts — a deliberate code change, by design, with no UI shortcut.",
+  "knownLimitations": [
+    "The capacity figure reflects engagement records only — it does not model a richer queue with per-slot start dates",
+    "The homepage indicator is fetched on page load, so a visitor with a stale tab sees the state from when they opened it until the next load",
+    "The waitlist is an acknowledgement state on a declined submission, not yet a managed list with visible queue positions"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Capacity gating live; homepage hero shows the slot state and the intake submit path respects the cap."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "frozen",
+      "to": "frozen",
+      "date": "2026-05-21",
+      "reason": "Code-first verification — feature.json co-located at functions/api/capacity.feature.json. Capacity is now derived live from engagement records via the server; the earlier hand-edited JSON file is gone."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-21",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from the brainstorming session — the load-bearing capacity cap."
+    },
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "reason": "Built as a hand-edited capacity file read at build time, with a homepage counter component."
+    },
+    {
+      "date": "2026-05-21",
+      "author": "marc+claude",
+      "fields_changed": [
+        "problem",
+        "analysis",
+        "decisions",
+        "implementation",
+        "componentFile",
+        "successCriteria",
+        "knownLimitations",
+        "userGuide"
+      ],
+      "reason": "Code-first overhaul: capacity is now a server endpoint that counts real engagement records, so the feature.json is co-located at functions/api/capacity.feature.json and anchored on capacity.ts. Dropped every stale limitation — the hand-edited file, the manual decrement, the unwired waitlist, and the rebuild-to-update lag are all gone."
+    }
+  ],
+  "annotations": []
+}

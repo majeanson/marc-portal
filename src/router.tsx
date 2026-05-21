@@ -14,7 +14,7 @@ import {
 
 // Hot-path pages — keep eager so the home/intake/login critical path stays
 // fast and FCP-friendly.
-import { RootByTemplate } from './pages/RootByTemplate'
+import { Home } from './pages/Home'
 import { Intake } from './pages/Intake'
 import { Login } from './pages/Login'
 import { MagicLinkSent } from './pages/MagicLinkSent'
@@ -43,17 +43,6 @@ const Atelier = lazy(() => import('./pages/Atelier').then((m) => ({ default: m.A
 // Aliased to MapPage at import to avoid shadowing the global Map constructor.
 const MapPage = lazy(() => import('./pages/Map').then((m) => ({ default: m.Map })))
 const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
-const AdminAppearance = lazy(() =>
-  import('./pages/AdminAppearance').then((m) => ({ default: m.AdminAppearance })),
-)
-const AdminTeam = lazy(() => import('./pages/AdminTeam').then((m) => ({ default: m.AdminTeam })))
-const AdminBilling = lazy(() =>
-  import('./pages/AdminBilling').then((m) => ({ default: m.AdminBilling })),
-)
-const AdminFleet = lazy(() => import('./pages/AdminFleet').then((m) => ({ default: m.AdminFleet })))
-const AdminFleetNew = lazy(() =>
-  import('./pages/AdminFleetNew').then((m) => ({ default: m.AdminFleetNew })),
-)
 const AdminAudit = lazy(() => import('./pages/AdminAudit').then((m) => ({ default: m.AdminAudit })))
 const AdminShowcase = lazy(() =>
   import('./pages/AdminShowcase').then((m) => ({ default: m.AdminShowcase })),
@@ -107,8 +96,8 @@ function RootLayout() {
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <Route element={<RootLayout />} errorElement={<RouteError />}>
-      <Route path="/" element={<RootByTemplate lang="fr" />} />
-      <Route path="/en" element={<RootByTemplate lang="en" />} />
+      <Route path="/" element={<Home lang="fr" />} />
+      <Route path="/en" element={<Home lang="en" />} />
       <Route path="/intake" element={<Intake lang="fr" />} />
       <Route path="/en/intake" element={<Intake lang="en" />} />
       {/* /napkin folded into the intake form (the sketch is now an inline
@@ -432,7 +421,7 @@ export const router = createBrowserRouter(
       <Route path="/admin/inbox/:id" element={<SessionPage lang="fr" />} />
       <Route path="/en/admin/inbox/:id" element={<SessionPage lang="en" />} />
 
-      {/* Admin shell — fleet feat-2026-016.
+      {/* Admin shell.
           Deliberate duplication: the FR + EN subtrees are mirrored explicitly
           rather than collapsed under <Route path="/:lang?/admin"> because the
           per-page components currently receive `lang` as a prop. */}
@@ -449,46 +438,6 @@ export const router = createBrowserRouter(
           element={
             <L>
               <AdminHub lang="fr" />
-            </L>
-          }
-        />
-        <Route
-          path="apparence"
-          element={
-            <L>
-              <AdminAppearance lang="fr" />
-            </L>
-          }
-        />
-        <Route
-          path="equipe"
-          element={
-            <L>
-              <AdminTeam lang="fr" />
-            </L>
-          }
-        />
-        <Route
-          path="facturation"
-          element={
-            <L>
-              <AdminBilling lang="fr" />
-            </L>
-          }
-        />
-        <Route
-          path="fleet"
-          element={
-            <L>
-              <AdminFleet lang="fr" />
-            </L>
-          }
-        />
-        <Route
-          path="fleet/new"
-          element={
-            <L>
-              <AdminFleetNew lang="fr" />
             </L>
           }
         />
@@ -530,46 +479,6 @@ export const router = createBrowserRouter(
           element={
             <L>
               <AdminHub lang="en" />
-            </L>
-          }
-        />
-        <Route
-          path="apparence"
-          element={
-            <L>
-              <AdminAppearance lang="en" />
-            </L>
-          }
-        />
-        <Route
-          path="equipe"
-          element={
-            <L>
-              <AdminTeam lang="en" />
-            </L>
-          }
-        />
-        <Route
-          path="facturation"
-          element={
-            <L>
-              <AdminBilling lang="en" />
-            </L>
-          }
-        />
-        <Route
-          path="fleet"
-          element={
-            <L>
-              <AdminFleet lang="en" />
-            </L>
-          }
-        />
-        <Route
-          path="fleet/new"
-          element={
-            <L>
-              <AdminFleetNew lang="en" />
             </L>
           }
         />

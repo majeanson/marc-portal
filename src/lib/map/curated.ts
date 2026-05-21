@@ -33,18 +33,23 @@ const bi = (fr: string, en: string): Bi => ({ fr, en })
 // Patches are grouped by feature to mirror the Vision-layer bubbles, so the
 // Pages and Vision layers tell the same story at different altitudes.
 //
-//   1. Bring a project       → group.feat-intake
-//   2. Conversation          → group.feat-conversation
-//   3. Pricing               → group.feat-pricing
-//   4. Portfolio             → group.feat-portfolio
-//   5. Privacy               → group.feat-privacy
-//   6. Handoff               → group.feat-handoff
-//   7. Operator console      → group.feat-operator   (admin layer toggle in map)
+//   1. Bring a project       → group.feat-intake     (operational front door)
+//   2. How it works          → group.howto           (explainer — not a feature)
+//   3. Conversation          → group.feat-conversation
+//   4. Pricing               → group.feat-pricing
+//   5. Portfolio             → group.feat-portfolio
+//   6. Privacy               → group.feat-privacy
+//   7. Handoff               → group.feat-handoff
+//   8. Operator console      → group.feat-operator   (admin layer toggle in map)
+//
+// "Bring a project" is the operational concern — the pages you actually move
+// through to get a project in. "How it works" is the separate explainer
+// concern — pages that *describe* the process rather than being a step of it.
 
 const PAGE_PATCHES = [
   // 1 — Bring a project
   {
-    id: 'page.root-by-template',
+    id: 'page.home',
     label: bi('Accueil', 'Home'),
     desc: bi('La page d’atterrissage.', 'The landing page.'),
     group: 'group.feat-intake',
@@ -59,6 +64,8 @@ const PAGE_PATCHES = [
     ),
     group: 'group.feat-intake',
   },
+
+  // 2 — How it works (explainer concern, kept out of "Bring a project")
   {
     id: 'page.journey',
     label: bi('Le parcours', 'The journey'),
@@ -66,10 +73,12 @@ const PAGE_PATCHES = [
       'Ce que ça donne d’atterrir ici jusqu’à recevoir un livrable.',
       'What it looks like from landing here to receiving a deliverable.',
     ),
-    group: 'group.feat-intake',
+    // The journey *describes* the process — it isn't a page you operate to
+    // bring a project. It lives in group.howto, not group.feat-intake.
+    group: 'group.howto',
   },
 
-  // 2 — Conversation
+  // 3 — Conversation
   {
     id: 'page.login',
     label: bi('Connexion', 'Login'),
@@ -295,36 +304,6 @@ const PAGE_PATCHES = [
     desc: bi('Actions opérateur dans le temps.', 'Operator actions over time.'),
     group: 'group.feat-operator',
   },
-  {
-    id: 'page.admin-fleet',
-    label: bi('Flotte', 'Fleet'),
-    desc: bi('Liste des tenants (instances) hébergés.', 'List of hosted tenants (instances).'),
-    group: 'group.feat-operator',
-  },
-  {
-    id: 'page.admin-fleet-new',
-    label: bi('Nouvel onboarding', 'New onboarding'),
-    desc: bi('Assistant pour ajouter un nouveau tenant.', 'Wizard to add a new tenant.'),
-    group: 'group.feat-operator',
-  },
-  {
-    id: 'page.admin-appearance',
-    label: bi('Apparence', 'Appearance'),
-    desc: bi('Configuration de la marque d’un tenant.', 'Tenant brand configuration.'),
-    group: 'group.feat-operator',
-  },
-  {
-    id: 'page.admin-team',
-    label: bi('Équipe', 'Team'),
-    desc: bi('Gestion d’équipe (placeholder).', 'Team management (placeholder).'),
-    group: 'group.feat-operator',
-  },
-  {
-    id: 'page.admin-billing',
-    label: bi('Facturation', 'Billing'),
-    desc: bi('Vue facturation tenant.', 'Tenant billing view.'),
-    group: 'group.feat-operator',
-  },
 ] as const
 
 // ─── Extras (synthesized — no skeleton equivalent) ────────────────────────────
@@ -395,29 +374,50 @@ const SERVICE_NODES: MapNode[] = [
 // ─── Groups ───────────────────────────────────────────────────────────────────
 
 const GROUPS: MapGroup[] = [
-  // Pages layer — seven feature groups, one per colour tag: the six
-  // product features (1-1 with the Vision bubbles) plus group.feat-meta
-  // (the backstage layer — privacy/PIA/meta/map). Then the admin-only
-  // operator console, which is the one group that carries no feature.
+  // Pages layer — six feature groups, one per colour tag (the product
+  // features, 1-1 with the Vision bubbles), plus three groups outside the
+  // feature taxonomy: group.feat-meta (the backstage layer — privacy/PIA/
+  // meta/atelier/map), group.howto (the "how it works" explainer concern),
+  // and the admin-only operator console.
   //
   // Group ids "group.feat-{id}" are recognized by groupToFeature() in
   // src/lib/features.ts; pages inside inherit that feature's accent.
   // "group.feat-operator" matches the prefix but 'operator' isn't a real
   // FeatureId, so groupToFeature returns null — no accent, by design.
+  // "group.howto" doesn't match the prefix at all — same null result, an
+  // intentionally neutral cluster.
   {
     id: 'group.feat-intake',
     label: bi('Apporte un projet', 'Bring a project'),
     layer: 'pages',
     visibility: 'public',
     order: 0,
-    nodeIds: ['page.root-by-template', 'page.intake', 'page.journey'],
+    // The operational front door only — the pages you actually move
+    // through to bring a project in. The narrated explainer of that
+    // process (the journey) is a separate concern; it lives in
+    // group.howto, not here.
+    nodeIds: ['page.home', 'page.intake'],
+  },
+  {
+    id: 'group.howto',
+    label: bi('Comment ça marche', 'How it works'),
+    layer: 'pages',
+    visibility: 'public',
+    order: 1,
+    // The explainer concern — pages that *describe* the process rather
+    // than being a step you operate. group.howto is not a group.feat-*
+    // id, so groupToFeature() returns null and the cluster renders with
+    // no feature accent (the neutral treatment, like group.feat-operator).
+    // The home page's #how section is slotted in here by data.ts via
+    // SECTION_GROUP_OVERRIDE, alongside the journey page.
+    nodeIds: ['page.journey'],
   },
   {
     id: 'group.feat-conversation',
     label: bi('Discussion async', 'Async conversation'),
     layer: 'pages',
     visibility: 'public',
-    order: 1,
+    order: 2,
     nodeIds: ['page.login', 'page.magic-link-sent', 'page.me-portal', 'page.session-page'],
   },
   {
@@ -425,7 +425,7 @@ const GROUPS: MapGroup[] = [
     label: bi('Tu vois chaque build', 'You see every build'),
     layer: 'pages',
     visibility: 'public',
-    order: 2,
+    order: 3,
     nodeIds: ['page.public-advancements'],
   },
   {
@@ -433,7 +433,7 @@ const GROUPS: MapGroup[] = [
     label: bi('Tarification claire', 'Clear pricing'),
     layer: 'pages',
     visibility: 'public',
-    order: 3,
+    order: 4,
     nodeIds: ['page.tier0'],
   },
   {
@@ -441,7 +441,7 @@ const GROUPS: MapGroup[] = [
     label: bi('Tu gardes les clés', 'You keep the keys'),
     layer: 'pages',
     visibility: 'public',
-    order: 4,
+    order: 5,
     nodeIds: ['page.handoff', 'page.handoff-checklist'],
   },
   {
@@ -449,7 +449,7 @@ const GROUPS: MapGroup[] = [
     label: bi('Voir le déjà-fait', "See what's shipped"),
     layer: 'pages',
     visibility: 'public',
-    order: 5,
+    order: 6,
     nodeIds: ['page.projects', 'page.engagement', 'page.vouches', 'page.vouch'],
   },
   {
@@ -457,7 +457,7 @@ const GROUPS: MapGroup[] = [
     label: bi('Les coulisses', 'Behind the scenes'),
     layer: 'pages',
     visibility: 'public',
-    order: 6,
+    order: 7,
     nodeIds: ['page.privacy', 'page.pia', 'page.meta', 'page.atelier', 'page.map-page'],
   },
   {
@@ -465,7 +465,7 @@ const GROUPS: MapGroup[] = [
     label: bi('Console opérateur', 'Operator console'),
     layer: 'pages',
     visibility: 'admin',
-    order: 7,
+    order: 8,
     nodeIds: [
       'page.admin-hub',
       'page.admin-inbox',
@@ -475,11 +475,6 @@ const GROUPS: MapGroup[] = [
       'page.admin-runbook',
       'page.admin-showcase',
       'page.admin-audit',
-      'page.admin-fleet',
-      'page.admin-fleet-new',
-      'page.admin-appearance',
-      'page.admin-team',
-      'page.admin-billing',
     ],
   },
 
@@ -722,7 +717,7 @@ const JOURNEYS: MapJourney[] = [
     visibility: 'public',
     steps: [
       {
-        nodeId: 'page.root-by-template',
+        nodeId: 'page.home',
         note: bi('Visiteur atterrit ici.', 'Visitor lands here.'),
       },
       { nodeId: 'page.intake', note: bi('Remplit le formulaire.', 'Fills out the form.') },

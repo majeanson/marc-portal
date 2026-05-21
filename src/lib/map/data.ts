@@ -117,7 +117,7 @@ function bindingNodes(bindings: SkeletonBinding[]): MapNode[] {
 
 const PAGE_FOLIO_BY_ID: Record<string, string> = {
   // PAGE_FOLIOS keys use the component dir-slug; map by node id.
-  'page.root-by-template': PAGE_FOLIOS.home,
+  'page.home': PAGE_FOLIOS.home,
   'page.tier0': PAGE_FOLIOS.tier0,
   'page.projects': PAGE_FOLIOS.projects,
   'page.vouches': PAGE_FOLIOS.vouches,
@@ -129,6 +129,17 @@ const PAGE_FOLIO_BY_ID: Record<string, string> = {
   'page.pia': PAGE_FOLIOS.pia,
   'page.atelier': PAGE_FOLIOS.atelier,
   'page.map-page': PAGE_FOLIOS.map,
+}
+
+/** Home sections normally slot into their feature's Pages-layer cluster
+ *  (HOME_SECTION_FEATURE → group.feat-*). The exception is `#how`: the
+ *  "How it works" section is an *explainer*, not a step of any feature, so
+ *  it belongs in the dedicated group.howto cluster next to the journey
+ *  page — not in the `meta` cluster its slate accent would otherwise point
+ *  at. Keyed by HOME_SECTION_ORDER slug. Exported so map.test.ts checks
+ *  section placement against the same source of truth. */
+export const SECTION_GROUP_OVERRIDE: Record<string, string> = {
+  how: 'group.howto',
 }
 
 /** Home-page anchor sections, materialized as `section` nodes so the Pages
@@ -209,16 +220,17 @@ export function buildMapData(
     }
   }
 
-  // Home-page anchor sections become `section` nodes appended to the
-  // matching feature's Pages-layer group (after its real pages), so the
-  // Pages layer surfaces both. Section→group via HOME_SECTION_FEATURE:
-  // `pricing` → group.feat-pricing, `featured` → group.feat-shipped, etc.
+  // Home-page anchor sections become `section` nodes appended to a
+  // Pages-layer group (after its real pages), so the Pages layer surfaces
+  // both. Section→group is HOME_SECTION_FEATURE by default (`pricing` →
+  // group.feat-pricing, `featured` → group.feat-shipped, …), but
+  // SECTION_GROUP_OVERRIDE wins where set (`how` → group.howto).
   const sections = homeSectionNodes()
   const sectionIdsByGroup = new Map<string, string[]>()
   for (const slug of HOME_SECTION_ORDER) {
     const fid = HOME_SECTION_FEATURE[slug]
-    if (!fid) continue
-    const gid = `group.feat-${fid}`
+    const gid = SECTION_GROUP_OVERRIDE[slug] ?? (fid ? `group.feat-${fid}` : undefined)
+    if (!gid) continue
     const arr = sectionIdsByGroup.get(gid) ?? []
     arr.push(`home.${slug}`)
     sectionIdsByGroup.set(gid, arr)

@@ -4166,6 +4166,80 @@ button.intake__progress-step:focus-visible {
    portal's own feature.json projection. Each card mirrors a small
    subset of the LAC schema: status, problem snippet, tags, decisions,
    last-transition date with green/amber/red freshness pill. */
+/* --- A2 scorecard: the portal grades itself, above the feature grid --- */
+.scorecard {
+  margin: 30px 0 10px;
+}
+.scorecard__title {
+  margin: 4px 0 0;
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--text);
+}
+.scorecard__lead {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-mid);
+  max-width: 60ch;
+}
+.scorecard__grid {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (min-width: 720px) {
+  .scorecard__grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+.scorecard__tile {
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--bg-section);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.scorecard__tile--ok {
+  border-left-color: #3a8a4a;
+}
+.scorecard__tile--warn {
+  border-left-color: #c08a2a;
+}
+.scorecard__value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+}
+.scorecard__value--word {
+  font-size: 16px;
+  letter-spacing: 0.01em;
+}
+.scorecard__tile--ok .scorecard__value {
+  color: #2a6d3a;
+}
+.scorecard__tile--warn .scorecard__value {
+  color: #8a5a00;
+}
+.scorecard__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mid);
+}
+.scorecard__sub {
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--text-soft);
+  letter-spacing: 0.03em;
+}
+
 .meta-features {
   list-style: none;
   padding: 0;
@@ -4182,11 +4256,7 @@ button.intake__progress-step:focus-visible {
 .meta-feature {
   border: 1px solid var(--border-soft);
   border-radius: 8px;
-  padding: 18px 20px;
   background: var(--bg-section);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 .meta-feature--active {
   border-left: 3px solid var(--accent);
@@ -4196,6 +4266,29 @@ button.intake__progress-step:focus-visible {
 }
 .meta-feature--draft {
   border-left: 3px solid var(--border-soft);
+}
+.meta-feature__details {
+  width: 100%;
+}
+/* The collapsed card is the whole summary — clicking anywhere opens it. */
+.meta-feature__summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: 8px;
+}
+.meta-feature__summary::-webkit-details-marker {
+  display: none;
+}
+.meta-feature__summary:hover {
+  background: var(--bg-app);
+}
+.meta-feature__summary:focus-visible {
+  outline: 2px solid var(--accent-warm);
+  outline-offset: -2px;
 }
 .meta-feature__head {
   display: flex;
@@ -4315,17 +4408,164 @@ button.intake__progress-step:focus-visible {
 .meta-feature__fresh--stale {
   color: #8a2222;
 }
-.meta-feature__source {
+.meta-feature__toggle {
   margin-left: auto;
   color: var(--text-soft);
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+.meta-feature__toggle::after {
+  content: ' ▾';
+}
+.meta-feature__details[open] .meta-feature__toggle::after {
+  content: ' ▴';
+}
+.meta-feature__details[open] .meta-feature__summary {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* --- Expanded body: the readable feature.json --- */
+.meta-feature__body {
+  padding: 4px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: meta-body-in 0.18s ease-out;
+}
+@keyframes meta-body-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meta-feature__body {
+    animation: none;
+  }
+}
+.meta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.meta-block__label {
+  margin: 0;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-warm);
+}
+.meta-block__text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-mid);
+}
+.meta-decisions,
+.meta-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.meta-decision {
+  border-left: 2px solid var(--border-soft);
+  padding-left: 12px;
+}
+.meta-decision__title {
+  margin: 0 0 4px;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text);
+}
+.meta-decision__line {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-mid);
+}
+.meta-decision__line--alt {
+  color: var(--text-soft);
+}
+.meta-decision__tag {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  padding: 1px 6px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+}
+.meta-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.meta-list li {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-mid);
+}
+.meta-list--limits li {
+  color: var(--text-soft);
+}
+.meta-history__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 12px;
+}
+.meta-history__when {
+  color: var(--text-soft);
+}
+.meta-history__arrow {
+  color: var(--text-mid);
+}
+.meta-history__reason {
+  flex-basis: 100%;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+.meta-feature__links {
+  margin-top: 2px;
+  padding-top: 12px;
+  border-top: 1px dotted var(--border-soft);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  font-size: 11.5px;
+}
+.meta-feature__component {
+  color: var(--text-soft);
+}
+.meta-feature__component code {
+  font-size: 11px;
+  color: var(--text-mid);
+}
+.meta-feature__live {
+  margin-left: auto;
+  color: var(--accent-warm);
   text-decoration: none;
-  border-bottom: 1px dotted var(--text-soft);
+  border-bottom: 1px dotted var(--accent-warm);
   padding-bottom: 1px;
 }
-.meta-feature__source:hover,
-.meta-feature__source:focus-visible {
-  color: var(--accent-warm);
-  border-bottom-color: var(--accent-warm);
+.meta-feature__live:hover,
+.meta-feature__live:focus-visible {
+  color: var(--text);
+  border-bottom-color: var(--text);
   outline: none;
 }
 .meta-page__cta {

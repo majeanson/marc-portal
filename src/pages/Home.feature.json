@@ -1,0 +1,88 @@
+{
+  "featureKey": "feat-2026-009",
+  "title": "Portal app shell — the composition layer",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/composition",
+  "componentFile": "src/pages/Home.tsx",
+  "liveUrl": "/",
+  "problem": "Every other feature in this portal is a reusable pattern — an intake form, a pricing table, a capacity gate — that could be lifted into another project. The app shell is the one piece that is not. It is the composition layer: the single place where those patterns are wired into a coherent site, where the routing tree lives, where the bilingual machinery is set up, and where the homepage decides which sections appear and in what order. Without a deliberate composition feature, this wiring would be scattered and nobody could point at 'the part that makes this Marc's portal and not a template.' This is that part.",
+  "tags": ["composition", "marc-specific", "homepage", "bilingual", "spa-routing", "non-reusable"],
+  "analysis": "src/pages/Home.tsx is the composition root: it imports each section component and renders them in a fixed order, so the homepage's narrative sequence lives in exactly one file. The shell is intentionally the only non-reusable feature in the portal — it is where Marc-specific copy, ordering, and visual identity collect, leaving every pattern it composes generic. Routing is a separate concern in src/router.tsx (react-router's createBrowserRouter), with a French canonical tree at / and a full English mirror under /en; a RootByTemplate wrapper sets the lang prop and the document language. All copy is one bilingual dictionary in src/i18n.ts keyed by 'fr' | 'en'. The site is a client-rendered single-page app: hot-path routes (home, intake, login) are bundled eagerly, cold-path routes are code-split.",
+  "decisions": [
+    {
+      "decision": "French primary, English secondary, mirrored route trees",
+      "rationale": "Quebec context — a commercial site here is expected to lead in French. Mirroring the whole route set under /en rather than a runtime toggle keeps each language a real, linkable, indexable URL.",
+      "recommendation": "French content at /, English mirror at /en, language switcher in the header. Every page added must add both routes.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "The homepage section order is fixed in one composition file",
+      "rationale": "The home page is a sequence that answers a visitor's questions in order — what is this, how does it work, is it for me, what does it cost, then the call to act. Keeping the order in Home.tsx alone means re-sequencing is a one-file edit and the narrative is auditable at a glance.",
+      "recommendation": "Add a section by writing its component, importing it in Home.tsx, and placing it deliberately in the sequence. Resist letting section order leak into other files.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Static-first, client-rendered SPA — no UI framework, no CSS-in-JS, no state library",
+      "rationale": "A boring-tech mandate: the portal must stay cheap, fast, and low-maintenance over a roughly three-year horizon. Design tokens are plain CSS custom properties; routing and context are enough for state.",
+      "recommendation": "Keep dependencies pinned and minimal. If first-paint SEO ever becomes urgent before the project gallery builds gravity, revisit pre-rendering — but not before.",
+      "date": "2026-05-06"
+    }
+  ],
+  "implementation": "src/pages/Home.tsx renders, in order: ScrollProgress, Header, SectionRail (sticky section index), NapperonDoodles (decorative margin glyphs), Hero, FeaturedProjects (top entries from the public project feed, self-hiding when empty), HowItWorks, VibeFilter, BringAnything, Pricing, InlineIntakeTeaser, PullQuote, About, Testimonials (self-hiding when there are no approved vouches), FAQ (with FAQPage JSON-LD injected for SEO), CTA, ShareSite, Footer, and MobileStickyCta. Routing lives in src/router.tsx using react-router's createBrowserRouter; the French tree is canonical and the English tree is a full mirror under /en, with RootByTemplate setting the lang prop and document language plus the per-language OG image. Copy is one dictionary in src/i18n.ts. The build is `tsc -b && vite build`; a prebuild step regenerates the sitemap, the /meta manifest, the feature map, and the atelier gallery.",
+  "successCriteria": "- The public homepage renders every section in the intended order, in both languages\n- /en is a structurally identical English mirror of the French tree\n- Adding a section or a route is a localized edit (one component, one import, paired FR/EN routes)\n- The shell stays the only Marc-specific feature — the patterns it composes remain generic\n- Build stays a plain tsc + vite build with no framework lock-in",
+  "userGuide": "Local development: from the portal directory run `npm install` then `npm run dev`. French is at /, English at /en. Edit copy in src/i18n.ts (one dictionary, both languages). Edit visual tokens at the top of src/styles.css. To add a section: create a component in src/components/, import it in src/pages/Home.tsx, place it in the render order, and add its translation keys. To add a route: edit src/router.tsx and add both the French and English entries. Production build: `npm run build`.",
+  "knownLimitations": [
+    "Client-rendered SPA — Google indexes it, but first paint needs JavaScript; pre-rendering is deferred until SEO timing demands it",
+    "Section order is a hand-maintained sequence in Home.tsx — there is no CMS or config-driven ordering, by design for a single-operator site"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Homepage live in both languages; composition root at src/pages/Home.tsx wires every section; routing serves all pages."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "frozen",
+      "to": "frozen",
+      "date": "2026-05-21",
+      "reason": "Code-first verification — feature.json co-located at src/pages/Home.feature.json and rewritten from the shipped code. Section list, routing model, and componentFile re-checked against Home.tsx and router.tsx."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-21",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from the brainstorming session — composition wires the reusable patterns into Marc's specific portal."
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "reason": "Homepage built; composition root at src/pages/Home.tsx, copy in src/i18n.ts, routing in router.tsx."
+    },
+    {
+      "date": "2026-05-21",
+      "author": "marc+claude",
+      "fields_changed": [
+        "problem",
+        "analysis",
+        "implementation",
+        "componentFile",
+        "successCriteria",
+        "knownLimitations",
+        "userGuide"
+      ],
+      "reason": "Code-first overhaul: co-located next to Home.tsx, rewrote the section list and routing description from the shipped code, added liveUrl, and pruned limitations that referred to routes and wiring that now exist."
+    }
+  ],
+  "annotations": []
+}

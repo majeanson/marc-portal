@@ -1,0 +1,106 @@
+{
+  "featureKey": "feat-2026-024",
+  "title": "Handoff ritual — two ownership modes and a public checklist",
+  "status": "active",
+  "schemaVersion": 1,
+  "domain": "marc-portal/positioning",
+  "componentFile": "src/pages/Handoff.tsx",
+  "liveUrl": "/handoff",
+  "problem": "The portal promises that at the end of any engagement the client owns everything — the code repository, the accounts, the domain. That promise inverts the usual agency lock-in model and self-selects clients who value autonomy, so it is load-bearing positioning. But a promise is only as good as its operational backing. A skeptical buyer — a notary, an accountant, a tradesperson — cannot verify a one-line promise before signing, and the promise said nothing about a buyer who would rather not hold the keys at all, or about what happens if the consultant becomes unreachable. This feature turns the promise into something inspectable: two named ownership modes, a public page that explains them, a public checklist with the exact transfer procedure, and a documented dormancy path the client can execute alone.",
+  "tags": ["positioning", "trust", "no-lock-in", "client-facing", "operations"],
+  "analysis": "The practice offers two ownership modes rather than one. The default, 'Tout à toi', means the client holds every key from day one. The optional 'Je m'en occupe' means the consultant stays custodian — handling the domain, certificates, and small upkeep — for an annual fee. The managed mode is only honest if it cannot become a new kind of lock-in, so two safeguards are built in: non-payment quietly reverts the client to 'Tout à toi' rather than cutting off service, and a documented dormancy procedure lets the client take ownership unilaterally if the consultant goes silent. The trust move is publishing the operational checklist — every transferable asset, with the exact steps — so a buyer can read the whole transfer procedure before signing rather than taking it on faith.",
+  "implementation": "Two public pages: src/pages/Handoff.tsx explains the two modes, lists the transferable assets, walks the handoff steps, and covers the switching and dormancy policies; src/pages/HandoffChecklist.tsx is the operational checklist — a plain-language step summary plus a collapsible technical section with the exact commands per asset, including the dormancy procedure. Both are bilingual with local copy and are routed at /handoff and /handoff/checklist (and their /en mirrors). The pricing table surfaces a one-line pointer to /handoff under the managed-mode note, the footer carries a 'how it ends' link site-wide, and the About section adds a short ownership paragraph. The intake form carries an optional, non-blocking ownership-preference radio so a buyer with a clear preference can record it early; the choice is confirmed for real at handoff, not at intake. An offline mirror of the checklist is kept in the repository for clients who want a printable copy.",
+  "decisions": [
+    {
+      "decision": "Offer two modes instead of a single unconditional 'you own it'",
+      "rationale": "Some non-technical buyers explicitly do not want to manage domain renewals, certificates, and security patches — forcing them to own everything just creates a different failure, where the deliverable rots from neglect. A managed mode lets the consultant honestly charge for that custodial labour, and because non-payment reverts to full ownership it does not break the no-lock-in promise.",
+      "alternativesConsidered": [
+        "Single unconditional 'Tout à toi' mode — ignores buyers who want a managed offering",
+        "A multi-plan subscription — contradicts the boring-tech and single-operator constraints",
+        "Free managed mode — creates a silent backlog of dormant clients still owed renewals"
+      ],
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Publish the operational checklist publicly, not as an internal document",
+      "rationale": "The target buyer is skeptical and wants to verify before signing. Publishing the exact transfer procedure makes the no-lock-in promise inspectable; hiding it behind 'ask for details' would make the promise look like marketing theatre.",
+      "alternativesConsidered": [
+        "Internal-only document — the buyer cannot verify without asking",
+        "A public page behind a request-access gate — adds friction for no security gain"
+      ],
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Document a dormancy procedure the client can execute alone",
+      "rationale": "Managed mode is only honest if the client has a written path to ownership when the consultant is unreachable. Without it, 'Je m'en occupe' is structurally a lock-in regardless of intent. The checklist names the dormancy threshold, the support tickets to open, and the order of operations, and the client holds a printed copy at delivery.",
+      "alternativesConsidered": [
+        "Trust-based, no documented procedure — the client cannot recover ownership",
+        "A credential-escrow service — introduces a third party and contradicts the simplicity mandate"
+      ],
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Mode preference is a soft choice at intake, confirmed for real at handoff",
+      "rationale": "Forcing the choice at intake friction-loads the form for a visitor who does not yet know what managed mode means. Confirming at handoff means the choice is made after the buyer has seen the deliverable and understood the trade-offs. The intake radio is optional so it never blocks submission.",
+      "alternativesConsidered": [
+        "A required choice at intake — friction without information",
+        "No intake field at all — misses buyers who already have a firm preference"
+      ],
+      "date": "2026-05-15"
+    }
+  ],
+  "successCriteria": "- /handoff explains both ownership modes and reaches the switching and dormancy sections\n- /handoff/checklist renders the full transfer procedure, including the dormancy path\n- The footer carries a site-wide 'how it ends' link, the pricing table points to /handoff, and the About section mentions ownership\n- The intake form shows the optional ownership-preference radio without blocking submission\n- A skeptical buyer can verify the no-lock-in promise end to end before signing",
+  "userGuide": "For a buyer evaluating the practice: read /handoff first to understand the two modes — 'Tout à toi' (you hold every key, free) and 'Je m'en occupe' (the consultant stays custodian for an annual fee). Read /handoff/checklist to verify the exact transfer procedure before signing; the dormancy section documents how to take ownership alone if the consultant becomes unreachable. The ownership-preference radio on the intake form is optional and can be decided later, at delivery.",
+  "knownLimitations": [
+    "The public checklist is hand-mirrored to an offline copy in the repository — the two can drift until a build step generates one from the other",
+    "The managed-mode annual price is set without a signed managed client to calibrate against and may need adjustment after the first real engagement",
+    "The intake ownership-preference value shows as a friendly label on visitor-facing surfaces but as a raw code in the admin session view",
+    "No automated test exercises the dormancy recovery end to end — it depends on third-party support workflows that cannot be safely run in CI",
+    "The pricing pointer to /handoff renders only on the managed-eligible tier card; widening managed mode to other tiers would need a rendering change"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-15"
+    },
+    {
+      "from": "active",
+      "to": "active",
+      "date": "2026-05-21",
+      "reason": "Code-first verification — feature.json co-located at src/pages/Handoff.feature.json. Re-checked both pages, the routes, the pricing pointer, and the intake radio against the shipped code."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-21",
+  "revisions": [
+    {
+      "date": "2026-05-15",
+      "author": "marc+claude",
+      "fields_changed": [
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags",
+        "domain"
+      ],
+      "reason": "Initial fill — the two-mode ownership decision, the public-checklist trust strategy, the dormancy procedure, and the soft intake preference."
+    },
+    {
+      "date": "2026-05-15",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "decisions"],
+      "reason": "Simplified the checklist for its real audience — a plain-language step summary plus a single collapsible technical section — and made the procedure mechanics less legalistic."
+    },
+    {
+      "date": "2026-05-21",
+      "author": "marc+claude",
+      "fields_changed": ["problem", "analysis", "implementation", "successCriteria", "userGuide"],
+      "reason": "Code-first overhaul: co-located next to Handoff.tsx, added liveUrl, and tightened the prose so it describes the shipped pages without brittle file-and-line references."
+    }
+  ],
+  "annotations": []
+}

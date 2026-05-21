@@ -2,14 +2,14 @@
   "routes": [
     {
       "path": "/",
-      "component": "RootByTemplate",
+      "component": "Home",
       "lang": "fr",
       "dynamic": false,
       "inAdminShell": false
     },
     {
       "path": "/en",
-      "component": "RootByTemplate",
+      "component": "Home",
       "lang": "en",
       "dynamic": false,
       "inAdminShell": false
@@ -379,41 +379,6 @@
       "inAdminShell": true
     },
     {
-      "path": "/admin/apparence",
-      "component": "AdminAppearance",
-      "lang": "fr",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
-      "path": "/admin/equipe",
-      "component": "AdminTeam",
-      "lang": "fr",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
-      "path": "/admin/facturation",
-      "component": "AdminBilling",
-      "lang": "fr",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
-      "path": "/admin/fleet",
-      "component": "AdminFleet",
-      "lang": "fr",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
-      "path": "/admin/fleet/new",
-      "component": "AdminFleetNew",
-      "lang": "fr",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
       "path": "/admin/audit",
       "component": "AdminAudit",
       "lang": "fr",
@@ -444,41 +409,6 @@
     {
       "path": "/en/admin",
       "component": "AdminHub",
-      "lang": "en",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
-      "path": "/en/admin/apparence",
-      "component": "AdminAppearance",
-      "lang": "en",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
-      "path": "/en/admin/equipe",
-      "component": "AdminTeam",
-      "lang": "en",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
-      "path": "/en/admin/facturation",
-      "component": "AdminBilling",
-      "lang": "en",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
-      "path": "/en/admin/fleet",
-      "component": "AdminFleet",
-      "lang": "en",
-      "dynamic": false,
-      "inAdminShell": true
-    },
-    {
-      "path": "/en/admin/fleet/new",
-      "component": "AdminFleetNew",
       "lang": "en",
       "dynamic": false,
       "inAdminShell": true
@@ -523,16 +453,6 @@
       ],
       "adminOnly": true,
       "file": "functions/api/admin/digest.ts"
-    },
-    {
-      "id": "api.admin.fleet",
-      "path": "/api/admin/fleet",
-      "methods": [
-        "GET",
-        "POST"
-      ],
-      "adminOnly": true,
-      "file": "functions/api/admin/fleet.ts"
     },
     {
       "id": "api.admin.vouches",
@@ -628,6 +548,15 @@
       ],
       "adminOnly": false,
       "file": "functions/api/me/prefs.ts"
+    },
+    {
+      "id": "api.meta.stats",
+      "path": "/api/meta/stats",
+      "methods": [
+        "ANY"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/meta/stats.ts"
     },
     {
       "id": "api.payments.checkout",
@@ -780,27 +709,6 @@
       ],
       "adminOnly": false,
       "file": "functions/api/tenant/theme.ts"
-    },
-    {
-      "id": "api.volunteer.shifts",
-      "path": "/api/volunteer/shifts",
-      "methods": [
-        "GET",
-        "POST"
-      ],
-      "adminOnly": false,
-      "file": "functions/api/volunteer/shifts.ts"
-    },
-    {
-      "id": "api.volunteer.signups",
-      "path": "/api/volunteer/signups",
-      "methods": [
-        "GET",
-        "POST",
-        "DELETE"
-      ],
-      "adminOnly": false,
-      "file": "functions/api/volunteer/signups.ts"
     },
     {
       "id": "api.vouches",

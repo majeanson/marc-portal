@@ -1,7 +1,0 @@
-{
-  "featureKey": "feat-2026-017",
-  "title": "Runtime Theme Editor — buyer-controlled appearance with live preview",
-  "status": "draft",
-  "problem": "Buyers want visual control over their app so it feels like theirs, not Marc's. The Bonjour retheme already routes every visual decision through CSS custom properties (--accent, --paper, --display, --radius, etc.), so per-tenant theming is just persisting a JSON dictionary of token overrides and injecting them into the document head at request time. This feature ships the buyer-facing editor at /admin/apparence: 4 free presets (Forêt/Foyer/Marin/Encre matching the Bonjour design palettes), custom color and font controls, logo upload, display name, footer copy, and a live preview pane. Saving writes to tenants.theme JSON in D1; the next page request reflects the change instantly. The whole feature depends on feat-fleet-foundation (Host-header tenancy + theme injection middleware).",
-  "schemaVersion": 1
-}

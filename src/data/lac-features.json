@@ -2,282 +2,624 @@
   "features": [
     {
       "featureKey": "feat-2026-024",
-      "dirSlug": "feat-handoff-ritual",
-      "title": "Handoff ritual — two ownership modes + public checklist",
+      "title": "Handoff ritual — two ownership modes and a public checklist",
       "status": "active",
       "domain": "marc-portal/positioning",
       "tags": [
         "positioning",
         "trust",
-        "compliance-adjacent",
         "no-lock-in",
         "client-facing",
         "operations"
       ],
-      "problem": "The portal's FAQ promises that the client owns the code, accounts, and domain at the end of any engagement (\"À toi. Le repo Git, les comptes, le domaine — tout.\"). That promise is the load-bearing positioning move of the practice — it inverts the typical agency lock-in model and self-selects clients who value autonomy…",
-      "decisionsCount": 4,
-      "lastTransitionDate": "2026-05-15"
-    },
-    {
-      "featureKey": "feat-2026-018",
-      "dirSlug": "feat-custom-domain-onboarding",
-      "title": "Custom Domain Onboarding — automate Cloudflare Pages domain attach + SSL polling",
-      "status": "active",
-      "domain": "marc-portal/onboarding",
-      "tags": [
-        "onboarding",
-        "cloudflare-pages-api",
-        "custom-domain",
-        "ssl"
+      "componentFile": "src/pages/Handoff.tsx",
+      "liveUrl": "/handoff",
+      "problem": "The portal promises that at the end of any engagement the client owns everything — the code repository, the accounts, the domain. That promise inverts the usual agency lock-in model and self-selects clients who value autonomy, so it is load-bearing positioning. But a promise is only as good as its operational backing. A skeptical buyer — a notary, an accountant, a tradesperson — cannot verify a one-line promise before signing, and the promise said nothing about a buyer who would rather not hold the keys at all, or about what happens if the consultant becomes unreachable. This feature turns the promise into something inspectable: two named ownership modes, a public page that explains them, a public checklist with the exact transfer procedure, and a documented dormancy path the client can execute alone.",
+      "analysis": "The practice offers two ownership modes rather than one. The default, 'Tout à toi', means the client holds every key from day one. The optional 'Je m'en occupe' means the consultant stays custodian — handling the domain, certificates, and small upkeep — for an annual fee. The managed mode is only honest if it cannot become a new kind of lock-in, so two safeguards are built in: non-payment quietly reverts the client to 'Tout à toi' rather than cutting off service, and a documented dormancy procedure lets the client take ownership unilaterally if the consultant goes silent. The trust move is publishing the operational checklist — every transferable asset, with the exact steps — so a buyer can read the whole transfer procedure before signing rather than taking it on faith.",
+      "decisions": [
+        {
+          "decision": "Offer two modes instead of a single unconditional 'you own it'",
+          "rationale": "Some non-technical buyers explicitly do not want to manage domain renewals, certificates, and security patches — forcing them to own everything just creates a different failure, where the deliverable rots from neglect. A managed mode lets the consultant honestly charge for that custodial labour, and because non-payment reverts to full ownership it does not break the no-lock-in promise.",
+          "recommendation": "",
+          "alternativesConsidered": [
+            "Single unconditional 'Tout à toi' mode — ignores buyers who want a managed offering",
+            "A multi-plan subscription — contradicts the boring-tech and single-operator constraints",
+            "Free managed mode — creates a silent backlog of dormant clients still owed renewals"
+          ]
+        },
+        {
+          "decision": "Publish the operational checklist publicly, not as an internal document",
+          "rationale": "The target buyer is skeptical and wants to verify before signing. Publishing the exact transfer procedure makes the no-lock-in promise inspectable; hiding it behind 'ask for details' would make the promise look like marketing theatre.",
+          "recommendation": "",
+          "alternativesConsidered": [
+            "Internal-only document — the buyer cannot verify without asking",
+            "A public page behind a request-access gate — adds friction for no security gain"
+          ]
+        },
+        {
+          "decision": "Document a dormancy procedure the client can execute alone",
+          "rationale": "Managed mode is only honest if the client has a written path to ownership when the consultant is unreachable. Without it, 'Je m'en occupe' is structurally a lock-in regardless of intent. The checklist names the dormancy threshold, the support tickets to open, and the order of operations, and the client holds a printed copy at delivery.",
+          "recommendation": "",
+          "alternativesConsidered": [
+            "Trust-based, no documented procedure — the client cannot recover ownership",
+            "A credential-escrow service — introduces a third party and contradicts the simplicity mandate"
+          ]
+        },
+        {
+          "decision": "Mode preference is a soft choice at intake, confirmed for real at handoff",
+          "rationale": "Forcing the choice at intake friction-loads the form for a visitor who does not yet know what managed mode means. Confirming at handoff means the choice is made after the buyer has seen the deliverable and understood the trade-offs. The intake radio is optional so it never blocks submission.",
+          "recommendation": "",
+          "alternativesConsidered": [
+            "A required choice at intake — friction without information",
+            "No intake field at all — misses buyers who already have a firm preference"
+          ]
+        }
       ],
-      "problem": "Each buyer wants their app at their own domain (e.g. roger-voice-truck.com). Cloudflare Pages supports unlimited custom domains per project via the HTTP API. To keep onboarding under 5 minutes of operator time, this feature wraps the CF API in: (a) a one-call domain-attach when a tenant is provisioned, (b) generated C…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
+      "successCriteria": "- /handoff explains both ownership modes and reaches the switching and dormancy sections\n- /handoff/checklist renders the full transfer procedure, including the dormancy path\n- The footer carries a site-wide 'how it ends' link, the pricing table points to /handoff, and the About section mentions ownership\n- The intake form shows the optional ownership-preference radio without blocking submission\n- A skeptical buyer can verify the no-lock-in promise end to end before signing",
+      "knownLimitations": [
+        "The public checklist is hand-mirrored to an offline copy in the repository — the two can drift until a build step generates one from the other",
+        "The managed-mode annual price is set without a signed managed client to calibrate against and may need adjustment after the first real engagement",
+        "The intake ownership-preference value shows as a friendly label on visitor-facing surfaces but as a raw code in the admin session view",
+        "No automated test exercises the dormancy recovery end to end — it depends on third-party support workflows that cannot be safely run in CI",
+        "The pricing pointer to /handoff renders only on the managed-eligible tier card; widening managed mode to other tiers would need a rendering change"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-15"
+        },
+        {
+          "from": "active",
+          "to": "active",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at src/pages/Handoff.feature.json. Re-checked both pages, the routes, the pricing pointer, and the intake radio against the shipped code."
+        }
+      ],
+      "lastTransitionDate": "2026-05-21"
     },
     {
       "featureKey": "feat-2026-015",
-      "dirSlug": "feat-engagement-runtime",
-      "title": "Engagement Runtime — Magic-Link Sessions, Persistence & Marc/Visitor Interaction",
+      "title": "Engagement runtime — magic-link sessions and the admin inbox",
       "status": "active",
       "domain": "portal/runtime",
       "tags": [
-        "dynamic-surface",
+        "runtime",
         "auth",
         "magic-link",
         "persistence",
         "engagement",
-        "admin-inbox"
+        "admin-inbox",
+        "messaging"
       ],
-      "problem": "The portal is fully static. A visitor who fills the intake form and leaves loses everything; if they return, they restart from zero. Marc cannot reply on the same surface; he has no inbox of in-flight engagements; there is no asynchronous message thread between the two parties. The engagement-canvas page renders featu…",
-      "decisionsCount": 5,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
-      "featureKey": "feat-2026-016",
-      "dirSlug": "feat-fleet-foundation",
-      "title": "Fleet Foundation — multi-tenant primitive for hosting packaged apps",
-      "status": "active",
-      "domain": "marc-portal/tenancy",
-      "tags": [
-        "multi-tenant",
-        "tenancy",
-        "fleet",
-        "host-header-routing",
-        "platform-spine",
-        "marc-portal"
+      "componentFile": "src/pages/SessionPage.tsx",
+      "liveUrl": "/login",
+      "problem": "On its own the portal is a brochure: a visitor who fills the intake form and leaves loses everything, the consultant has no inbox of work in flight, and there is no shared surface for the two parties to exchange messages. The engagement runtime is the layer that makes the rest of the portal real. A visitor signs in with a one-time email link, their intake becomes a persistent engagement they can return to from any device, the consultant gets an admin inbox of every engagement in flight, and both parties exchange messages on the same page. The one-active-plus-one-triage capacity rule becomes something the system can actually enforce, because there are now real engagement records to count.",
+      "analysis": "The runtime turns the portal's static patterns into a live system. There are no passwords: a visitor enters an email, receives a one-time link, and clicking it establishes a signed session held in a cookie. Each engagement is one record — created from an intake submission, owned by the visitor's email, carrying its intake brief, a status, a message thread, and attachments. The consultant signs in with the same email-link mechanism; an allowlist of admin addresses is the only thing that distinguishes the admin view, so there is one authentication surface to secure rather than two. The admin inbox lists every engagement in flight; the session page is the shared surface where either party reads the brief, follows the status, and posts messages. Nothing is real-time by design — a page refreshes its data when it is opened or comes back into focus, never via push — because a real-time channel would create the always-available expectation the practice exists to refuse.",
+      "decisions": [
+        {
+          "decision": "Magic-link sign-in — no passwords, no third-party identity providers",
+          "rationale": "It is the lowest-friction identity for a one-engagement-at-a-time practice: enter an email, click a link. No password to remember, no OAuth scopes, no vendor lock-in. It also fits the async-first contract — the visitor consents to email as the medium at the door.",
+          "recommendation": "Keep links single-use and short-lived, and rate-limit how often they can be requested for an email or from an address."
+        },
+        {
+          "decision": "The admin role is an email allowlist, not a separate authentication flow",
+          "rationale": "The consultant signs in exactly as a visitor does; the only difference is a server-side check of the address against an allowlist on admin routes. One authentication mechanism means one security surface to reason about.",
+          "recommendation": "Treat the server-side allowlist check as the source of truth; any client-side admin hint is a convenience, never a control."
+        },
+        {
+          "decision": "One engagement per intake submission",
+          "rationale": "Each engagement record corresponds to exactly one current or potential piece of work, which keeps the admin inbox a list of real engagements rather than a generic CRM and keeps the capacity cap cleanly countable.",
+          "recommendation": "A visitor who wants to propose a second project starts a second intake; do not overload one record with multiple briefs."
+        },
+        {
+          "decision": "Polling on focus — never push, never real-time",
+          "rationale": "A real-time channel is exactly the always-available expectation the practice is built to amputate. Refreshing data when a page is opened or refocused gives 'fresh on next visit' semantics, which matches the async-only contract for both parties.",
+          "recommendation": "If anyone asks why updates are not live, point at the contract — live updates would oblige the other party to be available."
+        },
+        {
+          "decision": "A small, hand-rolled backend — no auth library, no ORM",
+          "rationale": "Signed-cookie sessions and direct SQL keep the runtime small enough to read end to end. Adding a backend, authentication, and a database bends the boring-tech mandate, but each individual piece is kept to the smallest surface area that works.",
+          "recommendation": "Resist adding an ORM, an auth library, or a state-management library until the runtime has been stable in production for a good while."
+        }
       ],
-      "problem": "Marc sells finished products (SND, soon Volunteer Roster, …) to buyers who each want their own branded app at their own domain (e.g. roger-voice-truck.com) without ever seeing Marc's infra. Today the portal is single-tenant: one D1, one Pages deployment, one set of routes, all bound to Marc. To turn the portal into a…",
-      "decisionsCount": 4,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
-      "featureKey": "feat-2026-023",
-      "dirSlug": "feat-platform-spine",
-      "title": "Platform Spine — extract shared template primitives after Phase 2",
-      "status": "active",
-      "domain": "marc-portal/platform",
-      "tags": [
-        "platform",
-        "spine",
-        "refactor",
-        "template-primitives",
-        "phase-3"
+      "successCriteria": "- A visitor can save an intake, leave, and return on any device via a one-time email link with their engagement intact\n- The session page shows the intake brief, the status, and a message thread, and both parties can post to it\n- The admin inbox lists every engagement in flight with its triage deadline\n- Admin-only routes refuse any signed-in address that is not on the allowlist\n- One-time links are single-use, short-lived, and rate-limited\n- The capacity cap is enforced from real engagement counts\n- Nothing in the runtime creates a real-time or always-available expectation",
+      "knownLimitations": [
+        "No real-time updates by design — a reply appears when the other party next opens or refocuses the page",
+        "Multi-admin support is only the email allowlist — adding a co-admin means editing the allowlist",
+        "Message bodies are plain text — there is no rich-text editor or markdown rendering",
+        "Engagements are never hard-deleted from the runtime — they are soft-statused and soft-deleted, which suits a text-and-attachment history",
+        "The whole backend runs on one hosting provider's platform — moving providers would be a non-trivial port, an accepted trade-off for the cost and the data-residency fit"
       ],
-      "problem": "Two templates (SND + Volunteer Roster) shipped on top of feat-fleet-foundation in Phase 1 + 2. Now we can observe what actually duplicated between them and extract the shared spine deliberately, instead of guessing. The duplications worth extracting: (1) the auth/tenant gate boilerplate at the top of every API handler…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
-      "featureKey": "feat-2026-022",
-      "dirSlug": "feat-template-volunteer-roster",
-      "title": "Volunteer Roster — second sellable template (Phase 2 abstraction stress-test)",
-      "status": "active",
-      "domain": "marc-portal/templates",
-      "tags": [
-        "template",
-        "volunteer-roster",
-        "scheduling",
-        "second-template",
-        "abstraction-test"
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "active",
+          "to": "active",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at src/pages/SessionPage.feature.json. The runtime has shipped: magic-link auth, the sessions and messages tables, the admin inbox, attachments, and the privacy-law data pages are all live."
+        }
       ],
-      "problem": "App #2 of the package shop. Built deliberately on a different domain shape than SND (no voice, no invoicing, no append-only event log) so the platform spine (tenants, theming, auth, admin shell, custom domains) gets pressure-tested against a second use case before we extract it. Volunteer Roster targets community orga…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
-      "featureKey": "feat-2026-019",
-      "dirSlug": "feat-operator-console",
-      "title": "Operator Console — fleet view, new-tenant wizard, audit log at /admin",
-      "status": "draft",
-      "domain": null,
-      "tags": [],
-      "problem": "Marc operates a fleet of buyer instances and needs one page that shows it all green at a glance: every tenant's domain, template + version, last activity, billing state, uptime, SSL status. Plus a \"Provision new buyer\" wizard that turns the conversation \"I'd like to buy SND\" into a live tenant in under 5 minutes (form…",
-      "decisionsCount": 0,
-      "lastTransitionDate": null
-    },
-    {
-      "featureKey": "feat-2026-017",
-      "dirSlug": "feat-runtime-theme-editor",
-      "title": "Runtime Theme Editor — buyer-controlled appearance with live preview",
-      "status": "draft",
-      "domain": null,
-      "tags": [],
-      "problem": "Buyers want visual control over their app so it feels like theirs, not Marc's. The Bonjour retheme already routes every visual decision through CSS custom properties (--accent, --paper, --display, --radius, etc.), so per-tenant theming is just persisting a JSON dictionary of token overrides and injecting them into the…",
-      "decisionsCount": 0,
-      "lastTransitionDate": null
-    },
-    {
-      "featureKey": "feat-2026-020",
-      "dirSlug": "feat-buyer-admin",
-      "title": "Buyer Admin — per-tenant settings hub at /admin on the buyer's domain",
-      "status": "frozen",
-      "domain": null,
-      "tags": [],
-      "problem": "Each tenant's owner needs a self-serve admin surface to manage their own app: invite team members (their installers, their accountant), view their billing state, export their data, and — via feat-runtime-theme-editor — control the app's appearance. Lives at /admin on the buyer's own domain (e.g. roger-voice-truck.com/…",
-      "decisionsCount": 0,
-      "lastTransitionDate": "2026-05-17"
-    },
-    {
-      "featureKey": "feat-2026-009",
-      "dirSlug": "feat-app-shell",
-      "title": "Portal App Shell (composition)",
-      "status": "frozen",
-      "domain": "marc-portal/composition",
-      "tags": [
-        "composition",
-        "marc-specific",
-        "9-section-page",
-        "bilingual",
-        "static-first",
-        "non-reusable"
-      ],
-      "problem": "Layout, navigation, theming, language switching, and global state composing the 7 portal primitives into Marc's specific portal experience. Marc-specific — this is the only feature in the project that is NOT a reusable primitive pattern. Bilingual (French primary, English secondary per Quebec context). Static-first wh…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
-      "featureKey": "feat-2026-003",
-      "dirSlug": "feat-async-status-canvas",
-      "title": "Async Status Canvas (primitive)",
-      "status": "frozen",
-      "domain": "primitive/engagement-ui",
-      "tags": [
-        "status-flags",
-        "live-preview",
-        "message-thread",
-        "continuous-canvas",
-        "no-meetings",
-        "reusable-pattern"
-      ],
-      "problem": "Clients of conventional consultants get sporadic email updates and scheduled milestone meetings, with the actual work-in-progress hidden between checkpoints. The async-status-canvas makes the work continuously visible inside the portal: status flags show stage (triage, planning, building, ready-for-review, shipped), a…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
-      "featureKey": "feat-2026-004",
-      "dirSlug": "feat-case-study-renderer",
-      "title": "Case Study Renderer (primitive)",
-      "status": "frozen",
-      "domain": "primitive/showcase",
-      "tags": [
-        "case-study",
-        "seo",
-        "long-tail",
-        "compounding",
-        "tier-reference",
-        "redaction-safe"
-      ],
-      "problem": "Every shipped engagement is potential SEO + portfolio compounding, but only if it is published as a public page in the client's natural language. Most consultants treat case studies as marketing fluff bolted on after delivery. This primitive treats them as primary acquisition infrastructure: takes a structured engagem…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
-      "featureKey": "feat-2026-008",
-      "dirSlug": "feat-self-service-redirect",
-      "title": "Self-Service Redirect (Tier 0 Off-Ramp, primitive)",
-      "status": "frozen",
-      "domain": "primitive/tier-0",
-      "tags": [
-        "self-service",
-        "tier-0",
-        "off-ramp",
-        "goodwill-preservation",
-        "free-value",
-        "reusable-pattern"
-      ],
-      "problem": "Tier 0 clients have real human problems but no commercial budget (civic coordination, household logistics, hobby projects). Most consultants either (a) take the small job and lose money, or (b) reject and burn goodwill. The self-service-redirect invents a third move: a free template/showcase library that says \"your pr…",
-      "decisionsCount": 2,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
-      "featureKey": "feat-2026-002",
-      "dirSlug": "feat-structured-intake-form",
-      "title": "Structured Intake Form (primitive)",
-      "status": "frozen",
-      "domain": "primitive/intake",
-      "tags": [
-        "form",
-        "save-resume",
-        "account-backed",
-        "schema-driven",
-        "no-ai-interviewer",
-        "reusable-pattern"
-      ],
-      "problem": "Most consulting engagements start with a 60-minute discovery call where the consultant interviews the client live. That model demands real-time scheduling, consumes hours per lead, and excludes side-practice operators with day jobs and families. The structured intake form replaces the discovery call with a guided form…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
+      "lastTransitionDate": "2026-05-21"
     },
     {
       "featureKey": "feat-2026-006",
-      "dirSlug": "feat-tiered-public-pricing",
-      "title": "Tiered Public Pricing with Showcase Anchoring (primitive)",
+      "title": "Tiered public pricing",
       "status": "frozen",
       "domain": "primitive/pricing",
       "tags": [
-        "per-tier",
+        "pricing",
         "public",
         "showcase-anchored",
         "expectation-anchoring",
         "reusable-pattern"
       ],
-      "problem": "\"Cheap\" without numbers is rhetoric — every visitor self-imagines a different price. The tiered-public-pricing primitive shows actual prices per tier (Tier 0 self-service / Tier 1 ~$300 / Tier 2 ~$1500 / Tier 3 ~$3000+) with each tier linked to actual past showcase examples that demonstrate what that tier looks like i…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
-    },
-    {
-      "featureKey": "feat-2026-005",
-      "dirSlug": "feat-triage-queue",
-      "title": "Triage Queue with Hard Capacity Cap (primitive)",
-      "status": "frozen",
-      "domain": "primitive/capacity-control",
-      "tags": [
-        "1-active-cap",
-        "waitlist",
-        "load-bearing-rule",
-        "family-first-defense",
-        "reusable-pattern"
+      "componentFile": "src/components/Pricing.tsx",
+      "liveUrl": "/#pricing",
+      "problem": "'Cheap' with no number attached is just rhetoric — every visitor imagines a different price, and many imagine the wrong one. This feature shows actual prices: a free self-service tier, then three paid tiers with concrete dollar figures and a one- or two-line scope each. Each paid tier links to the real projects shipped at that price, so the pricing table and the project gallery anchor each other. It is the opposite of the usual consulting move of hiding price behind 'let's have a conversation' — and the whole pitch depends on the cheapness being real and visible, not negotiated.",
+      "analysis": "A four-tier pricing table where each card shows a tier name, a concrete price, a short scope, and a note about what happens after the work ships. Tier 0 is the free self-service off-ramp; the three paid tiers climb from a small fixed-price project to a larger custom-quoted one. One tier is marked as the anchor — the sweet-spot tier the practice expects most engagements to land in — and is highlighted so a visitor's eye settles there first. Every paid card links into the project gallery filtered to that tier, so a visitor can immediately see real examples at the price they are reading about. The table is a homepage section, placed after the self-qualification block so a visitor only reaches price once they have decided the practice is for them.",
+      "decisions": [
+        {
+          "decision": "Prices are public and concrete — no 'starting at', no 'depends on scope'",
+          "rationale": "Without numbers, every visitor self-imagines a price, and the 'cheap' positioning collapses. Concrete figures anchor expectations in seconds.",
+          "recommendation": "If a project does not fit a tier cleanly, custom-quote it after triage but anchor the conversation to the public tiers."
+        },
+        {
+          "decision": "Each tier links to the real projects shipped at that tier",
+          "rationale": "Abstract tier descriptions do not anchor expectations the way actual shipped examples do. Linking each card into the filtered project gallery turns the gallery into the living definition of the tier.",
+          "recommendation": "Tag every engagement with its tier so the per-tier gallery link is always populated and accurate."
+        },
+        {
+          "decision": "Tier 0 is a self-service redirect, not a paid product",
+          "rationale": "A graceful off-ramp for budget-mismatched visitors belongs in the pricing table so the option is visible, but the off-ramp itself is a separate feature.",
+          "recommendation": "Keep the Tier 0 card linking out to the self-service redirect page rather than describing patterns inline."
+        }
       ],
-      "problem": "Without a hard concurrency cap, a side-practice consultant accepts every triage that's \"doable\" and ends up with 3+ concurrent active clients eating evenings and weekends. Family-first collapses; the bedrock value falsifies. The triage-queue makes the 1-active-build + 1-in-triage rule structural rather than aspiration…",
-      "decisionsCount": 3,
-      "lastTransitionDate": "2026-05-07"
+      "successCriteria": "- The pricing table shows a concrete dollar figure for every paid tier\n- Each paid tier links to the project gallery filtered to that tier\n- The Tier 0 card links to the self-service redirect\n- A visitor can calibrate expectations within a few seconds, without leaving the section\n- Nowhere in the funnel is there a 'contact us for pricing'\n- Reusable as a pattern for any pricing-transparent service",
+      "knownLimitations": [
+        "Pricing copy lives in the shared i18n dictionary rather than in this feature's own data, so reusing the component elsewhere means carrying the copy along",
+        "Prices are stated in US dollars with an 'approximately' qualifier — there is no currency switch or live conversion"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Pricing table renders four tiers with concrete prices; Tier 0 links to the self-service redirect; the anchor tier is highlighted."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "frozen",
+          "to": "frozen",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at src/components/Pricing.feature.json. Confirmed the per-tier gallery links and the handoff note against the shipped component."
+        }
+      ],
+      "lastTransitionDate": "2026-05-21"
     },
     {
       "featureKey": "feat-2026-007",
-      "dirSlug": "feat-vibe-filter",
-      "title": "Vibe Filter — \"We Do / We Don't\" Self-Qualify (primitive)",
+      "title": "Vibe filter — a 'we do / we don't' self-qualifier",
       "status": "frozen",
       "domain": "primitive/qualification",
       "tags": [
         "self-qualify",
         "cultural-fit",
         "we-do-we-dont",
-        "goodwill-defense",
+        "goodwill",
         "reusable-pattern"
       ],
-      "problem": "Most \"ideal client\" filters are demographic (industry, size, budget). The vibe-filter is temperamental — it filters for cultural fit, not budget fit. Public \"we do / we don't\" list lets visitors self-qualify before filling intake. Saves both parties the goodwill cost of triage rejection. People who read the list and t…",
-      "decisionsCount": 2,
-      "lastTransitionDate": "2026-05-07"
+      "componentFile": "src/components/VibeFilter.tsx",
+      "liveUrl": "/#vibe",
+      "problem": "Most 'ideal client' filters are demographic — industry, company size, budget. This one is temperamental: it filters for cultural fit, not budget fit. A public 'we do / we don't' list lets a visitor self-qualify before investing any effort in the intake form, which saves both sides the goodwill cost of a triage rejection. Someone who reads the list and thinks 'yes, exactly' is the right client regardless of price; someone who thinks 'but my project is special, you'll see' is the wrong client regardless of how much they would pay. A cheap-but-pushy client is worse than a well-aligned one, because the wrong client is what breaks family-first.",
+      "analysis": "A two-column ledger on the homepage — what the practice does, and what it does not — placed before the pricing block so a visitor meets the cultural fit question before the price question. Each line is one concrete constraint drawn from how the practice actually works: no calls or meetings, async only, no urgent fixes, no scope changes mid-build, nothing real-time. The items are deliberately about temperament, not demographics. The same ledger appears again, in a lighter form, as an optional non-blocking checkbox at the start of the intake flow, so a visitor passes the self-qualification idea twice — once while browsing and once just before committing.",
+      "decisions": [
+        {
+          "decision": "The filter is temperamental, not demographic",
+          "rationale": "A cheap-but-pushy client is worse than a well-aligned one — the wrong client breaks family-first regardless of revenue, and demographic filters miss exactly the temperament that matters.",
+          "recommendation": "Keep every list item tied to a real engagement constraint; avoid filtering by industry, size, or budget."
+        },
+        {
+          "decision": "The list is published before the intake form, not after",
+          "rationale": "Self-qualification only works if the visitor sees it before investing effort in the form. A 'we do / we don't' list shown afterward is useless.",
+          "recommendation": "Place the ledger above the pricing block in the homepage flow, and offer an optional 'I read this and I agree' confirmation at the start of intake."
+        }
+      ],
+      "successCriteria": "- The 'we do' and 'we don't' lists are visible on the public homepage\n- Both lists derive from documented engagement constraints, not marketing instinct\n- The lists appear before the pricing block in the page flow\n- The intake flow offers an optional confirmation that reuses the same ledger\n- Reusable as a pattern for any service that filters for cultural fit",
+      "knownLimitations": [
+        "The confirmation gate is non-blocking — checking it is encouraged but a visitor can proceed without it, because the real filter is the triage read",
+        "The lists are the same content in both languages — there are no language-specific items where culture-specific wording might land better",
+        "There is no A/B variation tracking — the lists are tuned by hand"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Vibe filter live on the homepage; the confirmation gate is wired into the intake flow."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "frozen",
+          "to": "frozen",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at src/components/VibeFilter.feature.json. Confirmed the homepage ledger and the reused VibeGate against the shipped components."
+        }
+      ],
+      "lastTransitionDate": "2026-05-21"
+    },
+    {
+      "featureKey": "feat-2026-003",
+      "title": "Async status canvas — the public engagement demo",
+      "status": "frozen",
+      "domain": "primitive/engagement-ui",
+      "tags": [
+        "status-flags",
+        "live-preview",
+        "message-thread",
+        "public-demo",
+        "no-meetings",
+        "reusable-pattern"
+      ],
+      "componentFile": "src/pages/Engagement.tsx",
+      "liveUrl": "/engagement/tremblay-paysagement-suivi-clients",
+      "problem": "Clients of conventional consultants get sporadic email updates and scheduled milestone meetings, with the actual work hidden between checkpoints. The async status canvas makes the work continuously visible inside the portal: a status bar shows what stage the engagement is at, a single chronological thread holds every message, and a preview slot embeds the work-in-progress so the client can poke at the real thing instead of waiting for a demo day. This feature is the public demo of that canvas — a worked sample anyone can open without signing in, so a visitor can see exactly what their own engagement page would look like before they commit to anything.",
+      "analysis": "The engagement page replaces both the status email and the demo-day meeting. A persistent stage bar (triage, planning, building, review, shipped) sits at the top so the client never has to ask where things are. Below it, one chronological thread carries every message between the two parties, each tagged by author and by kind (update, decision, question, system). A preview slot embeds the deployable artifact when one exists. This particular page is the read-only public demo of the pattern: it renders a single hand-written composite engagement so a visitor sees the canvas fully populated. The real, private, two-way version of this surface — bound to live engagement data and gated behind sign-in — is the engagement runtime feature; this demo and that runtime share the same visual vocabulary on purpose.",
+      "decisions": [
+        {
+          "decision": "Engagement stage is shown globally, so the client is never unsure where things stand",
+          "rationale": "Async work without visible status feels like ghosting. A persistent stage indicator removes that anxiety without anyone having to write a 'just checking in' message.",
+          "recommendation": "Keep the stages few and named; make each transition a structured, timestamped event rather than free text."
+        },
+        {
+          "decision": "One chronological thread is the only client-consultant channel",
+          "rationale": "Email and phone are excluded by the practice's architecture. Routing everything through the canvas keeps async-only enforceable and leaves a complete record that the public case study can later be built from.",
+          "recommendation": "Treat any notification email as read-only — replies happen in the portal, not by replying to the email."
+        },
+        {
+          "decision": "Ship this as a public, fully populated demo before any real engagement exists",
+          "rationale": "A visitor deciding whether to send an intake needs to see the canvas working, not an empty shell. A worked sample is more persuasive than a description and costs nothing once the renderer exists.",
+          "recommendation": "Keep one composite sample current as the renderer evolves; mark it clearly as a demo so it is never mistaken for a real client."
+        }
+      ],
+      "successCriteria": "- A visitor can open the demo and see a fully populated engagement canvas without signing in\n- The status bar always communicates the current stage\n- All messages live in one chronological thread, tagged by author and kind\n- The preview slot embeds a working artifact or explains when one will appear\n- The demo is clearly labelled so it is never confused with a real client\n- Reusable as a pattern for any project tracking long-running async collaboration",
+      "knownLimitations": [
+        "This page is a hand-written demo fixture — it is intentionally not wired to live engagement data; that is the engagement-runtime feature's job",
+        "The demo is read-only — there is no reply box, because a public sample has no client to reply",
+        "The preview slot's iframe sandbox is permissive enough for self-hosted demos but too lax for untrusted third-party content"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Engagement canvas live at /engagement/:slug with a composite sample demonstrating the stage bar, thread, and preview slot."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "frozen",
+          "to": "frozen",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at src/pages/Engagement.feature.json. Confirmed the page still renders the fixture and clarified its relationship to the engagement-runtime feature."
+        }
+      ],
+      "lastTransitionDate": "2026-05-21"
+    },
+    {
+      "featureKey": "feat-2026-009",
+      "title": "Portal app shell — the composition layer",
+      "status": "frozen",
+      "domain": "marc-portal/composition",
+      "tags": [
+        "composition",
+        "marc-specific",
+        "homepage",
+        "bilingual",
+        "spa-routing",
+        "non-reusable"
+      ],
+      "componentFile": "src/pages/Home.tsx",
+      "liveUrl": "/",
+      "problem": "Every other feature in this portal is a reusable pattern — an intake form, a pricing table, a capacity gate — that could be lifted into another project. The app shell is the one piece that is not. It is the composition layer: the single place where those patterns are wired into a coherent site, where the routing tree lives, where the bilingual machinery is set up, and where the homepage decides which sections appear and in what order. Without a deliberate composition feature, this wiring would be scattered and nobody could point at 'the part that makes this Marc's portal and not a template.' This is that part.",
+      "analysis": "src/pages/Home.tsx is the composition root: it imports each section component and renders them in a fixed order, so the homepage's narrative sequence lives in exactly one file. The shell is intentionally the only non-reusable feature in the portal — it is where Marc-specific copy, ordering, and visual identity collect, leaving every pattern it composes generic. Routing is a separate concern in src/router.tsx (react-router's createBrowserRouter), with a French canonical tree at / and a full English mirror under /en; a RootByTemplate wrapper sets the lang prop and the document language. All copy is one bilingual dictionary in src/i18n.ts keyed by 'fr' | 'en'. The site is a client-rendered single-page app: hot-path routes (home, intake, login) are bundled eagerly, cold-path routes are code-split.",
+      "decisions": [
+        {
+          "decision": "French primary, English secondary, mirrored route trees",
+          "rationale": "Quebec context — a commercial site here is expected to lead in French. Mirroring the whole route set under /en rather than a runtime toggle keeps each language a real, linkable, indexable URL.",
+          "recommendation": "French content at /, English mirror at /en, language switcher in the header. Every page added must add both routes."
+        },
+        {
+          "decision": "The homepage section order is fixed in one composition file",
+          "rationale": "The home page is a sequence that answers a visitor's questions in order — what is this, how does it work, is it for me, what does it cost, then the call to act. Keeping the order in Home.tsx alone means re-sequencing is a one-file edit and the narrative is auditable at a glance.",
+          "recommendation": "Add a section by writing its component, importing it in Home.tsx, and placing it deliberately in the sequence. Resist letting section order leak into other files."
+        },
+        {
+          "decision": "Static-first, client-rendered SPA — no UI framework, no CSS-in-JS, no state library",
+          "rationale": "A boring-tech mandate: the portal must stay cheap, fast, and low-maintenance over a roughly three-year horizon. Design tokens are plain CSS custom properties; routing and context are enough for state.",
+          "recommendation": "Keep dependencies pinned and minimal. If first-paint SEO ever becomes urgent before the project gallery builds gravity, revisit pre-rendering — but not before."
+        }
+      ],
+      "successCriteria": "- The public homepage renders every section in the intended order, in both languages\n- /en is a structurally identical English mirror of the French tree\n- Adding a section or a route is a localized edit (one component, one import, paired FR/EN routes)\n- The shell stays the only Marc-specific feature — the patterns it composes remain generic\n- Build stays a plain tsc + vite build with no framework lock-in",
+      "knownLimitations": [
+        "Client-rendered SPA — Google indexes it, but first paint needs JavaScript; pre-rendering is deferred until SEO timing demands it",
+        "Section order is a hand-maintained sequence in Home.tsx — there is no CMS or config-driven ordering, by design for a single-operator site"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Homepage live in both languages; composition root at src/pages/Home.tsx wires every section; routing serves all pages."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "frozen",
+          "to": "frozen",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at src/pages/Home.feature.json and rewritten from the shipped code. Section list, routing model, and componentFile re-checked against Home.tsx and router.tsx."
+        }
+      ],
+      "lastTransitionDate": "2026-05-21"
+    },
+    {
+      "featureKey": "feat-2026-002",
+      "title": "Structured intake form",
+      "status": "frozen",
+      "domain": "primitive/intake",
+      "tags": [
+        "form",
+        "save-resume",
+        "schema-driven",
+        "no-ai-interviewer",
+        "magic-link",
+        "reusable-pattern"
+      ],
+      "componentFile": "src/pages/Intake.tsx",
+      "liveUrl": "/intake",
+      "problem": "Most consulting engagements start with a 60-minute discovery call where the consultant interviews the client live. That model demands real-time scheduling, consumes hours per lead, and excludes a side-practice operator with a day job and a family. The structured intake form replaces the discovery call with a guided form a visitor fills at their own pace: they pick the shape of their problem, answer fields tuned to that shape, save a draft, and submit when ready. It is read in one batched sitting, not in real time. Because there is no AI interviewer between the visitor and the consultant — that first read of a client's pain stays human — the form itself has to be good enough to extract a usable brief from people who cannot write a brief.",
+      "analysis": "A step machine where each problem-type carries its own field set, so structure is captured at intake time instead of being reverse-engineered from prose afterward. A short routing step asks what shape the problem is (paperwork, tracking, coordination, or other) and the matching field schema renders. The form auto-saves continuously: always to the browser's local storage, and — once the visitor is signed in — also to the server, so a draft started on a phone can be finished on a desktop. No AI sits between the visitor's words and the consultant's first read. Submitting either creates a real engagement record (if the visitor is already signed in) or sends a magic-link email so they can claim what they typed; either way nothing is lost. The capacity gate is enforced by the server, not the form.",
+      "decisions": [
+        {
+          "decision": "Schema-driven, not free-text — each problem-type has its own field set",
+          "rationale": "A wall of free text forces the consultant to turn prose into a structured brief by hand. Per-type schemas extract that structure at intake time; free-text fields are kept only where structure genuinely cannot capture the nuance.",
+          "recommendation": "Start with the few problem-types that match the practice's wedge and add types only when triage data shows real demand."
+        },
+        {
+          "decision": "No AI interviewer between visitor and consultant at first contact",
+          "rationale": "The consultant reads every submission himself. An AI summary would put a model between him and the raw client voice — the worst version of AI-assisted consulting.",
+          "recommendation": "AI may help a visitor phrase their own answer in the form, but must never replace the consultant's reading of the original text."
+        },
+        {
+          "decision": "Drafts save locally always, and to the server once signed in",
+          "rationale": "A dead-end form that loses work on a refresh is a known failure mode. Local storage covers the anonymous visitor; server-side draft sync covers cross-device resume for the signed-in visitor without forcing an account before the first keystroke.",
+          "recommendation": "Keep account creation lightweight — email only, magic-link, no password during the draft phase."
+        }
+      ],
+      "successCriteria": "- A visitor can fill the form at their own pace with no real-time scheduling\n- Drafts auto-save and survive a refresh; a signed-in visitor can resume on another device\n- Each problem-type renders its own field schema\n- The consultant receives one structured record per submission, not free-text prose\n- Submitting at capacity routes to a waitlist acknowledgement rather than failing\n- Reusable as a pattern in any project that needs user-supplied structured input",
+      "knownLimitations": [
+        "Intake messages and fields are text and sketches — no file uploads inside the form itself",
+        "Email format is checked with a regex; there is no deliverability verification",
+        "A full screen-reader and tab-order accessibility audit is still outstanding"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "/intake live with the five-step flow, per-type schemas, continuous autosave, and capacity-gated submit."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "frozen",
+          "to": "frozen",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at src/pages/Intake.feature.json. Re-checked the step flow, the server-side draft sync, and the magic-link submit path against the shipped code."
+        }
+      ],
+      "lastTransitionDate": "2026-05-21"
+    },
+    {
+      "featureKey": "feat-2026-004",
+      "title": "Public project gallery — shipped engagements as case studies",
+      "status": "frozen",
+      "domain": "primitive/showcase",
+      "tags": [
+        "case-study",
+        "public-gallery",
+        "seo",
+        "compounding",
+        "tier-reference",
+        "reusable-pattern"
+      ],
+      "componentFile": "src/pages/Projects.tsx",
+      "liveUrl": "/projects",
+      "problem": "Every shipped engagement is potential portfolio and search-engine compounding — but only if it is published as a public page. Most consultants treat case studies as marketing fluff bolted on after delivery. This feature treats them as primary acquisition infrastructure: when an engagement is finished, the consultant flags it for the showcase from inside the admin view, and it appears immediately in a public gallery with its tier, status, and a short title and tagline written in the client's natural language. A visitor Googling their own everyday problem can land on a real, finished example instead of an abstract pitch.",
+      "analysis": "The gallery is generated from real engagement records, not from a separate marketing CMS. An engagement lives as a session in the database; when the consultant decides it can be public, the admin view sets a showcase flag, a public title, and a tagline on that session. The public gallery page reads only the showcased subset through a dedicated public endpoint, so nothing private leaks. Each card carries the engagement's tier and status, which means the gallery doubles as the living definition of what each pricing tier looks like in practice. The page supports filtering by tier and status. The companion 'advancements' share page exposes the progress timeline of a single engagement at its own public URL.",
+      "decisions": [
+        {
+          "decision": "Case studies are generated from real engagement records, not hand-authored marketing pages",
+          "rationale": "A case study written from scratch is marketing; a case study that is just the public face of an actual engagement record cannot drift from what really happened, and costs almost nothing to publish.",
+          "recommendation": "Keep publication a single flag plus a public title and tagline set in the admin view — no separate authoring step."
+        },
+        {
+          "decision": "Every card shows its tier, so the gallery is also the tier reference",
+          "rationale": "Abstract tier names ('Starter / Pro') do not anchor expectations the way 'here are the actual projects shipped at each tier' does. Surfacing the tier on every card makes the gallery and the pricing table reinforce each other.",
+          "recommendation": "Tag each engagement with its tier at triage so the gallery is correct the moment it is published."
+        },
+        {
+          "decision": "The consultant controls publication; only the showcased subset is ever public",
+          "rationale": "Engagement records hold private client material. A dedicated public endpoint that returns only flagged, public-titled sessions keeps the boundary explicit — privacy is the default and publication is a deliberate act.",
+          "recommendation": "Never widen the public endpoint to return un-showcased sessions; add fields to it only when they are confirmed safe to expose."
+        }
+      ],
+      "successCriteria": "- Flagging an engagement for the showcase in the admin view publishes it to the public gallery with no separate authoring step\n- The public endpoint returns only showcased sessions and only public-safe fields\n- Every gallery card shows the engagement's tier and status\n- The gallery can be filtered by tier and status\n- Reusable as a pattern for any project that turns finished work into public references",
+      "knownLimitations": [
+        "Per-card preview images share the site-wide OG card — there is no per-engagement generated preview image yet",
+        "There is no self-serve client redaction flow — a client who wants something changed asks the consultant directly",
+        "Gallery cards do not cross-link to related engagements; each is standalone"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Public showcase renderer live, generating case-study pages from engagement records."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "frozen",
+          "to": "frozen",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at src/pages/Projects.feature.json. The renderer is now Projects.tsx reading the public sessions endpoint; the earlier feature.json-glob implementation no longer exists."
+        }
+      ],
+      "lastTransitionDate": "2026-05-21"
+    },
+    {
+      "featureKey": "feat-2026-008",
+      "title": "Self-service redirect — the Tier 0 off-ramp",
+      "status": "frozen",
+      "domain": "primitive/tier-0",
+      "tags": [
+        "self-service",
+        "tier-0",
+        "off-ramp",
+        "goodwill",
+        "free-value",
+        "reusable-pattern"
+      ],
+      "componentFile": "src/pages/Tier0.tsx",
+      "liveUrl": "/tier-0",
+      "problem": "Some visitors have a real problem but no commercial budget — civic coordination, household logistics, a hobby project. A consultant facing one of these usually either takes the job and loses money or rejects it and burns goodwill. The self-service redirect is a third move: a free, curated library of small patterns that says, in effect, 'your problem is small enough that hiring me would cost more than it is worth — here is how people solve this one themselves, come back if it outgrows you.' The visitor leaves with something usable, the goodwill is intact, and the page quietly earns long-tail search traffic.",
+      "analysis": "Tier 0 replaces the binary accept/reject triage outcome with a curated off-ramp. The page lists a set of small, recognisable everyday problems, each presented as three plain blocks — the problem, a recipe to solve it, and a link to a free no-code tool that fits. The patterns are hand-picked, not generated: the value is the match, not the volume. The page opens with the principle behind it (a fifty-dollar problem deserves a free solution) and closes with an invitation to come back through the intake form when a pattern outgrows the visitor. Educating a visitor out of needing the consultant is the correct move when hiring would cost more than the problem is worth.",
+      "decisions": [
+        {
+          "decision": "The redirect library is curated, not algorithmic",
+          "rationale": "The value of an off-ramp is the well-matched pattern, not the number of patterns. A short list of patterns the consultant actually chose feels respectful; a long auto-generated list feels dismissive.",
+          "recommendation": "Add a pattern only when a real recurring request justifies it; keep each entry concrete enough to act on."
+        },
+        {
+          "decision": "Each pattern points to a free, no-code tool",
+          "rationale": "A Tier 0 visitor has no budget and often no technical skill. Pointing at a spreadsheet template or a free poll tool gives them a result today without involving the consultant at all.",
+          "recommendation": "Prefer well-known free tools; accept that an external tool can change its URL and keep the recipe useful even if a link rots."
+        }
+      ],
+      "successCriteria": "- A budget-mismatched visitor lands on a curated off-ramp instead of a flat rejection\n- Each pattern gives the visitor a concrete recipe and a free tool to use today\n- Adding or removing a pattern is a single edit to one data file\n- The page invites the visitor back to /intake when a pattern outgrows them\n- Reusable as a pattern for any practice that wants a Tier 0 without losing money",
+      "knownLimitations": [
+        "There is no click-through analytics, so the page cannot yet surface which patterns are most in demand",
+        "Patterns are defined in code — fine for a curated list of this size, but not editable without a deploy",
+        "Template links point to third-party tools, which can change their URLs over time",
+        "There is no automatic inbound flow from triage into Tier 0 — a budget mismatch does not yet route a visitor here on its own"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "/tier-0 live with a curated pattern library; the pricing Tier 0 card links here."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "frozen",
+          "to": "frozen",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at src/pages/Tier0.feature.json. The pattern library has grown to roughly a dozen entries; re-checked against patterns.ts."
+        }
+      ],
+      "lastTransitionDate": "2026-05-21"
+    },
+    {
+      "featureKey": "feat-2026-005",
+      "title": "Triage queue with a hard capacity cap",
+      "status": "frozen",
+      "domain": "primitive/capacity-control",
+      "tags": [
+        "capacity-cap",
+        "waitlist",
+        "load-bearing-rule",
+        "family-first",
+        "reusable-pattern"
+      ],
+      "componentFile": "functions/api/capacity.ts",
+      "liveUrl": "/",
+      "problem": "Without a hard limit on concurrent work, a side-practice consultant accepts every engagement that looks 'doable' and ends up with three clients at once eating evenings and weekends — and family-first, the value the whole practice is built to protect, quietly falsifies. This feature makes the load-bearing rule structural rather than aspirational: one active build plus one in triage, no more. The homepage shows the current state so a visitor knows immediately whether a slot is open, and the server refuses to create a new engagement past the cap. The public waitlist is not a flaw to hide — scarcity reads as seriousness. This is the single rule of the portal that does not bend.",
+      "analysis": "The cap is enforced where it cannot be wished away — in the server. The current load is not a number someone maintains by hand; it is counted directly from the engagement records, so it is always true and it decrements on its own when an engagement ships. A public endpoint reports whether the practice is at capacity, and the homepage hero turns that into a plain-language slot indicator. When a visitor submits an intake while at capacity, the server declines to create a new engagement and the visitor is routed to a waitlist acknowledgement instead. Crucially there is no override: no admin toggle raises the cap, because the rule that must not bend should not have a soft switch in the code.",
+      "decisions": [
+        {
+          "decision": "Hard cap of one active build plus one in triage, with no exception path",
+          "rationale": "This is the bedrock defence. If it breaks, family-first collapses — three concurrent clients against side-practice hours consumes weekends. The failure pattern it structurally prevents is the optimism of 'I can squeeze this one in'.",
+          "recommendation": "Enforce it server-side, not as a soft warning, and provide no override anywhere in the admin surface."
+        },
+        {
+          "decision": "The public capacity indicator is an asset, not a bug to hide",
+          "rationale": "Scarcity adds credibility. A visible 'currently full, waitlist open' positions the consultant as serious rather than unavailable, and the waitlist itself becomes acquisition infrastructure.",
+          "recommendation": "Keep the indicator on the homepage hero and let it read straight from real engagement counts so it is never stale."
+        },
+        {
+          "decision": "Current load is derived from engagement records, never hand-maintained",
+          "rationale": "A hand-edited capacity figure drifts the moment someone forgets to update it after an engagement ships. Counting active and triage engagements directly makes the figure self-correcting and removes a standing source of error.",
+          "recommendation": "Keep the cap thresholds as named constants next to the counting logic so raising them is a deliberate, reviewable code change."
+        }
+      ],
+      "successCriteria": "- The active-plus-triage cap is enforced by the server, not by policy or a soft warning\n- Submitting an intake at capacity is declined cleanly and routed to a waitlist acknowledgement\n- The homepage shows the current capacity state, read from real engagement counts\n- The current load decrements on its own when an engagement ships — nobody maintains it by hand\n- There is no override path anywhere that can raise the cap\n- Reusable as a pattern for any solo-operator service that wants the same structural rule",
+      "knownLimitations": [
+        "The capacity figure reflects engagement records only — it does not model a richer queue with per-slot start dates",
+        "The homepage indicator is fetched on page load, so a visitor with a stale tab sees the state from when they opened it until the next load",
+        "The waitlist is an acknowledgement state on a declined submission, not yet a managed list with visible queue positions"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Capacity gating live; homepage hero shows the slot state and the intake submit path respects the cap."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "frozen",
+          "to": "frozen",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at functions/api/capacity.feature.json. Capacity is now derived live from engagement records via the server; the earlier hand-edited JSON file is gone."
+        }
+      ],
+      "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-21T11:13:06.819Z"
+  "generatedAt": "2026-05-21T18:06:13.472Z"
 }

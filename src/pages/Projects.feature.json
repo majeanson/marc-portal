@@ -1,0 +1,98 @@
+{
+  "featureKey": "feat-2026-004",
+  "title": "Public project gallery — shipped engagements as case studies",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "primitive/showcase",
+  "componentFile": "src/pages/Projects.tsx",
+  "liveUrl": "/projects",
+  "problem": "Every shipped engagement is potential portfolio and search-engine compounding — but only if it is published as a public page. Most consultants treat case studies as marketing fluff bolted on after delivery. This feature treats them as primary acquisition infrastructure: when an engagement is finished, the consultant flags it for the showcase from inside the admin view, and it appears immediately in a public gallery with its tier, status, and a short title and tagline written in the client's natural language. A visitor Googling their own everyday problem can land on a real, finished example instead of an abstract pitch.",
+  "tags": [
+    "case-study",
+    "public-gallery",
+    "seo",
+    "compounding",
+    "tier-reference",
+    "reusable-pattern"
+  ],
+  "analysis": "The gallery is generated from real engagement records, not from a separate marketing CMS. An engagement lives as a session in the database; when the consultant decides it can be public, the admin view sets a showcase flag, a public title, and a tagline on that session. The public gallery page reads only the showcased subset through a dedicated public endpoint, so nothing private leaks. Each card carries the engagement's tier and status, which means the gallery doubles as the living definition of what each pricing tier looks like in practice. The page supports filtering by tier and status. The companion 'advancements' share page exposes the progress timeline of a single engagement at its own public URL.",
+  "decisions": [
+    {
+      "decision": "Case studies are generated from real engagement records, not hand-authored marketing pages",
+      "rationale": "A case study written from scratch is marketing; a case study that is just the public face of an actual engagement record cannot drift from what really happened, and costs almost nothing to publish.",
+      "recommendation": "Keep publication a single flag plus a public title and tagline set in the admin view — no separate authoring step.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Every card shows its tier, so the gallery is also the tier reference",
+      "rationale": "Abstract tier names ('Starter / Pro') do not anchor expectations the way 'here are the actual projects shipped at each tier' does. Surfacing the tier on every card makes the gallery and the pricing table reinforce each other.",
+      "recommendation": "Tag each engagement with its tier at triage so the gallery is correct the moment it is published.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "The consultant controls publication; only the showcased subset is ever public",
+      "rationale": "Engagement records hold private client material. A dedicated public endpoint that returns only flagged, public-titled sessions keeps the boundary explicit — privacy is the default and publication is a deliberate act.",
+      "recommendation": "Never widen the public endpoint to return un-showcased sessions; add fields to it only when they are confirmed safe to expose.",
+      "date": "2026-05-06"
+    }
+  ],
+  "implementation": "src/pages/Projects.tsx renders the public gallery at /projects (and /en/projects). It fetches the public endpoint functions/api/public/projects, which queries the sessions table for rows that have been flagged for the showcase (a non-null showcase timestamp) and returns only public-safe fields — public title, tagline, tier, status, and showcase date. The page offers tier and status filters and sorts by showcase date. The decision to publish, and the public title and tagline, are set by the consultant from the admin session view (src/pages/AdminShowcase.tsx is the admin-side grid). A separate public page, src/pages/PublicAdvancements.tsx at /share/:id, renders the progress timeline of a single engagement for sharing.",
+  "successCriteria": "- Flagging an engagement for the showcase in the admin view publishes it to the public gallery with no separate authoring step\n- The public endpoint returns only showcased sessions and only public-safe fields\n- Every gallery card shows the engagement's tier and status\n- The gallery can be filtered by tier and status\n- Reusable as a pattern for any project that turns finished work into public references",
+  "userGuide": "Visit /projects (or /en/projects) to browse shipped engagements, filterable by tier and status. To publish an engagement: open it in the admin session view, give it a public title and tagline, and flag it for the showcase — it appears in the gallery immediately. The admin grid at /admin/showcase is the operator-side overview. A single engagement's progress timeline can be shared publicly at /share/:id.",
+  "knownLimitations": [
+    "Per-card preview images share the site-wide OG card — there is no per-engagement generated preview image yet",
+    "There is no self-serve client redaction flow — a client who wants something changed asks the consultant directly",
+    "Gallery cards do not cross-link to related engagements; each is standalone"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Public showcase renderer live, generating case-study pages from engagement records."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "frozen",
+      "to": "frozen",
+      "date": "2026-05-21",
+      "reason": "Code-first verification — feature.json co-located at src/pages/Projects.feature.json. The renderer is now Projects.tsx reading the public sessions endpoint; the earlier feature.json-glob implementation no longer exists."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-21",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from the brainstorming session — the showcase-as-acquisition-infrastructure principle."
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "reason": "Built as a renderer that loaded feature.json files at build time."
+    },
+    {
+      "date": "2026-05-21",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "decisions",
+        "implementation",
+        "componentFile",
+        "successCriteria",
+        "knownLimitations",
+        "userGuide"
+      ],
+      "reason": "Code-first overhaul: the renderer is now src/pages/Projects.tsx, generating the public gallery from real engagement records via the public sessions endpoint. Rewrote the entire feature from the shipped code — the build-time feature.json glob, the annotation-data schema, and the StatusHistoryStrip/RevisionLog components it once described are gone."
+    }
+  ],
+  "annotations": []
+}

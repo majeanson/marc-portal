@@ -1,0 +1,87 @@
+{
+  "featureKey": "feat-2026-006",
+  "title": "Tiered public pricing",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "primitive/pricing",
+  "componentFile": "src/components/Pricing.tsx",
+  "liveUrl": "/#pricing",
+  "problem": "'Cheap' with no number attached is just rhetoric — every visitor imagines a different price, and many imagine the wrong one. This feature shows actual prices: a free self-service tier, then three paid tiers with concrete dollar figures and a one- or two-line scope each. Each paid tier links to the real projects shipped at that price, so the pricing table and the project gallery anchor each other. It is the opposite of the usual consulting move of hiding price behind 'let's have a conversation' — and the whole pitch depends on the cheapness being real and visible, not negotiated.",
+  "tags": ["pricing", "public", "showcase-anchored", "expectation-anchoring", "reusable-pattern"],
+  "analysis": "A four-tier pricing table where each card shows a tier name, a concrete price, a short scope, and a note about what happens after the work ships. Tier 0 is the free self-service off-ramp; the three paid tiers climb from a small fixed-price project to a larger custom-quoted one. One tier is marked as the anchor — the sweet-spot tier the practice expects most engagements to land in — and is highlighted so a visitor's eye settles there first. Every paid card links into the project gallery filtered to that tier, so a visitor can immediately see real examples at the price they are reading about. The table is a homepage section, placed after the self-qualification block so a visitor only reaches price once they have decided the practice is for them.",
+  "decisions": [
+    {
+      "decision": "Prices are public and concrete — no 'starting at', no 'depends on scope'",
+      "rationale": "Without numbers, every visitor self-imagines a price, and the 'cheap' positioning collapses. Concrete figures anchor expectations in seconds.",
+      "recommendation": "If a project does not fit a tier cleanly, custom-quote it after triage but anchor the conversation to the public tiers.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Each tier links to the real projects shipped at that tier",
+      "rationale": "Abstract tier descriptions do not anchor expectations the way actual shipped examples do. Linking each card into the filtered project gallery turns the gallery into the living definition of the tier.",
+      "recommendation": "Tag every engagement with its tier so the per-tier gallery link is always populated and accurate.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Tier 0 is a self-service redirect, not a paid product",
+      "rationale": "A graceful off-ramp for budget-mismatched visitors belongs in the pricing table so the option is visible, but the off-ramp itself is a separate feature.",
+      "recommendation": "Keep the Tier 0 card linking out to the self-service redirect page rather than describing patterns inline.",
+      "date": "2026-05-06"
+    }
+  ],
+  "implementation": "src/components/Pricing.tsx renders the four tiers as cards in a grid and is placed in the homepage composition as the section with id 'pricing'. Copy — tier names, prices, scopes, and the after-ship note — lives in the bilingual dictionary in src/i18n.ts under the pricing keys, so both languages stay in one place. One tier carries an anchor flag that adds an accent border to mark it as the sweet spot. The Tier 0 card links to /tier-0; each paid tier card links into the project gallery filtered by tier (/projects with a tier query). A note below the table points to the handoff page for the optional managed ownership mode.",
+  "successCriteria": "- The pricing table shows a concrete dollar figure for every paid tier\n- Each paid tier links to the project gallery filtered to that tier\n- The Tier 0 card links to the self-service redirect\n- A visitor can calibrate expectations within a few seconds, without leaving the section\n- Nowhere in the funnel is there a 'contact us for pricing'\n- Reusable as a pattern for any pricing-transparent service",
+  "userGuide": "Edit prices and scopes in src/i18n.ts under the pricing keys (French and the English mirror); each tier is a small object with a name, price, scope, after-ship note, and an optional anchor flag that highlights it. The component is rendered on the homepage by src/pages/Home.tsx. The project gallery doubles as proof — paid tier cards link straight into it, filtered to the tier.",
+  "knownLimitations": [
+    "Pricing copy lives in the shared i18n dictionary rather than in this feature's own data, so reusing the component elsewhere means carrying the copy along",
+    "Prices are stated in US dollars with an 'approximately' qualifier — there is no currency switch or live conversion"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Pricing table renders four tiers with concrete prices; Tier 0 links to the self-service redirect; the anchor tier is highlighted."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "frozen",
+      "to": "frozen",
+      "date": "2026-05-21",
+      "reason": "Code-first verification — feature.json co-located at src/components/Pricing.feature.json. Confirmed the per-tier gallery links and the handoff note against the shipped component."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-21",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from the brainstorming session — public pricing and showcase-as-tier-reference."
+    },
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide"],
+      "reason": "Built as src/components/Pricing.tsx with copy in the i18n dictionary and a highlighted anchor tier."
+    },
+    {
+      "date": "2026-05-21",
+      "author": "marc+claude",
+      "fields_changed": [
+        "problem",
+        "analysis",
+        "implementation",
+        "successCriteria",
+        "knownLimitations",
+        "userGuide"
+      ],
+      "reason": "Code-first overhaul: co-located next to Pricing.tsx, added liveUrl, and dropped the stale limitations — the per-tier gallery links and the Tier 0 link both exist now."
+    }
+  ],
+  "annotations": []
+}

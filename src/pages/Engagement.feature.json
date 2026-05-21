@@ -1,0 +1,96 @@
+{
+  "featureKey": "feat-2026-003",
+  "title": "Async status canvas — the public engagement demo",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "primitive/engagement-ui",
+  "componentFile": "src/pages/Engagement.tsx",
+  "liveUrl": "/engagement/tremblay-paysagement-suivi-clients",
+  "problem": "Clients of conventional consultants get sporadic email updates and scheduled milestone meetings, with the actual work hidden between checkpoints. The async status canvas makes the work continuously visible inside the portal: a status bar shows what stage the engagement is at, a single chronological thread holds every message, and a preview slot embeds the work-in-progress so the client can poke at the real thing instead of waiting for a demo day. This feature is the public demo of that canvas — a worked sample anyone can open without signing in, so a visitor can see exactly what their own engagement page would look like before they commit to anything.",
+  "tags": [
+    "status-flags",
+    "live-preview",
+    "message-thread",
+    "public-demo",
+    "no-meetings",
+    "reusable-pattern"
+  ],
+  "analysis": "The engagement page replaces both the status email and the demo-day meeting. A persistent stage bar (triage, planning, building, review, shipped) sits at the top so the client never has to ask where things are. Below it, one chronological thread carries every message between the two parties, each tagged by author and by kind (update, decision, question, system). A preview slot embeds the deployable artifact when one exists. This particular page is the read-only public demo of the pattern: it renders a single hand-written composite engagement so a visitor sees the canvas fully populated. The real, private, two-way version of this surface — bound to live engagement data and gated behind sign-in — is the engagement runtime feature; this demo and that runtime share the same visual vocabulary on purpose.",
+  "decisions": [
+    {
+      "decision": "Engagement stage is shown globally, so the client is never unsure where things stand",
+      "rationale": "Async work without visible status feels like ghosting. A persistent stage indicator removes that anxiety without anyone having to write a 'just checking in' message.",
+      "recommendation": "Keep the stages few and named; make each transition a structured, timestamped event rather than free text.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "One chronological thread is the only client-consultant channel",
+      "rationale": "Email and phone are excluded by the practice's architecture. Routing everything through the canvas keeps async-only enforceable and leaves a complete record that the public case study can later be built from.",
+      "recommendation": "Treat any notification email as read-only — replies happen in the portal, not by replying to the email.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Ship this as a public, fully populated demo before any real engagement exists",
+      "rationale": "A visitor deciding whether to send an intake needs to see the canvas working, not an empty shell. A worked sample is more persuasive than a description and costs nothing once the renderer exists.",
+      "recommendation": "Keep one composite sample current as the renderer evolves; mark it clearly as a demo so it is never mistaken for a real client.",
+      "date": "2026-05-06"
+    }
+  ],
+  "implementation": "src/pages/Engagement.tsx renders the canvas from a hand-written fixture in src/lib/engagements.ts (an Engagement record: slug, client, title, problem, tier, dates, preview URL, an ordered stages array, and a chronological messages array). The page assembles three parts — a status bar showing past/current/future stages, a chronological thread that visually distinguishes message kinds, and a preview slot that embeds a live URL or shows placeholder copy when none exists yet. The route is /engagement/:slug (and /en/engagement/:slug); it is not auth-gated, because this is the public demo. One composite sample ships today: a landscaper's client-tracking engagement, marked as a demo. Real, private engagements are served by the separate engagement-runtime feature, not from this fixture.",
+  "successCriteria": "- A visitor can open the demo and see a fully populated engagement canvas without signing in\n- The status bar always communicates the current stage\n- All messages live in one chronological thread, tagged by author and kind\n- The preview slot embeds a working artifact or explains when one will appear\n- The demo is clearly labelled so it is never confused with a real client\n- Reusable as a pattern for any project tracking long-running async collaboration",
+  "userGuide": "Open /engagement/tremblay-paysagement-suivi-clients (or the /en/ variant) to see a read-only sample engagement page: a stage bar, a chronological message thread, and a preview slot. To change the sample, edit the fixture in src/lib/engagements.ts — the /engagement/:slug route renders whatever is there. The private, interactive version of this surface for real clients is documented under the engagement-runtime feature.",
+  "knownLimitations": [
+    "This page is a hand-written demo fixture — it is intentionally not wired to live engagement data; that is the engagement-runtime feature's job",
+    "The demo is read-only — there is no reply box, because a public sample has no client to reply",
+    "The preview slot's iframe sandbox is permissive enough for self-hosted demos but too lax for untrusted third-party content"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Engagement canvas live at /engagement/:slug with a composite sample demonstrating the stage bar, thread, and preview slot."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "frozen",
+      "to": "frozen",
+      "date": "2026-05-21",
+      "reason": "Code-first verification — feature.json co-located at src/pages/Engagement.feature.json. Confirmed the page still renders the fixture and clarified its relationship to the engagement-runtime feature."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-21",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from the brainstorming session — the portal-as-canvas principle."
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "reason": "Built as src/pages/Engagement.tsx plus a fixture in src/lib/engagements.ts."
+    },
+    {
+      "date": "2026-05-21",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "successCriteria",
+        "knownLimitations",
+        "userGuide"
+      ],
+      "reason": "Code-first overhaul: co-located next to Engagement.tsx. Reframed this feature as the public demo of the canvas pattern and pointed the now-live two-way surface at the engagement-runtime feature instead of describing it as future work here."
+    }
+  ],
+  "annotations": []
+}

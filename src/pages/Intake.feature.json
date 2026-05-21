@@ -1,0 +1,95 @@
+{
+  "featureKey": "feat-2026-002",
+  "title": "Structured intake form",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "primitive/intake",
+  "componentFile": "src/pages/Intake.tsx",
+  "liveUrl": "/intake",
+  "problem": "Most consulting engagements start with a 60-minute discovery call where the consultant interviews the client live. That model demands real-time scheduling, consumes hours per lead, and excludes a side-practice operator with a day job and a family. The structured intake form replaces the discovery call with a guided form a visitor fills at their own pace: they pick the shape of their problem, answer fields tuned to that shape, save a draft, and submit when ready. It is read in one batched sitting, not in real time. Because there is no AI interviewer between the visitor and the consultant — that first read of a client's pain stays human — the form itself has to be good enough to extract a usable brief from people who cannot write a brief.",
+  "tags": [
+    "form",
+    "save-resume",
+    "schema-driven",
+    "no-ai-interviewer",
+    "magic-link",
+    "reusable-pattern"
+  ],
+  "analysis": "A step machine where each problem-type carries its own field set, so structure is captured at intake time instead of being reverse-engineered from prose afterward. A short routing step asks what shape the problem is (paperwork, tracking, coordination, or other) and the matching field schema renders. The form auto-saves continuously: always to the browser's local storage, and — once the visitor is signed in — also to the server, so a draft started on a phone can be finished on a desktop. No AI sits between the visitor's words and the consultant's first read. Submitting either creates a real engagement record (if the visitor is already signed in) or sends a magic-link email so they can claim what they typed; either way nothing is lost. The capacity gate is enforced by the server, not the form.",
+  "decisions": [
+    {
+      "decision": "Schema-driven, not free-text — each problem-type has its own field set",
+      "rationale": "A wall of free text forces the consultant to turn prose into a structured brief by hand. Per-type schemas extract that structure at intake time; free-text fields are kept only where structure genuinely cannot capture the nuance.",
+      "recommendation": "Start with the few problem-types that match the practice's wedge and add types only when triage data shows real demand.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "No AI interviewer between visitor and consultant at first contact",
+      "rationale": "The consultant reads every submission himself. An AI summary would put a model between him and the raw client voice — the worst version of AI-assisted consulting.",
+      "recommendation": "AI may help a visitor phrase their own answer in the form, but must never replace the consultant's reading of the original text.",
+      "date": "2026-05-06"
+    },
+    {
+      "decision": "Drafts save locally always, and to the server once signed in",
+      "rationale": "A dead-end form that loses work on a refresh is a known failure mode. Local storage covers the anonymous visitor; server-side draft sync covers cross-device resume for the signed-in visitor without forcing an account before the first keystroke.",
+      "recommendation": "Keep account creation lightweight — email only, magic-link, no password during the draft phase.",
+      "date": "2026-05-06"
+    }
+  ],
+  "implementation": "src/pages/Intake.tsx is a five-step machine: a vibe gate (self-qualification consent), an account step (email capture, skipped when already signed in), a type picker (four problem types), a schema-driven form step that renders the fields for the chosen type and embeds an inline napkin-sketch editor, and a confirmation screen. Step components live under src/components/intake/. The draft saves to localStorage on every keystroke; for a signed-in visitor it also debounce-syncs to the server endpoint functions/api/intake-drafts.ts (a per-email draft store) so a draft survives a device switch. On submit: a signed-in visitor's intake becomes a real engagement record via POST /api/sessions; an anonymous visitor triggers a magic-link email and their intake is held until they sign in and claim it. The capacity gate is server-side — GET /api/capacity drives a UI badge, and POST /api/sessions answers 409 when at capacity, which routes the visitor to a waitlist confirmation instead of a created engagement.",
+  "successCriteria": "- A visitor can fill the form at their own pace with no real-time scheduling\n- Drafts auto-save and survive a refresh; a signed-in visitor can resume on another device\n- Each problem-type renders its own field schema\n- The consultant receives one structured record per submission, not free-text prose\n- Submitting at capacity routes to a waitlist acknowledgement rather than failing\n- Reusable as a pattern in any project that needs user-supplied structured input",
+  "userGuide": "Visit /intake (or /en/intake). Step 1 is the self-qualification gate. Step 2 collects an email (skipped if you are already signed in). Step 3 picks a problem type. Step 4 is the per-type form, which auto-saves as you type and includes a sketch pad. Step 5 confirms. If you are signed in, submitting creates your engagement immediately; if not, you get a one-time sign-in link by email to claim what you typed. If the practice is at capacity, submitting puts you on the waitlist — same data, different acknowledgement.",
+  "knownLimitations": [
+    "Intake messages and fields are text and sketches — no file uploads inside the form itself",
+    "Email format is checked with a regex; there is no deliverability verification",
+    "A full screen-reader and tab-order accessibility audit is still outstanding"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "/intake live with the five-step flow, per-type schemas, continuous autosave, and capacity-gated submit."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-07"
+    },
+    {
+      "from": "frozen",
+      "to": "frozen",
+      "date": "2026-05-21",
+      "reason": "Code-first verification — feature.json co-located at src/pages/Intake.feature.json. Re-checked the step flow, the server-side draft sync, and the magic-link submit path against the shipped code."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-21",
+  "revisions": [
+    {
+      "date": "2026-05-06",
+      "author": "marc+claude",
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "reason": "Initial fill from the brainstorming session — the form-as-diagnostic-instrument principle."
+    },
+    {
+      "date": "2026-05-07",
+      "author": "marc+claude",
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "reason": "Built as a five-step machine with per-type schemas and local-storage drafts."
+    },
+    {
+      "date": "2026-05-21",
+      "author": "marc+claude",
+      "fields_changed": [
+        "problem",
+        "analysis",
+        "implementation",
+        "successCriteria",
+        "knownLimitations",
+        "userGuide"
+      ],
+      "reason": "Code-first overhaul: co-located next to Intake.tsx. The runtime now exists, so the rewrite documents server-side draft sync, magic-link submit, and real engagement creation, and drops the stale 'no backend / no magic-link / no email sent' limitations."
+    }
+  ],
+  "annotations": []
+}

@@ -1,23 +1,24 @@
-// Scan every feat-*/feature.json at the portal root and emit a compact
-// JSON manifest at src/data/lac-features.json. The /meta page imports
-// that manifest directly so render is zero-cost at runtime and the page
-// works offline / in CF Pages' static-asset path.
+// Scan every co-located *.feature.json under src/ and functions/ and emit a
+// compact JSON manifest at src/data/lac-features.json. The /meta page imports
+// that manifest directly so render is zero-cost at runtime and the page works
+// offline / in CF Pages' static-asset path.
 //
 // Why a build-time script rather than a Functions endpoint or a Vite
-// import.meta.glob: (a) the feature.json files live OUTSIDE src/, so
-// Vite's glob doesn't reach them; (b) we want the page to load without
-// pulling 25 ~10 KB JSON files at runtime; (c) the projection done here
-// drops the heavy `analysis` / `decisions[*].rationale` blocks that the
-// public page doesn't need — payload stays ~5-8 KB total.
+// import.meta.glob: (a) the page should load without N runtime JSON fetches;
+// (b) the projection done here is the single place that decides what the
+// public /meta page may show; (c) it works in the static-asset path.
+//
+// Co-location: each feature.json lives next to the code it documents and is
+// named <Component>.feature.json (e.g. src/pages/Intake.feature.json). There
+// are no more feat-*/ folders at the portal root, and the manifest carries no
+// GitHub source URL — the /meta page expands each card inline instead.
 //
 // Schema written: { features: Array<{
-//   featureKey, dirSlug, title, status, domain, tags[], problem (trimmed),
-//   decisionsCount, lastTransitionDate
-// }> }
-//
-// dirSlug is the on-disk folder name ("feat-app-shell") — needed because
-// the dir slugs are word-form while featureKey is `feat-YYYY-NNN`, so the
-// page can't derive the GitHub source URL from the key alone.
+//   featureKey, title, status, domain, tags[], componentFile, liveUrl,
+//   problem, analysis, decisions[{decision,rationale,recommendation,
+//   alternativesConsidered?}], successCriteria, knownLimitations[],
+//   statusHistory[{from,to,date,reason?}], lastTransitionDate
+// }>, generatedAt }
 //
 // Sort: status priority (active > draft > frozen > rejected), then
 // lastTransitionDate desc.
@@ -30,59 +31,78 @@ const __filename = fileURLToPath(import.meta.url)
 const portalRoot = dirname(dirname(__filename))
 
 const STATUS_ORDER = { active: 0, draft: 1, frozen: 2, rejected: 3 }
-const PROBLEM_TRIM = 320 // chars; long enough to read as a paragraph, short
-//                          enough to keep the manifest lean
+// Roots to scan. The root portal/feature.json is deliberately excluded — it is
+// the project-level umbrella artifact, not a /meta grid card.
+const SCAN_ROOTS = ['src', 'functions']
 
-function listFeatureDirs() {
-  return readdirSync(portalRoot)
-    .filter((name) => name.startsWith('feat-'))
-    .filter((name) => {
-      const path = join(portalRoot, name)
-      try {
-        return statSync(path).isDirectory()
-      } catch {
-        return false
-      }
-    })
+// Recursively collect every *.feature.json path under a directory.
+function collectFeatureFiles(dir, acc) {
+  let entries
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch {
+    return acc
+  }
+  for (const entry of entries) {
+    const full = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      if (entry.name === 'node_modules' || entry.name === 'dist') continue
+      collectFeatureFiles(full, acc)
+    } else if (entry.isFile() && entry.name.endsWith('.feature.json')) {
+      acc.push(full)
+    }
+  }
+  return acc
 }
 
-function readFeature(dir) {
-  const path = join(portalRoot, dir, 'feature.json')
+function readFeature(path) {
   try {
-    const raw = readFileSync(path, 'utf8')
-    return JSON.parse(raw)
+    return JSON.parse(readFileSync(path, 'utf8'))
   } catch (err) {
-    console.warn(`build-lac-meta: skipping ${dir} — ${err.message}`)
+    console.warn(`build-lac-meta: skipping ${path} — ${err.message}`)
     return null
   }
 }
 
-function projectFeature(raw, dirSlug) {
+function projectDecision(d) {
+  return {
+    decision: typeof d.decision === 'string' ? d.decision : '',
+    rationale: typeof d.rationale === 'string' ? d.rationale : '',
+    recommendation: typeof d.recommendation === 'string' ? d.recommendation : '',
+    ...(Array.isArray(d.alternativesConsidered) && d.alternativesConsidered.length > 0
+      ? { alternativesConsidered: d.alternativesConsidered }
+      : {}),
+  }
+}
+
+function projectFeature(raw) {
   const status = typeof raw.status === 'string' ? raw.status : 'draft'
   const history = Array.isArray(raw.statusHistory) ? raw.statusHistory : []
   const lastTransitionDate =
     history.length > 0 && history[history.length - 1].date ? history[history.length - 1].date : null
-  const problem = typeof raw.problem === 'string' ? raw.problem.trim() : ''
-  const trimmed =
-    problem.length > PROBLEM_TRIM ? problem.slice(0, PROBLEM_TRIM - 1).trimEnd() + '…' : problem
   return {
     featureKey: raw.featureKey ?? '',
-    dirSlug,
     title: raw.title ?? raw.featureKey ?? 'Untitled',
     status,
     domain: typeof raw.domain === 'string' ? raw.domain : null,
-    tags: Array.isArray(raw.tags) ? raw.tags.slice(0, 6) : [],
-    problem: trimmed,
-    decisionsCount: Array.isArray(raw.decisions) ? raw.decisions.length : 0,
+    tags: Array.isArray(raw.tags) ? raw.tags : [],
+    componentFile: typeof raw.componentFile === 'string' ? raw.componentFile : null,
+    liveUrl: typeof raw.liveUrl === 'string' ? raw.liveUrl : null,
+    problem: typeof raw.problem === 'string' ? raw.problem.trim() : '',
+    analysis: typeof raw.analysis === 'string' ? raw.analysis.trim() : '',
+    decisions: Array.isArray(raw.decisions) ? raw.decisions.map(projectDecision) : [],
+    successCriteria: typeof raw.successCriteria === 'string' ? raw.successCriteria : '',
+    knownLimitations: Array.isArray(raw.knownLimitations) ? raw.knownLimitations : [],
+    statusHistory: history,
     lastTransitionDate,
   }
 }
 
-const dirs = listFeatureDirs()
-const features = dirs
-  .map((d) => {
-    const raw = readFeature(d)
-    return raw ? projectFeature(raw, d) : null
+const files = SCAN_ROOTS.flatMap((root) => collectFeatureFiles(join(portalRoot, root), []))
+const features = files
+  .map((f) => {
+    const raw = readFeature(f)
+    return raw ? projectFeature(raw) : null
   })
   .filter(Boolean)
 

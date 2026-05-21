@@ -1,7 +1,0 @@
-{
-  "featureKey": "feat-2026-019",
-  "title": "Operator Console — fleet view, new-tenant wizard, audit log at /admin",
-  "status": "draft",
-  "problem": "Marc operates a fleet of buyer instances and needs one page that shows it all green at a glance: every tenant's domain, template + version, last activity, billing state, uptime, SSL status. Plus a \"Provision new buyer\" wizard that turns the conversation \"I'd like to buy SND\" into a live tenant in under 5 minutes (form → tenants insert → CF Pages API domain-add → magic link sent → audit log entry). Plus an append-only audit log so future-Marc can answer \"why did I freeze tenant X in March?\" The console lives at lifeascode.app/admin, gated by an operator-email allowlist (Marc only initially). This is the page Marc opens daily to confirm the side-practice is running itself.",
-  "schemaVersion": 1
-}

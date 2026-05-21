@@ -58,6 +58,24 @@
       "cropped": true
     },
     {
+      "slug": "root",
+      "viewport": "phone",
+      "route": "/",
+      "component": "Home",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Home",
+        "en": "Home"
+      },
+      "thumb": "/atelier/thumbs/phone/root.webp",
+      "full": "/atelier/full/phone/root.png",
+      "thumbW": 510,
+      "thumbH": 816,
+      "fullH": 14776,
+      "cropped": true
+    },
+    {
       "slug": "en-me-data",
       "viewport": "phone",
       "route": "/en/me/data",
@@ -76,33 +94,15 @@
       "cropped": true
     },
     {
-      "slug": "root",
-      "viewport": "phone",
-      "route": "/",
-      "component": "RootByTemplate",
-      "lang": "fr",
-      "variant": null,
-      "label": {
-        "fr": "La page d’accueil",
-        "en": "The home page"
-      },
-      "thumb": "/atelier/thumbs/phone/root.webp",
-      "full": "/atelier/full/phone/root.png",
-      "thumbW": 510,
-      "thumbH": 816,
-      "fullH": 14776,
-      "cropped": true
-    },
-    {
       "slug": "en",
       "viewport": "phone",
       "route": "/en",
-      "component": "RootByTemplate",
+      "component": "Home",
       "lang": "en",
       "variant": null,
       "label": {
-        "fr": "La page d’accueil",
-        "en": "The home page"
+        "fr": "Home",
+        "en": "Home"
       },
       "thumb": "/atelier/thumbs/phone/en.webp",
       "full": "/atelier/full/phone/en.png",
@@ -742,6 +742,24 @@
       "cropped": false
     },
     {
+      "slug": "root",
+      "viewport": "narrow",
+      "route": "/",
+      "component": "Home",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Home",
+        "en": "Home"
+      },
+      "thumb": "/atelier/thumbs/narrow/root.webp",
+      "full": "/atelier/full/narrow/root.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 12797,
+      "cropped": true
+    },
+    {
       "slug": "en-me-data",
       "viewport": "narrow",
       "route": "/en/me/data",
@@ -760,33 +778,15 @@
       "cropped": false
     },
     {
-      "slug": "root",
-      "viewport": "narrow",
-      "route": "/",
-      "component": "RootByTemplate",
-      "lang": "fr",
-      "variant": null,
-      "label": {
-        "fr": "La page d’accueil",
-        "en": "The home page"
-      },
-      "thumb": "/atelier/thumbs/narrow/root.webp",
-      "full": "/atelier/full/narrow/root.png",
-      "thumbW": 600,
-      "thumbH": 960,
-      "fullH": 12797,
-      "cropped": true
-    },
-    {
       "slug": "en",
       "viewport": "narrow",
       "route": "/en",
-      "component": "RootByTemplate",
+      "component": "Home",
       "lang": "en",
       "variant": null,
       "label": {
-        "fr": "La page d’accueil",
-        "en": "The home page"
+        "fr": "Home",
+        "en": "Home"
       },
       "thumb": "/atelier/thumbs/narrow/en.webp",
       "full": "/atelier/full/narrow/en.png",
@@ -1426,6 +1426,24 @@
       "cropped": false
     },
     {
+      "slug": "root",
+      "viewport": "wide",
+      "route": "/",
+      "component": "Home",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Home",
+        "en": "Home"
+      },
+      "thumb": "/atelier/thumbs/wide/root.webp",
+      "full": "/atelier/full/wide/root.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 13054,
+      "cropped": true
+    },
+    {
       "slug": "en-me-data",
       "viewport": "wide",
       "route": "/en/me/data",
@@ -1444,33 +1462,15 @@
       "cropped": false
     },
     {
-      "slug": "root",
-      "viewport": "wide",
-      "route": "/",
-      "component": "RootByTemplate",
-      "lang": "fr",
-      "variant": null,
-      "label": {
-        "fr": "La page d’accueil",
-        "en": "The home page"
-      },
-      "thumb": "/atelier/thumbs/wide/root.webp",
-      "full": "/atelier/full/wide/root.png",
-      "thumbW": 600,
-      "thumbH": 960,
-      "fullH": 13054,
-      "cropped": true
-    },
-    {
       "slug": "en",
       "viewport": "wide",
       "route": "/en",
-      "component": "RootByTemplate",
+      "component": "Home",
       "lang": "en",
       "variant": null,
       "label": {
-        "fr": "La page d’accueil",
-        "en": "The home page"
+        "fr": "Home",
+        "en": "Home"
       },
       "thumb": "/atelier/thumbs/wide/en.webp",
       "full": "/atelier/full/wide/en.png",
@@ -2110,6 +2110,24 @@
       "cropped": false
     },
     {
+      "slug": "root",
+      "viewport": "dark",
+      "route": "/",
+      "component": "Home",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Home",
+        "en": "Home"
+      },
+      "thumb": "/atelier/thumbs/dark/root.webp",
+      "full": "/atelier/full/dark/root.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 13054,
+      "cropped": true
+    },
+    {
       "slug": "en-me-data",
       "viewport": "dark",
       "route": "/en/me/data",
@@ -2128,33 +2146,15 @@
       "cropped": false
     },
     {
-      "slug": "root",
-      "viewport": "dark",
-      "route": "/",
-      "component": "RootByTemplate",
-      "lang": "fr",
-      "variant": null,
-      "label": {
-        "fr": "La page d’accueil",
-        "en": "The home page"
-      },
-      "thumb": "/atelier/thumbs/dark/root.webp",
-      "full": "/atelier/full/dark/root.png",
-      "thumbW": 600,
-      "thumbH": 960,
-      "fullH": 13054,
-      "cropped": true
-    },
-    {
       "slug": "en",
       "viewport": "dark",
       "route": "/en",
-      "component": "RootByTemplate",
+      "component": "Home",
       "lang": "en",
       "variant": null,
       "label": {
-        "fr": "La page d’accueil",
-        "en": "The home page"
+        "fr": "Home",
+        "en": "Home"
       },
       "thumb": "/atelier/thumbs/dark/en.webp",
       "full": "/atelier/full/dark/en.png",
