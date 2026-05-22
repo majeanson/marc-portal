@@ -163,10 +163,11 @@ async function handleCheckoutCompleted(env: Env, obj: StripeObject, origin: stri
       await env.DB.prepare(
         `UPDATE sessions
             SET custodian_status = 'active',
-                custodian_subscription_id = ?
+                custodian_subscription_id = ?,
+                custodian_plan = ?
           WHERE id = ?`,
       )
-        .bind(subscriptionId, sessionId)
+        .bind(subscriptionId, obj.metadata?.custodian_plan ?? null, sessionId)
         .run()
     }
   }

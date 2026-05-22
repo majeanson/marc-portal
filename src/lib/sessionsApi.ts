@@ -48,6 +48,10 @@ export interface SessionRow {
    *  is treated as 'none' downstream. Surfaced on the row so admin filters
    *  don't need a per-session summary fetch. */
   custodian_status: string | null
+  /** Which custodian plan an active subscription is on — 'watch' | 'care' |
+   *  NULL. Lets AdminCustodians sum an exact MRR. Reflects the plan at
+   *  subscribe time. */
+  custodian_plan: string | null
   /** Unix seconds when the visitor explicitly confirmed "Tout à toi" /
    *  "All yours" (opted out of Custodian). NULL = no explicit ack yet.
    *  Set via PATCH `acknowledgeAllYours: true`. Historical signal — the

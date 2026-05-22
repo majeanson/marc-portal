@@ -28,6 +28,7 @@ interface SessionRowMock {
   tier3_split?: string | null
   custodian_status?: string | null
   custodian_subscription_id?: string | null
+  custodian_plan?: string | null
   all_yours_acknowledged_at?: number | null
 }
 
@@ -996,12 +997,14 @@ class MockPreparedStatement {
       return p ? 1 : 0
     }
 
-    // UPDATE sessions SET custodian_status = 'active', custodian_subscription_id = ?
+    // UPDATE sessions SET custodian_status='active', custodian_subscription_id=?,
+    //   custodian_plan=? WHERE id=?
     if (sql.startsWith("UPDATE sessions SET custodian_status = 'active'")) {
-      const p = this.db.sessions.get(a[1] as string)
+      const p = this.db.sessions.get(a[2] as string)
       if (p) {
         p.custodian_status = 'active'
         p.custodian_subscription_id = a[0] as string
+        p.custodian_plan = (a[1] as string | null) ?? null
       }
       return p ? 1 : 0
     }

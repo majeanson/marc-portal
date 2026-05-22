@@ -54,6 +54,11 @@ export interface SessionRow {
    *  listings and the AdminCustodians page can filter without joining the
    *  payments summary per row. NULL is treated as 'none' downstream. */
   custodian_status: string | null
+  /** Which custodian plan an active subscription is on — 'watch' | 'care' |
+   *  NULL. Denormalized from the payments row by the checkout webhook so
+   *  AdminCustodians can sum an exact MRR without a per-session join.
+   *  Reflects the plan at subscribe time (a portal-side switch isn't synced). */
+  custodian_plan: string | null
   /** Unix seconds when the visitor explicitly acknowledged opting OUT of
    *  Custodian mode (i.e. they confirmed "Tout à toi" / "All yours" with
    *  the skills checklist on /session/:id). NULL = no explicit ack. Set
@@ -129,7 +134,7 @@ export async function loadSession(db: D1Database, id: string): Promise<SessionRo
       `SELECT id, email, intake_json, status, created_at, updated_at,
               deleted_at, status_history,
               showcased_at, showcase_title, showcase_tagline, tier,
-              tier4_amount_cents, tier3_split, custodian_status,
+              tier4_amount_cents, tier3_split, custodian_status, custodian_plan,
               all_yours_acknowledged_at, decline_note
        FROM sessions WHERE id = ?`,
     )

@@ -33,7 +33,7 @@ const COPY = {
     sectionEmpty: 'Aucun.',
     countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
     mrrLabel: 'MRR équivalent',
-    mrrNote: '(Watch–Care · actifs ÷ 12)',
+    mrrNote: (w: number, c: number) => `(${w} Watch · ${c} Care ÷ 12)`,
     untitled: 'Session sans intake',
     open: 'Ouvrir →',
     ackedOnLabel: 'confirmé le',
@@ -60,7 +60,7 @@ const COPY = {
     sectionEmpty: 'None.',
     countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
     mrrLabel: 'MRR equivalent',
-    mrrNote: '(Watch–Care · active ÷ 12)',
+    mrrNote: (w: number, c: number) => `(${w} Watch · ${c} Care ÷ 12)`,
     untitled: 'Session without intake',
     open: 'Open →',
     ackedOnLabel: 'confirmed on',
@@ -156,12 +156,15 @@ export function AdminCustodians({ lang }: { lang: Lang }) {
     return { active, pastDue, ended, allYoursAcked }
   }, [sessions])
 
-  // Each active sub is Watch ($120) or Care ($400); the sessions list this
-  // page reads doesn't carry which plan, so MRR is shown as a Watch–Care
-  // range rather than a false-precision single figure.
-  const activeCount = buckets.active.length
-  const mrrMinCents = Math.round((activeCount * CUSTODIAN_CENTS.watch) / 12)
-  const mrrMaxCents = Math.round((activeCount * CUSTODIAN_CENTS.care) / 12)
+  // Exact MRR — each active sub's plan is on the session row (custodian_plan,
+  // written by the checkout webhook). Subs predating that column read as null
+  // and fall outside both counts; the note's Watch/Care tally makes any gap
+  // visible against the active section's own count.
+  const watchCount = buckets.active.filter((s) => s.custodian_plan === 'watch').length
+  const careCount = buckets.active.filter((s) => s.custodian_plan === 'care').length
+  const mrrCents = Math.round(
+    (watchCount * CUSTODIAN_CENTS.watch + careCount * CUSTODIAN_CENTS.care) / 12,
+  )
 
   if (authLoading) {
     return (
@@ -212,8 +215,7 @@ export function AdminCustodians({ lang }: { lang: Lang }) {
               <h1 className="session-frame__title">{t.title}</h1>
               <p>{t.intro}</p>
               <p className="mono admin-custodians__mrr">
-                {t.mrrLabel}: {formatCadCents(mrrMinCents, lang)} –{' '}
-                {formatCadCents(mrrMaxCents, lang)} {t.mrrNote}
+                {t.mrrLabel}: {formatCadCents(mrrCents, lang)} {t.mrrNote(watchCount, careCount)}
               </p>
             </header>
 
