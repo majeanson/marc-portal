@@ -778,6 +778,20 @@ p {
   color: var(--text-soft);
   font-family: var(--mono);
 }
+/* The language word inside the bilingual line — a quiet inline link that
+   switches the page to the other language. Underlined so it reads as a
+   link without shouting; colour lifts to the accent on hover/focus. */
+.hero__bilingual-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: color 0.15s ease;
+}
+.hero__bilingual-link:hover,
+.hero__bilingual-link:focus-visible {
+  color: var(--accent);
+}
 /* Clock-aware greeting that opens the hero like a letter. Sits just above
    the display headline, italic serif so it reads as handwriting rather than
    UI chrome. */
@@ -795,8 +809,8 @@ p {
     font-size: 16px;
   }
 }
-/* Signed sign-off — italic serif "Marc — Québec" with a wobbly hand-drawn
-   underline that strokes in on first paint. */
+/* Signed sign-off — italic serif "Marc — dev québécois" with a wobbly
+   hand-drawn underline that strokes in on first paint. */
 .hero__signature {
   margin-top: 18px;
   color: var(--text-mid);
@@ -2999,11 +3013,9 @@ button.intake__progress-step:focus-visible {
   @keyframes session-timeline-rise {
     from {
       opacity: 0;
-      transform: translateX(-8px);
     }
     to {
       opacity: 1;
-      transform: translateX(0);
     }
   }
 }
@@ -7824,38 +7836,37 @@ button.intake__progress-step:disabled {
   outline: none;
 }
 
-/* Live slot pill — sits next to the primary CTA so the visitor reads
-   capacity state right at the moment of clicking. Reads /api/capacity
-   on mount via the existing atCap useEffect on Hero. Two tones:
-   --open (sage, "1 slot open") and --full (warm, "waitlist open"). */
+/* Capacity tag — sits next to the primary CTA so the visitor reads
+   capacity state at the moment of clicking. Reads /api/capacity on mount
+   via the existing atCap useEffect on Hero. Deliberately NOT a rounded
+   status badge: set in mono like the folio/eyebrow voice, with a small
+   ledger square (filled = a slot is open, hollow = full) standing in for
+   the usual SaaS "online dot". Two tones: --open (sage) / --full (warm). */
 .hero__slot-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  letter-spacing: 0.04em;
+  gap: 7px;
+  font-family: var(--mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
   text-transform: lowercase;
-  border: 1px solid var(--border-soft);
   white-space: nowrap;
 }
 .hero__slot-pill--open {
-  background: #eaf5ec;
   color: #2a6d3a;
-  border-color: #cfe6d4;
 }
 .hero__slot-pill--full {
-  background: #fff4e0;
   color: #8a5a00;
-  border-color: #f1d8a0;
 }
 .hero__slot-pill::before {
   content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
+  width: 7px;
+  height: 7px;
   background: currentColor;
+}
+.hero__slot-pill--full::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.6px currentColor;
 }
 
 .hero__bilingual {
@@ -7949,13 +7960,10 @@ button.intake__progress-step:disabled {
   font-weight: 600;
   font-size: clamp(64px, 9vw, 124px);
   line-height: 0.85;
-  color: var(--text);
   letter-spacing: -0.04em;
-  background: linear-gradient(180deg, var(--accent-warm) 0%, var(--text) 80%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  opacity: 0.9;
+  /* Solid ink — a printed drop-numeral, not a clipped gradient. */
+  color: var(--accent-warm);
+  opacity: 0.92;
   font-variant-numeric: tabular-nums;
   transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
   transform-origin: left center;
@@ -7965,8 +7973,8 @@ button.intake__progress-step:disabled {
 .home .step--editorial:hover .step__numeral {
   transform: translateX(6px) scale(1.04);
 }
-/* Staggered fade-up on first paint — same pattern as Vouches cards. --i
-   is set inline from the map index in HowItWorks.tsx.
+/* Staggered fade-in on first paint (opacity only — the steps don't slide).
+   --i is set inline from the map index in HowItWorks.tsx.
    The hidden start state lives in the keyframe `from` (held during the delay
    by `backwards` fill), NOT as a base `opacity: 0`. So the resting state is
    visible: if the animation is ever cut short — a frozen screenshot, an
@@ -7979,11 +7987,9 @@ button.intake__progress-step:disabled {
   @keyframes how-step-rise {
     from {
       opacity: 0;
-      transform: translateY(14px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
     }
   }
 }
@@ -11992,32 +11998,20 @@ button.intake__progress-step:disabled {
   font-size: 48px;
   line-height: 0.85;
   letter-spacing: -0.04em;
+  /* Solid ink, colour-coded by actor — no clipped gradient. */
   color: var(--text-faint);
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
   padding-inline-end: 0.12em;
-  background: linear-gradient(180deg, var(--text-faint) 0%, var(--text-soft) 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 .journey__step--you .journey__step-num {
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-warm) 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent);
 }
 .journey__step--me .journey__step-num {
-  background: linear-gradient(180deg, var(--warm) 0%, var(--text) 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--warm);
 }
 .journey__step--both .journey__step-num {
-  background: linear-gradient(180deg, var(--cool) 0%, var(--text) 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--cool);
 }
 .journey__step-meta {
   display: flex;
@@ -12332,8 +12326,8 @@ button.intake__progress-step:disabled {
   border-radius: var(--radius);
   padding: 22px 24px;
 }
-/* Staggered fade-up on mount — cards rise into place sequentially so the
-   list reads as testimonials coming alive instead of pasted in. --i is
+/* Staggered fade-in on mount — cards settle in sequentially (opacity only,
+   no slide) so the list reads as testimonials coming alive, not pasted in. --i is
    set inline from the React render index. Skip the animation under
    reduced-motion: cards remain fully visible.
    Resting state is visible — the hidden start lives in the keyframe `from`,
@@ -12347,11 +12341,9 @@ button.intake__progress-step:disabled {
   @keyframes vouch-card-rise {
     from {
       opacity: 0;
-      transform: translateY(12px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
     }
   }
 }
@@ -12752,11 +12744,6 @@ button.intake__progress-step:disabled {
 /* Approximate scroll-Y positions, picked by section landmark. Real Y will
    drift slightly with content but doodles always sit in the gutter, so
    they never collide with text. */
-.napperon__check {
-  top: 980px;
-  left: -28px;
-  transform: rotate(-12deg);
-}
 .napperon__coffee {
   top: 1900px;
   right: -44px;

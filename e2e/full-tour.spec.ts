@@ -19,6 +19,7 @@
  *     exit at the bottom of every content page, plus the two tour loops
  *     walked stop-by-stop until they close.
  *  5. Page mast — the folio (title-corner) link and the feature-cue dot.
+ *  6. Hero bilingual line — the inline FR↔EN language link in the hero.
  *
  * "A real page is there" = the page mounts an <h1>, sets a non-empty
  * <title>, and renders NO `.error-panel` (the shared marker of both
@@ -413,4 +414,31 @@ test.describe('full tour — page mast (title-corner links)', () => {
       })
     }
   }
+})
+
+/* ─── 6. hero bilingual line — inline FR↔EN language link ──────────────── */
+
+// The hero's bilingual line ("Aussi en anglais …" / "Also in French …")
+// names the *other* language, and that word is itself a link to that
+// language's home. Home-only — the line lives in <Hero>.
+test.describe('full tour — hero bilingual line', () => {
+  test('FR home: the "anglais" link switches the page to English', async ({ page }) => {
+    await page.goto('/')
+    const link = page.locator('.hero__bilingual-link')
+    await expect(link).toBeVisible()
+    await expect(link).toHaveText('anglais')
+    await link.click()
+    await waitForPath(page, '/en')
+    await expectRealPage(page)
+  })
+
+  test('EN home: the "French" link switches the page to French', async ({ page }) => {
+    await page.goto('/en')
+    const link = page.locator('.hero__bilingual-link')
+    await expect(link).toBeVisible()
+    await expect(link).toHaveText('French')
+    await link.click()
+    await waitForPath(page, '/')
+    await expectRealPage(page)
+  })
 })

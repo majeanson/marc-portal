@@ -67,7 +67,7 @@ const FR = {
   // wave at visitors who have tab-parked us. Home-only.
   tabAway: '👋 reviens-moi · Marc',
   metaDescription:
-    "Marc, dev québécois. Le soir et la fin de semaine, j'aide les gens à régler des problèmes du quotidien avec du code. Async — pas de meetings, à ton rythme.",
+    "Marc, dev québécois. Le soir et la fin de semaine, j'aide les gens à régler des problèmes du quotidien avec du code. Tout est async, sans meetings, à ton rythme.",
 
   hero: {
     eyebrow: 'side-gig · Québec · async',
@@ -79,14 +79,16 @@ const FR = {
       emphasis: 'des problèmes importants',
       tail: 'pour ma communauté.',
     },
-    signature: 'Marc — Québec',
+    signature: 'Marc — dev québécois',
     body2:
-      "Tu as un problème qui revient toujours, paperasse, suivi, coordination? Ton problème n'est pas un enjeu national, mais tout de même irritant ? Décris-le moi via le portail.",
+      "Tu as une affaire plate qui revient chaque semaine. De la paperasse à retaper, un suivi qui se perd, du monde à coordonner. C'est pas un enjeu national, mais c'est assez tannant pour mériter mieux. Raconte-moi ça.",
     cta: 'Crée ton compte gratuit →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle proposition →',
     mySessionsLink: 'Voir mes sessions',
-    bilingual: '(Aussi en anglais — je réponds dans ta langue.)',
+    // Split so the language word ("anglais") renders as a link that
+    // switches the page to that language. See Hero.tsx.
+    bilingual: { pre: '(Aussi en ', link: 'anglais', post: ' — je réponds dans ta langue.)' },
   },
 
   how: {
@@ -108,7 +110,7 @@ const FR = {
       {
         num: '01',
         title: 'Tu décris ton problème',
-        body: 'Formulaire guidé. Pas un call. Sauvegarde automatique. Tu reviens quand tu veux.',
+        body: "Tu remplis un formulaire guidé, pas un appel à planifier. Ça se sauvegarde tout seul à mesure, fait que tu peux fermer l'onglet et revenir quand ça te tente.",
       },
       {
         num: '02',
@@ -118,7 +120,7 @@ const FR = {
       {
         num: '03',
         title: 'Tu suis le travail en direct',
-        body: 'Démo testable dès le 2e jour. Pas de réunion de mise à jour — tout vit dans le portail.',
+        body: 'Démo testable dès le 2e jour. Aucune réunion de statut à attendre, parce que tout vit dans le portail.',
       },
       {
         num: '04',
@@ -131,7 +133,7 @@ const FR = {
   featured: {
     eyebrow: 'projets en cours',
     title: 'Ce que je livre, en vrai',
-    sub: 'Chaque carte est un projet vivant, vrai code, vrais problèmes, dernier build accessible.',
+    sub: 'Derrière chaque carte, un projet qui roule pour vrai. Du code en production, des problèmes concrets, et un build que tu peux aller tester maintenant.',
     seeAll: 'Voir tous les projets →',
     galleryCard: {
       eyebrow: 'envie de tout voir?',
@@ -327,7 +329,8 @@ const FR = {
       voiceAttach: 'Joindre la note vocale',
       sketchAttach: 'Joindre le croquis',
       sketchCancel: 'Annuler le croquis',
-      sketchHint: 'Dessine-le — une boîte, une flèche, un mot. Le croquis se joint à ton message.',
+      sketchHint:
+        "Un gribouillage en dit souvent plus long qu'un paragraphe. Il se joint direct à ton message.",
       voiceChip: 'Note vocale',
       sketchChip: 'Croquis',
       processing: 'Ajout…',
@@ -423,7 +426,7 @@ const FR = {
     title: 'À propos',
     body: 'Je suis dev depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible — pour toi comme pour moi.',
     body2:
-      'Pas une agence. Pas une plateforme. Un humain qui décide, une machine au milieu pour gérer le reste — pour qu’on respecte tous les deux nos soirs et nos fins de semaine.',
+      'Ce n’est pas une agence, et le portail n’est pas une plateforme géante. C’est un gars qui décide, avec juste ce qu’il faut de machine pour gérer la logistique. C’est ça qui nous garde nos soirées, à tous les deux.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
   },
@@ -459,7 +462,7 @@ const FR = {
     },
     thread: {
       title: "Le fil de l'engagement",
-      body: 'Pas de courriels, pas de meetings. Toute la communication vit ici, en ordre chronologique.',
+      body: 'Toute la communication tient ici, en ordre chronologique. Personne n’a à fouiller ses courriels ou à céduler un meeting pour savoir où on est rendus.',
       label: 'Messages chronologiques entre Marc et le client',
       authors: { marc: 'Marc', client: 'Client', system: 'Système' },
       types: {
@@ -1005,7 +1008,7 @@ const EN: Copy = {
   brandTitle: '№ 01 · Marc — Québécois dev',
   tabAway: '👋 come back · Marc',
   metaDescription:
-    'Marc, a Québécois dev. Evenings and weekends, I help people solve everyday problems with code. Async — no meetings, at your pace.',
+    'Marc, a Québécois dev. Evenings and weekends, I help people solve everyday problems with code. Everything runs async, no meetings, at your pace.',
 
   hero: {
     eyebrow: 'side-practice · Quebec · async',
@@ -1017,14 +1020,16 @@ const EN: Copy = {
       emphasis: 'important problems',
       tail: 'for my community.',
     },
-    signature: 'Marc — Quebec',
+    signature: 'Marc — Québécois dev',
     body2:
-      "Got a recurring problem — paperwork, tracking, coordination? It's not a national crisis, but it's still annoying? Tell me about it through the portal.",
+      "There's something that comes back every week. Paperwork you keep re-typing, a thread that gets lost, people to wrangle. It's no national crisis, but it's annoying enough to deserve better. Tell me about it.",
     cta: 'Create a free account →',
     ctaWaitlist: 'Join the waitlist →',
     ctaLoggedIn: 'Start a new proposal →',
     mySessionsLink: 'View my sessions',
-    bilingual: '(Also in French — I reply in your language.)',
+    // Split so the language word ("French") renders as a link that
+    // switches the page to that language. See Hero.tsx.
+    bilingual: { pre: '(Also in ', link: 'French', post: ' — I reply in your language.)' },
   },
 
   how: {
@@ -1046,7 +1051,7 @@ const EN: Copy = {
       {
         num: '01',
         title: 'You describe your problem',
-        body: 'Guided form. Not a call. Auto-save. Come back whenever.',
+        body: 'You fill out a guided form, not a call to schedule. It saves itself as you go, so you can close the tab and come back to a saved draft whenever you like.',
       },
       {
         num: '02',
@@ -1056,7 +1061,7 @@ const EN: Copy = {
       {
         num: '03',
         title: 'You watch the work live',
-        body: 'Testable demo from day 2. No status meetings — everything lives in the portal.',
+        body: 'Testable demo from day 2. There’s no status meeting to wait for, because everything lives in the portal.',
       },
       {
         num: '04',
@@ -1069,7 +1074,7 @@ const EN: Copy = {
   featured: {
     eyebrow: 'projects in progress',
     title: 'What I’m actually shipping',
-    sub: 'Each card is a living project — real code, real problems, latest build open for inspection.',
+    sub: 'Behind each card is a project that’s actually running. Code in production, concrete problems, and a build you can go test right now.',
     seeAll: 'See all projects →',
     galleryCard: {
       eyebrow: 'want to see everything?',
@@ -1258,7 +1263,8 @@ const EN: Copy = {
       voiceAttach: 'Attach voice note',
       sketchAttach: 'Attach sketch',
       sketchCancel: 'Cancel sketch',
-      sketchHint: 'Draw it — a box, an arrow, a label. The sketch attaches to your message.',
+      sketchHint:
+        'A quick scribble often says more than a paragraph. It attaches straight to your message.',
       voiceChip: 'Voice note',
       sketchChip: 'Sketch',
       processing: 'Adding…',
@@ -1354,7 +1360,7 @@ const EN: Copy = {
     title: 'About',
     body: "I've been a dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible — for both of us.",
     body2:
-      'Not an agency. Not a platform. A human who decides, with a bit of machine in the middle so we both keep our evenings and weekends.',
+      'It’s not an agency, and the portal isn’t some sprawling platform. It’s one person making the calls, with just enough machine in the middle to handle the logistics. That’s what keeps the evenings ours, yours and mine.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
   },
@@ -1390,7 +1396,7 @@ const EN: Copy = {
     },
     thread: {
       title: 'Engagement thread',
-      body: 'No email, no meetings. All communication lives here, chronologically.',
+      body: 'All the communication holds here, in chronological order. Nobody has to dig through email or book a meeting to find out where things stand.',
       label: 'Chronological messages between Marc and the client',
       authors: { marc: 'Marc', client: 'Client', system: 'System' },
       types: {

@@ -3,6 +3,7 @@ import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { HeroShippedProject } from './HeroShippedProject'
 import { useAuth } from '../lib/authContext'
+import { useLangSwitch } from '../lib/useLangSwitch'
 import { getCapacityLive, listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 
 // Greeting that swaps with the visitor's local clock. Late-night gets a
@@ -23,6 +24,11 @@ function pickSalut(lang: Lang): string {
 export function Hero({ lang }: { lang: Lang }) {
   const t = DICT[lang].hero
   const { email, isAdmin } = useAuth()
+  const { frHref, enHref, onLangSwitch } = useLangSwitch(lang)
+  // The bilingual line names the *other* language ("anglais" on FR,
+  // "French" on EN) — that word is a link straight to that version.
+  const otherLang: Lang = lang === 'fr' ? 'en' : 'fr'
+  const otherHref = lang === 'fr' ? enHref : frHref
   const langPrefix = lang === 'en' ? '/en' : ''
   const intakeHref = `${langPrefix}/intake`
   const sessionsHref = `${langPrefix}${isAdmin ? '/admin/inbox' : '/me'}`
@@ -176,7 +182,18 @@ export function Hero({ lang }: { lang: Lang }) {
           </p>
         )}
 
-        <div className="hero__bilingual mono">{t.bilingual}</div>
+        <div className="hero__bilingual mono">
+          {t.bilingual.pre}
+          <a
+            href={otherHref}
+            onClick={(e) => onLangSwitch(e, otherLang)}
+            className="hero__bilingual-link"
+            hrefLang={otherLang === 'en' ? 'en-CA' : 'fr-CA'}
+          >
+            {t.bilingual.link}
+          </a>
+          {t.bilingual.post}
+        </div>
 
         {/* Signed sign-off — italic serif text with a hand-drawn flourish
             that draws itself on first paint. Reduced-motion users see the
