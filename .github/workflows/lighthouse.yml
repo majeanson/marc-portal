@@ -50,13 +50,18 @@ jobs:
           # Give Cloudflare Pages a moment to point the production alias at
           # the just-finished deploy before measuring it.
           sleep 15
-          npx --yes lighthouse@12 https://marcportal.com/ \
-            --output=json --output-path=./lh-report.json --quiet \
-            --only-categories=performance,accessibility,best-practices,seo \
-            --chrome-flags="--headless --no-sandbox"
+          # Three runs — append-lighthouse.mjs records the median. Lighthouse's
+          # simulated throttling amplifies the runner's CPU speed ~4x, so a
+          # single run swings wildly between deploys; the median is stable.
+          for i in 1 2 3; do
+            npx --yes lighthouse@12 https://marcportal.com/ \
+              --output=json --output-path=./lh-report-$i.json --quiet \
+              --only-categories=performance,accessibility,best-practices,seo \
+              --chrome-flags="--headless --no-sandbox"
+          done
 
-      - name: Append the run to the history
-        run: node scripts/append-lighthouse.mjs ./lh-report.json
+      - name: Append the median to the history
+        run: node scripts/append-lighthouse.mjs ./lh-report-1.json ./lh-report-2.json ./lh-report-3.json
 
       - name: Commit the history back
         run: |
