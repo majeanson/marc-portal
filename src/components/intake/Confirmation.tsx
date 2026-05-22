@@ -6,6 +6,7 @@ import type { ProblemType } from '../../lib/intakeSchemas'
 import type { FormData } from './TypeForm'
 import type { SessionStatus } from '../../lib/sessionsApi'
 import { IntakeSummary } from './IntakeSummary'
+import { ProposalSheet } from './ProposalSheet'
 import { SessionStatusStrip } from './SessionStatusStrip'
 import { SectionEyebrow } from '../SectionEyebrow'
 
@@ -182,9 +183,26 @@ export function Confirmation({
         />
       </section>
 
+      {/* Save the intake as a one-page brief. The button triggers the print
+          dialog; ProposalSheet (hidden on screen) is what actually prints —
+          see the @media print rules in styles.css. */}
+      <div className="confirmation__brief">
+        <button type="button" className="link-btn mono" onClick={() => window.print()}>
+          {lang === 'fr' ? '↓ Sauver le dossier en PDF' : '↓ Save the brief as PDF'}
+        </button>
+      </div>
+
       <button type="button" className="link-btn mono" onClick={onStartOver}>
         {t.startOver}
       </button>
+
+      <ProposalSheet
+        lang={lang}
+        account={account}
+        type={type}
+        values={values}
+        submittedAt={submittedAt}
+      />
     </div>
   )
 }

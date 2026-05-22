@@ -15586,3 +15586,108 @@ a.feature-dot:focus-visible {
   font-size: 0.95rem;
   color: currentColor;
 }
+
+/* ─── One-page proposal sheet ─────────────────────────────────────────────
+   The printable brief built from the intake. Hidden on screen; on print it
+   becomes the whole page and every other element is suppressed. Print
+   colours are hard-coded ink-on-paper so the dark theme can't bleed in. */
+.confirmation__brief {
+  margin: 18px 0 4px;
+}
+@media screen {
+  .proposal-sheet {
+    display: none;
+  }
+}
+@media print {
+  /* When a proposal sheet is on the page, print only it: hide everything,
+     re-show the sheet, lift it to the page origin. :has() scopes the
+     blackout to the confirmation page so every other page still prints
+     normally (a browser without :has() just prints the page as-is). */
+  body:has(.proposal-sheet) * {
+    visibility: hidden;
+  }
+  body:has(.proposal-sheet) .proposal-sheet,
+  body:has(.proposal-sheet) .proposal-sheet * {
+    visibility: visible;
+  }
+  .proposal-sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: #1f1d18;
+    background: #fff;
+    font-family: var(--sans);
+  }
+  @page {
+    margin: 1.6cm;
+  }
+  .proposal-sheet__mast {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 9px;
+    border-bottom: 2px solid #1f1d18;
+  }
+  .proposal-sheet__brand {
+    font-family: var(--display);
+    font-size: 17pt;
+    font-weight: 700;
+  }
+  .proposal-sheet__dot {
+    color: #3d6e4e;
+  }
+  .proposal-sheet__date {
+    font-size: 9pt;
+    color: #6b6557;
+  }
+  .proposal-sheet__title {
+    margin: 22px 0 2px;
+    font-family: var(--display);
+    font-size: 21pt;
+  }
+  .proposal-sheet__meta {
+    display: flex;
+    gap: 44px;
+    margin: 14px 0 16px;
+  }
+  .proposal-sheet__meta dt {
+    font-size: 7.5pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6b6557;
+  }
+  .proposal-sheet__meta dd {
+    margin: 3px 0 0;
+    font-size: 11pt;
+  }
+  .proposal-sheet__intro {
+    margin: 0 0 16px;
+    font-size: 10.5pt;
+    font-style: italic;
+    color: #3f3c34;
+  }
+  .proposal-sheet__qa {
+    padding: 8px 0;
+    border-bottom: 1px solid #d8d0bd;
+    break-inside: avoid;
+  }
+  .proposal-sheet__qa dt {
+    margin-bottom: 3px;
+    font-size: 9.5pt;
+    color: #6b6557;
+  }
+  .proposal-sheet__qa dd {
+    margin: 0;
+    font-size: 11pt;
+    white-space: pre-wrap;
+  }
+  .proposal-sheet__foot {
+    margin-top: 20px;
+    padding-top: 8px;
+    border-top: 1px solid #d8d0bd;
+    font-size: 8.5pt;
+    color: #6b6557;
+  }
+}
