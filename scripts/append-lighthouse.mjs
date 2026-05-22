@@ -23,7 +23,9 @@ const MAX_RUNS = 60
 
 const reportPaths = process.argv.slice(2)
 if (reportPaths.length === 0) {
-  console.error('append-lighthouse: usage: node append-lighthouse.mjs <report-1.json> [report-2.json ...]')
+  console.error(
+    'append-lighthouse: usage: node append-lighthouse.mjs <report-1.json> [report-2.json ...]',
+  )
   process.exit(1)
 }
 

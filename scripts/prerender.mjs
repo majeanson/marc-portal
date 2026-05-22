@@ -112,16 +112,13 @@ function inlineThemeBootstrap(html, js) {
  * sheet lands. Same for the scroll-direction header states.
  */
 async function applyCriticalCss(html) {
-  const withFonts = html.replace(
-    /<link\b[^>]*\bhref=["']\/fonts\/webfonts\.css["'][^>]*>/i,
-    () => {
-      try {
-        return `<style>${readFileSync(join(DIST, 'fonts', 'webfonts.css'), 'utf8')}</style>`
-      } catch {
-        return '' // fail-soft: drop the tag rather than ship a dangling ref
-      }
-    },
-  )
+  const withFonts = html.replace(/<link\b[^>]*\bhref=["']\/fonts\/webfonts\.css["'][^>]*>/i, () => {
+    try {
+      return `<style>${readFileSync(join(DIST, 'fonts', 'webfonts.css'), 'utf8')}</style>`
+    } catch {
+      return '' // fail-soft: drop the tag rather than ship a dangling ref
+    }
+  })
   const beasties = new Beasties({
     path: DIST,
     publicPath: '',
