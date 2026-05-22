@@ -12,6 +12,16 @@ name: e2e-snapshots
 on:
   workflow_dispatch:
 
+# Two overlapping runs both regenerate the SAME baseline PNGs, so the later
+# one's `git pull --rebase` hits an unresolvable binary conflict on every
+# screenshot. Queue runs instead of cancelling — a cancelled run can still
+# have pushed its commit before the cancel landed, which is what caused that
+# conflict. Queued, the second run checks out the first's result and finds
+# nothing to regenerate.
+concurrency:
+  group: e2e-snapshots
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: windows-latest
@@ -55,7 +65,9 @@ jobs:
             # to this same branch after every deploy. If one of those landed
             # while this run was busy regenerating baselines, a bare push is
             # rejected as non-fast-forward. Rebase our commit onto the remote
-            # tip first — the two touch disjoint files, so it never conflicts.
+            # tip first — lighthouse touches a disjoint file, so it never
+            # conflicts. (Two e2e-snapshots runs WOULD collide on the baseline
+            # PNGs — the `concurrency` group above prevents that overlap.)
             git pull --rebase --autostash origin ${{ github.ref_name }}
             git push origin HEAD:${{ github.ref_name }}
           fi
