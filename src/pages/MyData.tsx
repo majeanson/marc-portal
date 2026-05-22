@@ -176,19 +176,27 @@ export function MyData({ lang }: { lang: Lang }) {
   if (loading) return shell(<p className="mydata__pending mono">{t.loading}</p>)
 
   if (!email) {
-    return shell(
+    // Signed-out /me/data: same centred card as /login and signed-out /me,
+    // so the access-request flow stays visually one piece.
+    return (
       <>
-        <SectionEyebrow lang={lang} feature={undefined}>
-          {t.eyebrow}
-        </SectionEyebrow>
-        <h1>{t.title}</h1>
-        <p className="privacy__intro">{t.notLoggedIn}</p>
-        <p>
-          <a href={`${langPrefix}/login`} className="hero__cta">
-            {t.signIn}
-          </a>
-        </p>
-      </>,
+        <Header lang={lang} />
+        <main className="page">
+          <section className="page__panel">
+            <SectionEyebrow lang={lang} feature={undefined}>
+              {t.eyebrow}
+            </SectionEyebrow>
+            <h1>{t.title}</h1>
+            <p>{t.notLoggedIn}</p>
+            <p>
+              <a href={`${langPrefix}/login`} className="hero__cta">
+                {t.signIn}
+              </a>
+            </p>
+          </section>
+        </main>
+        <Footer lang={lang} />
+      </>
     )
   }
 

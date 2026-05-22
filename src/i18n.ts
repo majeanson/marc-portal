@@ -815,7 +815,9 @@ const FR = {
             actor: 'me',
             duration: 'async',
             where: 'fil de session',
-            title: 'Je réponds : oui, non, ou « raconte-moi plus »',
+            // Non-break spaces (U+00A0) before ":" and inside the guillemets,
+            // so the punctuation can't strand alone when the heading wraps.
+            title: 'Je réponds : oui, non, ou « raconte-moi plus »',
             body: 'Si oui : devis ferme écrit dans ton portail. Si non : je te redirige vers un patron Niveau 0 gratuit, ou un dev qui matche mieux. Si entre les deux : je pose mes questions.',
           },
         ],
@@ -913,7 +915,9 @@ const FR = {
     submitCta: 'Écrire un témoignage →',
     submit: {
       pageTitle: 'Écrire un témoignage',
-      heading: 'Tu as déjà travaillé avec moi ? Dis-le en quelques phrases.',
+      // Non-break space (U+00A0) before the "?" (French typography), so
+      // the "?" never wraps alone onto the next line.
+      heading: 'Tu as déjà travaillé avec moi ? Dis-le en quelques phrases.',
       lead: 'Court, honnête, à ta voix. Je relis avant que ça paraisse — coquilles, longueur, ton. Ton courriel reste en privé : c’est seulement pour pouvoir te recontacter si je dois ajuster un mot.',
       forProjectPrefix: 'Tu témoignes à propos du projet ',
       forProjectLink: 'ouvrir le projet',

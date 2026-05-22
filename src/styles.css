@@ -236,6 +236,13 @@ p {
   display: flex;
   flex-direction: column;
 }
+/* Short pages (signed-out /me, /me/data, the brief loading states) would
+   otherwise leave the footer floating mid-viewport with dead cream space
+   beneath it. Letting <main> grow pins the footer to the bottom edge so a
+   sparse page still reads as finished, not cut off. */
+.app > main {
+  flex: 1 0 auto;
+}
 
 .section {
   padding: 72px var(--gutter);
@@ -1653,7 +1660,12 @@ button.intake__progress-step:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  /* Centre the panel in the available height. The container only ever has
+     a min-height (never a fixed/max), so it grows to fit a tall panel — a
+     long form never gets clipped above the scroll origin. Centring only
+     bites when the panel is SHORT (login, signed-out /me), which is exactly
+     the case that otherwise stranded a small card at the top over a void. */
+  justify-content: center;
   gap: 28px;
   padding: 56px var(--gutter) 64px;
   background: var(--bg);
@@ -1670,6 +1682,10 @@ button.intake__progress-step:focus-visible {
 .page__panel h1 {
   font-size: clamp(26px, 3.4vw, 32px);
   margin-bottom: 14px;
+  /* Override the global `h1 { text-wrap: balance }`. Chromium's balancer
+     ignores non-breaking spaces, so a French " ?" still stranded the "?"
+     on its own line. The standard wrap algorithm honours U+00A0. */
+  text-wrap: wrap;
 }
 .page__panel p {
   font-size: 17px;
@@ -1681,13 +1697,15 @@ button.intake__progress-step:focus-visible {
 .page__panel p:last-of-type {
   margin-bottom: 0;
 }
-.page__panel a {
+/* Plain prose links inside a panel. Excludes .hero__cta — a CTA anchor
+   keeps its button skin (no underline, no accent-warm override). */
+.page__panel a:not(.hero__cta) {
   color: var(--accent-warm);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.page__panel a:hover {
+.page__panel a:not(.hero__cta):hover {
   color: var(--accent);
 }
 
@@ -12028,6 +12046,9 @@ button.intake__progress-step:disabled {
   color: var(--text);
   letter-spacing: -0.01em;
   line-height: 1.25;
+  /* Standard wrap (not the global h3 `balance`) so the French no-break
+     spaces before ":" and inside « » hold — Chromium's balancer drops them. */
+  text-wrap: wrap;
 }
 .journey__step-body {
   margin: 0;

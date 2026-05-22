@@ -372,29 +372,28 @@ export function MePortal({ lang }: { lang: Lang }) {
   }
 
   if (!email) {
+    // Signed-out /me: a centred card, deliberately the same shell as the
+    // /login page it sends you to — so "Se connecter" lands somewhere that
+    // looks like where you just were, not a different site.
     return (
-      <div className="app" data-feature={PAGE_FEATURE['page.me-portal']}>
-        <Header lang={lang} variant="session" />
-        <main id="main-content">
-          <article className="section intake session-frame">
-            <div className="section__inner">
-              <div className="intake__step">
-                <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.me-portal']}>
-                  {t.eyebrow}
-                </SectionEyebrow>
-                <h1 className="session-frame__title">{t.title}</h1>
-                <p>{t.notLoggedIn}</p>
-                <p>
-                  <a href={`${langPrefix}/login`} className="hero__cta">
-                    {t.signIn}
-                  </a>
-                </p>
-              </div>
-            </div>
-          </article>
+      <>
+        <Header lang={lang} />
+        <main className="page" data-feature={PAGE_FEATURE['page.me-portal']}>
+          <section className="page__panel">
+            <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.me-portal']}>
+              {t.eyebrow}
+            </SectionEyebrow>
+            <h1>{t.title}</h1>
+            <p>{t.notLoggedIn}</p>
+            <p>
+              <a href={`${langPrefix}/login`} className="hero__cta">
+                {t.signIn}
+              </a>
+            </p>
+          </section>
         </main>
         <Footer lang={lang} />
-      </div>
+      </>
     )
   }
 

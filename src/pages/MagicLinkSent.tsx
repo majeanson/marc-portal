@@ -8,8 +8,13 @@ import { PAGE_FEATURE } from '../lib/features'
 const COPY = {
   fr: {
     title: 'Vérifie ton courriel',
+    // Guard the empty case: a direct hit or reload of /login/sent loses the
+    // ?email param, and "On a envoyé un lien à ." reads as broken. Fall back
+    // to a generic phrasing that still makes sense.
     intro: (e: string) =>
-      `On a envoyé un lien à ${e}. Ouvre-le pour te connecter — il expire dans 30 minutes.`,
+      e
+        ? `On a envoyé un lien à ${e}. Ouvre-le pour te connecter — il expire dans 30 minutes.`
+        : 'On a envoyé ton lien de connexion par courriel. Ouvre-le pour te connecter — il expire dans 30 minutes.',
     reassure: 'Tu peux en redemander un à tout moment, c’est gratuit et instantané.',
     fallback: 'Pas reçu ? Vérifie tes pourriels, ou recommence avec un autre courriel.',
     again: 'Renvoyer un lien',
@@ -17,7 +22,9 @@ const COPY = {
   en: {
     title: 'Check your email',
     intro: (e: string) =>
-      `A sign-in link was sent to ${e}. Open it to sign in — it expires in 30 minutes.`,
+      e
+        ? `A sign-in link was sent to ${e}. Open it to sign in — it expires in 30 minutes.`
+        : 'Your sign-in link is on its way by email. Open it to sign in — it expires in 30 minutes.',
     reassure: 'You can request a new one anytime, free and instant.',
     fallback: "Didn't get it? Check your spam folder, or try again with a different email.",
     again: 'Send another link',
