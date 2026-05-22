@@ -66,15 +66,6 @@ export function Hero({ lang }: { lang: Lang }) {
 
   // Re-picked every render — cheap (single Date.getHours()) and lets the
   // greeting follow a language switch without an extra effect.
-  //
-  // The greeting reads the visitor's wall clock, so it differs between the
-  // prerender (snapshotted at build time, in CI's UTC) and the client's
-  // first render — a hydration mismatch, which without suppression makes
-  // React 18 discard the whole prerendered tree and client-render it,
-  // dragging LCP out. `suppressHydrationWarning` (applied on the <p> below)
-  // tells React this one text node is intentionally non-deterministic:
-  // keep the prerendered text, no mismatch, no tree regeneration. The
-  // greeting still corrects to the visitor's clock on the next render.
   const salut = pickSalut(lang)
 
   return (
@@ -140,9 +131,7 @@ export function Hero({ lang }: { lang: Lang }) {
       <div className="section__inner hero__inner">
         {/* Clock-aware greeting — opens the page like a real letter. Picked
             from the visitor's local clock, so late-night gets "Encore là?". */}
-        <p className="hero__salut" suppressHydrationWarning>
-          {salut}
-        </p>
+        <p className="hero__salut">{salut}</p>
         <h1 id="hero-title" className="hero__display">
           <span className="hero__display-line hero__display-line--pre">{t.display.pre}</span>
           <span className="hero__display-line hero__display-line--lead">{t.display.lead}</span>
