@@ -197,16 +197,58 @@ const FR = {
     title: 'Apporte-moi n’importe quoi',
     body: 'Je veux que toutes les idées arrivent dans ma boîte : petites, weird, à moitié formées, peu importe. Mon job, c’est de filtrer. Le tien, c’est juste de décrire ce qui te trotte dans la tête.',
     examplesTitle: 'Des idées que je prendrais sans hésiter',
-    examples: [
-      'Tes notes vocales du truck → un brouillon de facture qui t’attend le dimanche matin',
-      'Un site une-page pour les 30 ans de ton chum avec un mot de chaque ami',
-      'Un outil pour aider ta grand-mère à organiser ses recettes',
-      'Un compteur « jours sans… » (cigarette, jeu vidéo, peu importe)',
-      'Une page mémorial avec photos pour ton chat décédé',
-      'Un catalogue des blagues internes de ton groupe d’amis',
-      'Une calculatrice qui résout exactement UN problème dans ta job',
-      'Un tableau de bord pour la cuisine (météo, todo, anniversaires)',
-      'Une carte des bons cafés sur le bord de la 132',
+    scrollHint: 'glisse pour en voir plus →',
+    exampleGroups: [
+      {
+        label: 'Le quotidien',
+        items: [
+          'Tes notes vocales du truck → un brouillon de facture qui t’attend le dimanche matin',
+          'Un tableau de bord pour la cuisine : météo, soupers de la semaine, anniversaires',
+          'Une calculatrice qui résout exactement UN problème plate dans ta job',
+          'Un compteur « jours sans… » : cigarette, jeu vidéo, peu importe',
+          'Un suivi de tes plantes qui te texte quand vient le temps d’arroser',
+        ],
+      },
+      {
+        label: 'Pour quelqu’un que t’aimes',
+        items: [
+          'Un site une-page pour les 30 ans de ton chum, avec un mot de chaque ami',
+          'Une page mémorial avec photos pour ton chat décédé',
+          'Un outil pour aider ta grand-mère à organiser ses recettes',
+          'Un livre de recettes de famille que tout le monde peut remplir',
+          'Une chasse au trésor numérique pour la fête d’un enfant',
+        ],
+      },
+      {
+        label: 'Ta job, ta business',
+        items: [
+          'Un formulaire web qui rentre direct dans ton chiffrier, sans rien retaper',
+          'Un outil de gestion sur mesure pour ta petite équipe',
+          'Un système de réservation pour ton salon, sans frais de plateforme',
+          'Un générateur de soumissions qui sort un PDF propre en 30 secondes',
+          'Un tableau de quarts que l’équipe consulte sur son téléphone',
+        ],
+      },
+      {
+        label: 'Hardware & objets',
+        items: [
+          'Un Raspberry Pi qui affiche le prochain autobus sur un écran à l’entrée',
+          'Un capteur qui allume une lumière quand le sous-sol prend l’eau',
+          'Un bouton physique sur le bureau qui log tes heures d’un seul clic',
+          'Un cadre numérique qui affiche les nouvelles photos de la famille',
+          'Une sonnette qui t’envoie une photo au lieu de juste sonner',
+        ],
+      },
+      {
+        label: 'Bizarre & merveilleux',
+        items: [
+          'Un catalogue des blagues internes de ta gang d’amis',
+          'Une carte des bons cafés sur le bord de la 132',
+          'Un générateur de noms pour le band qui n’existe pas encore',
+          'Un site qui tranche les chicanes du chalet : à qui la vaisselle ?',
+          'Un oracle magique pour les décisions plates de ta journée',
+        ],
+      },
     ],
     reassure:
       'Si c’est trop petit pour mes prix, je te montre comment le faire toi-même (Niveau 0, gratuit). Trop gros ou entre les deux, on en parle et je triage. Dans tous les cas, je veux le voir avant de décider.',
@@ -221,13 +263,16 @@ const FR = {
     disclaimer:
       'Les prix sont fixes avant qu’on commence. Pas de surprise après : si je dépasse, c’est mon problème. Taxes en sus si applicable.',
     custodianNote:
-      'Mode dépositaire : après la livraison, je garde le site en ligne et à jour. Deux forfaits annuels : Watch (120 $/an) ou Care (400 $/an, avec 2 h/an de retouches). Les changements plus gros se facturent à 75 $/h. Tu peux choisir « Tout à toi » à la place si tu préfères gérer toi-même.',
+      'Après la livraison, je peux garder ton site en ligne et à jour, ou te transférer les comptes pour que tu gères toi-même.',
     custodianNoteHeading: 'Et après la livraison ?',
     custodianNoteCta: 'Comment ça finit →',
     rescueNoteHeading: 'Tu as déjà quelque chose ?',
     rescueNote:
-      'Une app générée par une IA qui plante, un site laissé en plan, un vieux code que personne ne veut toucher. Je commence par regarder ce qu’il a (rapport de cadrage, 250 $, crédité sur la réparation), puis je le répare ou je le refais à neuf. Le prix de la réparation, je te le donne après, une fois que je sais à quoi j’ai affaire.',
+      'Une app générée par une IA qui plante, un site laissé en plan, du vieux code que personne ne veut toucher. Je regarde ce qu’il a, puis je le répare ou je le refais à neuf.',
     rescueNoteCta: 'Décrire ce que tu as →',
+    hardwareNoteHeading: 'Ça implique du hardware ?',
+    hardwareNote:
+      'Tout ce qui touche un objet physique (un capteur, un Raspberry Pi, un écran au mur) démarre au Niveau 3. Les pièces, le montage et les tests sur place vont au-delà d’un projet purement logiciel.',
     tiers: [
       {
         name: 'Niveau 0',
@@ -236,41 +281,43 @@ const FR = {
           'Ton problème est trop petit pour engager un dev. Je te redirige vers un patron (modèle prêt-à-utiliser) ou un template no-code.',
         example:
           'Ex. la rotation de pelletage du voisinage, ou le RSVP d’un party : un patron, et tu pars avec.',
-        after: 'auto-service',
+        after: 'aucun paiement',
       },
       {
         name: 'Niveau 1',
         price: '750 $',
         scope:
-          'Un truc qui marche, hébergé et mis en ligne. Pas une démo que tu dois garder en vie toi-même. Un livrable précis : un formulaire, un script, une automatisation, une page. Sans compte, sans multi-utilisateur.',
+          'Un truc qui marche, hébergé et mis en ligne. Pas une démo que tu dois garder en vie toi-même. Un livrable précis : un formulaire, un script, une automatisation, une page. Sans compte, sans multi-utilisateur. Payé en un seul versement de 750 $ au démarrage.',
         example: 'Ex. un formulaire web qui rentre direct dans ton chiffrier, sans rien retaper.',
-        after: 'payé en plein',
+        after: 'un seul paiement',
       },
       {
         name: 'Niveau 2',
         price: '1 800 $',
         scope:
-          'Un petit outil. Quelques écrans, des données, peut-être une connexion. Payé en deux temps : 900 $ au démarrage, 900 $ à la livraison.',
+          'Un petit outil. Quelques écrans, des données, peut-être une connexion. Payé en deux versements égaux : 900 $ au démarrage, 900 $ à la livraison.',
         example:
           'Ex. tes notes vocales du truck transformées en brouillon de facture le dimanche matin.',
-        after: '50 / 50',
+        after: '2 paiements de 900 $',
+        anchor: true,
       },
       {
         name: 'Niveau 3',
         price: '3 600 $',
         scope:
-          'Un outil qui dure. Vrai modèle de données, une connexion, plusieurs utilisateurs. Payé en versements (50/50 ou 40/40/20).',
-        example: 'Ex. un outil de gestion sur mesure pour ta petite équipe.',
-        after: 'en versements',
-        anchor: true,
+          'Un outil qui dure. Vrai modèle de données, une connexion, plusieurs utilisateurs. Payé en 2 ou 3 versements, fixés avant qu’on commence : soit 1 800 $ + 1 800 $, soit trois versements plus petits étalés sur le projet.',
+        example:
+          'Ex. un outil de réservation et de suivi clients pour ton studio : trois employés se connectent, chacun voit sa journée.',
+        after: '2 ou 3 paiements',
       },
       {
         name: 'Niveau 4',
         price: 'à partir de 7 500 $',
         scope:
-          'Une plateforme. Plus gros, multi-rôles. Sur devis après triage (l’étape où je lis et je décide).',
-        example: 'Ex. une plateforme pour une coopérative, ou un outil pour toute une équipe.',
-        after: 'devis post-triage',
+          'Une plateforme. Plus gros, multi-rôles. Sur devis après triage (l’étape où je lis et je décide). L’échéancier de paiement fait partie du devis.',
+        example:
+          'Ex. un portail de membres pour une coop : rôles, paiements, calendrier partagé, tout au même endroit.',
+        after: 'sur devis',
       },
     ],
   },
@@ -451,7 +498,7 @@ const FR = {
     contact: {
       pre: 'Contact : ',
       link: 'démarre une session',
-      post: ' et on en parle là. Au-delà de ça, je ne suis pas joignable.',
+      post: ' et on en parle là.',
     },
     legal: 'Hébergé au Canada · Loi 25 · OQLF',
     copyright: '© Marc 2026',
@@ -1164,16 +1211,58 @@ const EN: Copy = {
     title: 'Bring me anything',
     body: "I want every idea to land in my inbox: small, weird, half-formed, doesn't matter. My job is to filter. Yours is just to describe whatever's been rattling around in your head.",
     examplesTitle: "Ideas I'd happily take",
-    examples: [
-      'Your truck voice-notes → a draft invoice waiting for you Sunday morning',
-      "A one-page site for your partner's 30th birthday with a note from each friend",
-      'A tool to help your grandma organize her recipes',
-      'A "days without…" counter (cigarettes, video games, whatever)',
-      'A memorial page with photos for your cat who passed',
-      'A catalog of the inside jokes in your friend group',
-      'A calculator that solves exactly ONE problem in your job',
-      'A kitchen dashboard (weather, todo, birthdays)',
-      'An interactive map of good coffee shops along Route 132',
+    scrollHint: 'drag to see more →',
+    exampleGroups: [
+      {
+        label: 'Everyday life',
+        items: [
+          'Your truck voice-notes → a draft invoice waiting for you Sunday morning',
+          'A kitchen dashboard: weather, the week’s dinners, birthdays',
+          'A calculator that solves exactly ONE annoying problem in your job',
+          'A "days without…" counter: cigarettes, video games, whatever',
+          'A plant tracker that texts you when something needs watering',
+        ],
+      },
+      {
+        label: 'For someone you love',
+        items: [
+          "A one-page site for your partner's 30th, with a note from each friend",
+          'A memorial page with photos for your cat who passed',
+          'A tool to help your grandma organize her recipes',
+          'A family cookbook everyone in the family can add to',
+          "A digital scavenger hunt for a kid's birthday",
+        ],
+      },
+      {
+        label: 'Your work, your business',
+        items: [
+          'A web form that drops straight into your spreadsheet, no retyping',
+          'A tailored management tool for your small team',
+          'A booking system for your salon, with no platform fees',
+          'A quote generator that spits out a clean PDF in 30 seconds',
+          'A shift board the whole team can check from their phone',
+        ],
+      },
+      {
+        label: 'Hardware & physical things',
+        items: [
+          'A Raspberry Pi showing the next bus on a screen by the door',
+          'A sensor that flips a light on when the basement takes on water',
+          'A physical desk button that logs your hours with one press',
+          "A digital frame that shows the family's newest photos",
+          'A doorbell that sends you a photo instead of just ringing',
+        ],
+      },
+      {
+        label: 'Weird & wonderful',
+        items: [
+          "A catalog of your friend group's inside jokes",
+          'A map of the good coffee shops along Route 132',
+          "A name generator for the band that doesn't exist yet",
+          'A site that settles cottage arguments: whose turn for dishes?',
+          'A magic oracle for the dumb little decisions of your day',
+        ],
+      },
     ],
     reassure:
       "If it's too small for my pricing, I'll show you how to do it yourself (Tier 0, free). Too big or somewhere in between, we talk it through and I triage. Either way, I want to see it before I decide.",
@@ -1188,13 +1277,16 @@ const EN: Copy = {
     disclaimer:
       'Prices are fixed before we start. No surprise after: if I run over, that’s on me. Taxes extra where applicable.',
     custodianNote:
-      'Custodian mode: after delivery, I keep the site online and up to date. Two annual plans: Watch ($120/yr) or Care ($400/yr, with 2h/yr of tweaks). Bigger changes are billed at $75/hr. You can opt for "All yours" instead if you’d rather manage it yourself.',
+      'After delivery, I can keep the site online and up to date, or hand the accounts over so you manage it yourself.',
     custodianNoteHeading: 'After delivery, then what?',
     custodianNoteCta: 'How it ends →',
     rescueNoteHeading: 'Already have something?',
     rescueNote:
-      "An AI-generated app that keeps crashing, a site left half-done, old code nobody wants to touch. I start by looking at what's wrong (scoping report, $250, credited to the repair), then fix it or bring it up to date. The price for the repair I give you after, once I know what I'm dealing with.",
+      'An AI-generated app that keeps crashing, a site left half-done, old code nobody wants to touch. I look at what’s wrong, then fix it or bring it up to date.',
     rescueNoteCta: 'Describe what you have →',
+    hardwareNoteHeading: 'Bringing hardware into it?',
+    hardwareNote:
+      'Anything involving a physical device (a sensor, a Raspberry Pi, a screen on the wall) starts at Tier 3. The parts, the wiring and the on-site testing put it past a pure-software job.',
     tiers: [
       {
         name: 'Tier 0',
@@ -1203,40 +1295,42 @@ const EN: Copy = {
           'Your problem is too small to hire a dev. I redirect you to a similar pattern (a ready-made recipe) or a no-code template.',
         example:
           'e.g. neighbourhood snow-shovel rotation, or a party RSVP: pick a recipe, you’re done.',
-        after: 'self-service',
+        after: 'no payment',
       },
       {
         name: 'Tier 1',
         price: '$750',
         scope:
-          'A working thing, hosted and handed over running. Not a demo you have to keep alive yourself. One clear deliverable: a form, a script, an automation, a one-pager. No login, no multi-user.',
+          'A working thing, hosted and handed over running. Not a demo you have to keep alive yourself. One clear deliverable: a form, a script, an automation, a one-pager. No login, no multi-user. Paid as a single $750 payment at the start.',
         example: 'e.g. a web form that drops straight into your spreadsheet, no retyping.',
-        after: 'paid in full',
+        after: 'one payment',
       },
       {
         name: 'Tier 2',
         price: '$1,800',
         scope:
-          'A small tool. A few screens, some data, maybe one login. Paid in two halves: $900 to start, $900 at delivery.',
+          'A small tool. A few screens, some data, maybe one login. Paid in two equal payments: $900 to start, $900 at delivery.',
         example: 'e.g. your truck voice-notes turned into a Sunday-morning draft invoice.',
-        after: '50 / 50',
+        after: '2 payments of $900',
+        anchor: true,
       },
       {
         name: 'Tier 3',
         price: '$3,600',
         scope:
-          'A tool that lasts. A real data model, a login, multiple users. Paid in installments (50/50 or 40/40/20).',
-        example: 'e.g. a tailored management tool for your small team.',
-        after: 'in installments',
-        anchor: true,
+          'A tool that lasts. A real data model, a login, multiple users. Paid in 2 or 3 payments, fixed before we start: either $1,800 + $1,800, or three smaller payments spread across the build.',
+        example:
+          'e.g. a booking and client-tracking tool for your studio: three staff log in, each sees their own day.',
+        after: '2 or 3 payments',
       },
       {
         name: 'Tier 4',
         price: 'from $7,500',
         scope:
-          'A platform. Bigger, multi-role. Custom-quoted after triage (the step where I read it and decide).',
-        example: 'e.g. a platform for a co-op, or a tool for a whole team.',
-        after: 'post-triage quote',
+          'A platform. Bigger, multi-role. Custom-quoted after triage (the step where I read it and decide). The payment schedule is part of the quote.',
+        example:
+          'e.g. a member portal for a co-op: roles, payments, a shared calendar, all in one place.',
+        after: 'quoted',
       },
     ],
   },
@@ -1414,7 +1508,7 @@ const EN: Copy = {
     contact: {
       pre: 'Contact: ',
       link: 'start a session',
-      post: ' and we’ll talk it through there. Beyond that, I’m not reachable.',
+      post: ' and we’ll talk it through there.',
     },
     legal: 'Hosted in Canada · Bill 25 · OQLF',
     copyright: '© Marc 2026',

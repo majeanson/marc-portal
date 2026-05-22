@@ -7,7 +7,7 @@ import { loadDraft, saveDraft } from '../lib/draft'
 import { SectionEyebrow } from './SectionEyebrow'
 import { PAGE_FEATURE } from '../lib/features'
 
-const TYPES: ProblemType[] = ['paperasse', 'suivi', 'coordination', 'autre']
+const TYPES: ProblemType[] = ['paperasse', 'suivi', 'coordination', 'autre', 'rescue']
 
 /**
  * Soft on-ramp surfaced on the home page. Visitor picks a project type and

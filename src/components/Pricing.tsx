@@ -73,6 +73,16 @@ export function Pricing({ lang }: { lang: Lang }) {
             )
           })}
         </ol>
+        {/* Hardware floor — a sizing rule, not a tier. Anything with a
+            physical device skips the software-only lower tiers, so this
+            sits first below the ladder where it qualifies a reader's tier
+            guess before the parallel-entry notes. No CTA: it's a rule. */}
+        <aside className="tier__hardware-note" aria-labelledby="tier-hardware-heading">
+          <h3 id="tier-hardware-heading" className="tier__hardware-heading mono">
+            {t.hardwareNoteHeading}
+          </h3>
+          <p className="tier__hardware-body">{t.hardwareNote}</p>
+        </aside>
         {/* Rescue — a parallel entry point, not a tier. The ladder above
             measures build size; a rescue is sized by its audit, so it sits
             below the ladder as its own note and links into the intake. */}

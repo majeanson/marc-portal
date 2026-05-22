@@ -850,8 +850,8 @@ const VISION: VisionBubble[] = [
     feature: 'pricing',
     label: bi('Tarification claire', 'Clear pricing'),
     sub: bi(
-      'Tier 0 gratuit pour jaser. Trois tiers fixes ensuite. Custodian optionnel.',
-      'Free Tier 0 chat. Three fixed tiers after that. Optional Custodian.',
+      'Tier 0 gratuit pour jaser. Trois forfaits fixes, un quatrième sur devis. Custodian optionnel.',
+      'Free Tier 0 chat. Three fixed tiers, a fourth by quote. Optional Custodian.',
     ),
     size: 'md',
     pos: { x: 64, y: 50 },

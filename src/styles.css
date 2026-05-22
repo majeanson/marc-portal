@@ -11617,6 +11617,39 @@ button.intake__progress-step:disabled {
   }
 }
 
+/* Hardware note — a tier-sizing rule below the ladder. Same left-bordered
+   card treatment as the rescue/custodian notes; carries no CTA. */
+.tier__hardware-note {
+  margin: 24px 0 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 18px 22px 16px;
+}
+.tier__hardware-heading {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.tier__hardware-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-mid);
+}
+@media (max-width: 640px) {
+  .tier__hardware-note {
+    padding: 16px 16px 14px;
+  }
+  .tier__hardware-body {
+    font-size: 13.5px;
+  }
+}
+
 /* About — ownership note paragraph above the outbound-links list. */
 .about__ownership-note {
   margin-top: 12px;
@@ -13158,15 +13191,75 @@ button.intake__progress-step:disabled {
 }
 
 .bring-anything__examples {
-  margin-top: 12px;
+  margin-top: 16px;
+}
+
+.bring-anything__examples-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.bring-anything__examples-tab {
+  display: inline-block;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 5px 11px;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  transform: rotate(-1.5deg);
+}
+
+.bring-anything__scroll-hint {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Horizontal scroll-snap row of theme cards. Padding + negative margin let
+   the cards bleed to the section edge; the next card peeks so the scroll
+   affordance reads without a visible scrollbar. */
+.bring-anything__scroller {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 4px 16px;
+  margin: 0 -4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.bring-anything__scroller:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+.bring-anything__scroller::-webkit-scrollbar {
+  height: 6px;
+}
+.bring-anything__scroller::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.bring-anything__note {
+  scroll-snap-align: start;
+  flex: 0 0 clamp(258px, 80vw, 318px);
   background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-left: 3px solid var(--accent);
   border-radius: var(--radius);
-  padding: 32px 32px 28px;
-  position: relative;
-  /* Faint horizontal rule pattern under the content reads as ruled-notepad
-     paper. Kept very low contrast — texture, not graph paper. */
+  padding: 20px 22px 22px;
+  /* Faint horizontal rule pattern reads as ruled-notepad paper. Kept very
+     low contrast — texture, not graph paper. */
   background-image: repeating-linear-gradient(
     to bottom,
     transparent 0,
@@ -13174,49 +13267,42 @@ button.intake__progress-step:disabled {
     var(--border-soft) 26px,
     var(--border-soft) 27px
   );
-  background-size: 100% auto;
-  background-position: 0 38px;
+  background-position: 0 45px;
   background-repeat: repeat-y;
 }
 
-.bring-anything__examples-tab {
-  position: absolute;
-  top: -12px;
-  left: 24px;
-  background: var(--bg);
-  border: 1px solid var(--border-soft);
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 10px;
-  letter-spacing: 0.14em;
+.bring-anything__note-label {
+  font-size: 11px;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--text-soft);
-  transform: rotate(-1.5deg);
-  z-index: 1;
+  color: var(--accent-warm);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px dotted var(--border);
 }
 
 .bring-anything__list {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
 }
 
 .bring-anything__item {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
-  font-size: 15.5px;
-  line-height: 1.55;
+  font-size: 15px;
+  line-height: 1.5;
   color: var(--text-mid);
 }
 
 .bring-anything__bullet {
   color: var(--accent-warm);
   flex-shrink: 0;
-  font-size: 22px;
+  font-size: 20px;
   line-height: 0.9;
   padding-top: 1px;
 }
@@ -13239,24 +13325,14 @@ button.intake__progress-step:disabled {
 }
 
 @media (max-width: 760px) {
-  .bring-anything__examples {
-    padding: 28px 22px 22px;
-  }
-  .bring-anything__list {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .bring-anything__item {
-    font-size: 15px;
-  }
-  .bring-anything__examples-tab {
-    left: 16px;
+  .bring-anything__note {
+    padding: 18px 18px 20px;
   }
 }
 
 /* Night-mode adjustments — ruled-paper texture reads wrong on dark ink,
    soften it dramatically. */
-:root[data-theme='night'] .bring-anything__examples {
+:root[data-theme='night'] .bring-anything__note {
   background-image: repeating-linear-gradient(
     to bottom,
     transparent 0,
@@ -13267,6 +13343,13 @@ button.intake__progress-step:disabled {
 }
 :root[data-theme='night'] .bring-anything__examples-tab {
   background: var(--bg-section);
+}
+
+/* Reduced-motion: snap is fine, but kill smooth scrolling assumptions. */
+@media (prefers-reduced-motion: reduce) {
+  .bring-anything__scroller {
+    scroll-behavior: auto;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
