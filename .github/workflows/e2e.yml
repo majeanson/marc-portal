@@ -6,13 +6,22 @@ name: e2e
 # Runs on windows-latest so Chromium's rasterisation matches the Windows
 # machine the baselines were generated on — a Linux runner would diff every
 # screenshot on font anti-aliasing.
+#
+# Cost note: windows-latest is billed at 2x the Linux rate and this run
+# takes ~30 min, so it does NOT trigger on every push to main — only on
+# pull_request (one run per PR) and manual dispatch. Direct pushes to main
+# skip the gate; open a PR or `gh workflow run e2e.yml` to exercise it.
 
 on:
-  push:
-    branches: [main, master]
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+
+# One e2e run per ref — a newer push cancels the older still-running e2e
+# instead of stacking a second 30-min Windows job alongside it.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   e2e:
