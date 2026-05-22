@@ -6,7 +6,8 @@
 
 import { api } from './api'
 
-export type PaymentKind = 'tier1' | 'tier2-deposit' | 'tier2-final' | 'tier3' | 'custodian-sub'
+export type PaymentKind = 'build' | 'scoping' | 'custodian'
+export type CustodianPlan = 'watch' | 'care'
 export type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'failed' | 'canceled'
 export type CustodianStatus = 'none' | 'active' | 'past_due' | 'canceled' | 'switched_to_tout_a_toi'
 
@@ -14,6 +15,13 @@ export interface PaymentRow {
   id: string
   session_id: string
   kind: PaymentKind
+  /** build only: 1-4. null for scoping / custodian. */
+  tier: number | null
+  /** build only: 1-based leg index and total legs. null otherwise. */
+  installment_index: number | null
+  installment_of: number | null
+  /** custodian only: 'watch' | 'care'. null otherwise. */
+  custodian_plan: string | null
   amount_cents: number
   currency: string
   status: PaymentStatus
@@ -26,21 +34,41 @@ export interface PaymentRow {
   paid_at: number | null
   refunded_at: number | null
   /** Cumulative refunded cents. 0 = nothing refunded. = amount_cents on full
-   * refund (status flips to 'refunded'). Between 0 and amount_cents = partial
-   * refund (status stays 'paid' but UI surfaces the partial amount). */
+   * refund (status flips to 'refunded'). Between = partial refund (status
+   * stays 'paid' but UI surfaces the partial amount). */
   refunded_amount_cents: number
 }
 
 export type StripeMode = 'test' | 'live' | 'unset'
 
+/** Installment summary for the session's build tier — entirely server-computed
+ *  (the client never derives an amount). */
+export interface BuildSummary {
+  tier: number
+  /** Total installment legs (0 while a Tier-4 quote is pending). */
+  installmentCount: number
+  paidCount: number
+  /** 1-based index of the next unpaid leg; null = fully paid OR quote pending. */
+  nextIndex: number | null
+  /** CAD-cent amount for the next leg — scoping credit already applied to
+   *  leg 1. null when nextIndex is null. */
+  nextAmountCents: number | null
+  /** Tier 4 only: classified but not yet quoted by admin. */
+  quotePending: boolean
+}
+
 export interface PaymentSummary {
   rows: PaymentRow[]
-  hasPaidDeposit: boolean
   custodianStatus: CustodianStatus
   /** Which Stripe environment the server is configured against. Visible in the
    * UI as a "TEST MODE" pill so visitors don't mistake sandbox charges for
    * real ones. 'unset' when STRIPE_SECRET_KEY isn't configured (Checkout 503s). */
   stripeMode: StripeMode
+  /** Installment plan + next leg. null when the session has no paid tier
+   *  (unclassified, or Tier 0). */
+  build: BuildSummary | null
+  /** Whether a $250 scoping report has been paid on this session. */
+  scoping: { paid: boolean }
 }
 
 export function getPaymentSummary(sessionId: string): Promise<PaymentSummary> {
@@ -53,14 +81,14 @@ interface CheckoutResponse {
 }
 
 /**
- * Mint a Checkout session for this session row and redirect the browser to
- * Stripe's hosted page. Returns the response so callers can choose to
- * window.location instead of returning; default is location.assign so the
- * back button takes the visitor back here.
+ * Mint a Checkout session and redirect the browser to Stripe's hosted page.
+ * For kind 'build' the server derives which installment is owed — the client
+ * sends only the kind. For 'custodian', custodianPlan picks Watch or Care.
  */
 export async function startCheckout(args: {
   sessionId: string
   kind: PaymentKind
+  custodianPlan?: CustodianPlan
   lang?: 'fr' | 'en'
   amountCadOverride?: number
 }): Promise<CheckoutResponse> {
@@ -72,8 +100,7 @@ export async function startCheckout(args: {
 
 /**
  * Open the Stripe Customer Portal for the visitor's custodian subscription.
- * Throws on 404 (no subscription on this session). Caller redirects to the
- * returned url.
+ * Throws on 404 (no subscription on this session). Caller redirects to the url.
  */
 export async function openCustomerPortal(args: {
   sessionId: string

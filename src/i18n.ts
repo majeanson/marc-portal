@@ -217,11 +217,11 @@ const FR = {
     eyebrow: 'prix publics',
     title: 'Combien ça coûte',
     body: 'Prix concrets, pas de devis caché. Chaque niveau renvoie à des projets réels du même calibre — tu vois ce que ça donne avant de soumettre.',
-    asOf: 'Prix publics, en vigueur depuis 2026-05-15.',
+    asOf: 'Prix publics, en vigueur depuis 2026-06-01.',
     disclaimer:
-      'Les prix sont fixes avant qu’on commence. Pas de surprise après — si je dépasse, c’est mon problème.',
+      'Les prix sont fixes avant qu’on commence. Pas de surprise après — si je dépasse, c’est mon problème. Taxes en sus si applicable.',
     custodianNote:
-      'Mode dépositaire (200 $/an) — applicable à tous les niveaux payants. Par défaut à la livraison, je m’occupe que ça reste en ligne et à jour (petites retouches incluses, jusqu’à 2 h/mois). Tu peux choisir « Tout à toi » à la place si tu préfères gérer toi-même.',
+      'Mode dépositaire — après la livraison, je garde le site en ligne et à jour. Deux forfaits annuels : Watch (120 $/an) ou Care (400 $/an, avec 2 h/an de retouches). Les changements plus gros se facturent à 75 $/h. Tu peux choisir « Tout à toi » à la place si tu préfères gérer toi-même.',
     custodianNoteHeading: 'Et après la livraison ?',
     custodianNoteCta: 'Comment ça finit →',
     tiers: [
@@ -236,29 +236,37 @@ const FR = {
       },
       {
         name: 'Niveau 1',
-        price: '≈ 300 $',
+        price: '750 $',
         scope:
-          'Petit projet simple. Petit script, portfolio, automatisation, formulaire qui marche.',
+          'Un truc qui marche, hébergé et livré fonctionnel — pas une démo que tu dois garder en vie toi-même. Un livrable précis : un formulaire, un script, une automatisation, une page. Sans compte, sans multi-utilisateur.',
         example:
           'Ex. un formulaire web qui rentre direct dans ton chiffrier — pas besoin de retaper.',
-        after: '0 retouches après livraison',
+        after: 'payé en plein',
       },
       {
         name: 'Niveau 2',
-        price: '≈ 1 500 $',
+        price: '1 800 $',
         scope:
-          'Projet de quelques semaines. Outil interne qui dure. Projets de communauté. Payé en deux temps : 750 $ au démarrage, 750 $ à la livraison.',
+          'Un petit outil. Quelques écrans, des données, peut-être une connexion. Payé en deux temps : 900 $ au démarrage, 900 $ à la livraison.',
         example:
           'Ex. tes notes vocales du truck transformées en brouillon de facture le dimanche matin.',
-        after: '1 ronde de retouches incluse',
-        anchor: true,
+        after: '50 / 50',
       },
       {
         name: 'Niveau 3',
-        price: '≈ 3 000 $+',
-        scope: 'Projet plus gros. Sur devis après triage (l’étape où je lis et je décide).',
-        example:
-          'Ex. un outil de gestion sur mesure pour ta petite équipe, ou une plateforme pour une coopérative.',
+        price: '3 600 $',
+        scope:
+          'Un outil qui dure. Vrai modèle de données, une connexion, plusieurs utilisateurs. Payé en versements (50/50 ou 40/40/20).',
+        example: 'Ex. un outil de gestion sur mesure pour ta petite équipe.',
+        after: 'en versements',
+        anchor: true,
+      },
+      {
+        name: 'Niveau 4',
+        price: 'à partir de 7 500 $',
+        scope:
+          'Une plateforme. Plus gros, multi-rôles. Sur devis après triage (l’étape où je lis et je décide).',
+        example: 'Ex. une plateforme pour une coopérative, ou un outil pour toute une équipe.',
         after: 'devis post-triage',
       },
     ],
@@ -392,11 +400,15 @@ const FR = {
     collapseAll: 'Tout fermer',
     // Stable slugs shared across FR + EN so /share/?#faq-price works in
     // either language. Order must match `items` below.
-    slugs: ['price', 'timeline', 'result', 'unclear', 'ownership', 'bring-own'] as const,
+    slugs: ['price', 'diy-ai', 'timeline', 'result', 'unclear', 'ownership', 'bring-own'] as const,
     items: [
       {
         q: 'Le prix annoncé, c’est vraiment ça?',
         a: 'Oui. Le Niveau 0 est à 0 $ et sert à se voir si on est compatibles. Les niveaux 1 à 3 ont un prix forfaitaire avant de commencer — on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise. Le reçu officiel vient de Stripe — c’est normal, c’est mon processeur de paiement.',
+      },
+      {
+        q: 'Je pourrais pas juste le faire moi-même avec un générateur d’app IA?',
+        a: 'Pour un problème de Niveau 0, probablement que oui, et je te pointe vers un outil ou un template gratuitement — c’est exactement à ça que sert le Niveau 0. Pour le reste, construire n’a jamais été la partie difficile. Un générateur IA a besoin que tu saches exactement quoi lui demander, et la plupart des gens ne le savent pas encore; trouver ça, c’est le triage. Il te sort une démo rapide, puis te laisse pris avec le login qui marche à moitié, les données qui disparaissent en silence, l’hébergement, le domaine. C’est toi qui debugges à 21 h sans personne à appeler. Ce que tu paies, c’est un prix fixe, un modèle de données qui tient à l’usage, et un nom responsable quand quelque chose brise des mois plus tard. Si ton idée est assez petite pour que rien de ça ne te dérange, prends le générateur — je te le dirai franchement.',
       },
       {
         q: 'Et si ça prend plus de temps que prévu?',
@@ -432,7 +444,11 @@ const FR = {
   },
 
   footer: {
-    contact: 'Contact : via le portail uniquement (pas de courriel, pas de téléphone).',
+    contact: {
+      pre: 'Contact : ',
+      link: 'démarre une session',
+      post: ' et on en parle là. Au-delà de ça, je ne suis pas joignable.',
+    },
     legal: 'Hébergé au Canada · Loi 25 · OQLF',
     copyright: '© Marc 2026',
   },
@@ -499,6 +515,11 @@ const FR = {
     metaDescription:
       "Formulaire d'intake (demande de projet) pour Marc. Async, à ton rythme. Sauvegarde automatique. Réponse en 72 h.",
     backHome: "← Retour à l'accueil",
+    mast: {
+      eyebrow: 'Demande de session',
+      title: 'Tu décris un problème',
+      lead: 'Ce n’est pas un formulaire de contact. Le remplir ouvre une vraie session de travail : un fil privé où on amène ton problème de l’idée brute à une réponse claire. Rien n’est envoyé tant que tu ne soumets pas, et chaque champ se sauvegarde tout seul.',
+    },
     draftPrompt: {
       title: 'Un brouillon est sauvegardé',
       body: 'Tu as commencé un intake sur cet appareil. Tu peux reprendre où tu étais ou repartir de zéro.',
@@ -556,9 +577,9 @@ const FR = {
       continue: 'Soumettre →',
       handoffMode: {
         label: 'Préférence de gestion (optionnel)',
-        hint: "À la livraison, qui détient les clés? Par défaut Marc s'en occupe (200 $/an) — c'est ce qui t'évite de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
+        hint: "À la livraison, qui détient les clés? Par défaut Marc s'en occupe (forfait annuel) — c'est ce qui t'évite de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
         learnMore: 'Voir comment ça finit →',
-        optionJe: "Je m'en occupe — Marc garde les clés (200 $/an, mode recommandé)",
+        optionJe: "Je m'en occupe — Marc garde les clés (forfait annuel, mode recommandé)",
         optionTout: 'Tout à toi — je gère DNS, Cloudflare, Resend moi-même',
         optionParle: 'On en parle plus tard',
       },
@@ -709,9 +730,10 @@ const FR = {
     tierHint: 'Calibre la session par rapport à la grille de prix publique.',
     tierOptionNone: 'Non classé',
     tierOption0: 'Niveau 0 · auto-service',
-    tierOption1: 'Niveau 1 · ≈ 300 $',
-    tierOption2: 'Niveau 2 · ≈ 1 500 $',
-    tierOption3: 'Niveau 3 · ≈ 3 000 $+',
+    tierOption1: 'Niveau 1 · 750 $',
+    tierOption2: 'Niveau 2 · 1 800 $',
+    tierOption3: 'Niveau 3 · 3 600 $',
+    tierOption4: 'Niveau 4 · sur devis',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
     saveError: 'Échec — réessaie.',
@@ -836,7 +858,7 @@ const FR = {
             duration: '1 min',
             where: 'Stripe',
             title: 'Tu paies le démarrage',
-            body: 'Niveau 1 : 300 $ en plein. Niveau 2 : 750 $ de dépôt (le solde à la livraison). Niveau 3 : selon devis. Reçu officiel automatique par Stripe.',
+            body: 'Niveau 1 : 750 $ en plein. Niveau 2 : 900 $ de dépôt (le solde à la livraison). Niveaux 3-4 : premier versement (Niveau 4 sur devis). Reçu officiel automatique par Stripe.',
           },
           {
             num: '07',
@@ -891,7 +913,7 @@ const FR = {
             duration: 'à toi de choisir',
             where: 'page Mon compte',
             title: 'Handoff ou mode Dépositaire',
-            body: 'Tu prends tout à ton nom (repo, domaine, comptes) OU tu me laisses garder les clés pour 200 $/an (petites retouches incluses, jusqu’à 2 h/mois). Annulable n’importe quand — bascule automatique vers « Tout à toi ».',
+            body: 'Tu prends tout à ton nom (repo, domaine, comptes) OU tu me laisses garder les clés — Watch (120 $/an) ou Care (400 $/an, avec 2 h/an de retouches). Annulable n’importe quand — bascule automatique vers « Tout à toi ».',
           },
         ],
       },
@@ -1158,11 +1180,11 @@ const EN: Copy = {
     eyebrow: 'public pricing',
     title: 'What it costs',
     body: 'Concrete prices, no hidden quotes. Each tier (price level) links to actual past projects of the same level — you see what it looks like before you submit.',
-    asOf: 'Public prices, effective 2026-05-15.',
+    asOf: 'Public prices, effective 2026-06-01.',
     disclaimer:
-      'Prices are fixed before we start. No surprise after — if I run over, that’s on me.',
+      'Prices are fixed before we start. No surprise after — if I run over, that’s on me. Taxes extra where applicable.',
     custodianNote:
-      'Custodian mode ($200/yr) — applies to every paid tier. By default at delivery, I make sure it stays online and up-to-date (small tweaks included, up to 2 h/mo). You can opt for "All yours" instead if you’d rather manage it yourself.',
+      'Custodian mode — after delivery, I keep the site online and up to date. Two annual plans: Watch ($120/yr) or Care ($400/yr, with 2h/yr of tweaks). Bigger changes are billed at $75/hr. You can opt for "All yours" instead if you’d rather manage it yourself.',
     custodianNoteHeading: 'After delivery, then what?',
     custodianNoteCta: 'How it ends →',
     tiers: [
@@ -1177,25 +1199,35 @@ const EN: Copy = {
       },
       {
         name: 'Tier 1',
-        price: '≈ $300',
-        scope: 'Small simple project. Small script, portfolio, automation, a form that works.',
+        price: '$750',
+        scope:
+          'A working thing, hosted and handed over running — not a demo you have to keep alive yourself. One clear deliverable: a form, a script, an automation, a one-pager. No login, no multi-user.',
         example: 'e.g. a web form that drops straight into your spreadsheet — no retyping.',
-        after: '0 post-ship tweaks',
+        after: 'paid in full',
       },
       {
         name: 'Tier 2',
-        price: '≈ $1500',
+        price: '$1,800',
         scope:
-          'A few-week project. An internal tool that lasts. Community projects. Paid in two halves: $750 to start, $750 at delivery.',
+          'A small tool. A few screens, some data, maybe one login. Paid in two halves: $900 to start, $900 at delivery.',
         example: 'e.g. your truck voice-notes turned into a Sunday-morning draft invoice.',
-        after: '1 round of tweaks included',
-        anchor: true,
+        after: '50 / 50',
       },
       {
         name: 'Tier 3',
-        price: '≈ $3000+',
-        scope: 'Bigger project. Custom-quoted after triage (the step where I read it and decide).',
-        example: 'e.g. a tailored management tool for your small team, or a platform for a co-op.',
+        price: '$3,600',
+        scope:
+          'A tool that lasts. A real data model, a login, multiple users. Paid in installments (50/50 or 40/40/20).',
+        example: 'e.g. a tailored management tool for your small team.',
+        after: 'in installments',
+        anchor: true,
+      },
+      {
+        name: 'Tier 4',
+        price: 'from $7,500',
+        scope:
+          'A platform. Bigger, multi-role. Custom-quoted after triage (the step where I read it and decide).',
+        example: 'e.g. a platform for a co-op, or a tool for a whole team.',
         after: 'post-triage quote',
       },
     ],
@@ -1326,11 +1358,15 @@ const EN: Copy = {
     collapseAll: 'Collapse all',
     // Stable slugs shared with FR so /#faq-price works in either language.
     // Order must match `items` below.
-    slugs: ['price', 'timeline', 'result', 'unclear', 'ownership', 'bring-own'] as const,
+    slugs: ['price', 'diy-ai', 'timeline', 'result', 'unclear', 'ownership', 'bring-own'] as const,
     items: [
       {
         q: 'Is the price really that price?',
         a: "Yes. Tier 0 is $0 and exists so we can see if we're a fit. Tiers 1–3 are fixed-price quoted before we start — I won't go past the quote without a conversation first. No surprise invoice. The official receipt comes from Stripe — that's normal, it's my payment processor.",
+      },
+      {
+        q: "Couldn't I just build this myself with an AI app builder?",
+        a: "For a Tier 0 problem, you probably can, and I'll point you to a builder or a template for free — that's what Tier 0 is for. For anything bigger, the building was never the hard part. An AI builder needs you to know exactly what to ask it, and most people don't yet; working that out is the triage. It gets you a quick demo, then leaves you stuck on the login that half-works, the data that quietly goes missing, the hosting, the domain. You'd be the one debugging at 9pm with nobody to call. What you pay me for is a fixed price, a data model that survives real use, and a name that's accountable when something breaks months later. If your idea is small enough that none of that bites, use the builder — I'll tell you so honestly.",
       },
       {
         q: 'What if it takes longer than expected?',
@@ -1366,7 +1402,11 @@ const EN: Copy = {
   },
 
   footer: {
-    contact: 'Contact: through the portal only (no email, no phone).',
+    contact: {
+      pre: 'Contact: ',
+      link: 'start a session',
+      post: ' and we’ll talk it through there. Beyond that, I’m not reachable.',
+    },
     legal: 'Hosted in Canada · Bill 25 · OQLF',
     copyright: '© Marc 2026',
   },
@@ -1433,6 +1473,11 @@ const EN: Copy = {
     metaDescription:
       "Intake (project request) form for Marc's side-practice. Async, at your pace. Auto-save. Reply within 72h.",
     backHome: '← Back home',
+    mast: {
+      eyebrow: 'Session intake',
+      title: 'You’re describing a problem',
+      lead: 'This isn’t a contact form. Filling it out opens a working session: a private thread where we take your problem from rough idea to a clear answer. Nothing sends until you submit, and every field autosaves as you type.',
+    },
     draftPrompt: {
       title: 'A draft is saved',
       body: 'You started an intake on this device. Pick up where you left off, or start over.',
@@ -1490,9 +1535,9 @@ const EN: Copy = {
       continue: 'Submit →',
       handoffMode: {
         label: 'Management preference (optional)',
-        hint: "At delivery, who holds the keys? By default Marc handles it ($200/yr) — that's what saves you from managing DNS, Cloudflare, Resend yourself. Can change later; 'All yours' requires an explicit confirmation at delivery.",
+        hint: "At delivery, who holds the keys? By default Marc handles it (annual plan) — that's what saves you from managing DNS, Cloudflare, Resend yourself. Can change later; 'All yours' requires an explicit confirmation at delivery.",
         learnMore: 'See how it ends →',
-        optionJe: 'I handle it — Marc keeps the keys ($200/yr, recommended)',
+        optionJe: 'I handle it — Marc keeps the keys (annual plan, recommended)',
         optionTout: 'All yours — I manage DNS, Cloudflare, Resend myself',
         optionParle: "Let's talk later",
       },
@@ -1641,9 +1686,10 @@ const EN: Copy = {
     tierHint: 'Position the session against the public pricing tiers.',
     tierOptionNone: 'Unclassified',
     tierOption0: 'Tier 0 · self-service',
-    tierOption1: 'Tier 1 · ≈ $300',
-    tierOption2: 'Tier 2 · ≈ $1500',
-    tierOption3: 'Tier 3 · ≈ $3000+',
+    tierOption1: 'Tier 1 · $750',
+    tierOption2: 'Tier 2 · $1800',
+    tierOption3: 'Tier 3 · $3600',
+    tierOption4: 'Tier 4 · quoted',
     save: 'Save',
     saving: 'Saving…',
     saveError: 'Failed — try again.',
@@ -1765,7 +1811,7 @@ const EN: Copy = {
             duration: '1 min',
             where: 'Stripe',
             title: 'You pay to start',
-            body: 'Tier 1: $300 in full. Tier 2: $750 deposit (balance at delivery). Tier 3: per quote. Official receipt auto-issued by Stripe.',
+            body: 'Tier 1: $750 in full. Tier 2: $900 deposit (balance at delivery). Tiers 3-4: first installment (Tier 4 quoted). Official receipt auto-issued by Stripe.',
           },
           {
             num: '07',
@@ -1804,7 +1850,7 @@ const EN: Copy = {
             duration: '1 min',
             where: 'Stripe',
             title: 'You pay the balance',
-            body: 'Tier 2: the remaining $750. Tier 3: the quote balance. Official Stripe receipt — the one that shows up in your bookkeeping.',
+            body: 'Tier 2: the remaining $900. Tiers 3-4: the next installment. Official Stripe receipt — the one that shows up in your bookkeeping.',
           },
           {
             num: '11',
@@ -1820,7 +1866,7 @@ const EN: Copy = {
             duration: 'your call',
             where: 'My account page',
             title: 'Handoff or Custodian mode',
-            body: 'Take everything in your name (repo, domain, accounts) OR let me hold the keys for $200/year (small tweaks included, up to 2h/month). Cancel anytime — auto-flip to "All yours".',
+            body: 'Take everything in your name (repo, domain, accounts) OR let me hold the keys — Watch ($120/yr) or Care ($400/yr, with 2h/yr of tweaks). Cancel anytime — auto-flip to "All yours".',
           },
         ],
       },

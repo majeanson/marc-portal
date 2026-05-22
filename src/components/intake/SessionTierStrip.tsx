@@ -5,30 +5,32 @@ const COPY = {
   fr: {
     label: 'Tier de la session',
     t0: 'T0 · gratuit',
-    t1: 'T1 · 300 $',
-    t2: 'T2 · 1500 $',
-    t3: 'T3 · sur devis',
+    t1: 'T1 · 750 $',
+    t2: 'T2 · 1800 $',
+    t3: 'T3 · 3600 $',
+    t4: 'T4 · sur devis',
     clear: 'Aucun',
   },
   en: {
     label: 'Session tier',
     t0: 'T0 · free',
-    t1: 'T1 · $300',
-    t2: 'T2 · $1500',
-    t3: 'T3 · quoted',
+    t1: 'T1 · $750',
+    t2: 'T2 · $1800',
+    t3: 'T3 · $3600',
+    t4: 'T4 · quoted',
     clear: 'None',
   },
 } as const
 
-const TIERS: SessionTier[] = [0, 1, 2, 3]
+const TIERS: SessionTier[] = [0, 1, 2, 3, 4]
 
 /**
- * Admin-only tier picker. Renders four pills (T0/T1/T2/T3) + a "clear" pill.
+ * Admin-only tier picker. Renders five pills (T0-T4) + a "clear" pill.
  * Click sets the session's tier. Disabled on the current tier.
  *
  * Tier is the signal that pricing is locked: /me only surfaces a Pay button
- * once the admin sets tier 1/2/3 (tier 0 = free / discovery, no button). See
- * PaymentActions in src/pages/MePortal.tsx for the consumer logic.
+ * once the admin sets tier 1-4 (tier 0 = free / discovery, no button). See
+ * PaymentActions for the consumer logic.
  */
 export function SessionTierStrip({
   lang,
@@ -46,7 +48,7 @@ export function SessionTierStrip({
       {TIERS.map((n) => {
         const isCurrent = tier === n
         const stepClass = `intake__progress-step${isCurrent ? ' intake__progress-step--done intake__progress-step--current' : ''}`
-        const label = t[`t${n}` as 't0' | 't1' | 't2' | 't3']
+        const label = t[`t${n}` as 't0' | 't1' | 't2' | 't3' | 't4']
         return (
           <li key={n} className="intake__progress-item">
             <button

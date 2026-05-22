@@ -24,7 +24,8 @@ interface SessionRowMock {
   showcase_title: string | null
   showcase_tagline: string | null
   tier?: number | null
-  tier3_amount_cents?: number | null
+  tier4_amount_cents?: number | null
+  tier3_split?: string | null
   custodian_status?: string | null
   custodian_subscription_id?: string | null
   all_yours_acknowledged_at?: number | null
@@ -34,6 +35,10 @@ interface PaymentRowMock {
   id: string
   session_id: string
   kind: string
+  tier?: number | null
+  installment_index?: number | null
+  installment_of?: number | null
+  custodian_plan?: string | null
   amount_cents: number
   currency: string
   status: string
@@ -397,6 +402,64 @@ class MockPreparedStatement {
       return p ? [{ paid_at: p.paid_at }] : []
     }
 
+    // SELECT 1 FROM payments WHERE session_id = ? AND kind = 'scoping'
+    //   AND status = 'paid' LIMIT 1  (checkout: one scoping report per session)
+    if (
+      sql.includes('FROM payments') &&
+      sql.includes('SELECT 1') &&
+      sql.includes("kind = 'scoping'")
+    ) {
+      const sid = a[0] as string
+      for (const p of this.db.payments.values()) {
+        if (p.session_id === sid && p.kind === 'scoping' && p.status === 'paid') return [{ 1: 1 }]
+      }
+      return []
+    }
+
+    // SELECT COUNT(*) AS c FROM payments WHERE session_id = ? AND kind = 'build'
+    //   AND status = 'paid'  (checkout: which installment is next)
+    if (
+      sql.includes('FROM payments') &&
+      sql.includes('SELECT COUNT(*)') &&
+      sql.includes("kind = 'build'")
+    ) {
+      const sid = a[0] as string
+      let c = 0
+      for (const p of this.db.payments.values()) {
+        if (p.session_id === sid && p.kind === 'build' && p.status === 'paid') c++
+      }
+      return [{ c }]
+    }
+
+    // SELECT COALESCE(SUM(amount_cents), 0) AS c FROM payments WHERE
+    //   session_id = ? AND kind = 'scoping' AND status = 'paid'  (scoping credit)
+    if (
+      sql.includes('FROM payments') &&
+      sql.includes('SUM(amount_cents)') &&
+      sql.includes("kind = 'scoping'")
+    ) {
+      const sid = a[0] as string
+      let c = 0
+      for (const p of this.db.payments.values()) {
+        if (p.session_id === sid && p.kind === 'scoping' && p.status === 'paid') c += p.amount_cents
+      }
+      return [{ c }]
+    }
+
+    // SELECT ... FROM payments WHERE session_id = ? ORDER BY created_at DESC
+    //   (payment summary endpoint)
+    if (
+      sql.includes('FROM payments') &&
+      sql.includes('WHERE session_id = ?') &&
+      sql.includes('ORDER BY created_at DESC')
+    ) {
+      const sid = a[0] as string
+      return [...this.db.payments.values()]
+        .filter((p) => p.session_id === sid)
+        .sort((x, y) => y.created_at - x.created_at)
+        .map((p) => ({ ...p }))
+    }
+
     // SELECT email FROM sessions WHERE id = ? AND deleted_at IS NULL
     if (sql.includes('SELECT email FROM sessions WHERE id = ? AND deleted_at IS NULL')) {
       const s = this.db.sessions.get(a[0] as string)
@@ -751,12 +814,23 @@ class MockPreparedStatement {
       return row ? 1 : 0
     }
 
-    // UPDATE sessions SET tier3_amount_cents = ?, updated_at = ? WHERE id = ?
-    if (sql.startsWith('UPDATE sessions SET tier3_amount_cents = ?, updated_at = ?')) {
+    // UPDATE sessions SET tier4_amount_cents = ?, updated_at = ? WHERE id = ?
+    if (sql.startsWith('UPDATE sessions SET tier4_amount_cents = ?, updated_at = ?')) {
       const id = a[2] as string
       const row = this.db.sessions.get(id)
       if (row) {
-        ;(row as Record<string, unknown>).tier3_amount_cents = a[0]
+        ;(row as Record<string, unknown>).tier4_amount_cents = a[0]
+        row.updated_at = a[1] as number
+      }
+      return row ? 1 : 0
+    }
+
+    // UPDATE sessions SET tier3_split = ?, updated_at = ? WHERE id = ?
+    if (sql.startsWith('UPDATE sessions SET tier3_split = ?, updated_at = ?')) {
+      const id = a[2] as string
+      const row = this.db.sessions.get(id)
+      if (row) {
+        ;(row as Record<string, unknown>).tier3_split = a[0]
         row.updated_at = a[1] as number
       }
       return row ? 1 : 0
@@ -839,16 +913,16 @@ class MockPreparedStatement {
       return had ? 1 : 0
     }
 
-    // INSERT INTO payments (id, session_id, kind, amount_cents, currency, status, created_at)
+    // INSERT INTO payments — two shapes. The renewal-from-invoice insert
+    // carries stripe_invoice_id; the initial decoupled mint carries
+    // tier/installment/custodian_plan columns.
     if (sql.startsWith('INSERT INTO payments') && sql.includes('amount_cents')) {
       const id = a[0] as string
-      // Two INSERT shapes exist: the 7-field initial mint and the 9-field
-      // renewal-from-invoice insert. Detect by the SQL.
       if (sql.includes('stripe_invoice_id')) {
         this.db.payments.set(id, {
           id,
           session_id: a[1] as string,
-          kind: 'custodian-sub',
+          kind: 'custodian',
           amount_cents: a[2] as number,
           currency: 'cad',
           status: 'paid',
@@ -861,11 +935,17 @@ class MockPreparedStatement {
           paid_at: a[7] as number,
         })
       } else {
+        // (id, session_id, kind, tier, installment_index, installment_of,
+        //  custodian_plan, amount_cents, ..., created_at)
         this.db.payments.set(id, {
           id,
           session_id: a[1] as string,
           kind: a[2] as string,
-          amount_cents: a[3] as number,
+          tier: (a[3] as number | null) ?? null,
+          installment_index: (a[4] as number | null) ?? null,
+          installment_of: (a[5] as number | null) ?? null,
+          custodian_plan: (a[6] as string | null) ?? null,
+          amount_cents: a[7] as number,
           currency: 'cad',
           status: 'pending',
           stripe_checkout_session_id: null,
@@ -873,7 +953,7 @@ class MockPreparedStatement {
           stripe_subscription_id: null,
           stripe_invoice_id: null,
           stripe_customer_id: null,
-          created_at: a[4] as number,
+          created_at: a[8] as number,
           paid_at: null,
         })
       }

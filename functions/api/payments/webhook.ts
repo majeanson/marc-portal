@@ -29,7 +29,7 @@
 // should NOT be retried.
 
 import { randomTokenB64url } from '../../_lib/bytes'
-import { sendAdminAlert, sendTier2DepositReceiptAndFinalPrompt } from '../../_lib/email'
+import { sendAdminAlert, sendInstallmentClearedPrompt } from '../../_lib/email'
 import type { Env } from '../../_lib/env'
 import { ok, unauthorized } from '../../_lib/json'
 import { primaryAdminEmail } from '../../_lib/sessions'
@@ -157,7 +157,7 @@ async function handleCheckoutCompleted(env: Env, obj: StripeObject, origin: stri
 
   // Sub-mode side effect: cache the subscription id on the session so renewal
   // webhooks (which carry sub id but not session id) can find their way home.
-  if (kind === 'custodian-sub' && subscriptionId) {
+  if (kind === 'custodian' && subscriptionId) {
     const sessionId = obj.metadata?.session_id
     if (sessionId) {
       await env.DB.prepare(
@@ -171,33 +171,36 @@ async function handleCheckoutCompleted(env: Env, obj: StripeObject, origin: stri
     }
   }
 
-  // Tier-2 deposit cleared on first transition: nudge the visitor that the
-  // final-balance button is now active on /me. Skipped on retries and when
-  // Resend isn't configured.
-  if (isFirstTransition && kind === 'tier2-deposit' && env.RESEND_API_KEY) {
+  // Build installment cleared on first transition: when more legs remain,
+  // nudge the visitor that the next installment button is now live on /me.
+  // Skipped on Stripe retries and when Resend isn't configured.
+  if (isFirstTransition && kind === 'build' && env.RESEND_API_KEY) {
     const sessionId = obj.metadata?.session_id
-    if (sessionId) {
+    const idx = Number(obj.metadata?.installment_index ?? '0')
+    const of = Number(obj.metadata?.installment_of ?? '0')
+    if (sessionId && idx > 0 && of > idx) {
       const session = await env.DB.prepare(
         `SELECT email FROM sessions WHERE id = ? AND deleted_at IS NULL`,
       )
         .bind(sessionId)
         .first<{ email: string }>()
       if (session?.email) {
-        // Resolution order:
+        // Lang resolution order:
         //   1. Explicit account pref (user_prefs row OR session intake_json
         //      that says fr/en) — wins unconditionally so a visitor who
         //      picked FR after browsing the EN-Checkout still gets FR.
-        //   2. Checkout-time metadata.lang — the language they were
-        //      browsing in at the moment they clicked Pay. Used only when
-        //      no explicit account-level signal exists.
+        //   2. Checkout-time metadata.lang — the language they were browsing
+        //      when they clicked Pay. Used only with no explicit signal.
         //   3. 'fr' default.
         const explicit = await getLangExplicit(env.DB, session.email)
         const metaLang = obj.metadata?.lang
         const lang: 'fr' | 'en' = explicit ?? (isValidLang(metaLang) ? metaLang : 'fr')
-        await sendTier2DepositReceiptAndFinalPrompt(
+        await sendInstallmentClearedPrompt(
           env.RESEND_API_KEY,
           session.email,
           sessionId,
+          idx,
+          of,
           origin,
           lang,
         )
@@ -235,7 +238,7 @@ async function handleInvoicePaid(env: Env, obj: StripeObject): Promise<void> {
               status = 'paid'
         WHERE stripe_subscription_id = ?
           AND stripe_invoice_id IS NULL
-          AND kind = 'custodian-sub'`,
+          AND kind = 'custodian'`,
     )
       .bind(invoiceId, now, subscriptionId)
       .run()
@@ -260,7 +263,7 @@ async function handleInvoicePaid(env: Env, obj: StripeObject): Promise<void> {
          (id, session_id, kind, amount_cents, currency, status,
           stripe_invoice_id, stripe_subscription_id, stripe_customer_id,
           created_at, paid_at)
-       VALUES (?, ?, 'custodian-sub', ?, 'cad', 'paid', ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, 'custodian', ?, 'cad', 'paid', ?, ?, ?, ?, ?)`,
     )
       .bind(
         newId,

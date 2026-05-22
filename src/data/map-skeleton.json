@@ -835,9 +835,14 @@
       "name": "marc-portal-media"
     },
     {
-      "id": "binding.STRIPE_CUSTODIAN_PRICE_ID",
+      "id": "binding.STRIPE_CUSTODIAN_CARE_PRICE_ID",
       "kind": "var",
-      "binding": "STRIPE_CUSTODIAN_PRICE_ID"
+      "binding": "STRIPE_CUSTODIAN_CARE_PRICE_ID"
+    },
+    {
+      "id": "binding.STRIPE_CUSTODIAN_WATCH_PRICE_ID",
+      "kind": "var",
+      "binding": "STRIPE_CUSTODIAN_WATCH_PRICE_ID"
     }
   ]
 }

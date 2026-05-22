@@ -122,6 +122,7 @@ export function SessionShowcase({
           <option value="1">{t.tierOption1}</option>
           <option value="2">{t.tierOption2}</option>
           <option value="3">{t.tierOption3}</option>
+          <option value="4">{t.tierOption4}</option>
         </select>
       </label>
 

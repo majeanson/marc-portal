@@ -3,12 +3,13 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { SessionTierStrip } from './SessionTierStrip'
 
 describe('SessionTierStrip', () => {
-  it('renders all four tier buttons plus a clear button', () => {
+  it('renders all five tier buttons plus a clear button', () => {
     render(<SessionTierStrip lang="en" tier={1} onPick={() => {}} />)
     expect(screen.getByRole('button', { name: /T0/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /T1/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /T2/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /T3/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /T4/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /None/i })).toBeInTheDocument()
   })
 

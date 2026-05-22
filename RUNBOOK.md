@@ -228,9 +228,10 @@ in D1 long after the visitor told you they paid.
   ```bash
   npx wrangler pages secret put STRIPE_SECRET_KEY --project-name marc-portal
   ```
-- 503 "custodian subscription price not configured" → `STRIPE_CUSTODIAN_PRICE_ID`
-  is empty in `wrangler.toml [vars]`. Edit the value to the real
-  `price_xxx` from Stripe Dashboard → Products, commit, redeploy.
+- 503 "custodian watch price not configured" / "custodian care price not
+  configured" → the matching `STRIPE_CUSTODIAN_WATCH_PRICE_ID` /
+  `STRIPE_CUSTODIAN_CARE_PRICE_ID` is empty in `wrangler.toml [vars]`. Paste
+  the real `price_xxx` from Stripe Dashboard → Products, commit, redeploy.
 
 ### Path B — Webhook not arriving
 
@@ -281,8 +282,8 @@ Canada Ltd. is the QC processing entity → no cross-border transfer.
 | 2 | Sign Stripe's Services Agreement + DPA (click-through at signup) | Activation flow |
 | 3 | Verify identity (ID + SIN + bank account) | Activation flow |
 | 4 | Statement descriptor = `MARCPORTAL` (≤22 chars, recognizable) | Settings → Public details |
-| 5 | Create Product "Custodian mode" — recurring, $200.00 CAD/year | Products → Add |
-| 6 | Copy the `price_xxx` from the new product → paste into `wrangler.toml [vars] STRIPE_CUSTODIAN_PRICE_ID` | Code commit + redeploy |
+| 5 | Reuse the existing **Custodian Mode** product: rename it to **Custodian Care** and add a recurring CAD price of $400.00/year, then archive its old $200 price. (Stripe prices are immutable — you add a new price and archive the old one; you never edit an amount in place. Archiving doesn't cancel anyone already on the $200 price.) Then create a second product, **Custodian Watch** — recurring CAD $120.00/year. | Products |
+| 6 | Copy each `price_xxx` → paste into `wrangler.toml [vars]` as `STRIPE_CUSTODIAN_WATCH_PRICE_ID` and `STRIPE_CUSTODIAN_CARE_PRICE_ID` | Code commit + redeploy |
 | 7 | Create webhook endpoint: `https://marcportal.com/api/payments/webhook` | Developers → Webhooks → Add |
 | 8 | Select events: `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.deleted`, `customer.subscription.updated`, `charge.refunded` | Same form |
 | 9 | Copy `whsec_*` → `npx wrangler pages secret put STRIPE_WEBHOOK_SECRET` | CLI |
@@ -336,8 +337,9 @@ code path changes materially. Goal: validate the full Checkout → webhook
 - A `sk_test_*` Stripe secret key is installed (`wrangler pages secret put STRIPE_SECRET_KEY`).
 - `STRIPE_WEBHOOK_SECRET` is set (`whsec_*` from the Stripe Dashboard for
   the corresponding test-mode endpoint).
-- `STRIPE_CUSTODIAN_PRICE_ID` is the test-mode `price_*` for the
-  $200/yr custodian product.
+- `STRIPE_CUSTODIAN_WATCH_PRICE_ID` and `STRIPE_CUSTODIAN_CARE_PRICE_ID` are
+  the test-mode `price_*` values for the Watch ($120/yr) and Care ($400/yr)
+  custodian products.
 - Stripe CLI installed locally (`stripe --version`).
 
 **Local-loop variant (recommended)**

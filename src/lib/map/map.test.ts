@@ -73,10 +73,14 @@ describe('map skeleton', () => {
     }
   })
 
-  it('records the DB + STRIPE_CUSTODIAN_PRICE_ID bindings', () => {
+  it('records the DB + custodian price-ID bindings', () => {
     const ids = new Set(skeleton.bindings.map((b) => b.id))
     expect(ids).toContain('binding.DB')
-    expect(ids).toContain('binding.STRIPE_CUSTODIAN_PRICE_ID')
+    // Pricing v2 split the single custodian plan into Watch + Care, so the
+    // wrangler [vars] — and the skeleton derived from them — carry one
+    // price-ID binding per plan.
+    expect(ids).toContain('binding.STRIPE_CUSTODIAN_WATCH_PRICE_ID')
+    expect(ids).toContain('binding.STRIPE_CUSTODIAN_CARE_PRICE_ID')
   })
 
   it('only flags /api/admin/* endpoints as adminOnly', () => {

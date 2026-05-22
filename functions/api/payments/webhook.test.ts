@@ -1,8 +1,8 @@
 /**
- * Stripe webhook handler tests — focused on the new Tier-2 deposit auto-
- * prompt path. Idempotency is load-bearing: a re-delivered Stripe event
- * MUST update the payments row exactly once and send the visitor email
- * exactly once. Stripe routinely retries webhooks, so this matters in prod.
+ * Stripe webhook handler tests — focused on the build-installment auto-prompt
+ * path. Idempotency is load-bearing: a re-delivered Stripe event MUST update
+ * the payments row exactly once and send the visitor email exactly once.
+ * Stripe routinely retries webhooks, so this matters in prod.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -10,8 +10,7 @@ import type * as StripeLib from '../../_lib/stripe'
 import { makeMockEnv } from '../../../tests/d1-mock'
 
 // Bypass HMAC verification for tests — we trust the raw body and exercise
-// the dispatch + handler path. Re-export everything else from the real
-// module so StripeEvent / StripeObject types continue to resolve.
+// the dispatch + handler path.
 vi.mock('../../_lib/stripe', async () => {
   const real = await vi.importActual<typeof StripeLib>('../../_lib/stripe')
   return {
@@ -21,11 +20,9 @@ vi.mock('../../_lib/stripe', async () => {
 })
 
 vi.mock('../../_lib/email', () => ({
-  sendTier2DepositReceiptAndFinalPrompt: vi.fn().mockResolvedValue(true),
-  // sendAdminAlert resolves to true by default so the "email delivered →
-  // skip admin_alerts" path is the default. Individual tests override the
-  // resolved value (e.g. false → falls through to admin_alerts) using
-  // vi.mocked(email.sendAdminAlert).mockResolvedValueOnce(false).
+  sendInstallmentClearedPrompt: vi.fn().mockResolvedValue(true),
+  // sendAdminAlert resolves true by default so the "email delivered → skip
+  // admin_alerts" path is the default. Tests override per-case.
   sendAdminAlert: vi.fn().mockResolvedValue(true),
 }))
 
@@ -58,6 +55,8 @@ function checkoutCompletedEvent(opts: {
   paymentId: string
   sessionId: string
   kind: string
+  installmentIndex?: number
+  installmentOf?: number
   lang?: 'fr' | 'en'
 }) {
   return {
@@ -75,6 +74,10 @@ function checkoutCompletedEvent(opts: {
           payment_id: opts.paymentId,
           session_id: opts.sessionId,
           kind: opts.kind,
+          ...(opts.installmentIndex != null
+            ? { installment_index: String(opts.installmentIndex) }
+            : {}),
+          ...(opts.installmentOf != null ? { installment_of: String(opts.installmentOf) } : {}),
           ...(opts.lang ? { lang: opts.lang } : {}),
         },
       },
@@ -83,8 +86,8 @@ function checkoutCompletedEvent(opts: {
 }
 
 function seedSessionAndPayment(env: ReturnType<typeof buildEnv>, opts: { kind: string }) {
-  const sessionId = 'sess_t2_test'
-  const paymentId = 'pay_t2_test'
+  const sessionId = 'sess_build_test'
+  const paymentId = 'pay_build_test'
   env._db.sessions.set(sessionId, {
     id: sessionId,
     email: 'visitor@example.com',
@@ -102,7 +105,11 @@ function seedSessionAndPayment(env: ReturnType<typeof buildEnv>, opts: { kind: s
     id: paymentId,
     session_id: sessionId,
     kind: opts.kind,
-    amount_cents: 75000,
+    tier: 2,
+    installment_index: 1,
+    installment_of: 2,
+    custodian_plan: null,
+    amount_cents: 90000,
     currency: 'cad',
     status: 'pending',
     stripe_checkout_session_id: 'cs_test_xxx',
@@ -116,14 +123,21 @@ function seedSessionAndPayment(env: ReturnType<typeof buildEnv>, opts: { kind: s
   return { sessionId, paymentId }
 }
 
-describe('POST /api/payments/webhook — tier2-deposit auto-prompt', () => {
-  it('sends the final-prompt email exactly once on first transition', async () => {
+describe('POST /api/payments/webhook — build installment auto-prompt', () => {
+  it('sends the installment-cleared email once when more legs remain', async () => {
     const env = buildEnv()
-    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'tier2-deposit' })
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
 
     const ctx = {
       request: buildWebhookRequest(
-        checkoutCompletedEvent({ paymentId, sessionId, kind: 'tier2-deposit', lang: 'fr' }),
+        checkoutCompletedEvent({
+          paymentId,
+          sessionId,
+          kind: 'build',
+          installmentIndex: 1,
+          installmentOf: 2,
+          lang: 'fr',
+        }),
       ),
       env,
       params: {},
@@ -131,96 +145,104 @@ describe('POST /api/payments/webhook — tier2-deposit auto-prompt', () => {
     const res = await onRequestPost(ctx as never)
     expect(res.status).toBe(200)
 
-    // Email fired once with the right shape.
-    expect(email.sendTier2DepositReceiptAndFinalPrompt).toHaveBeenCalledOnce()
-    const call = (email.sendTier2DepositReceiptAndFinalPrompt as ReturnType<typeof vi.fn>).mock
-      .calls[0]
+    expect(email.sendInstallmentClearedPrompt).toHaveBeenCalledOnce()
+    const call = (email.sendInstallmentClearedPrompt as ReturnType<typeof vi.fn>).mock.calls[0]
     expect(call?.[0]).toBe('test-key') // apiKey
     expect(call?.[1]).toBe('visitor@example.com')
     expect(call?.[2]).toBe(sessionId)
-    expect(call?.[3]).toBe('https://portal.test')
-    expect(call?.[4]).toBe('fr')
+    expect(call?.[3]).toBe(1) // paidIndex
+    expect(call?.[4]).toBe(2) // totalOf
+    expect(call?.[5]).toBe('https://portal.test') // origin
+    expect(call?.[6]).toBe('fr')
 
-    // Row went from pending → paid, paid_at set.
     expect(env._db.payments.get(paymentId)?.status).toBe('paid')
     expect(env._db.payments.get(paymentId)?.paid_at).toBeGreaterThan(0)
   })
 
-  it('does NOT send the email on a Stripe retry (paid_at already set)', async () => {
+  it('does NOT send the email on a Stripe retry (same event id)', async () => {
     const env = buildEnv()
-    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'tier2-deposit' })
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
     const event = checkoutCompletedEvent({
       paymentId,
       sessionId,
-      kind: 'tier2-deposit',
+      kind: 'build',
+      installmentIndex: 1,
+      installmentOf: 2,
       lang: 'fr',
     })
 
-    // First delivery — email fires.
-    await onRequestPost({
-      request: buildWebhookRequest(event),
-      env,
-      params: {},
-    } as never)
-    expect(email.sendTier2DepositReceiptAndFinalPrompt).toHaveBeenCalledOnce()
+    await onRequestPost({ request: buildWebhookRequest(event), env, params: {} } as never)
+    expect(email.sendInstallmentClearedPrompt).toHaveBeenCalledOnce()
 
-    // Second delivery (same event id, Stripe retry) — must NOT fire again.
-    await onRequestPost({
-      request: buildWebhookRequest(event),
-      env,
-      params: {},
-    } as never)
-    expect(email.sendTier2DepositReceiptAndFinalPrompt).toHaveBeenCalledOnce()
+    await onRequestPost({ request: buildWebhookRequest(event), env, params: {} } as never)
+    expect(email.sendInstallmentClearedPrompt).toHaveBeenCalledOnce()
   })
 
   it('defaults lang=fr when metadata.lang is missing', async () => {
     const env = buildEnv()
-    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'tier2-deposit' })
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
 
     await onRequestPost({
       request: buildWebhookRequest(
-        checkoutCompletedEvent({ paymentId, sessionId, kind: 'tier2-deposit' }),
+        checkoutCompletedEvent({
+          paymentId,
+          sessionId,
+          kind: 'build',
+          installmentIndex: 1,
+          installmentOf: 2,
+        }),
       ),
       env,
       params: {},
     } as never)
 
-    const call = (email.sendTier2DepositReceiptAndFinalPrompt as ReturnType<typeof vi.fn>).mock
-      .calls[0]
-    expect(call?.[4]).toBe('fr')
+    const call = (email.sendInstallmentClearedPrompt as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(call?.[6]).toBe('fr')
   })
 
   it('routes en when metadata.lang === "en"', async () => {
     const env = buildEnv()
-    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'tier2-deposit' })
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
 
     await onRequestPost({
       request: buildWebhookRequest(
-        checkoutCompletedEvent({ paymentId, sessionId, kind: 'tier2-deposit', lang: 'en' }),
+        checkoutCompletedEvent({
+          paymentId,
+          sessionId,
+          kind: 'build',
+          installmentIndex: 1,
+          installmentOf: 2,
+          lang: 'en',
+        }),
       ),
       env,
       params: {},
     } as never)
 
-    const call = (email.sendTier2DepositReceiptAndFinalPrompt as ReturnType<typeof vi.fn>).mock
-      .calls[0]
-    expect(call?.[4]).toBe('en')
+    const call = (email.sendInstallmentClearedPrompt as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(call?.[6]).toBe('en')
   })
 
-  it('does NOT send the email for tier1 payments', async () => {
+  it('does NOT send for a single-installment build (no leg remaining)', async () => {
     const env = buildEnv()
-    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'tier1' })
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
 
     await onRequestPost({
       request: buildWebhookRequest(
-        checkoutCompletedEvent({ paymentId, sessionId, kind: 'tier1', lang: 'fr' }),
+        checkoutCompletedEvent({
+          paymentId,
+          sessionId,
+          kind: 'build',
+          installmentIndex: 1,
+          installmentOf: 1,
+          lang: 'fr',
+        }),
       ),
       env,
       params: {},
     } as never)
 
-    expect(email.sendTier2DepositReceiptAndFinalPrompt).not.toHaveBeenCalled()
-    // Row still went paid.
+    expect(email.sendInstallmentClearedPrompt).not.toHaveBeenCalled()
     expect(env._db.payments.get(paymentId)?.status).toBe('paid')
   })
 
@@ -247,8 +269,12 @@ describe('POST /api/payments/webhook — tier2-deposit auto-prompt', () => {
     env._db.payments.set(paymentId, {
       id: paymentId,
       session_id: sessionId,
-      kind: 'tier2-deposit',
-      amount_cents: 75000,
+      kind: 'build',
+      tier: 2,
+      installment_index: 1,
+      installment_of: 2,
+      custodian_plan: null,
+      amount_cents: 90000,
       currency: 'cad',
       status: 'pending',
       stripe_checkout_session_id: null,
@@ -262,14 +288,20 @@ describe('POST /api/payments/webhook — tier2-deposit auto-prompt', () => {
 
     await onRequestPost({
       request: buildWebhookRequest(
-        checkoutCompletedEvent({ paymentId, sessionId, kind: 'tier2-deposit', lang: 'fr' }),
+        checkoutCompletedEvent({
+          paymentId,
+          sessionId,
+          kind: 'build',
+          installmentIndex: 1,
+          installmentOf: 2,
+          lang: 'fr',
+        }),
       ),
       env,
       params: {},
     } as never)
 
-    expect(email.sendTier2DepositReceiptAndFinalPrompt).not.toHaveBeenCalled()
-    // The row still transitions even without email — the email is a side effect.
+    expect(email.sendInstallmentClearedPrompt).not.toHaveBeenCalled()
     expect(env._db.payments.get(paymentId)?.status).toBe('paid')
   })
 
@@ -291,16 +323,22 @@ describe('POST /api/payments/webhook — tier2-deposit auto-prompt', () => {
 })
 
 // ────────────────────────────────────────────────────────────────────────────
-// Event dedupe — webhook_events table short-circuits Stripe retries before
-// any handler runs. Without it, the partial-refund handler below would
-// double-count refunded_amount_cents on a retried event.
+// Event dedupe — webhook_events short-circuits Stripe retries before any
+// handler runs.
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('POST /api/payments/webhook — event dedupe', () => {
   it('short-circuits a second arrival of the same event.id with { duplicate: true }', async () => {
     const env = buildEnv()
-    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'tier1' })
-    const event = checkoutCompletedEvent({ paymentId, sessionId, kind: 'tier1', lang: 'fr' })
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
+    const event = checkoutCompletedEvent({
+      paymentId,
+      sessionId,
+      kind: 'build',
+      installmentIndex: 1,
+      installmentOf: 1,
+      lang: 'fr',
+    })
 
     const first = await onRequestPost({
       request: buildWebhookRequest(event),
@@ -319,14 +357,12 @@ describe('POST /api/payments/webhook — event dedupe', () => {
     expect(second.status).toBe(200)
     const body = (await second.json()) as { received: boolean; duplicate?: boolean }
     expect(body.duplicate).toBe(true)
-    // Still just one row — the second event was ignored.
     expect(env._db.webhook_events.size).toBe(1)
   })
 })
 
 // ────────────────────────────────────────────────────────────────────────────
-// charge.refunded — partial vs full. Status only flips to 'refunded' on
-// full; partial leaves status='paid' and only updates refunded_amount_cents.
+// charge.refunded — partial vs full.
 // ────────────────────────────────────────────────────────────────────────────
 
 function chargeRefundedEvent(opts: {
@@ -371,7 +407,11 @@ function seedPaidPayment(
   env._db.payments.set(paymentId, {
     id: paymentId,
     session_id: sessionId,
-    kind: 'tier2-deposit',
+    kind: 'build',
+    tier: 2,
+    installment_index: 1,
+    installment_of: 2,
+    custodian_plan: null,
     amount_cents: opts.amountCents,
     currency: 'cad',
     status: 'paid',
@@ -391,7 +431,7 @@ describe('POST /api/payments/webhook — charge.refunded', () => {
     const env = buildEnv()
     const { paymentId } = seedPaidPayment(env, {
       paymentIntent: 'pi_partial',
-      amountCents: 150000, // $1500
+      amountCents: 180000,
     })
 
     await onRequestPost({
@@ -399,7 +439,7 @@ describe('POST /api/payments/webhook — charge.refunded', () => {
         chargeRefundedEvent({
           eventId: 'evt_partial',
           paymentIntent: 'pi_partial',
-          amountRefunded: 10000, // $100 partial
+          amountRefunded: 10000,
         }),
       ),
       env,
@@ -416,7 +456,7 @@ describe('POST /api/payments/webhook — charge.refunded', () => {
     const env = buildEnv()
     const { paymentId } = seedPaidPayment(env, {
       paymentIntent: 'pi_full',
-      amountCents: 30000, // $300
+      amountCents: 75000,
     })
 
     await onRequestPost({
@@ -424,7 +464,7 @@ describe('POST /api/payments/webhook — charge.refunded', () => {
         chargeRefundedEvent({
           eventId: 'evt_full',
           paymentIntent: 'pi_full',
-          amountRefunded: 30000,
+          amountRefunded: 75000,
         }),
       ),
       env,
@@ -433,13 +473,13 @@ describe('POST /api/payments/webhook — charge.refunded', () => {
 
     const row = env._db.payments.get(paymentId)!
     expect(row.status).toBe('refunded')
-    expect(row.refunded_amount_cents).toBe(30000)
+    expect(row.refunded_amount_cents).toBe(75000)
     expect(row.refunded_at).toBeGreaterThan(0)
   })
 
   it('refund for an unknown payment_intent is a no-op (out-of-band charge)', async () => {
     const env = buildEnv()
-    seedPaidPayment(env, { paymentIntent: 'pi_known', amountCents: 30000 })
+    seedPaidPayment(env, { paymentIntent: 'pi_known', amountCents: 75000 })
 
     const res = await onRequestPost({
       request: buildWebhookRequest(
@@ -452,21 +492,18 @@ describe('POST /api/payments/webhook — charge.refunded', () => {
       env,
       params: {},
     } as never)
-    // 200 — we don't want Stripe to retry a non-error.
     expect(res.status).toBe(200)
   })
 })
 
 // ────────────────────────────────────────────────────────────────────────────
-// admin_alerts fallback — when Resend fails (or is unreachable) on an
-// operationally important event (sub-cancel, payment-failed), the alert
-// must land in admin_alerts so the daily digest surfaces it.
+// admin_alerts fallback — when Resend fails on an operationally important
+// event (sub-cancel), the alert must land in admin_alerts.
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('POST /api/payments/webhook — admin_alerts fallback', () => {
   it('writes to admin_alerts when sendAdminAlert reports a failure', async () => {
     const env = buildEnv()
-    // Seed a session with the soon-to-be-canceled sub so the handler finds it.
     env._db.sessions.set('sess_cancel', {
       id: 'sess_cancel',
       email: 'v@example.com',
@@ -481,8 +518,6 @@ describe('POST /api/payments/webhook — admin_alerts fallback', () => {
       showcase_tagline: null,
       custodian_subscription_id: 'sub_xyz',
     })
-
-    // sendAdminAlert → false simulates Resend non-2xx / network outage.
     ;(email.sendAdminAlert as ReturnType<typeof vi.fn>).mockResolvedValueOnce(false)
 
     await onRequestPost({
@@ -519,8 +554,6 @@ describe('POST /api/payments/webhook — admin_alerts fallback', () => {
       showcase_tagline: null,
       custodian_subscription_id: 'sub_ok',
     })
-
-    // sendAdminAlert default mock returns true → no fallback row.
 
     await onRequestPost({
       request: buildWebhookRequest({

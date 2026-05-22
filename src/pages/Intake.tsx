@@ -421,89 +421,105 @@ export function Intake({ lang }: { lang: Lang }) {
               {t.intake.backHome}
             </a>
 
-            <CapacityNotice lang={lang} atCap={atCap} />
+            {/* The whole flow sits on a bordered "sheet" — a notepaper surface
+                that visually sets the intake apart from the editorial home
+                page, so a visitor lands knowing they're inside a session,
+                not browsing. The masthead names that explicitly; it's hidden
+                on the confirmation step, where the Confirmation card owns the
+                screen and the orientation job is already done. */}
+            <div className="intake__sheet">
+              {step !== 'confirmation' && (
+                <header className="intake__mast">
+                  <p className="intake__mast-eyebrow mono">{t.intake.mast.eyebrow}</p>
+                  <h1 className="intake__mast-title">{t.intake.mast.title}</h1>
+                  <p className="intake__mast-lead">{t.intake.mast.lead}</p>
+                </header>
+              )}
 
-            {draftPromptOpen && (
-              <aside className="intake__draft-prompt" role="dialog" aria-live="polite">
-                <h2 className="intake__draft-prompt-title">{t.intake.draftPrompt.title}</h2>
-                <p className="intake__draft-prompt-body">{t.intake.draftPrompt.body}</p>
-                {formatDraftSavedAt() && (
-                  <p className="intake__draft-prompt-meta mono">
-                    {t.intake.draftPrompt.summary(formatDraftSavedAt() as string)}
-                  </p>
-                )}
-                <div className="intake__draft-prompt-actions">
-                  <button
-                    type="button"
-                    className="hero__cta intake__draft-prompt-continue"
-                    onClick={onContinueDraft}
-                  >
-                    {t.intake.draftPrompt.continueBtn}
-                  </button>
-                  <button
-                    type="button"
-                    className="link-btn mono intake__draft-prompt-fresh"
-                    onClick={onStartFreshDraft}
-                  >
-                    {t.intake.draftPrompt.freshBtn}
-                  </button>
-                </div>
-              </aside>
-            )}
+              <CapacityNotice lang={lang} atCap={atCap} />
 
-            <ProgressDots step={step} lang={lang} onJump={onJumpStep} />
+              {draftPromptOpen && (
+                <aside className="intake__draft-prompt" role="dialog" aria-live="polite">
+                  <h2 className="intake__draft-prompt-title">{t.intake.draftPrompt.title}</h2>
+                  <p className="intake__draft-prompt-body">{t.intake.draftPrompt.body}</p>
+                  {formatDraftSavedAt() && (
+                    <p className="intake__draft-prompt-meta mono">
+                      {t.intake.draftPrompt.summary(formatDraftSavedAt() as string)}
+                    </p>
+                  )}
+                  <div className="intake__draft-prompt-actions">
+                    <button
+                      type="button"
+                      className="hero__cta intake__draft-prompt-continue"
+                      onClick={onContinueDraft}
+                    >
+                      {t.intake.draftPrompt.continueBtn}
+                    </button>
+                    <button
+                      type="button"
+                      className="link-btn mono intake__draft-prompt-fresh"
+                      onClick={onStartFreshDraft}
+                    >
+                      {t.intake.draftPrompt.freshBtn}
+                    </button>
+                  </div>
+                </aside>
+              )}
 
-            {step === 'vibe' && <VibeGate lang={lang} onAccept={onAcceptVibe} />}
+              <ProgressDots step={step} lang={lang} onJump={onJumpStep} />
 
-            {step === 'account' && (
-              <AccountStep
-                lang={lang}
-                initial={accountInitial}
-                signedInAs={auth.email ?? undefined}
-                onContinue={onAccount}
-              />
-            )}
+              {step === 'vibe' && <VibeGate lang={lang} onAccept={onAcceptVibe} />}
 
-            {step === 'type' && (
-              <TypePicker lang={lang} selected={draft.type} onPick={onPickType} />
-            )}
+              {step === 'account' && (
+                <AccountStep
+                  lang={lang}
+                  initial={accountInitial}
+                  signedInAs={auth.email ?? undefined}
+                  onContinue={onAccount}
+                />
+              )}
 
-            {step === 'form' && draft.type && (
-              <TypeForm
-                lang={lang}
-                type={draft.type}
-                values={draft.formData}
-                onChange={onFormChange}
-                onBack={onBack}
-                onContinue={onSubmit}
-                submitting={submitting}
-                submitError={submitError}
-                sketch={draft.sketch ?? null}
-                onSketchChange={(sketch) =>
-                  setDraft((d) => ({ ...d, sketch: sketch ?? undefined }))
-                }
-                voiceNapkin={draft.voiceNapkin ?? null}
-                onVoiceNapkinChange={(voiceNapkin) =>
-                  setDraft((d) => ({ ...d, voiceNapkin: voiceNapkin ?? undefined }))
-                }
-              />
-            )}
+              {step === 'type' && (
+                <TypePicker lang={lang} selected={draft.type} onPick={onPickType} />
+              )}
 
-            {step === 'confirmation' && draft.account && draft.type && draft.submittedAt && (
-              <Confirmation
-                lang={lang}
-                account={draft.account}
-                type={draft.type}
-                values={draft.formData}
-                waitlist={draft.waitlist ?? false}
-                submittedAt={draft.submittedAt}
-                sessionId={draft.sessionId}
-                sessionStatus={draft.sessionStatus}
-                magicLinkSent={draft.magicLinkSent ?? false}
-                onResendLink={onResendLink}
-                onStartOver={onStartOver}
-              />
-            )}
+              {step === 'form' && draft.type && (
+                <TypeForm
+                  lang={lang}
+                  type={draft.type}
+                  values={draft.formData}
+                  onChange={onFormChange}
+                  onBack={onBack}
+                  onContinue={onSubmit}
+                  submitting={submitting}
+                  submitError={submitError}
+                  sketch={draft.sketch ?? null}
+                  onSketchChange={(sketch) =>
+                    setDraft((d) => ({ ...d, sketch: sketch ?? undefined }))
+                  }
+                  voiceNapkin={draft.voiceNapkin ?? null}
+                  onVoiceNapkinChange={(voiceNapkin) =>
+                    setDraft((d) => ({ ...d, voiceNapkin: voiceNapkin ?? undefined }))
+                  }
+                />
+              )}
+
+              {step === 'confirmation' && draft.account && draft.type && draft.submittedAt && (
+                <Confirmation
+                  lang={lang}
+                  account={draft.account}
+                  type={draft.type}
+                  values={draft.formData}
+                  waitlist={draft.waitlist ?? false}
+                  submittedAt={draft.submittedAt}
+                  sessionId={draft.sessionId}
+                  sessionStatus={draft.sessionStatus}
+                  magicLinkSent={draft.magicLinkSent ?? false}
+                  onResendLink={onResendLink}
+                  onStartOver={onStartOver}
+                />
+              )}
+            </div>
           </div>
         </article>
       </main>

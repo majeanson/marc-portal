@@ -531,33 +531,37 @@ export async function sendWithdrawalNotification(
 }
 
 // =============================================================================
-// Tier 2 deposit cleared
+// Build installment cleared (a leg of a 2- or 3-installment build)
 // =============================================================================
 
-export async function sendTier2DepositReceiptAndFinalPrompt(
+export async function sendInstallmentClearedPrompt(
   apiKey: string,
   visitorEmail: string,
   sessionId: string,
+  paidIndex: number,
+  totalOf: number,
   origin: string,
   lang: Lang,
 ): Promise<boolean> {
   const sessionUrl = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
+  const remaining = totalOf - paidIndex
   const subject =
     lang === 'fr'
-      ? 'Dépôt Tier 2 reçu — solde final disponible'
-      : 'Tier 2 deposit received — final balance available'
-  const headline = lang === 'fr' ? 'Ton dépôt est rentré, merci' : 'Your deposit landed — thank you'
+      ? `Versement ${paidIndex}/${totalOf} reçu — prochain disponible`
+      : `Installment ${paidIndex}/${totalOf} received — next one available`
+  const headline =
+    lang === 'fr' ? 'Ton versement est rentré, merci' : 'Your installment landed — thank you'
   const p1 =
     lang === 'fr'
-      ? 'Le 50 % d’ouverture est confirmé du côté de Stripe et du portail. Je démarre le build.'
-      : 'The 50% opening payment is confirmed on Stripe and in the portal. I’m starting the build.'
+      ? `Le versement ${paidIndex} de ${totalOf} est confirmé du côté de Stripe et du portail.`
+      : `Installment ${paidIndex} of ${totalOf} is confirmed on Stripe and in the portal.`
   const p2 =
     lang === 'fr'
-      ? 'Quand tu seras prêt à régler le solde (les 50 % restants), retourne sur la page de ta session — le bouton est déjà actif et t’attend.'
-      : 'When you’re ready to pay the balance (the remaining 50%), head back to your session page — the button is already live and waiting.'
+      ? `Quand tu seras prêt à régler le ${remaining > 1 ? 'prochain versement' : 'dernier versement'}, retourne sur la page de ta session — le bouton est déjà actif et t’attend.`
+      : `When you’re ready to pay the ${remaining > 1 ? 'next installment' : 'final installment'}, head back to your session page — the button is already live and waiting.`
   const { html, text } = renderEmail(visitorEmail, origin, {
     lang,
-    eyebrow: lang === 'fr' ? 'paiement · tier 2' : 'payment · tier 2',
+    eyebrow: lang === 'fr' ? 'paiement' : 'payment',
     headline,
     paragraphs: [p1, p2],
     cta: { href: sessionUrl, label: lang === 'fr' ? 'Ouvrir ma session' : 'Open my session' },
@@ -574,11 +578,11 @@ export async function sendTierAssignedNotification(
   apiKey: string,
   visitorEmail: string,
   sessionId: string,
-  tier: 0 | 1 | 2 | 3,
+  tier: 0 | 1 | 2 | 3 | 4,
   amountCadCents: number | null,
   origin: string,
   lang: Lang,
-  /** True when this email fires from a Tier-3 *quote* that landed AFTER the
+  /** True when this email fires from a Tier-4 *quote* that landed AFTER the
    *  session was already active. Lets the subject read "Quote ready" rather
    *  than "Marc accepted." */
   isLateQuote: boolean = false,
@@ -633,8 +637,8 @@ export async function sendTierAssignedNotification(
       : ''
     subject =
       lang === 'fr'
-        ? `J’embarque — Tier 2 (~1 500 $) · dépôt pour démarrer`
-        : `I’m in — Tier 2 (~$1,500) · deposit to start`
+        ? `J’embarque — Tier 2 (~1 800 $) · dépôt pour démarrer`
+        : `I’m in — Tier 2 (~$1,800) · deposit to start`
     eyebrow = lang === 'fr' ? 'tier 2 · accepté' : 'tier 2 · accepted'
     headline =
       lang === 'fr'
@@ -650,22 +654,42 @@ export async function sendTierAssignedNotification(
             halfLine,
             'The <strong>Pay the deposit</strong> button is live on your session page. The balance unlocks at delivery.',
           ]
+  } else if (tier === 3) {
+    subject =
+      lang === 'fr'
+        ? `J’embarque — Tier 3${priceLine ? ` (${priceLine})` : ''}`
+        : `I’m in — Tier 3${priceLine ? ` (${priceLine})` : ''}`
+    eyebrow = lang === 'fr' ? 'tier 3 · accepté' : 'tier 3 · accepted'
+    headline =
+      lang === 'fr'
+        ? `J’ai accepté ton projet en Tier 3${priceLine ? ` (${priceLine})` : ''}`
+        : `I accepted your project at Tier 3${priceLine ? ` (${priceLine})` : ''}`
+    paragraphs =
+      lang === 'fr'
+        ? [
+            'Tier 3 se règle en versements. Le premier bouton de paiement est actif sur la page de ta session.',
+            'Si tu as une question avant de payer, écris-la dans le fil — je réponds là.',
+          ]
+        : [
+            'Tier 3 is paid in installments. The first payment button is live on your session page.',
+            'If you have a question before paying, drop it in the thread — that’s where I answer.',
+          ]
   } else {
-    // tier 3
+    // tier 4 — quoted after triage
     if (isLateQuote) {
       subject =
         lang === 'fr'
-          ? `Devis Tier 3 prêt${priceLine ? ` (${priceLine})` : ''}`
-          : `Tier 3 quote ready${priceLine ? ` (${priceLine})` : ''}`
-      eyebrow = lang === 'fr' ? 'tier 3 · devis prêt' : 'tier 3 · quote ready'
+          ? `Devis Tier 4 prêt${priceLine ? ` (${priceLine})` : ''}`
+          : `Tier 4 quote ready${priceLine ? ` (${priceLine})` : ''}`
+      eyebrow = lang === 'fr' ? 'tier 4 · devis prêt' : 'tier 4 · quote ready'
       headline =
         lang === 'fr'
           ? priceLine
-            ? `Devis Tier 3 fixé à ${priceLine}`
-            : 'Devis Tier 3 fixé'
+            ? `Devis Tier 4 fixé à ${priceLine}`
+            : 'Devis Tier 4 fixé'
           : priceLine
-            ? `Tier 3 quote set at ${priceLine}`
-            : 'Tier 3 quote set'
+            ? `Tier 4 quote set at ${priceLine}`
+            : 'Tier 4 quote set'
       paragraphs =
         lang === 'fr'
           ? [
@@ -679,17 +703,17 @@ export async function sendTierAssignedNotification(
     } else {
       subject =
         lang === 'fr'
-          ? `J’embarque — devis Tier 3${priceLine ? ` (${priceLine})` : ''}`
-          : `I’m in — Tier 3 quote${priceLine ? ` (${priceLine})` : ''}`
-      eyebrow = lang === 'fr' ? 'tier 3 · accepté' : 'tier 3 · accepted'
+          ? `J’embarque — devis Tier 4${priceLine ? ` (${priceLine})` : ''}`
+          : `I’m in — Tier 4 quote${priceLine ? ` (${priceLine})` : ''}`
+      eyebrow = lang === 'fr' ? 'tier 4 · accepté' : 'tier 4 · accepted'
       headline =
         lang === 'fr'
           ? priceLine
-            ? `J’ai accepté ton projet en Tier 3, fixé à ${priceLine}`
-            : 'J’ai accepté ton projet en Tier 3'
+            ? `J’ai accepté ton projet en Tier 4, fixé à ${priceLine}`
+            : 'J’ai accepté ton projet en Tier 4'
           : priceLine
-            ? `I accepted your project at Tier 3, set at ${priceLine}`
-            : 'I accepted your project at Tier 3'
+            ? `I accepted your project at Tier 4, set at ${priceLine}`
+            : 'I accepted your project at Tier 4'
       paragraphs =
         lang === 'fr'
           ? [

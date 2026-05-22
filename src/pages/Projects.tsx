@@ -13,10 +13,10 @@ import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
 
-type TierFilter = '0' | '1' | '2' | '3'
+type TierFilter = '0' | '1' | '2' | '3' | '4'
 type StatusFilter = 'active' | 'shipped' | 'draft' | 'triage' | 'rejected'
 
-const TIER_VALUES: TierFilter[] = ['0', '1', '2', '3']
+const TIER_VALUES: TierFilter[] = ['0', '1', '2', '3', '4']
 const STATUS_VALUES: StatusFilter[] = ['active', 'shipped', 'draft', 'triage', 'rejected']
 
 function isTier(v: string | null): v is TierFilter {
@@ -271,6 +271,7 @@ function TierPlaceholders({ lang, langPrefix }: { lang: Lang; langPrefix: string
     { tier: 1 as const, title: labels.tierOption1, href: intakeHref, cta: t.placeholderIntakeCta },
     { tier: 2 as const, title: labels.tierOption2, href: intakeHref, cta: t.placeholderIntakeCta },
     { tier: 3 as const, title: labels.tierOption3, href: intakeHref, cta: t.placeholderIntakeCta },
+    { tier: 4 as const, title: labels.tierOption4, href: intakeHref, cta: t.placeholderIntakeCta },
   ]
   return (
     <section className="projects-placeholders" aria-labelledby="projects-placeholders-heading">

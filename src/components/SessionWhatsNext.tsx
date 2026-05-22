@@ -50,9 +50,7 @@ export function SessionWhatsNext({
   // vs explicit All-yours opt-out). For the decision-pending variants we
   // return null on purpose — the MODE DÉPOSITAIRE and TOUT À TOI sections
   // rendered directly below already carry the same explanation in full
-  // detail, so a cream summary box above them was pure duplication. Only
-  // post-decision status (subscription active, past-due, acked all-yours)
-  // gets a strip, since those aren't redundant with the cards below.
+  // detail. Only post-decision status gets a strip.
   if (session.status === 'shipped') {
     const ackedAllYours = session.all_yours_acknowledged_at !== null
     const custActive = summary?.custodianStatus === 'active'
@@ -63,47 +61,17 @@ export function SessionWhatsNext({
     return null
   }
 
-  // Active: most of the nuance. Branch on tier + payment summary.
+  // Active: branch on the server-computed build summary.
   const tier = session.tier
-  if (tier === null) {
-    return <Frame tone="info">{t.activeNoTier}</Frame>
-  }
-  if (tier === 0) {
-    return <Frame tone="info">{t.activeTier0}</Frame>
-  }
+  if (tier === null) return <Frame tone="info">{t.activeNoTier}</Frame>
+  if (tier === 0) return <Frame tone="info">{t.activeTier0}</Frame>
+  if (!summary || !summary.build) return <Frame tone="info">{t.activeLoading}</Frame>
 
-  // For tier 1/2/3 we need the payment summary to say anything precise.
-  if (!summary) {
-    return <Frame tone="info">{t.activeLoading}</Frame>
-  }
-
-  if (tier === 1) {
-    const paidT1 = summary.rows.some((r) => r.kind === 'tier1' && r.status === 'paid')
-    return paidT1 ? (
-      <Frame tone="ok">{t.activeTier1Paid}</Frame>
-    ) : (
-      <Frame tone="cta">{t.activeTier1Unpaid}</Frame>
-    )
-  }
-
-  if (tier === 2) {
-    const paidDeposit = summary.rows.some((r) => r.kind === 'tier2-deposit' && r.status === 'paid')
-    const paidFinal = summary.rows.some((r) => r.kind === 'tier2-final' && r.status === 'paid')
-    if (!paidDeposit) return <Frame tone="cta">{t.activeTier2NoDeposit}</Frame>
-    if (!paidFinal) return <Frame tone="ok">{t.activeTier2DepositOnly}</Frame>
-    return <Frame tone="ok">{t.activeTier2Cleared}</Frame>
-  }
-
-  if (tier === 3) {
-    const hasPayRow = summary.rows.some((r) => r.kind === 'tier3' && r.status === 'paid')
-    if (hasPayRow) return <Frame tone="ok">{t.activeTier3Paid}</Frame>
-    if (session.tier3_amount_cents == null) {
-      return <Frame tone="info">{t.activeTier3PendingQuote}</Frame>
-    }
-    return <Frame tone="cta">{t.activeTier3Quoted}</Frame>
-  }
-
-  return null
+  const b = summary.build
+  if (b.quotePending) return <Frame tone="info">{t.activeQuotePending}</Frame>
+  if (b.nextIndex == null) return <Frame tone="ok">{t.activePaid}</Frame>
+  if (b.paidCount === 0) return <Frame tone="cta">{t.activeUnpaid(b.installmentCount)}</Frame>
+  return <Frame tone="ok">{t.activePartlyPaid(b.paidCount, b.installmentCount)}</Frame>
 }
 
 function Frame({
@@ -133,12 +101,6 @@ const COPY = {
     slaOverdue: 'bientôt (un peu en retard)',
     rejected:
       'Marc a refusé cette session — la raison est dans le fil. Tu peux ouvrir une nouvelle proposition à tout moment.',
-    shippedNudgeDefault:
-      'Projet livré. Par défaut tu pars en mode dépositaire (200 $/an) — Marc continue d’opérer le site. Si tu préfères « Tout à toi », confirme-le ci-dessous (checklist de compétences).',
-    shippedNudgeCustodian:
-      'Projet livré. Tu avais coché « Je m’en occupe » à l’intake — active le mode dépositaire ci-dessous (200 $/an) pour que Marc continue d’opérer le site.',
-    shippedNudgeAllYours:
-      'Projet livré. Tu avais coché « Tout à toi » à l’intake — confirme ci-dessous avec la checklist de compétences pour finaliser ce choix.',
     shippedAllYoursAcked:
       'Projet livré. Tu as confirmé « Tout à toi » — Marc te transfère les comptes. Tu peux toujours activer le mode dépositaire plus tard si besoin.',
     shippedCustodianActive:
@@ -150,21 +112,16 @@ const COPY = {
     activeTier0:
       'Marc t’a redirigé vers un patron / template (Tier 0). Détails dans le fil ci-dessous — pas de paiement à faire.',
     activeLoading: 'Marc a accepté ton projet. Chargement des détails de paiement…',
-    activeTier1Unpaid: 'Marc a accepté en Tier 1 (≈ 300 $). Paie ci-dessous pour démarrer.',
-    activeTier1Paid:
-      'Tier 1 payé. Marc démarre. Les avancements apparaissent dans la chronologie plus bas — tu reçois aussi un courriel aux étapes clés.',
-    activeTier2NoDeposit:
-      'Marc a accepté en Tier 2 (≈ 1 500 $, payé en deux temps). Paie le dépôt de 750 $ ci-dessous pour démarrer ; le solde de 750 $ est à la livraison.',
-    activeTier2DepositOnly:
-      'Dépôt Tier 2 reçu — Marc démarre. Le solde final (750 $) est dû à la livraison ; tu peux solder avant si tu veux.',
-    activeTier2Cleared:
-      'Tier 2 entièrement payé. Marc finalise. La livraison arrive — tu seras notifié par courriel.',
-    activeTier3PendingQuote:
-      'Marc a accepté en Tier 3 — il poste le montant exact dans le fil ci-dessous (et te ping par courriel) sous 72 h.',
-    activeTier3Quoted:
-      'Marc a posté son devis Tier 3. Paie ci-dessous pour démarrer ; questions dans le fil.',
-    activeTier3Paid:
-      'Tier 3 payé. Marc démarre. Les avancements apparaissent dans la chronologie plus bas.',
+    activeQuotePending:
+      'Marc a accepté ton projet en Tier 4 — il poste le devis dans le fil ci-dessous (et te ping par courriel) sous 72 h.',
+    activeUnpaid: (of: number) =>
+      of > 1
+        ? 'Marc a accepté ton projet. Paie le premier versement ci-dessous pour démarrer.'
+        : 'Marc a accepté ton projet. Paie ci-dessous pour démarrer.',
+    activePartlyPaid: (paid: number, of: number) =>
+      `Versement ${paid} sur ${of} payé — Marc avance le build. Le prochain est disponible ci-dessous quand tu veux.`,
+    activePaid:
+      'Projet entièrement payé. Marc finalise. La livraison arrive — tu seras notifié par courriel.',
   },
   en: {
     triagePlain:
@@ -174,12 +131,6 @@ const COPY = {
     slaOverdue: 'soon (a bit overdue)',
     rejected:
       'Marc declined this session — the reason is in the thread. You can open a new proposal anytime.',
-    shippedNudgeDefault:
-      'Project shipped. By default you go into custodian mode ($200/yr) — Marc keeps operating the site. If you prefer "All yours", confirm it below (skills checklist).',
-    shippedNudgeCustodian:
-      'Project shipped. You ticked "I handle it" at intake — activate custodian mode below ($200/yr) so Marc keeps operating the site.',
-    shippedNudgeAllYours:
-      'Project shipped. You ticked "All yours" at intake — confirm below with the skills checklist to finalize that choice.',
     shippedAllYoursAcked:
       'Project shipped. You confirmed "All yours" — Marc is transferring the accounts. You can still activate custodian mode later if needed.',
     shippedCustodianActive:
@@ -191,19 +142,15 @@ const COPY = {
     activeTier0:
       'Marc redirected you to a pattern/template (Tier 0). Details in the thread — no payment due.',
     activeLoading: 'Marc accepted your project. Loading payment details…',
-    activeTier1Unpaid: 'Marc accepted at Tier 1 (≈ $300). Pay below to start the build.',
-    activeTier1Paid:
-      "Tier 1 paid. Marc is starting. Build updates appear in the timeline below — you'll also get an email at key steps.",
-    activeTier2NoDeposit:
-      'Marc accepted at Tier 2 (≈ $1500, paid in two halves). Pay the $750 deposit below to start; the $750 balance is due at delivery.',
-    activeTier2DepositOnly:
-      'Tier 2 deposit received — Marc is starting. The final balance ($750) is due at delivery; you can clear it earlier if you want.',
-    activeTier2Cleared:
-      "Tier 2 fully paid. Marc is wrapping up. Delivery is coming — you'll be notified by email.",
-    activeTier3PendingQuote:
-      'Marc accepted at Tier 3 — he posts the exact amount in the thread below (and emails you) within 72h.',
-    activeTier3Quoted:
-      'Marc posted his Tier 3 quote. Pay below to start; ask questions in the thread.',
-    activeTier3Paid: 'Tier 3 paid. Marc is starting. Build updates appear in the timeline below.',
+    activeQuotePending:
+      'Marc accepted your Tier 4 project — he posts the quote in the thread below (and emails you) within 72h.',
+    activeUnpaid: (of: number) =>
+      of > 1
+        ? 'Marc accepted your project. Pay the first installment below to start the build.'
+        : 'Marc accepted your project. Pay below to start the build.',
+    activePartlyPaid: (paid: number, of: number) =>
+      `Installment ${paid} of ${of} paid — Marc is building. The next one is live below when you're ready.`,
+    activePaid:
+      "Project fully paid. Marc is wrapping up. Delivery is coming — you'll be notified by email.",
   },
 } as const

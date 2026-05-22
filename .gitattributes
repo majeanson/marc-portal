@@ -1,3 +1,9 @@
+# Normalise every text file to LF — in the repo *and* in the working tree.
+# Without eol=lf, core.autocrlf=true checks files out as CRLF on Windows, and
+# `prettier --check` (endOfLine: lf) then fails the whole repo locally even
+# though CI (Linux) sees LF. Pinning eol=lf keeps every platform consistent.
+* text=auto eol=lf
+
 # Git hooks must run under bash (incl. Git Bash on Windows). CRLF line
 # endings break the shebang and make hooks silently no-op. Force LF.
 .githooks/* text eol=lf

@@ -393,6 +393,9 @@ export const SESSION_TAB_LABEL: Record<string, Bi> = {
 export const FAQ_FEATURE: Record<string, FeatureId | undefined> = {
   // "Le prix annoncé, c'est vraiment ça?" — pricing.
   price: 'pricing',
+  // "Je pourrais pas le faire moi-même avec une IA?" — the why-pay
+  // objection. Sits in the pricing cluster, same plum as the question above.
+  'diy-ai': 'pricing',
   // "Si ça prend plus de temps que prévu?" — promise relies on the per-
   // build cadence (iterative), not pricing or conversation.
   timeline: 'iterative',
@@ -412,6 +415,7 @@ export const FAQ_FEATURE: Record<string, FeatureId | undefined> = {
  *  item itself has an anchor `#faq-{slug}`, so these are deep-linkable. */
 export const FAQ_LABEL: Record<string, Bi> = {
   price: { fr: 'Le prix annoncé', en: 'The quoted price' },
+  'diy-ai': { fr: 'Le faire moi-même', en: 'Build it myself' },
   timeline: { fr: 'Si ça déborde', en: 'If it overruns' },
   result: { fr: 'Si je n’aime pas', en: 'If I don’t like it' },
   unclear: { fr: 'Idée encore floue', en: 'Idea still fuzzy' },

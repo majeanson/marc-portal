@@ -18,6 +18,11 @@ export default defineConfig({
     // happy-dom is faster than jsdom and supports the slim subset of DOM
     // we exercise (no canvas, no WebGL).
     environment: 'happy-dom',
+    // The default 'threads' pool keeps one shared heap across the worker's
+    // files; on the larger payments + i18n suites that heap grows until the
+    // run OOMs. 'forks' gives each worker its own process, so memory is
+    // reclaimed between files — slightly slower, but the run stays green.
+    pool: 'forks',
     globals: false,
     include: ['src/**/*.test.{ts,tsx}', 'functions/**/*.test.ts'],
     setupFiles: ['./tests/setup.ts'],

@@ -14,18 +14,11 @@
 
 const STRIPE_API = 'https://api.stripe.com/v1'
 
-export type PaymentKind = 'tier1' | 'tier2-deposit' | 'tier2-final' | 'tier3' | 'custodian-sub'
-
-/**
- * Map a kind to a human label that shows up on the customer's receipt + the
- * Stripe Dashboard. Kept stable; visitors actually read these.
- */
-const KIND_LABELS: Record<Exclude<PaymentKind, 'custodian-sub'>, { fr: string; en: string }> = {
-  tier1: { fr: 'Tier 1 — petit projet', en: 'Tier 1 — small project' },
-  'tier2-deposit': { fr: 'Tier 2 — dépôt (50 %)', en: 'Tier 2 — deposit (50%)' },
-  'tier2-final': { fr: 'Tier 2 — solde final (50 %)', en: 'Tier 2 — final balance (50%)' },
-  tier3: { fr: 'Tier 3 — projet sur devis', en: 'Tier 3 — quoted project' },
-}
+// A payment is one of three kinds. For 'build', the tier (1-4) and the
+// installment leg are carried in their own columns + Stripe metadata rather
+// than fused into this string — see 0022_pricing_v2.sql.
+export type PaymentKind = 'build' | 'scoping' | 'custodian'
+export type CustodianPlan = 'watch' | 'care'
 
 export interface CheckoutSessionResult {
   id: string // cs_test_... / cs_live_...
@@ -35,26 +28,26 @@ export interface CheckoutSessionResult {
 interface OneTimeOpts {
   apiKey: string
   amountCents: number
-  kind: Exclude<PaymentKind, 'custodian-sub'>
+  /** Line-item label shown on the customer's receipt + the Stripe Dashboard.
+   *  Built by the caller; truncated to Stripe's 80-char limit here. */
+  label: string
   /** Payment row id we minted on our side. Passed as client_reference_id so
    *  the webhook can locate it without scanning. */
   paymentId: string
-  sessionId: string
   visitorEmail: string
   successUrl: string
   cancelUrl: string
   lang: 'fr' | 'en'
-  /** Suffix appended to the line-item label, e.g. the project's showcase title.
-   *  Kept ≤ 80 chars by Stripe. */
-  projectLabel?: string
+  /** Metadata mirrored onto the Checkout session AND the resulting
+   *  PaymentIntent — the webhook reads whichever shape it gets. The caller
+   *  decides the keys (payment_id, session_id, kind, tier, installment_*,
+   *  lang, …). */
+  meta: Record<string, string>
 }
 
 export async function createOneTimeCheckoutSession(
   opts: OneTimeOpts,
 ): Promise<CheckoutSessionResult> {
-  const baseLabel = KIND_LABELS[opts.kind][opts.lang]
-  const label = opts.projectLabel ? `${baseLabel} — ${opts.projectLabel}`.slice(0, 80) : baseLabel
-
   const form = new URLSearchParams()
   form.set('mode', 'payment')
   // Stripe Checkout supports `fr-CA` but NOT `en-CA` — generic `en` is the
@@ -65,21 +58,15 @@ export async function createOneTimeCheckoutSession(
   form.set('success_url', opts.successUrl)
   form.set('cancel_url', opts.cancelUrl)
   form.set('line_items[0][price_data][currency]', 'cad')
-  form.set('line_items[0][price_data][product_data][name]', label)
+  form.set('line_items[0][price_data][product_data][name]', opts.label.slice(0, 80))
   form.set('line_items[0][price_data][unit_amount]', String(opts.amountCents))
   form.set('line_items[0][quantity]', '1')
   // Metadata travels with both the Checkout session AND the resulting
-  // PaymentIntent — the webhook reads it from either shape. `lang` lets
-  // post-payment notifications respect the visitor's chosen language without
-  // a DB lookup back to the session row.
-  form.set('metadata[payment_id]', opts.paymentId)
-  form.set('metadata[session_id]', opts.sessionId)
-  form.set('metadata[kind]', opts.kind)
-  form.set('metadata[lang]', opts.lang)
-  form.set('payment_intent_data[metadata][payment_id]', opts.paymentId)
-  form.set('payment_intent_data[metadata][session_id]', opts.sessionId)
-  form.set('payment_intent_data[metadata][kind]', opts.kind)
-  form.set('payment_intent_data[metadata][lang]', opts.lang)
+  // PaymentIntent — the webhook reads it from either shape.
+  for (const [k, v] of Object.entries(opts.meta)) {
+    form.set(`metadata[${k}]`, v)
+    form.set(`payment_intent_data[metadata][${k}]`, v)
+  }
 
   return await postCheckoutSession(opts.apiKey, form, `checkout-${opts.paymentId}`)
 }
@@ -88,11 +75,14 @@ interface SubOpts {
   apiKey: string
   priceId: string // price_xxx from Stripe Dashboard
   paymentId: string
-  sessionId: string
   visitorEmail: string
   successUrl: string
   cancelUrl: string
   lang: 'fr' | 'en'
+  /** Metadata mirrored onto the Checkout session AND the subscription —
+   *  renewal webhook events carry the subscription's metadata, not the
+   *  original Checkout's. */
+  meta: Record<string, string>
 }
 
 export async function createSubscriptionCheckoutSession(
@@ -107,16 +97,10 @@ export async function createSubscriptionCheckoutSession(
   form.set('cancel_url', opts.cancelUrl)
   form.set('line_items[0][price]', opts.priceId)
   form.set('line_items[0][quantity]', '1')
-  form.set('metadata[payment_id]', opts.paymentId)
-  form.set('metadata[session_id]', opts.sessionId)
-  form.set('metadata[kind]', 'custodian-sub')
-  form.set('metadata[lang]', opts.lang)
-  // Mirror onto the subscription itself; webhook events for renewals carry
-  // the subscription's metadata, not the original Checkout's.
-  form.set('subscription_data[metadata][payment_id]', opts.paymentId)
-  form.set('subscription_data[metadata][session_id]', opts.sessionId)
-  form.set('subscription_data[metadata][kind]', 'custodian-sub')
-  form.set('subscription_data[metadata][lang]', opts.lang)
+  for (const [k, v] of Object.entries(opts.meta)) {
+    form.set(`metadata[${k}]`, v)
+    form.set(`subscription_data[metadata][${k}]`, v)
+  }
 
   return await postCheckoutSession(opts.apiKey, form, `checkout-${opts.paymentId}`)
 }

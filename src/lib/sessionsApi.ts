@@ -15,9 +15,13 @@ export interface StatusHistoryEntry {
   at: number
 }
 
-/** Tier classification (0/1/2/3) matching the public Pricing copy. NULL =
+/** Tier classification (0/1/2/3/4) matching the public Pricing copy. NULL =
  * not yet classified by admin. */
-export type SessionTier = 0 | 1 | 2 | 3
+export type SessionTier = 0 | 1 | 2 | 3 | 4
+
+/** Tier-3 installment split — '50-50' (two legs) or '40-40-20' (three legs).
+ * Admin-set per project; NULL until chosen (checkout defaults to '50-50'). */
+export type Tier3Split = '50-50' | '40-40-20'
 
 export interface SessionRow {
   id: string
@@ -32,10 +36,13 @@ export interface SessionRow {
   showcase_title: string | null
   showcase_tagline: string | null
   tier: SessionTier | null
-  /** Tier-3 admin-quoted amount in CAD cents. NULL when the admin hasn't
-   * yet set a quote. PaymentActions disables the "Payer (sur devis)" button
-   * client-side when this is NULL on a tier-3 session. */
-  tier3_amount_cents: number | null
+  /** Tier-4 admin-quoted amount in CAD cents. NULL when the admin hasn't
+   * yet set a quote. PaymentActions disables the "Pay (quoted)" button
+   * client-side when this is NULL on a tier-4 session. */
+  tier4_amount_cents: number | null
+  /** Tier-3 installment split ('50-50' | '40-40-20'). NULL = not chosen yet;
+   * checkout defaults to '50-50'. */
+  tier3_split: string | null
   /** Custodian-subscription state, mirrored from the canonical source (the
    *  payments summary). Values match CustodianStatus in paymentsApi.ts; NULL
    *  is treated as 'none' downstream. Surfaced on the row so admin filters
@@ -115,8 +122,10 @@ export function patchSession(
     showcase?: ShowcasePatch
     /** Admin-only tier classification. Pass null to clear. */
     tier?: SessionTier | null
-    /** Admin-only tier-3 quoted amount in CAD cents. Pass null to clear. */
-    tier3AmountCents?: number | null
+    /** Admin-only tier-4 quoted amount in CAD cents. Pass null to clear. */
+    tier4AmountCents?: number | null
+    /** Admin-only tier-3 installment split. Pass null to clear. */
+    tier3Split?: Tier3Split | null
     /** Visitor-self or admin: explicit Tout-à-toi confirmation (the visitor
      *  opts out of Custodian). true sets the timestamp; false clears. */
     acknowledgeAllYours?: boolean

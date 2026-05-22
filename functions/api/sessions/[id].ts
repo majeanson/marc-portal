@@ -53,10 +53,12 @@ interface PatchBody {
   showcase?: unknown
   /** Admin-only: tier classification (0/1/2/3) or null to clear. */
   tier?: unknown
-  /** Admin-only: Tier-3 quoted amount in CAD cents, or null to clear.
-   * Used by /api/payments/checkout when the visitor self-pays a tier-3
+  /** Admin-only: Tier-4 quoted amount in CAD cents, or null to clear.
+   * Used by /api/payments/checkout when the visitor self-pays a tier-4
    * project. 10000 (100 CAD) .. 10000000 (100000 CAD). */
-  tier3AmountCents?: unknown
+  tier4AmountCents?: unknown
+  /** Admin-only: Tier-3 installment split — '50-50' | '40-40-20' | null. */
+  tier3Split?: unknown
   /** Visitor-self or admin: explicit acknowledgment of "Tout à toi"
    *  mode (opting out of Custodian). Pass `true` to set
    *  all_yours_acknowledged_at to now; `false` to clear it back to NULL.
@@ -225,53 +227,65 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   // tierAssigned is captured so we can fire a tier-assigned email below — but
   // only on the null→value transition. Tier *changes* (1→2) are not notified;
   // those should accompany a thread message from Marc anyway.
-  let tierAssigned: 0 | 1 | 2 | 3 | null = null
+  let tierAssigned: 0 | 1 | 2 | 3 | 4 | null = null
   if (body.tier !== undefined) {
     if (!admin) return forbidden('only admin can set tier')
     if (
       body.tier !== null &&
-      (typeof body.tier !== 'number' || ![0, 1, 2, 3].includes(body.tier))
+      (typeof body.tier !== 'number' || ![0, 1, 2, 3, 4].includes(body.tier))
     ) {
-      return badRequest('tier must be 0, 1, 2, 3, or null')
+      return badRequest('tier must be 0, 1, 2, 3, 4, or null')
     }
     if (session.tier === null && body.tier !== null) {
-      tierAssigned = body.tier as 0 | 1 | 2 | 3
+      tierAssigned = body.tier as 0 | 1 | 2 | 3 | 4
     }
     await env.DB.prepare(`UPDATE sessions SET tier = ?, updated_at = ? WHERE id = ?`)
       .bind(body.tier, now, id)
       .run()
   }
 
-  // Tier 3 quoted amount — admin-only. Cents, 10000..10000000 (100..100000 CAD),
+  // Tier 4 quoted amount — admin-only. Cents, 10000..10000000 (100..100000 CAD),
   // or null to clear. Stored regardless of current tier (admin may quote before
-  // switching tier=3 to surface the button to the visitor). checkout.ts reads
-  // this when kind='tier3' for visitor-self pays.
+  // switching tier=4 to surface the button to the visitor). checkout.ts reads
+  // this when computing a Tier-4 build's installments.
   //
-  // tier3QuoteJustSet: true on the null→value transition so we can fire the
-  // tier-assigned email for the late-quote case (admin set tier=3 silently,
+  // tier4QuoteJustSet: true on the null→value transition so we can fire the
+  // tier-assigned email for the late-quote case (admin set tier=4 silently,
   // then later set the amount — the amount-set is the *real* moment the
   // visitor can act on it).
-  let tier3QuoteJustSet = false
-  if (body.tier3AmountCents !== undefined) {
-    if (!admin) return forbidden('only admin can set tier3AmountCents')
-    if (body.tier3AmountCents !== null) {
-      if (typeof body.tier3AmountCents !== 'number' || !Number.isInteger(body.tier3AmountCents)) {
-        return badRequest('tier3AmountCents must be an integer (cents) or null')
+  let tier4QuoteJustSet = false
+  if (body.tier4AmountCents !== undefined) {
+    if (!admin) return forbidden('only admin can set tier4AmountCents')
+    if (body.tier4AmountCents !== null) {
+      if (typeof body.tier4AmountCents !== 'number' || !Number.isInteger(body.tier4AmountCents)) {
+        return badRequest('tier4AmountCents must be an integer (cents) or null')
       }
-      if (body.tier3AmountCents < 10_000 || body.tier3AmountCents > 10_000_000) {
-        return badRequest('tier3AmountCents out of range (10000..10000000 cents)')
+      if (body.tier4AmountCents < 10_000 || body.tier4AmountCents > 10_000_000) {
+        return badRequest('tier4AmountCents out of range (10000..10000000 cents)')
       }
     }
     if (
-      session.tier3_amount_cents === null &&
-      body.tier3AmountCents !== null &&
-      // Either tier is already 3, or we just set it to 3 in this same PATCH.
-      (session.tier === 3 || tierAssigned === 3)
+      session.tier4_amount_cents === null &&
+      body.tier4AmountCents !== null &&
+      // Either tier is already 4, or we just set it to 4 in this same PATCH.
+      (session.tier === 4 || tierAssigned === 4)
     ) {
-      tier3QuoteJustSet = true
+      tier4QuoteJustSet = true
     }
-    await env.DB.prepare(`UPDATE sessions SET tier3_amount_cents = ?, updated_at = ? WHERE id = ?`)
-      .bind(body.tier3AmountCents, now, id)
+    await env.DB.prepare(`UPDATE sessions SET tier4_amount_cents = ?, updated_at = ? WHERE id = ?`)
+      .bind(body.tier4AmountCents, now, id)
+      .run()
+  }
+
+  // Tier 3 installment split — admin-only. '50-50' | '40-40-20' | null.
+  // checkout.ts defaults to '50-50' when null.
+  if (body.tier3Split !== undefined) {
+    if (!admin) return forbidden('only admin can set tier3Split')
+    if (body.tier3Split !== null && body.tier3Split !== '50-50' && body.tier3Split !== '40-40-20') {
+      return badRequest("tier3Split must be '50-50', '40-40-20', or null")
+    }
+    await env.DB.prepare(`UPDATE sessions SET tier3_split = ?, updated_at = ? WHERE id = ?`)
+      .bind(body.tier3Split, now, id)
       .run()
   }
 
@@ -365,36 +379,33 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     }
   }
 
-  // Tier assignment (or first-time Tier-3 quote) — fire ONE email per moment
+  // Tier assignment (or first-time Tier-4 quote) — fire ONE email per moment
   // the visitor can take new action. Rules:
-  //   - tier just set to 0/1/2 → email (price is known immediately)
-  //   - tier just set to 3 WITHOUT a quote → silent (visitor has nothing to do
+  //   - tier just set to 0/1/2/3 → email (price is known immediately)
+  //   - tier just set to 4 WITHOUT a quote → silent (visitor has nothing to do
   //     yet beyond wait; the quote-set fires the email)
-  //   - tier already 3, quote just set → email (this is when the Pay button
+  //   - tier already 4, quote just set → email (this is when the Pay button
   //     actually appears)
-  //   - tier just set to 3 AND quote set in same PATCH → email (covered by
-  //     tier3QuoteJustSet, which is true when both happen together)
+  //   - tier just set to 4 AND quote set in same PATCH → email (covered by
+  //     tier4QuoteJustSet, which is true when both happen together)
   if (fresh) {
-    const shouldEmailTier =
-      (tierAssigned !== null && tierAssigned !== 3) ||
-      (tierAssigned === 3 && tier3QuoteJustSet) ||
-      tier3QuoteJustSet
+    const shouldEmailTier = (tierAssigned !== null && tierAssigned !== 4) || tier4QuoteJustSet
     if (shouldEmailTier) {
-      const t = (tierAssigned ?? fresh.tier) as 0 | 1 | 2 | 3
+      const t = (tierAssigned ?? fresh.tier) as 0 | 1 | 2 | 3 | 4
       // Canonical CAD amounts — kept in sync with the public Pricing copy and
-      // with TIER_AMOUNTS in functions/api/payments/checkout.ts.
+      // with functions/_lib/pricing.ts.
       //   tier 0: free (no price)
-      //   tier 1: 300 CAD
-      //   tier 2: 1500 CAD total (deposit + final)
-      //   tier 3: visitor-quoted (tier3_amount_cents)
+      //   tier 1: 750 CAD · tier 2: 1800 CAD · tier 3: 3600 CAD
+      //   tier 4: admin-quoted (tier4_amount_cents)
       let cents: number | null = null
-      if (t === 1) cents = 30_000
-      else if (t === 2) cents = 150_000
-      else if (t === 3) cents = fresh.tier3_amount_cents
-      // Late-quote case: tier=3 was already set on the row (not assigned in
+      if (t === 1) cents = 75_000
+      else if (t === 2) cents = 180_000
+      else if (t === 3) cents = 360_000
+      else if (t === 4) cents = fresh.tier4_amount_cents
+      // Late-quote case: tier=4 was already set on the row (not assigned in
       // this PATCH) AND the quote is what just landed. Subject reads as
       // "quote ready" rather than "Marc accepted".
-      const isLateQuote = t === 3 && tierAssigned !== 3 && tier3QuoteJustSet
+      const isLateQuote = t === 4 && tierAssigned !== 4 && tier4QuoteJustSet
       const visitorPrefLang = await getLang(env.DB, fresh.email)
       await sendTierAssignedNotification(
         env.RESEND_API_KEY,

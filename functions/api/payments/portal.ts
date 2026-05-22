@@ -60,7 +60,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     `SELECT stripe_customer_id
        FROM payments
       WHERE session_id = ?
-        AND kind = 'custodian-sub'
+        AND kind = 'custodian'
         AND stripe_customer_id IS NOT NULL
       ORDER BY created_at DESC
       LIMIT 1`,

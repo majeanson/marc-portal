@@ -1281,6 +1281,22 @@ p {
   margin: 0;
   letter-spacing: 0.02em;
 }
+/* The contact sentence routes to /intake — it's the only real channel, so
+   the link reads as an inline CTA inside the sentence, not chrome. */
+.site-footer__contact-link {
+  color: var(--accent-warm);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-warm);
+  padding-bottom: 1px;
+  transition:
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+.site-footer__contact-link:hover,
+.site-footer__contact-link:focus-visible {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
 /* Pages line — replaces the old "·-separated" inline list. The new layout
    is a flex/wrap row of "<dot> <name>" pairs so each page sits with its
    feature colour. On mobile the row wraps to two/three lines instead of
@@ -1466,6 +1482,56 @@ p {
 }
 
 /* Intake page */
+/* The intake renders on a bordered "sheet" — a notepaper surface that sets
+   the form apart from the editorial home page, so a visitor lands knowing
+   they're inside a session rather than browsing. The 3px left rule in the
+   intake-feature green reads as a notebook spine; the dashed line under the
+   masthead reads as a tear-off perforation. */
+.intake__sheet {
+  margin-top: 18px;
+  padding: 32px 36px 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--feat-intake);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 1px 2px rgba(31, 29, 24, 0.04),
+    0 8px 24px rgba(31, 29, 24, 0.06);
+}
+@media (max-width: 600px) {
+  .intake__sheet {
+    padding: 24px 20px 28px;
+  }
+}
+.intake__mast {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1.5px dashed var(--border);
+}
+.intake__mast-eyebrow {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--feat-intake);
+}
+.intake__mast-title {
+  margin: 0 0 10px;
+  font-family: var(--display);
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  color: var(--text);
+}
+.intake__mast-lead {
+  margin: 0;
+  max-width: 56ch;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-mid);
+}
+
 .intake__notice {
   margin: 0 0 24px;
   padding: 14px 18px;
@@ -6404,6 +6470,14 @@ button:focus-visible,
   color: var(--accent-warm);
   background: var(--accent-soft, transparent);
   font-weight: 600;
+}
+/* Tier 4 is the custom build — the top of the ladder. It reads as a filled
+   chip rather than an outlined one so it sits clearly above the t0–t3 set. */
+.project-card__tier--t4 {
+  border-color: var(--accent-warm);
+  background: var(--accent-warm);
+  color: var(--bg-card);
+  font-weight: 700;
 }
 .project-card__title {
   font-size: 22px;

@@ -28,7 +28,7 @@ const COPY = {
     needsAttentionHeading: 'À traiter',
     filterAll: 'Toutes',
     filterActiveNoTier: 'Active sans tier',
-    filterT3NoQuote: 'Tier 3 sans devis',
+    filterT4NoQuote: 'Tier 4 sans devis',
     filterShippedNoMode: 'Livrée — mode à choisir',
     filterCustodianPastDue: 'Dépositaire en retard',
     noFiltered: 'Rien à traiter dans cette catégorie.',
@@ -52,7 +52,7 @@ const COPY = {
     needsAttentionHeading: 'Needs attention',
     filterAll: 'All',
     filterActiveNoTier: 'Active w/o tier',
-    filterT3NoQuote: 'Tier 3 w/o quote',
+    filterT4NoQuote: 'Tier 4 w/o quote',
     filterShippedNoMode: 'Shipped — mode TBD',
     filterCustodianPastDue: 'Custodian past due',
     noFiltered: 'Nothing in this bucket.',
@@ -62,7 +62,7 @@ const COPY = {
 type AttentionFilter =
   | 'all'
   | 'active_no_tier'
-  | 't3_no_quote'
+  | 't4_no_quote'
   | 'shipped_no_mode'
   | 'custodian_past_due'
 
@@ -71,7 +71,7 @@ const THIRTY_DAYS_S = 30 * 24 * 3600
 function matchesFilter(s: SessionRow, f: AttentionFilter, nowS: number): boolean {
   if (f === 'all') return true
   if (f === 'active_no_tier') return s.status === 'active' && s.tier === null
-  if (f === 't3_no_quote') return s.tier === 3 && s.tier3_amount_cents === null
+  if (f === 't4_no_quote') return s.tier === 4 && s.tier4_amount_cents === null
   if (f === 'shipped_no_mode')
     return (
       s.status === 'shipped' &&
@@ -345,10 +345,10 @@ export function AdminInbox({ lang }: { lang: Lang }) {
                     tone="warn"
                   />
                   <AttentionPill
-                    active={attentionFilter === 't3_no_quote'}
-                    label={t.filterT3NoQuote}
-                    n={bucketCount('t3_no_quote')}
-                    onClick={() => setAttentionFilter('t3_no_quote')}
+                    active={attentionFilter === 't4_no_quote'}
+                    label={t.filterT4NoQuote}
+                    n={bucketCount('t4_no_quote')}
+                    onClick={() => setAttentionFilter('t4_no_quote')}
                     tone="warn"
                   />
                   <AttentionPill

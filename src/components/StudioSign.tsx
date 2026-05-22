@@ -20,13 +20,13 @@ type Status = 'loading' | 'open' | 'waitlist' | 'unknown'
 
 const COPY = {
   fr: {
-    eyebrow: "L'atelier",
+    eyebrow: "L'atelier de Marc",
     open: 'Ouvert aux projets',
     waitlist: 'Sur liste d’attente',
     resting: 'Québec · travail async',
   },
   en: {
-    eyebrow: 'The studio',
+    eyebrow: "Marc's studio",
     open: 'Open for projects',
     waitlist: 'Waitlist open',
     resting: 'Québec · async',

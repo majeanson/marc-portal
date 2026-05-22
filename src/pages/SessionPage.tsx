@@ -192,13 +192,18 @@ const COPY = {
     statusHint: 'Clique une étape pour changer le statut de la session.',
     tierHint:
       'Tier de la session — détermine le bouton « Payer » côté visiteur. T0 = gratuit, pas de bouton.',
-    tier3AmountLabel: 'Montant Tier 3 (CAD)',
-    tier3AmountHint:
+    tier4AmountLabel: 'Montant Tier 4 (CAD)',
+    tier4AmountHint:
       'Saisis le montant convenu en dollars canadiens. Le bouton « Payer (sur devis) » apparaît côté visiteur quand cette valeur est définie. Laisse vide pour cacher le bouton (pas de devis encore).',
-    tier3AmountPlaceholder: 'ex. 4500',
-    tier3AmountSave: 'Enregistrer',
-    tier3AmountClear: 'Effacer',
-    tier3AmountInvalid: 'Entre un montant entre 100 et 100 000 $.',
+    tier4AmountPlaceholder: 'ex. 9000',
+    tier4AmountSave: 'Enregistrer',
+    tier4AmountClear: 'Effacer',
+    tier4AmountInvalid: 'Entre un montant entre 100 et 100 000 $.',
+    tier3SplitLabel: 'Versements Tier 3',
+    tier3SplitHint:
+      'Choisis le découpage des versements pour ce projet Tier 3 : 50/50 (deux versements) ou 40/40/20 (trois versements). Par défaut : 50/50.',
+    tier3Split5050: '50 / 50',
+    tier3Split404020: '40 / 40 / 20',
     statusConfirmReject: (id: string) =>
       `Marquer la session ${id} comme refusée ? Le visiteur le verra. Continue ?`,
     statusConfirmShip: (id: string) =>
@@ -284,13 +289,18 @@ const COPY = {
     changeStatus: 'Change status',
     statusHint: 'Click a stage to change the session status.',
     tierHint: 'Session tier — drives the visitor-side "Pay" button. T0 = free, no button.',
-    tier3AmountLabel: 'Tier 3 amount (CAD)',
-    tier3AmountHint:
+    tier4AmountLabel: 'Tier 4 amount (CAD)',
+    tier4AmountHint:
       'Enter the agreed-upon dollar amount. The visitor\'s "Pay (quoted)" button appears once this is set. Leave blank to hide the button (no quote yet).',
-    tier3AmountPlaceholder: 'e.g. 4500',
-    tier3AmountSave: 'Save',
-    tier3AmountClear: 'Clear',
-    tier3AmountInvalid: 'Enter an amount between $100 and $100,000.',
+    tier4AmountPlaceholder: 'e.g. 9000',
+    tier4AmountSave: 'Save',
+    tier4AmountClear: 'Clear',
+    tier4AmountInvalid: 'Enter an amount between $100 and $100,000.',
+    tier3SplitLabel: 'Tier 3 installments',
+    tier3SplitHint:
+      'Pick the installment split for this Tier 3 project: 50/50 (two payments) or 40/40/20 (three payments). Default: 50/50.',
+    tier3Split5050: '50 / 50',
+    tier3Split404020: '40 / 40 / 20',
     statusConfirmReject: (id: string) =>
       `Mark session ${id} as rejected? The visitor will see this. Continue?`,
     statusConfirmShip: (id: string) =>
@@ -634,13 +644,31 @@ export function SessionPage({ lang }: { lang: Lang }) {
     }
   }
 
-  // Admin-only tier-3 quoted amount setter. Pass cents or null. Validated
+  // Admin-only tier-4 quoted amount setter. Pass cents or null. Validated
   // server-side (10000..10000000); ifUpdatedAt enforces optimistic concurrency.
-  const onTier3AmountChange = async (cents: number | null) => {
+  const onTier4AmountChange = async (cents: number | null) => {
     if (!id || !session) return
     try {
       const r = await patchSession(id, {
-        tier3AmountCents: cents,
+        tier4AmountCents: cents,
+        ifUpdatedAt: session.updated_at,
+      })
+      setSession(r.session)
+      setStaleConflict(false)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setStaleConflict(true)
+        await refresh()
+      }
+    }
+  }
+
+  // Admin-only tier-3 installment-split setter. '50-50' | '40-40-20' | null.
+  const onTier3SplitChange = async (split: '50-50' | '40-40-20' | null) => {
+    if (!id || !session) return
+    try {
+      const r = await patchSession(id, {
+        tier3Split: split,
         ifUpdatedAt: session.updated_at,
       })
       setSession(r.session)
@@ -873,16 +901,25 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 </>
               )}
 
-              {isAdmin && session.tier === 3 && (
-                <Tier3AmountInput
+              {isAdmin && session.tier === 4 && (
+                <Tier4AmountInput
                   // key resets local draft when the persisted value changes
                   // (post-save, post-409 reload). Avoids an effect+setState
                   // pattern the lint rule rejects.
-                  key={String(session.tier3_amount_cents ?? '')}
+                  key={String(session.tier4_amount_cents ?? '')}
                   lang={lang}
                   copy={t}
-                  cents={session.tier3_amount_cents}
-                  onSave={onTier3AmountChange}
+                  cents={session.tier4_amount_cents}
+                  onSave={onTier4AmountChange}
+                />
+              )}
+
+              {isAdmin && session.tier === 3 && (
+                <Tier3SplitInput
+                  lang={lang}
+                  copy={t}
+                  split={session.tier3_split}
+                  onSave={onTier3SplitChange}
                 />
               )}
 
@@ -1747,15 +1784,15 @@ function DeclinePanel({
 }
 
 /**
- * Admin-only input for the Tier 3 quoted amount. Local state tracks the
+ * Admin-only input for the Tier 4 quoted amount. Local state tracks the
  * draft (in dollars, as the admin types); commit on Save translates to cents
  * and PATCHes. Clear sends null which both removes the value AND hides the
- * visitor's "Payer (sur devis)" button.
+ * visitor's "Pay (quoted)" button.
  *
  * Validation: 100..100000 dollars (matches server-side cents range). Invalid
  * input shows an inline error and keeps the draft.
  */
-function Tier3AmountInput({
+function Tier4AmountInput({
   lang: _lang,
   copy,
   cents,
@@ -1810,7 +1847,7 @@ function Tier3AmountInput({
   return (
     <form className="session-frame__tier3" onSubmit={onSubmit}>
       <label className="field__label">
-        {copy.tier3AmountLabel}
+        {copy.tier4AmountLabel}
         <div className="session-frame__tier3-row">
           <span className="session-frame__tier3-prefix mono">$</span>
           <input
@@ -1820,7 +1857,7 @@ function Tier3AmountInput({
             max={100000}
             step={1}
             value={draft}
-            placeholder={copy.tier3AmountPlaceholder}
+            placeholder={copy.tier4AmountPlaceholder}
             onChange={(e) => {
               setDraft(e.target.value)
               if (error) setError(false)
@@ -1833,18 +1870,69 @@ function Tier3AmountInput({
             className="link-btn mono"
             disabled={saving || draft.trim() === initial}
           >
-            {copy.tier3AmountSave}
+            {copy.tier4AmountSave}
           </button>
           {cents != null && (
             <button type="button" className="link-btn mono" onClick={onClear} disabled={saving}>
-              {copy.tier3AmountClear}
+              {copy.tier4AmountClear}
             </button>
           )}
         </div>
       </label>
       <p className="field__hint session-frame__strip-hint">
-        {error ? copy.tier3AmountInvalid : copy.tier3AmountHint}
+        {error ? copy.tier4AmountInvalid : copy.tier4AmountHint}
       </p>
     </form>
+  )
+}
+
+/**
+ * Admin-only Tier-3 installment-split picker. Two pills: 50/50 or 40/40/20.
+ * NULL (not chosen) renders with neither pill active — checkout.ts defaults
+ * to 50/50 in that case.
+ */
+function Tier3SplitInput({
+  lang: _lang,
+  copy,
+  split,
+  onSave,
+}: {
+  lang: Lang
+  copy: (typeof COPY)[Lang]
+  split: string | null
+  onSave: (split: '50-50' | '40-40-20' | null) => Promise<void>
+}) {
+  const [saving, setSaving] = useState(false)
+  const pick = async (next: '50-50' | '40-40-20') => {
+    if (saving || split === next) return
+    setSaving(true)
+    await onSave(next)
+    setSaving(false)
+  }
+  return (
+    <div className="session-frame__tier3">
+      <div className="field__label">{copy.tier3SplitLabel}</div>
+      <div className="session-frame__tier3-row">
+        <button
+          type="button"
+          className="link-btn mono"
+          onClick={() => pick('50-50')}
+          disabled={saving || split === '50-50'}
+          aria-pressed={split === '50-50'}
+        >
+          {copy.tier3Split5050}
+        </button>
+        <button
+          type="button"
+          className="link-btn mono"
+          onClick={() => pick('40-40-20')}
+          disabled={saving || split === '40-40-20'}
+          aria-pressed={split === '40-40-20'}
+        >
+          {copy.tier3Split404020}
+        </button>
+      </div>
+      <p className="field__hint session-frame__strip-hint">{copy.tier3SplitHint}</p>
+    </div>
   )
 }

@@ -38,13 +38,17 @@ export interface SessionRow {
   showcase_title: string | null
   /** Admin-set short blurb on the public card. NULL = no tagline. */
   showcase_tagline: string | null
-  /** Tier classification (0/1/2/3) matching the public Pricing copy. NULL =
+  /** Tier classification (0/1/2/3/4) matching the public Pricing copy. NULL =
    * not yet classified by admin. Used to badge the public gallery card. */
   tier: number | null
-  /** Tier 3 only: admin-quoted amount in cents. NULL when the admin hasn't
-   * yet set a quote — visitor's "Payer (sur devis)" button is then disabled
-   * client-side. Used by /api/payments/checkout for tier3 visitor-self pays. */
-  tier3_amount_cents: number | null
+  /** Tier 4 only: admin-quoted amount in cents. NULL when the admin hasn't
+   * yet set a quote — visitor's "Pay (quoted)" button is then disabled
+   * client-side. Used by /api/payments/checkout for tier4 visitor-self pays. */
+  tier4_amount_cents: number | null
+  /** Tier 3 only: which installment split the admin picked for this project —
+   * '50-50' (two legs) or '40-40-20' (three legs). NULL = not chosen yet;
+   * checkout.ts defaults to '50-50'. */
+  tier3_split: string | null
   /** Custodian-subscription state (one of: 'none' | 'active' | 'past_due' |
    *  'canceled' | 'switched_to_tout_a_toi'). Mirrored on the row so admin
    *  listings and the AdminCustodians page can filter without joining the
@@ -125,8 +129,8 @@ export async function loadSession(db: D1Database, id: string): Promise<SessionRo
       `SELECT id, email, intake_json, status, created_at, updated_at,
               deleted_at, status_history,
               showcased_at, showcase_title, showcase_tagline, tier,
-              tier3_amount_cents, custodian_status, all_yours_acknowledged_at,
-              decline_note
+              tier4_amount_cents, tier3_split, custodian_status,
+              all_yours_acknowledged_at, decline_note
        FROM sessions WHERE id = ?`,
     )
     .bind(id)

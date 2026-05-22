@@ -77,7 +77,8 @@ function seedSession(db: D1Mock, over: Record<string, unknown> = {}) {
     deleted_at: null,
     status_history: null,
     tier: null,
-    tier3_amount_cents: null,
+    tier4_amount_cents: null,
+    tier3_split: null,
     custodian_status: null,
     all_yours_acknowledged_at: null,
     ...over,
@@ -255,7 +256,7 @@ describe('PATCH /api/sessions/:id — intake edits', () => {
 })
 
 describe('PATCH /api/sessions/:id — tier assignment notification', () => {
-  it('null → tier 1 fires sendTierAssignedNotification with 30000 cents', async () => {
+  it('null → tier 1 fires sendTierAssignedNotification with 75000 cents', async () => {
     const ctx = makeCtx({
       method: 'PATCH',
       asEmail: 'marc@x.com',
@@ -267,10 +268,10 @@ describe('PATCH /api/sessions/:id — tier assignment notification', () => {
     expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
     const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
     expect(call[3]).toBe(1) // tier
-    expect(call[4]).toBe(30_000) // cents
+    expect(call[4]).toBe(75_000) // cents
   })
 
-  it('null → tier 2 fires email with 150000 (total) cents', async () => {
+  it('null → tier 2 fires email with 180000 (total) cents', async () => {
     const ctx = makeCtx({
       method: 'PATCH',
       asEmail: 'marc@x.com',
@@ -282,10 +283,10 @@ describe('PATCH /api/sessions/:id — tier assignment notification', () => {
     expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
     const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
     expect(call[3]).toBe(2)
-    expect(call[4]).toBe(150_000)
+    expect(call[4]).toBe(180_000)
   })
 
-  it('null → tier 3 WITHOUT quote does NOT fire email (visitor has nothing to act on)', async () => {
+  it('null → tier 3 fires email with 360000 cents (fixed price)', async () => {
     const ctx = makeCtx({
       method: 'PATCH',
       asEmail: 'marc@x.com',
@@ -294,37 +295,52 @@ describe('PATCH /api/sessions/:id — tier assignment notification', () => {
     seedSession(ctx.env._db)
     const res = await onRequestPatch(ctx as never)
     expect(res.status).toBe(200)
-    expect(email.sendTierAssignedNotification).not.toHaveBeenCalled()
+    expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
+    const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(call[3]).toBe(3)
+    expect(call[4]).toBe(360_000)
   })
 
-  it('tier=3 already set, quote set for the first time → fires email', async () => {
+  it('null → tier 4 WITHOUT quote does NOT fire email (visitor has nothing to act on)', async () => {
     const ctx = makeCtx({
       method: 'PATCH',
       asEmail: 'marc@x.com',
-      body: { tier3AmountCents: 450_000 },
+      body: { tier: 4 },
     })
-    seedSession(ctx.env._db, { tier: 3, tier3_amount_cents: null })
+    seedSession(ctx.env._db)
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(email.sendTierAssignedNotification).not.toHaveBeenCalled()
+  })
+
+  it('tier=4 already set, quote set for the first time → fires email', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier4AmountCents: 950_000 },
+    })
+    seedSession(ctx.env._db, { tier: 4, tier4_amount_cents: null })
     const res = await onRequestPatch(ctx as never)
     expect(res.status).toBe(200)
     expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
     const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
-    expect(call[3]).toBe(3)
-    expect(call[4]).toBe(450_000)
+    expect(call[3]).toBe(4)
+    expect(call[4]).toBe(950_000)
   })
 
-  it('tier and quote set in one PATCH → fires email with the quote', async () => {
+  it('tier 4 and quote set in one PATCH → fires email with the quote', async () => {
     const ctx = makeCtx({
       method: 'PATCH',
       asEmail: 'marc@x.com',
-      body: { tier: 3, tier3AmountCents: 600_000 },
+      body: { tier: 4, tier4AmountCents: 1_200_000 },
     })
     seedSession(ctx.env._db)
     const res = await onRequestPatch(ctx as never)
     expect(res.status).toBe(200)
     expect(email.sendTierAssignedNotification).toHaveBeenCalledOnce()
     const call = (email.sendTierAssignedNotification as ReturnType<typeof vi.fn>).mock.calls[0]
-    expect(call[3]).toBe(3)
-    expect(call[4]).toBe(600_000)
+    expect(call[3]).toBe(4)
+    expect(call[4]).toBe(1_200_000)
   })
 
   it('changing an existing tier (1 → 2) does NOT fire email (only null→value)', async () => {

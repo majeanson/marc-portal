@@ -35,10 +35,12 @@ export interface Env {
   // Required for /api/payments/webhook signature verification; unset = the
   // webhook handler rejects every event with 401.
   STRIPE_WEBHOOK_SECRET?: string
-  // Plaintext (wrangler.toml [vars]): the Stripe Price ID for the $200/yr
-  // custodian subscription. Created once in the Stripe Dashboard. Unset =
-  // custodian sub Checkout returns 503 with a clear message.
-  STRIPE_CUSTODIAN_PRICE_ID?: string
+  // Plaintext (wrangler.toml [vars]): the Stripe Price IDs for the two annual
+  // custodian plans — Watch ($120/yr) and Care ($400/yr). Each is created once
+  // in the Stripe Dashboard as a recurring CAD price. Unset = custodian
+  // Checkout for that plan returns 503 with a clear message.
+  STRIPE_CUSTODIAN_WATCH_PRICE_ID?: string
+  STRIPE_CUSTODIAN_CARE_PRICE_ID?: string
   // Sentry DSN is hardcoded (see functions/_lib/sentry.ts) — no env var.
 }
 

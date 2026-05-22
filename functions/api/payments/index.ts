@@ -1,30 +1,36 @@
 // GET /api/payments?sessionId=X — payment summary for one session. Visitor
 // sees their own; admin sees anyone's. Returns:
-//   { rows: PaymentRow[], hasPaidDeposit: boolean, custodianStatus: CustodianStatus,
-//     stripeMode: 'test' | 'live' | 'unset' }
+//   { rows, custodianStatus, stripeMode, build, scoping }
 //
-// hasPaidDeposit is a derived convenience: true when there's at least one paid
-// row of a one-time kind (tier1 / tier2-deposit / tier3). The /me UI flips
-// "Pay now" → "Paid ✓" off this flag.
+// `build` is the installment summary the /me UI renders directly — the server
+// owns all pricing math (see functions/_lib/pricing.ts), so the client never
+// computes an amount. It carries the next unpaid leg + its amount (with the
+// scoping credit already applied to leg 1), or signals a Tier-4 quote pending.
 //
 // stripeMode lets the UI render a visible "TEST MODE" pill so visitors don't
-// mistake a $300 sandbox charge for a real one. Derived from the secret key
-// prefix (sk_test_*, sk_live_*). 'unset' when STRIPE_SECRET_KEY isn't
-// configured — in that case Checkout itself 503s, so the UI shouldn't show
-// Pay buttons; we still report the mode for transparency.
+// mistake a sandbox charge for a real one. Derived from the secret-key prefix.
 
 import { currentEmail } from '../../_lib/auth'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
 import { badRequest, forbidden, notFound, ok, unauthorized } from '../../_lib/json'
-import { canAccessSession, type SessionRow } from '../../_lib/sessions'
+import { buildInstallmentPlan } from '../../_lib/pricing'
+import { canAccessSession, loadSession } from '../../_lib/sessions'
 
 export type CustodianStatus = 'none' | 'active' | 'past_due' | 'canceled' | 'switched_to_tout_a_toi'
 
 export interface PaymentRow {
   id: string
   session_id: string
+  /** 'build' | 'scoping' | 'custodian'. */
   kind: string
+  /** build only: 1-4. NULL for scoping / custodian. */
+  tier: number | null
+  /** build only: 1-based leg index and total legs. NULL otherwise. */
+  installment_index: number | null
+  installment_of: number | null
+  /** custodian only: 'watch' | 'care'. NULL otherwise. */
+  custodian_plan: string | null
   amount_cents: number
   currency: string
   status: string
@@ -36,22 +42,25 @@ export interface PaymentRow {
   created_at: number
   paid_at: number | null
   refunded_at: number | null
-  /** Cumulative refunded amount in cents (added in 0016_payments_v2). Zero
-   * when nothing has been refunded; equal to amount_cents on full refund;
-   * a value in between signals a partial refund (status stays 'paid'). */
+  /** Cumulative refunded cents. 0 = nothing refunded; = amount_cents on a
+   * full refund; in between = partial (status stays 'paid'). */
   refunded_amount_cents: number
 }
 
-interface SessionWithCustodian extends SessionRow {
-  custodian_status: CustodianStatus | null
+/** Installment summary for the session's build tier. */
+export interface BuildSummary {
+  tier: number
+  /** Total installment legs (0 while a Tier-4 quote is pending). */
+  installmentCount: number
+  paidCount: number
+  /** 1-based index of the next unpaid leg; null = fully paid OR quote pending. */
+  nextIndex: number | null
+  /** CAD-cent amount for the next leg — scoping credit already applied to
+   *  leg 1. null when nextIndex is null. */
+  nextAmountCents: number | null
+  /** Tier 4 only: classified but not yet quoted by admin. */
+  quotePending: boolean
 }
-
-const ONE_TIME_KINDS: ReadonlySet<string> = new Set([
-  'tier1',
-  'tier2-deposit',
-  'tier2-final',
-  'tier3',
-])
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
@@ -61,22 +70,15 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const sessionId = url.searchParams.get('sessionId')
   if (!sessionId) return badRequest('sessionId required')
 
-  const session = await env.DB.prepare(
-    `SELECT id, email, intake_json, status, created_at, updated_at,
-            deleted_at, status_history,
-            showcased_at, showcase_title, showcase_tagline, tier,
-            custodian_status
-     FROM sessions WHERE id = ? AND deleted_at IS NULL`,
-  )
-    .bind(sessionId)
-    .first<SessionWithCustodian>()
-  if (!session) return notFound('session not found')
+  const session = await loadSession(env.DB, sessionId)
+  if (!session || session.deleted_at) return notFound('session not found')
 
   const admin = isAdmin(env, email)
   if (!canAccessSession(email, admin, session)) return forbidden()
 
   const res = await env.DB.prepare(
-    `SELECT id, session_id, kind, amount_cents, currency, status,
+    `SELECT id, session_id, kind, tier, installment_index, installment_of,
+            custodian_plan, amount_cents, currency, status,
             stripe_checkout_session_id, stripe_payment_intent_id,
             stripe_subscription_id, stripe_invoice_id, stripe_customer_id,
             created_at, paid_at, refunded_at, refunded_amount_cents
@@ -88,7 +90,43 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     .all<PaymentRow>()
   const rows = res.results ?? []
 
-  const hasPaidDeposit = rows.some((r) => r.status === 'paid' && ONE_TIME_KINDS.has(r.kind))
+  // Build installment summary — null for an unclassified or Tier-0 session.
+  let build: BuildSummary | null = null
+  if (session.tier != null && session.tier > 0) {
+    const plan = buildInstallmentPlan(session.tier, session.tier3_split, session.tier4_amount_cents)
+    const paidCount = rows.filter((r) => r.kind === 'build' && r.status === 'paid').length
+    if (plan == null) {
+      // Only a Tier-4 session with no quote yet reaches here.
+      build = {
+        tier: session.tier,
+        installmentCount: 0,
+        paidCount,
+        nextIndex: null,
+        nextAmountCents: null,
+        quotePending: true,
+      }
+    } else {
+      const nextIndex = paidCount < plan.length ? paidCount + 1 : null
+      let nextAmountCents: number | null = nextIndex != null ? plan[nextIndex - 1] : null
+      // Scoping credit applies once, to leg 1.
+      if (nextIndex === 1 && nextAmountCents != null) {
+        const credit = rows
+          .filter((r) => r.kind === 'scoping' && r.status === 'paid')
+          .reduce((sum, r) => sum + r.amount_cents, 0)
+        nextAmountCents = Math.max(50, nextAmountCents - credit)
+      }
+      build = {
+        tier: session.tier,
+        installmentCount: plan.length,
+        paidCount,
+        nextIndex,
+        nextAmountCents,
+        quotePending: false,
+      }
+    }
+  }
+
+  const scopingPaid = rows.some((r) => r.kind === 'scoping' && r.status === 'paid')
 
   const stripeMode: 'test' | 'live' | 'unset' = env.STRIPE_SECRET_KEY
     ? env.STRIPE_SECRET_KEY.startsWith('sk_live_')
@@ -98,8 +136,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   return ok({
     rows,
-    hasPaidDeposit,
     custodianStatus: (session.custodian_status ?? 'none') as CustodianStatus,
     stripeMode,
+    build,
+    scoping: { paid: scopingPaid },
   })
 }

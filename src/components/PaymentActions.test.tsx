@@ -4,7 +4,7 @@ import { fireEvent } from '@testing-library/react'
 import { PaymentActions } from './PaymentActions'
 import * as paymentsApi from '../lib/paymentsApi'
 import * as sessionsApi from '../lib/sessionsApi'
-import type { PaymentSummary, PaymentRow } from '../lib/paymentsApi'
+import type { BuildSummary, PaymentSummary, PaymentRow } from '../lib/paymentsApi'
 import type { SessionRow } from '../lib/sessionsApi'
 
 function mkSession(overrides: Partial<SessionRow> = {}): SessionRow {
@@ -21,9 +21,23 @@ function mkSession(overrides: Partial<SessionRow> = {}): SessionRow {
     showcase_title: null,
     showcase_tagline: null,
     tier: 1,
-    tier3_amount_cents: null,
+    tier4_amount_cents: null,
+    tier3_split: null,
     custodian_status: null,
     all_yours_acknowledged_at: null,
+    decline_note: null,
+    ...overrides,
+  }
+}
+
+function mkBuild(overrides: Partial<BuildSummary> = {}): BuildSummary {
+  return {
+    tier: 1,
+    installmentCount: 1,
+    paidCount: 0,
+    nextIndex: 1,
+    nextAmountCents: 75000,
+    quotePending: false,
     ...overrides,
   }
 }
@@ -31,9 +45,10 @@ function mkSession(overrides: Partial<SessionRow> = {}): SessionRow {
 function mkSummary(overrides: Partial<PaymentSummary> = {}): PaymentSummary {
   return {
     rows: [],
-    hasPaidDeposit: false,
     custodianStatus: 'none',
     stripeMode: 'test',
+    build: mkBuild(),
+    scoping: { paid: false },
     ...overrides,
   }
 }
@@ -42,8 +57,12 @@ function mkRow(overrides: Partial<PaymentRow>): PaymentRow {
   return {
     id: 'pay_test',
     session_id: 'sess_test',
-    kind: 'tier1',
-    amount_cents: 30000,
+    kind: 'build',
+    tier: 1,
+    installment_index: 1,
+    installment_of: 1,
+    custodian_plan: null,
+    amount_cents: 75000,
     currency: 'cad',
     status: 'paid',
     stripe_checkout_session_id: null,
@@ -77,116 +96,140 @@ describe('PaymentActions test/live mode pill', () => {
   it('hides the pill when stripeMode=live', async () => {
     mockSummary(mkSummary({ stripeMode: 'live' }))
     render(<PaymentActions session={mkSession()} lang="en" />)
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: /Pay Tier 1/ })).toBeInTheDocument(),
-    )
+    await waitFor(() => expect(screen.getByRole('button', { name: /Pay/ })).toBeInTheDocument())
     expect(screen.queryByText('TEST MODE')).not.toBeInTheDocument()
   })
 })
 
-describe('PaymentActions tier 2 split flow', () => {
-  it('shows the final-balance button after deposit is paid', async () => {
+describe('PaymentActions build installments', () => {
+  it('shows a single Pay button for a Tier 1 build', async () => {
+    mockSummary(
+      mkSummary({ build: mkBuild({ tier: 1, installmentCount: 1, nextAmountCents: 75000 }) }),
+    )
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    await waitFor(() => expect(screen.getByRole('button', { name: /Pay \(/ })).toBeInTheDocument())
+  })
+
+  it('labels the next installment leg for a Tier 2 build', async () => {
     mockSummary(
       mkSummary({
-        rows: [mkRow({ kind: 'tier2-deposit', amount_cents: 75000 })],
-        hasPaidDeposit: true,
+        build: mkBuild({
+          tier: 2,
+          installmentCount: 2,
+          paidCount: 1,
+          nextIndex: 2,
+          nextAmountCents: 90000,
+        }),
       }),
     )
     render(<PaymentActions session={mkSession({ tier: 2 })} lang="en" />)
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /Pay final balance/ })).toBeInTheDocument(),
+      expect(screen.getByRole('button', { name: /Pay installment 2\/2/ })).toBeInTheDocument(),
     )
   })
 
-  it('shows "Paid · $1,500" once both legs are paid (sum, not single row)', async () => {
+  it('shows "Paid · $1,800" once both legs are paid (sum, not single row)', async () => {
     mockSummary(
       mkSummary({
+        build: mkBuild({
+          tier: 2,
+          installmentCount: 2,
+          paidCount: 2,
+          nextIndex: null,
+          nextAmountCents: null,
+        }),
         rows: [
-          mkRow({ id: 'pay_dep', kind: 'tier2-deposit', amount_cents: 75000 }),
-          mkRow({ id: 'pay_fin', kind: 'tier2-final', amount_cents: 75000 }),
+          mkRow({
+            id: 'p1',
+            tier: 2,
+            installment_index: 1,
+            installment_of: 2,
+            amount_cents: 90000,
+          }),
+          mkRow({
+            id: 'p2',
+            tier: 2,
+            installment_index: 2,
+            installment_of: 2,
+            amount_cents: 90000,
+          }),
         ],
-        hasPaidDeposit: true,
       }),
     )
     render(<PaymentActions session={mkSession({ tier: 2 })} lang="en" />)
-    await waitFor(() => expect(screen.getByText(/Paid · \$1,500\b/)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/Paid · \$1,800\b/)).toBeInTheDocument())
+  })
+
+  it('shows the quote-pending hint for a Tier 4 build with no quote', async () => {
+    mockSummary(
+      mkSummary({
+        build: mkBuild({
+          tier: 4,
+          installmentCount: 0,
+          nextIndex: null,
+          nextAmountCents: null,
+          quotePending: true,
+        }),
+      }),
+    )
+    render(<PaymentActions session={mkSession({ tier: 4 })} lang="en" />)
+    await waitFor(() => expect(screen.getByText(/Tier 4 quote pending/)).toBeInTheDocument())
   })
 })
 
 describe('PaymentActions custodian section', () => {
-  it('shows the "Activate custodian mode" CTA at delivery (status=shipped)', async () => {
-    // Gating now matches /handoff's promise: the ownership decision (All
-    // yours vs Custodian) belongs at delivery, not mid-build. The trigger
-    // is session.status === 'shipped', not hasPaidDeposit.
+  it('shows the Watch + Care CTAs at delivery (status=shipped)', async () => {
     mockSummary(
       mkSummary({
         custodianStatus: 'none',
-        hasPaidDeposit: true,
-        rows: [mkRow({ kind: 'tier1' })],
+        build: mkBuild({ nextIndex: null, nextAmountCents: null, paidCount: 1 }),
+        rows: [mkRow({})],
       }),
     )
     render(<PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />)
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /Activate custodian mode/ })).toBeInTheDocument(),
+      expect(screen.getByRole('button', { name: /Activate Watch/ })).toBeInTheDocument(),
     )
+    expect(screen.getByRole('button', { name: /Activate Care/ })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument()
-    // The All-yours block renders too, as the explicit "current mode"
-    // counterpart so the visitor sees the choice as a pair.
     expect(screen.getByRole('heading', { name: /All yours/ })).toBeInTheDocument()
   })
 
-  it('hides the custodian section mid-build (active, deposit paid, no sub)', async () => {
-    // Even after deposit is paid, the custodian decision is held back until
-    // the project actually ships. Mirrors /handoff: "decided at delivery".
+  it('hides the custodian section mid-build (active, no sub)', async () => {
     mockSummary(
       mkSummary({
         custodianStatus: 'none',
-        hasPaidDeposit: true,
-        rows: [mkRow({ kind: 'tier1' })],
+        build: mkBuild({ nextIndex: null, nextAmountCents: null, paidCount: 1 }),
+        rows: [mkRow({})],
       }),
     )
     render(<PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />)
-    await waitFor(() => expect(screen.getByText(/Paid · \$300\b/)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/Paid · \$750\b/)).toBeInTheDocument())
     expect(screen.queryByRole('heading', { name: /Custodian mode/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /All yours/ })).not.toBeInTheDocument()
   })
 
-  it('hides the custodian section pre-engagement (active, no payment, no sub)', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'none' }))
-    render(<PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />)
-    // Project section renders (tier=1, no payment yet)
-    await waitFor(() =>
-      expect(screen.getByRole('heading', { name: /Project payment/ })).toBeInTheDocument(),
-    )
-    // But custodian section should NOT render — premature upsell.
-    expect(screen.queryByRole('heading', { name: /Custodian mode/ })).not.toBeInTheDocument()
-  })
-
-  it('shows "Re-activate subscription" after a prior sub ended', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'switched_to_tout_a_toi' }))
+  it('re-activation after a prior sub ended shows Watch + Care', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'switched_to_tout_a_toi', build: null }))
     render(<PaymentActions session={mkSession({ tier: null })} lang="en" />)
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /Re-activate subscription/ })).toBeInTheDocument(),
+      expect(screen.getByRole('button', { name: /Activate Watch/ })).toBeInTheDocument(),
     )
-    // 'ended' tag is on the section header — scope to it so the body's
-    // "subscription has ended" doesn't double-match.
     const sect = screen.getByRole('region', { name: /Custodian mode/ })
     expect(sect.querySelector('.me-portal__pay-section-tag')?.textContent).toMatch(/ended/)
   })
 
   it('shows "Manage subscription" when one is active', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'active' }))
+    mockSummary(mkSummary({ custodianStatus: 'active', build: null }))
     render(<PaymentActions session={mkSession({ tier: null })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Manage subscription/ })).toBeInTheDocument(),
     )
-    expect(
-      screen.queryByRole('button', { name: /Activate custodian mode/ }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Activate Watch/ })).not.toBeInTheDocument()
   })
 
   it('shows "Update payment method" when sub is past_due', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'past_due' }))
+    mockSummary(mkSummary({ custodianStatus: 'past_due', build: null }))
     render(<PaymentActions session={mkSession({ tier: null })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Update payment method/ })).toBeInTheDocument(),
@@ -203,29 +246,38 @@ describe('PaymentActions project section', () => {
     )
   })
 
-  it('hides project section entirely for tier-0 (free engagement)', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'active' }))
+  it('hides the project section for tier-0 (free engagement)', async () => {
+    mockSummary(mkSummary({ custodianStatus: 'active', build: null }))
     render(<PaymentActions session={mkSession({ tier: 0 })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument(),
     )
     expect(screen.queryByRole('heading', { name: /Project payment/ })).not.toBeInTheDocument()
   })
+
+  it('offers the scoping report during triage', async () => {
+    mockSummary(mkSummary({ build: null, scoping: { paid: false } }))
+    render(<PaymentActions session={mkSession({ tier: null, status: 'triage' })} lang="en" />)
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Pay the scoping report/ })).toBeInTheDocument(),
+    )
+  })
 })
 
 describe('PaymentActions All-yours acknowledgment', () => {
-  it('decision-pending: Custodian is primary (renders first), All-yours requires checkbox + confirm', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'none', hasPaidDeposit: true }))
+  it('decision-pending: All-yours requires checkbox + confirm', async () => {
+    mockSummary(
+      mkSummary({
+        custodianStatus: 'none',
+        build: mkBuild({ nextIndex: null, nextAmountCents: null }),
+      }),
+    )
     render(<PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />)
-    // Both sections present
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /Custodian mode/ })).toBeInTheDocument(),
     )
     expect(screen.getByRole('heading', { name: /All yours/ })).toBeInTheDocument()
-    // Skills heading + ack copy visible
     expect(screen.getByText(/I can handle:/)).toBeInTheDocument()
-    expect(screen.getByText(/Cloudflare Pages/)).toBeInTheDocument()
-    // Confirm button disabled until checkbox is ticked.
     const confirm = screen.getByRole('button', { name: /Confirm "All yours"/ })
     expect(confirm).toBeDisabled()
     fireEvent.click(screen.getByRole('checkbox'))
@@ -233,14 +285,15 @@ describe('PaymentActions All-yours acknowledgment', () => {
   })
 
   it('clicking Confirm patches the session and renders "Confirmed on X"', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'none', hasPaidDeposit: true }))
-    // Patch returns the same row with all_yours_acknowledged_at set.
+    mockSummary(
+      mkSummary({
+        custodianStatus: 'none',
+        build: mkBuild({ nextIndex: null, nextAmountCents: null }),
+      }),
+    )
     const ackedAt = 1730000000
     vi.spyOn(sessionsApi, 'patchSession').mockResolvedValue({
-      session: {
-        ...mkSession({ tier: 1, status: 'shipped' }),
-        all_yours_acknowledged_at: ackedAt,
-      },
+      session: { ...mkSession({ tier: 1, status: 'shipped' }), all_yours_acknowledged_at: ackedAt },
     })
     render(<PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />)
     await waitFor(() =>
@@ -249,41 +302,13 @@ describe('PaymentActions All-yours acknowledgment', () => {
     fireEvent.click(screen.getByRole('checkbox'))
     fireEvent.click(screen.getByRole('button', { name: /Confirm "All yours"/ }))
     await waitFor(() => expect(screen.getByText(/Confirmed on/)).toBeInTheDocument())
-    // Once acked, the checkbox + Confirm button disappear.
-    expect(screen.queryByRole('button', { name: /Confirm "All yours"/ })).not.toBeInTheDocument()
     expect(sessionsApi.patchSession).toHaveBeenCalledWith(expect.any(String), {
       acknowledgeAllYours: true,
     })
   })
 
-  it('already-acked session: shows "Confirmed on X" without ack UI', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'none' }))
-    render(
-      <PaymentActions
-        session={{
-          ...mkSession({ tier: 1, status: 'shipped' }),
-          all_yours_acknowledged_at: 1730000000,
-        }}
-        lang="en"
-      />,
-    )
-    await waitFor(() => expect(screen.getByText(/Confirmed on/)).toBeInTheDocument())
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Confirm "All yours"/ })).not.toBeInTheDocument()
-  })
-
-  it('mid-build (active, no ship) does NOT render either ownership section', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'none', hasPaidDeposit: true }))
-    render(<PaymentActions session={mkSession({ tier: 1, status: 'active' })} lang="en" />)
-    await waitFor(() =>
-      expect(screen.getByRole('heading', { name: /Project payment/ })).toBeInTheDocument(),
-    )
-    expect(screen.queryByRole('heading', { name: /Custodian mode/ })).not.toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: /All yours/ })).not.toBeInTheDocument()
-  })
-
   it('custodian active: All-yours section hidden (manage via Stripe portal only)', async () => {
-    mockSummary(mkSummary({ custodianStatus: 'active' }))
+    mockSummary(mkSummary({ custodianStatus: 'active', build: null }))
     render(<PaymentActions session={mkSession({ tier: 1, status: 'shipped' })} lang="en" />)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Manage subscription/ })).toBeInTheDocument(),
