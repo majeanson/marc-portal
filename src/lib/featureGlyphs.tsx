@@ -58,24 +58,24 @@ const GLYPHS: Record<FeatureId, ReactElement> = {
       <circle cx="8" cy="8" r="2.5" fill={HOLE} />
     </>
   ),
-  // pricing — a literal dollar sign. The one colour that talks money.
-  // dominant-baseline:central + y:8 centres it on the box regardless of
-  // font metrics; fontSize is sized so the glyph (incl. the $'s tall
-  // strokes) fits inside the 16-unit viewBox instead of clipping. x is
-  // nudged right to cancel the $'s left-leaning side bearing.
+  // pricing — a dollar sign. The one colour that talks money.
+  // Drawn as geometry, not live <text>: an S-curve stroke with a vertical
+  // bar through it. Both sub-paths are symmetric about x=8 and y=8, so the
+  // glyph is centred on the 8,8 box centre exactly — no font metrics, no
+  // per-platform baseline drift, no empirical nudge. Stroked (not filled)
+  // because an S-ribbon has no honest solid silhouette; strokeWidth 2.2 is
+  // the weight of the gear teeth, so it still reads at the 11px `sm` size.
   pricing: (
-    <text
-      x="8.2"
-      y="8"
-      textAnchor="middle"
-      dominantBaseline="central"
-      fontSize="10.3"
-      fontWeight="900"
-      fontFamily="'Libre Franklin', system-ui, sans-serif"
-      fill="currentColor"
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
-      $
-    </text>
+      <path d="M11.2 4.7C11.2 3 9.5 2.6 8 2.6 6.3 2.6 4.8 3.3 4.8 5.4 4.8 9 11.2 7.6 11.2 10.9 11.2 13 9.6 13.4 8 13.4 6.4 13.4 4.8 12.9 4.8 11" />
+      <path d="M8 1.2V14.8" />
+    </g>
   ),
   // keys — a key. "You keep the keys": ownership of the code.
   keys: (
