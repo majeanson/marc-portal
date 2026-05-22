@@ -133,6 +133,23 @@ export function Map({ lang }: { lang: Lang }) {
     document.title = `${t.crumb} — Marc`
   }, [t])
 
+  // Search hand-off: /carte?node=<id> (set by a site-search result's "on the
+  // map" link) scrolls the atlas to that node's card and pulses it, so a
+  // pinpoint lookup expands into context. The id is map-controlled, but the
+  // regex guard keeps the attribute selector safe from anything unexpected.
+  const focusNodeId = params.get('node')
+  useEffect(() => {
+    if (!focusNodeId || !/^[\w.-]+$/.test(focusNodeId)) return
+    const tid = window.setTimeout(() => {
+      const el = document.querySelector(`[data-search-node="${focusNodeId}"]`)
+      if (!(el instanceof HTMLElement)) return
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.classList.add('map-card-row--found')
+      window.setTimeout(() => el.classList.remove('map-card-row--found'), 2400)
+    }, 150)
+    return () => window.clearTimeout(tid)
+  }, [focusNodeId, layer])
+
   const filtered = useMemo(() => filterForViewer(MAP_DATA, isAdmin), [isAdmin])
 
   // When on the journeys layer with exactly one journey, surface its label

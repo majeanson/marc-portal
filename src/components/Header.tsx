@@ -5,6 +5,7 @@ import { useLangSwitch } from '../lib/useLangSwitch'
 import { HOME_SECTION_FEATURE } from '../lib/features'
 import { FeatureDot } from './FeatureDot'
 import { SessionSubHeader } from './SessionSubHeader'
+import { SiteSearch } from './SiteSearch'
 import { ThemeToggle } from './ThemeToggle'
 
 /** Marketing nav links — `id` is the home-section anchor (also the
@@ -101,6 +102,7 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
             </nav>
           )}
           <div className="site-header__right">
+            <SiteSearch lang={lang} />
             {!loading && (
               <div className="site-header__auth">
                 {email ? (

@@ -57,7 +57,7 @@ export function MapNodeCard({ node, lang, dim, leadBadge }: Props) {
   )
 
   return (
-    <li className="map-card-row" data-feature={node.feature}>
+    <li className="map-card-row" data-feature={node.feature} data-search-node={node.id}>
       {link ? (
         link.external ? (
           <a className={className} href={link.href} target="_blank" rel="noreferrer">
