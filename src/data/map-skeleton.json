@@ -530,6 +530,15 @@
       "file": "functions/api/intake-drafts.ts"
     },
     {
+      "id": "api.intake.transcribe",
+      "path": "/api/intake/transcribe",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/intake/transcribe.ts"
+    },
+    {
       "id": "api.me",
       "path": "/api/me",
       "methods": [

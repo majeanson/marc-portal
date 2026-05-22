@@ -40,6 +40,15 @@ binding = "MEDIA"
 bucket_name = "marc-portal-media"
 preview_bucket_name = "marc-portal-media"
 
+# Workers AI (feat-message-media). Cloudflare's in-network inference, used to
+# transcribe voice notes with Whisper (functions/_lib/transcribe.ts). The
+# binding has no resource to provision — enabling it is just this block. When
+# the block is absent, voice notes still upload + play; they carry a null
+# transcript (graceful degrade). Loi 25: Whisper runs inside Cloudflare, so a
+# voice recording never reaches a separate processor — see docs/loi-25-pia.md.
+[ai]
+binding = "AI"
+
 # Stripe — plaintext config (the Price ID for the $200/yr custodian
 # subscription). Per the wrangler-toml-managed-vars constraint of this project,
 # plaintext vars MUST live here, not in the dashboard (the dashboard's

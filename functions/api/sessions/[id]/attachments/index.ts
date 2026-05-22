@@ -1,7 +1,16 @@
-// POST /api/sessions/:id/attachments — upload one file via multipart/form-data
+// POST /api/sessions/:id/attachments — upload one item via multipart/form-data
 //                                       under field name "file". Returns the
 //                                       attachment row (without message_id;
 //                                       linking happens at message-send).
+//
+//   Three upload kinds, decided from the content type:
+//     file   — a document. Streamed straight to R2 (memory-thin).
+//     voice  — an audio recording. Buffered, magic-byte checked, transcribed
+//              at the edge (Whisper), then stored. transcript persists on the
+//              row; null when Workers AI is unavailable (graceful degrade).
+//     sketch — an Excalidraw scene (JSON). Buffered, parsed + shape-checked,
+//              then stored. Re-openable and replayable in-thread.
+//
 // GET  /api/sessions/:id/attachments — list pre-message (unlinked) uploads
 //                                       made by the current actor for this
 //                                       session. Useful for resumed flows.
@@ -22,17 +31,32 @@ import {
 } from '../../../../_lib/json'
 import { rateLimitCheck, rateLimitSweep } from '../../../../_lib/ratelimit'
 import { canAccessSession, loadSession } from '../../../../_lib/sessions'
+import { transcribeAudio } from '../../../../_lib/transcribe'
 import {
+  ATTACHMENT_COLUMNS,
+  attachmentKind,
   isAllowedContentType,
   MAX_ATTACHMENT_BYTES_PER_SESSION,
   MAX_ATTACHMENT_SIZE,
+  MAX_SKETCH_SIZE,
+  MAX_VOICE_SIZE,
   newAttachmentId,
   r2KeyFor,
   safeFilename,
   totalAttachmentBytesForSession,
   verifyMagicBytes,
+  verifyMagicBytesBuffer,
+  type AttachmentKind,
   type AttachmentRow,
 } from '../../../../_lib/attachments'
+
+/** Largest accepted upload, by kind. The voice + sketch paths buffer the
+ *  whole payload in memory, so they sit below the streamed-file ceiling. */
+function sizeCapFor(kind: AttachmentKind): number {
+  if (kind === 'voice') return MAX_VOICE_SIZE
+  if (kind === 'sketch') return MAX_SKETCH_SIZE
+  return MAX_ATTACHMENT_SIZE
+}
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }) => {
   if (!env.MEDIA) {
@@ -48,8 +72,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   if (session.deleted_at) return notFound()
   if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
 
-  // Throttle uploads. 30/h per email is plenty for thread-attached docs but
-  // tight enough that nobody's bulk-uploading.
+  // Throttle uploads. 30/h per email is plenty for thread-attached docs,
+  // voice notes and sketches but tight enough that nobody's bulk-uploading.
   const okEmail = await rateLimitCheck(env, `attachments:upload:email:${email}`, 30, 3600)
   if (!okEmail) return tooManyRequests('too many uploads in the last hour')
   await rateLimitSweep(env)
@@ -78,9 +102,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   }
 
   if (file.size === 0) return badRequest('empty file')
-  if (file.size > MAX_ATTACHMENT_SIZE) return payloadTooLarge('file exceeds 10 MB limit')
   if (!isAllowedContentType(file.type)) {
     return unsupportedMediaType(`content type not allowed: ${file.type || 'unknown'}`)
+  }
+  const kind = attachmentKind(file.type)
+  if (file.size > sizeCapFor(kind)) {
+    return payloadTooLarge(
+      `file exceeds the ${Math.round(sizeCapFor(kind) / 1024 / 1024)} MB limit`,
+    )
   }
 
   // Per-session storage ceiling. Sum of all existing attachment sizes on
@@ -91,35 +120,67 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     return payloadTooLarge('session storage budget reached — delete an older file first')
   }
 
-  // Magic-byte check: refuse a file whose first bytes don't match the
-  // declared Content-Type for the high-value image/PDF/Office classes. The
-  // client-supplied MIME isn't trusted; this is a defensive layer that
-  // catches the "rename evil.exe to thing.png" case. Returns a fresh stream
-  // (the original was consumed during inspection) — we MUST use it to write
-  // to R2 below; the original is now empty.
-  const magic = await verifyMagicBytes(file)
-  if (!magic.ok || !magic.stream) {
-    return unsupportedMediaType('file contents do not match declared type')
-  }
-
   const attachmentId = newAttachmentId()
   const r2Key = r2KeyFor(id, attachmentId)
   const filename = safeFilename(file.name)
   const now = Math.floor(Date.now() / 1000)
 
-  // Stream to R2. The .body is a ReadableStream — putting it directly avoids
-  // pulling the whole file into the worker's memory.
-  await env.MEDIA.put(r2Key, magic.stream, {
+  // Body destined for R2 — a stream for files, an ArrayBuffer for the
+  // voice/sketch paths (which must read the whole payload anyway).
+  let r2Body: ReadableStream | ArrayBuffer
+  let transcript: string | null = null
+
+  if (kind === 'file') {
+    // Magic-byte check on a streamed file: refuse a payload whose first bytes
+    // don't match the declared Content-Type for the high-value classes. The
+    // client-supplied MIME isn't trusted. Returns a fresh stream (the original
+    // was consumed during inspection) — we MUST use it for the R2 write.
+    const magic = await verifyMagicBytes(file)
+    if (!magic.ok || !magic.stream) {
+      return unsupportedMediaType('file contents do not match declared type')
+    }
+    r2Body = magic.stream
+  } else {
+    // voice + sketch: buffer the upload, then inspect it.
+    const buffer = await new Response(file.stream()).arrayBuffer()
+    const bytes = new Uint8Array(buffer)
+    if (!verifyMagicBytesBuffer(file.type, bytes)) {
+      return unsupportedMediaType('file contents do not match declared type')
+    }
+    if (kind === 'sketch') {
+      // A sketch must be a JSON object carrying an `elements` array — the
+      // shape SketchCanvas / NapkinReplay hydrate from. Anything else is a
+      // malformed or hostile payload.
+      try {
+        const parsed = JSON.parse(new TextDecoder().decode(bytes)) as { elements?: unknown }
+        if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.elements)) {
+          return badRequest('sketch must be a JSON scene with an elements array')
+        }
+      } catch {
+        return badRequest('sketch is not valid JSON')
+      }
+    }
+    if (kind === 'voice') {
+      // Transcribe at the edge. Best-effort: a null transcript (Workers AI
+      // off, or Whisper hiccup) still leaves a playable voice note.
+      transcript = await transcribeAudio(env, buffer)
+    }
+    r2Body = buffer
+  }
+
+  // Stream/put to R2.
+  await env.MEDIA.put(r2Key, r2Body, {
     httpMetadata: { contentType: file.type },
   })
 
   try {
     await env.DB.prepare(
       `INSERT INTO attachments
-         (id, session_id, message_id, uploaded_by, filename, content_type, size, r2_key, created_at)
-       VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?)`,
+         (id, session_id, message_id, uploaded_by, filename, content_type, size,
+          r2_key, created_at, kind, transcript)
+       VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-      .bind(attachmentId, id, email, filename, file.type, file.size, r2Key, now)
+      .bind(attachmentId, id, email, filename, file.type, file.size, r2Key, now, kind, transcript)
       .run()
   } catch (err) {
     // Roll back the R2 object so we don't leak orphans on DB write failures.
@@ -137,6 +198,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     size: file.size,
     r2_key: r2Key,
     created_at: now,
+    kind,
+    transcript,
   }
   return ok({ attachment: row })
 }
@@ -155,8 +218,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   // Pre-message uploads only. Linked attachments come back through the
   // /messages list — no point in showing them twice.
   const res = await env.DB.prepare(
-    `SELECT id, session_id, message_id, uploaded_by, filename, content_type,
-            size, r2_key, created_at
+    `SELECT ${ATTACHMENT_COLUMNS}
      FROM attachments
      WHERE session_id = ? AND uploaded_by = ? AND message_id IS NULL
      ORDER BY created_at ASC`,

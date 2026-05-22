@@ -139,21 +139,44 @@ async function applyCriticalCss(html) {
 async function snapshot(browser, url) {
   const page = await browser.newPage()
   try {
-    // networkidle: the homepage fires /api/public/projects + /api/capacity;
-    // `vite preview` has no Functions backend so those settle as failures —
-    // which is fine, the components fall back gracefully. We just need the
-    // requests to stop so the DOM is stable before we read it.
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 30_000 })
+    // Capture #root as React FIRST renders it — before any useEffect runs.
+    // A MutationObserver installed before the app boots grabs #root the
+    // instant React's first commit lands; useEffect (data fetches, the
+    // SectionRail scroll-progress, the clock greeting's siblings, …) only
+    // runs after paint, so this is the exact DOM the client produces on its
+    // own first render. Snapshotting the settled, post-effect DOM instead
+    // would not match that first render, and `hydrateRoot` would reject the
+    // snapshot and rebuild it — the destroy-and-repaint that drags LCP out.
+    await page.addInitScript(() => {
+      const grab = () => {
+        const r = document.getElementById('root')
+        if (r && r.firstElementChild && window.__preEffectRoot == null) {
+          window.__preEffectRoot = r.innerHTML
+        }
+      }
+      const wait = () => {
+        const r = document.getElementById('root')
+        if (r) new MutationObserver(grab).observe(r, { childList: true })
+        else requestAnimationFrame(wait)
+      }
+      wait()
+    })
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
     // The homepage root wrapper — present once <Home> has mounted.
     await page.waitForSelector('.app', { timeout: 30_000 })
     // Webfonts resolved, so the snapshot reflects the final layout.
     await page.evaluate(() => document.fonts.ready)
-    // outerHTML omits the doctype — prepend it so the file is a valid
-    // standards-mode document. The <script type="module"> tag stays in the
-    // captured markup, so the SPA still boots and re-renders over the
-    // snapshot. The post-useEffect <head> (title, meta description, og tags)
-    // is baked in too — an SEO bonus for crawlers that don't run JS.
-    const outer = await page.evaluate(() => document.documentElement.outerHTML)
+    // Let the post-paint effects settle — Home's effect writes the per-
+    // language <title>/meta/<html lang>, which we DO want baked into <head>.
+    await page.waitForTimeout(600)
+    // Take the post-effect document (so <head> carries the right language),
+    // but swap #root back to the pre-effect first render so the body hydrates
+    // clean. outerHTML omits the doctype — prepend it for a valid document.
+    const outer = await page.evaluate(() => {
+      const pre = window.__preEffectRoot
+      if (pre != null) document.getElementById('root').innerHTML = pre
+      return document.documentElement.outerHTML
+    })
     return '<!doctype html>\n' + outer
   } finally {
     await page.close()

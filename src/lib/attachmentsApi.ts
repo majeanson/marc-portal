@@ -5,9 +5,19 @@
  */
 
 import { api } from './api'
-import type { AttachmentRow } from './sessionsApi'
+import type { AttachmentKind, AttachmentRow } from './sessionsApi'
 
-export type { AttachmentRow }
+export type { AttachmentKind, AttachmentRow }
+
+/** Excalidraw's vendor MIME — mirrors EXCALIDRAW_CONTENT_TYPE on the server. */
+export const EXCALIDRAW_CONTENT_TYPE = 'application/vnd.excalidraw+json'
+
+function uploadForm(sessionId: string, form: FormData): Promise<{ attachment: AttachmentRow }> {
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/attachments`, {
+    method: 'POST',
+    formData: form,
+  })
+}
 
 /**
  * Upload a single file. Returns the saved row. The file lives in R2; the
@@ -19,10 +29,37 @@ export async function uploadAttachment(
 ): Promise<{ attachment: AttachmentRow }> {
   const form = new FormData()
   form.append('file', file)
-  return api(`/api/sessions/${encodeURIComponent(sessionId)}/attachments`, {
-    method: 'POST',
-    formData: form,
-  })
+  return uploadForm(sessionId, form)
+}
+
+/**
+ * Upload a recorded voice note. The server transcribes it at the edge
+ * (Whisper) and the returned row carries `kind: 'voice'` + a transcript.
+ */
+export async function uploadVoice(
+  sessionId: string,
+  blob: Blob,
+): Promise<{ attachment: AttachmentRow }> {
+  // Name the file by container so a download has a sensible extension.
+  const ext = blob.type.includes('ogg') ? 'ogg' : blob.type.includes('mp4') ? 'm4a' : 'webm'
+  const form = new FormData()
+  form.append('file', new File([blob], `voice-note.${ext}`, { type: blob.type }))
+  return uploadForm(sessionId, form)
+}
+
+/**
+ * Upload an Excalidraw sketch. The scene (an `{ elements }` object) is stored
+ * as JSON; the returned row carries `kind: 'sketch'` and the thread re-opens
+ * it on the canvas.
+ */
+export async function uploadSketch(
+  sessionId: string,
+  scene: { elements: unknown[] },
+): Promise<{ attachment: AttachmentRow }> {
+  const json = JSON.stringify({ elements: scene.elements })
+  const form = new FormData()
+  form.append('file', new File([json], 'sketch.excalidraw', { type: EXCALIDRAW_CONTENT_TYPE }))
+  return uploadForm(sessionId, form)
 }
 
 /** Pre-message uploads I made on this session, that haven't been linked yet. */

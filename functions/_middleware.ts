@@ -41,6 +41,11 @@ const CSRF_EXEMPT_PATHS: ReadonlySet<string> = new Set([
   // Unauth public submission. Matches the /api/auth/request-link pattern:
   // pre-auth, no cookie to ride on, abuse is gated by IP + email rate limits.
   '/api/vouches',
+  // Intake voice-note transcription. The intake form is open to anonymous
+  // visitors, who never receive an mp_csrf cookie — so, like /api/vouches,
+  // this is exempt and abuse is bounded by a per-IP rate limit instead. The
+  // audio is transcribed and discarded; nothing is stored.
+  '/api/intake/transcribe',
 ])
 
 const SAFE_METHODS: ReadonlySet<string> = new Set(['GET', 'HEAD', 'OPTIONS'])

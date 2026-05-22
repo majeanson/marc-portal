@@ -13,6 +13,7 @@ import type { FormData } from '../components/intake/TypeForm'
 import { Confirmation } from '../components/intake/Confirmation'
 import type { ProblemType } from '../lib/intakeSchemas'
 import type { NapkinSketch } from '../lib/napkin'
+import type { VoiceNapkin } from '../lib/intakeMediaApi'
 import { flagSet, flagWrite, loadDraft, saveDraft, clearDraft } from '../lib/draft'
 import { useAuth } from '../lib/authContext'
 import {
@@ -43,6 +44,9 @@ interface IntakeDraft {
   /** Optional Excalidraw sketch attached inline in the form step. The
    *  editable scene travels with the intake — not just a flat PNG. */
   sketch?: NapkinSketch
+  /** Optional voice note recorded inline in the form step. Transcribed at the
+   *  edge and discarded — only the transcript text rides in the draft. */
+  voiceNapkin?: VoiceNapkin
 }
 
 const VIBE_FLAG = 'intake-vibe-accepted'
@@ -263,6 +267,9 @@ export function Intake({ lang }: { lang: Lang }) {
       // scene + a PNG snapshot ship inside session.intake_json; cleared with
       // the rest of the draft on success.
       napkin: draft.sketch,
+      // The inline voice note, if the visitor recorded one — transcript only
+      // (the audio was transcribed at the edge and never stored).
+      voiceNapkin: draft.voiceNapkin,
     }
 
     // If the visitor is signed in (and is the same email), create the session
@@ -474,6 +481,10 @@ export function Intake({ lang }: { lang: Lang }) {
                 sketch={draft.sketch ?? null}
                 onSketchChange={(sketch) =>
                   setDraft((d) => ({ ...d, sketch: sketch ?? undefined }))
+                }
+                voiceNapkin={draft.voiceNapkin ?? null}
+                onVoiceNapkinChange={(voiceNapkin) =>
+                  setDraft((d) => ({ ...d, voiceNapkin: voiceNapkin ?? undefined }))
                 }
               />
             )}

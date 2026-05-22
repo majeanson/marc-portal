@@ -18,7 +18,7 @@ import {
   unauthorized,
 } from '../../../../_lib/json'
 import { canAccessSession, loadSession } from '../../../../_lib/sessions'
-import type { AttachmentRow } from '../../../../_lib/attachments'
+import { ATTACHMENT_COLUMNS, type AttachmentRow } from '../../../../_lib/attachments'
 
 async function loadAttachment(
   env: Env,
@@ -26,8 +26,7 @@ async function loadAttachment(
   attId: string,
 ): Promise<AttachmentRow | null> {
   return env.DB.prepare(
-    `SELECT id, session_id, message_id, uploaded_by, filename, content_type,
-            size, r2_key, created_at
+    `SELECT ${ATTACHMENT_COLUMNS}
      FROM attachments WHERE id = ? AND session_id = ?`,
   )
     .bind(attId, sessionId)
@@ -58,9 +57,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   const obj = await env.MEDIA.get(att.r2_key)
   if (!obj) return notFound()
 
-  // Inline for images (so they preview) and attachment otherwise (so the
-  // browser downloads with the original filename instead of opening it).
-  const disposition = att.content_type.startsWith('image/') ? 'inline' : 'attachment'
+  // Inline for the kinds the thread renders in place — images preview,
+  // voice notes feed an <audio> element, sketches are fetched as JSON by
+  // the canvas. Everything else downloads with its original filename.
+  const ct = att.content_type.toLowerCase()
+  const inline = ct.startsWith('image/') || att.kind === 'voice' || att.kind === 'sketch'
+  const disposition = inline ? 'inline' : 'attachment'
   return new Response(obj.body, {
     headers: {
       'content-type': att.content_type,

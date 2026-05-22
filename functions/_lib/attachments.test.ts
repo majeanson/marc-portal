@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import {
+  attachmentKind,
+  baseContentType,
+  EXCALIDRAW_CONTENT_TYPE,
   isAllowedContentType,
   MAX_ATTACHMENT_SIZE,
   MAX_ATTACHMENTS_PER_MESSAGE,
+  MAX_SKETCH_SIZE,
+  MAX_VOICE_SIZE,
   newAttachmentId,
   r2KeyFor,
   safeFilename,
+  verifyMagicBytesBuffer,
 } from './attachments'
 
 describe('isAllowedContentType', () => {
@@ -43,6 +49,54 @@ describe('isAllowedContentType', () => {
 
   it('is case-insensitive', () => {
     expect(isAllowedContentType('IMAGE/PNG')).toBe(true)
+  })
+
+  it('accepts audio/* (voice notes) and the Excalidraw scene type', () => {
+    expect(isAllowedContentType('audio/webm')).toBe(true)
+    expect(isAllowedContentType('audio/webm;codecs=opus')).toBe(true)
+    expect(isAllowedContentType('audio/ogg')).toBe(true)
+    expect(isAllowedContentType('audio/mp4')).toBe(true)
+    expect(isAllowedContentType(EXCALIDRAW_CONTENT_TYPE)).toBe(true)
+  })
+})
+
+describe('baseContentType', () => {
+  it('strips the codecs / charset parameter', () => {
+    expect(baseContentType('audio/webm;codecs=opus')).toBe('audio/webm')
+    expect(baseContentType('text/plain; charset=utf-8')).toBe('text/plain')
+  })
+  it('lowercases', () => {
+    expect(baseContentType('AUDIO/WEBM')).toBe('audio/webm')
+  })
+})
+
+describe('attachmentKind', () => {
+  it('classifies voice, sketch and file', () => {
+    expect(attachmentKind('audio/webm;codecs=opus')).toBe('voice')
+    expect(attachmentKind('audio/mp4')).toBe('voice')
+    expect(attachmentKind(EXCALIDRAW_CONTENT_TYPE)).toBe('sketch')
+    expect(attachmentKind('image/png')).toBe('file')
+    expect(attachmentKind('application/pdf')).toBe('file')
+    expect(attachmentKind('application/json')).toBe('file')
+  })
+})
+
+describe('verifyMagicBytesBuffer', () => {
+  it('accepts a WebM clip with the EBML header', () => {
+    const ok = new Uint8Array([0x1a, 0x45, 0xdf, 0xa3, 0x00, 0x00])
+    expect(verifyMagicBytesBuffer('audio/webm;codecs=opus', ok)).toBe(true)
+  })
+  it('rejects a WebM clip whose bytes lie', () => {
+    const bad = new Uint8Array([0x00, 0x00, 0x00, 0x00])
+    expect(verifyMagicBytesBuffer('audio/webm', bad)).toBe(false)
+  })
+  it('accepts an Ogg clip with the OggS header', () => {
+    const ok = new Uint8Array([0x4f, 0x67, 0x67, 0x53, 0x00])
+    expect(verifyMagicBytesBuffer('audio/ogg', ok)).toBe(true)
+  })
+  it('passes through types with no known signature (sketch JSON, mp4)', () => {
+    expect(verifyMagicBytesBuffer(EXCALIDRAW_CONTENT_TYPE, new Uint8Array([0x7b]))).toBe(true)
+    expect(verifyMagicBytesBuffer('audio/mp4', new Uint8Array([0x00]))).toBe(true)
   })
 })
 
@@ -102,5 +156,12 @@ describe('constants', () => {
 
   it('per-message ceiling is 5', () => {
     expect(MAX_ATTACHMENTS_PER_MESSAGE).toBe(5)
+  })
+
+  it('voice + sketch ceilings sit below the streamed-file ceiling', () => {
+    expect(MAX_VOICE_SIZE).toBe(8 * 1024 * 1024)
+    expect(MAX_SKETCH_SIZE).toBe(2 * 1024 * 1024)
+    expect(MAX_VOICE_SIZE).toBeLessThan(MAX_ATTACHMENT_SIZE)
+    expect(MAX_SKETCH_SIZE).toBeLessThan(MAX_ATTACHMENT_SIZE)
   })
 })

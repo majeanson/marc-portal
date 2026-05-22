@@ -52,6 +52,11 @@ export interface SessionRow {
   decline_note: string | null
 }
 
+/** What an attachment is — mirrors AttachmentKind in functions/_lib/attachments.ts.
+ *  'file' = a picked document, 'voice' = an audio recording (carries a
+ *  transcript), 'sketch' = an Excalidraw scene. */
+export type AttachmentKind = 'file' | 'voice' | 'sketch'
+
 export interface AttachmentRow {
   id: string
   session_id: string
@@ -62,6 +67,10 @@ export interface AttachmentRow {
   size: number
   r2_key: string
   created_at: number
+  /** 'file' | 'voice' | 'sketch'. */
+  kind: AttachmentKind
+  /** Voice notes only: the edge-transcribed text. NULL otherwise. */
+  transcript: string | null
 }
 
 export interface MessageRow {

@@ -5,6 +5,9 @@ import { getSchemaForType, localized } from '../../lib/intakeSchemas'
 import type { FieldDef, ProblemType } from '../../lib/intakeSchemas'
 import { exportApiToPng } from '../../lib/napkin'
 import type { ExcalidrawAPI, NapkinSketch } from '../../lib/napkin'
+import { VoiceRecorder } from '../VoiceRecorder'
+import { transcribeIntakeVoice, type VoiceNapkin } from '../../lib/intakeMediaApi'
+import { ApiError } from '../../lib/api'
 
 // Excalidraw is heavy — keep <SketchCanvas> (and the ~600 KB chunk it pulls)
 // behind React.lazy so word-first visitors who never open the sketch panel
@@ -43,6 +46,8 @@ export function TypeForm({
   submitError = null,
   sketch = null,
   onSketchChange,
+  voiceNapkin = null,
+  onVoiceNapkinChange,
 }: {
   lang: Lang
   type: ProblemType
@@ -57,10 +62,16 @@ export function TypeForm({
   /** Persist (or clear, with null) the sketch into the draft. When omitted,
    *  the inline sketch panel is not rendered at all. */
   onSketchChange?: (sketch: NapkinSketch | null) => void
+  /** The visitor's transcribed voice note, carried in the intake draft. */
+  voiceNapkin?: VoiceNapkin | null
+  /** Persist (or clear, with null) the voice note. When omitted, the inline
+   *  voice panel is not rendered at all. */
+  onVoiceNapkinChange?: (voice: VoiceNapkin | null) => void
 }) {
   const t = DICT[lang].intake.form
   const tConf = DICT[lang].intake.confirmation
   const tNapkin = DICT[lang].napkin
+  const tMedia = DICT[lang].media
   const schema = getSchemaForType(type)
   const handoffMode = (values[HANDOFF_MODE_KEY] as HandoffMode) || HANDOFF_DEFAULT
   const handoffHref = lang === 'fr' ? '/handoff' : '/en/handoff'
@@ -145,6 +156,28 @@ export function TypeForm({
     apiRef.current = null
     setSketchOpen(false)
     onSketchChange?.(null)
+  }
+
+  // ── Inline voice note ──────────────────────────────────────────────────
+  // A voice note recorded straight into the intake. It is transcribed at the
+  // edge and discarded — only the text rides in the intake draft (voiceNapkin),
+  // so a visitor who would rather talk than type still leaves a written intake.
+  const [voiceOpen, setVoiceOpen] = useState(!!voiceNapkin)
+  const [voiceBusy, setVoiceBusy] = useState(false)
+  const [voiceError, setVoiceError] = useState<string | null>(null)
+
+  const onIntakeVoice = async (blob: Blob) => {
+    if (voiceBusy) return
+    setVoiceError(null)
+    setVoiceBusy(true)
+    try {
+      const { transcript } = await transcribeIntakeVoice(blob)
+      onVoiceNapkinChange?.({ transcript, savedAt: new Date().toISOString() })
+    } catch (err) {
+      setVoiceError(err instanceof ApiError ? err.message : tMedia.voice.error)
+    } finally {
+      setVoiceBusy(false)
+    }
   }
 
   const allRequiredFilled = schema.fields.every(
@@ -264,6 +297,82 @@ export function TypeForm({
                   className="napkin__desc-input"
                 />
               </label>
+            </div>
+          )}
+        </div>
+      )}
+
+      {onVoiceNapkinChange && (
+        <div className="intake__voice">
+          {!voiceOpen ? (
+            <button
+              type="button"
+              className="intake__sketch-toggle mono"
+              onClick={() => setVoiceOpen(true)}
+            >
+              {voiceNapkin ? tMedia.intake.voiceReopen : tMedia.intake.voiceTeaser}
+            </button>
+          ) : (
+            <div className="intake__sketch-panel">
+              <div className="intake__sketch-head">
+                <h3 className="intake__sketch-title">{tMedia.intake.title}</h3>
+                <div className="intake__sketch-actions mono">
+                  <button
+                    type="button"
+                    className="intake__sketch-link"
+                    onClick={() => setVoiceOpen(false)}
+                  >
+                    {tMedia.intake.voiceHide}
+                  </button>
+                  {voiceNapkin && (
+                    <button
+                      type="button"
+                      className="intake__sketch-link intake__sketch-link--remove"
+                      onClick={() => {
+                        onVoiceNapkinChange(null)
+                        setVoiceError(null)
+                        setVoiceOpen(false)
+                      }}
+                    >
+                      {tMedia.intake.voiceRemove}
+                    </button>
+                  )}
+                </div>
+              </div>
+              {voiceNapkin ? (
+                // Transcript landed — the visitor reviews and corrects it.
+                // Whisper is good, not perfect, on Québécois French; the
+                // audio was the ground truth, this text is an editable draft.
+                <label className="napkin__desc">
+                  <span className="napkin__desc-label">{tMedia.intake.transcriptLabel}</span>
+                  <textarea
+                    value={voiceNapkin.transcript}
+                    onChange={(e) =>
+                      onVoiceNapkinChange({
+                        transcript: e.target.value,
+                        savedAt: voiceNapkin.savedAt,
+                      })
+                    }
+                    placeholder={tMedia.intake.transcriptPlaceholder}
+                    rows={4}
+                    className="napkin__desc-input"
+                  />
+                </label>
+              ) : (
+                <VoiceRecorder
+                  lang={lang}
+                  consent={tMedia.intake.voiceConsent}
+                  confirmLabel={tMedia.intake.voiceUse}
+                  busy={voiceBusy}
+                  onRecorded={onIntakeVoice}
+                  onCancel={() => setVoiceOpen(false)}
+                />
+              )}
+              {voiceError && (
+                <p className="form__error" role="alert">
+                  {voiceError}
+                </p>
+              )}
             </div>
           )}
         </div>

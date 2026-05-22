@@ -21,6 +21,7 @@ import { canAccessSession, loadSession, primaryAdminEmail } from '../../../_lib/
 import { getLang } from '../../../_lib/userPrefs'
 import type { MessageRow } from '../../../_lib/sessions'
 import {
+  ATTACHMENT_COLUMNS,
   listAttachmentsForMessages,
   MAX_ATTACHMENTS_PER_MESSAGE,
   type AttachmentRow,
@@ -141,8 +142,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   if (attachmentIds.length > 0) {
     const placeholders = attachmentIds.map(() => '?').join(',')
     const r = await env.DB.prepare(
-      `SELECT id, session_id, message_id, uploaded_by, filename, content_type,
-              size, r2_key, created_at
+      `SELECT ${ATTACHMENT_COLUMNS}
        FROM attachments WHERE message_id = ? AND id IN (${placeholders})
        ORDER BY created_at ASC`,
     )

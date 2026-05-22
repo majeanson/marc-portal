@@ -10,6 +10,11 @@ export interface Env {
   // threads. When unset, attachment endpoints return 503 and the UI hides
   // the file picker. The rest of the app works unchanged.
   MEDIA?: R2Bucket
+  // feat-message-media: optional Workers AI binding (Cloudflare's in-network
+  // inference). Used by functions/_lib/transcribe.ts to turn a voice note
+  // into text with Whisper. When unset, voice notes still upload and play —
+  // they just carry a null transcript (graceful degrade, like MEDIA above).
+  AI?: Ai
   // feat-custom-domain-onboarding: optional CF API credentials. When set, the
   // operator's new-tenant wizard auto-attaches the buyer's domain to this CF
   // Pages project. When unset (dev or pre-config), wizard falls back to the

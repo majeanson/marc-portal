@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DICT, type Lang } from '../i18n'
 import { Header } from '../components/Header'
@@ -39,10 +39,20 @@ import {
   deleteAttachment,
   formatFileSize,
   uploadAttachment,
+  uploadSketch,
+  uploadVoice,
   type AttachmentRow,
 } from '../lib/attachmentsApi'
-import type { NapkinScene } from '../lib/napkin'
+import type { ExcalidrawAPI, NapkinScene } from '../lib/napkin'
+import type { VoiceNapkin } from '../lib/intakeMediaApi'
 import { NapkinReplay } from '../components/NapkinReplay'
+import { VoiceRecorder } from '../components/VoiceRecorder'
+
+// Excalidraw is ~600 KB — the compose-box sketch surface stays behind
+// React.lazy so a thread the visitor never sketches into doesn't pay for it.
+const SketchCanvas = lazy(() =>
+  import('../components/SketchCanvas').then((m) => ({ default: m.SketchCanvas })),
+)
 
 interface ParsedNapkin {
   png: string
@@ -63,6 +73,9 @@ interface ParsedIntake {
   /** Optional Excalidraw sketch attached on the intake form. The PNG renders
    * at a glance; the editable scene (newer intakes) can be opened interactively. */
   napkin?: ParsedNapkin
+  /** Optional voice note recorded on the intake form — transcript only (the
+   * audio is transcribed at the edge and discarded; see intakeMediaApi.ts). */
+  voiceNapkin?: VoiceNapkin
 }
 
 function tryParseIntake(raw: string | null): ParsedIntake | null {
@@ -100,6 +113,20 @@ function tryParseIntake(raw: string | null): ParsedIntake | null {
           scene,
         }
       }
+      let voiceNapkin: VoiceNapkin | undefined
+      const vn = (obj as { voiceNapkin?: unknown }).voiceNapkin
+      if (
+        vn &&
+        typeof vn === 'object' &&
+        typeof (vn as VoiceNapkin).transcript === 'string' &&
+        (vn as VoiceNapkin).transcript.trim().length > 0
+      ) {
+        voiceNapkin = {
+          transcript: (vn as VoiceNapkin).transcript,
+          savedAt:
+            typeof (vn as VoiceNapkin).savedAt === 'string' ? (vn as VoiceNapkin).savedAt : '',
+        }
+      }
       return {
         type: obj.type as ProblemType,
         account: obj.account,
@@ -108,6 +135,7 @@ function tryParseIntake(raw: string | null): ParsedIntake | null {
         waitlist: obj.waitlist,
         lang: obj.lang,
         napkin,
+        voiceNapkin,
       }
     }
   } catch {
@@ -306,6 +334,7 @@ const COPY = {
 
 export function SessionPage({ lang }: { lang: Lang }) {
   const t = COPY[lang]
+  const tMedia = DICT[lang].media
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { email, isAdmin, loading: authLoading } = useAuth()
@@ -332,6 +361,11 @@ export function SessionPage({ lang }: { lang: Lang }) {
   const [pendingAttachments, setPendingAttachments] = useState<AttachmentRow[]>([])
   const [uploading, setUploading] = useState(false)
   const [attachError, setAttachError] = useState<string | null>(null)
+  // Rich-media compose: which inline panel is open ('voice' | 'sketch'), and
+  // a busy flag while the recorded clip / drawn scene is being uploaded.
+  const [composeMedia, setComposeMedia] = useState<'none' | 'voice' | 'sketch'>('none')
+  const [mediaBusy, setMediaBusy] = useState(false)
+  const sketchApiRef = useRef<ExcalidrawAPI | null>(null)
   const langPrefix = lang === 'en' ? '/en' : ''
 
   // Refresh callable from event handlers only (post-send, visibility).
@@ -509,6 +543,49 @@ export function SessionPage({ lang }: { lang: Lang }) {
     } catch {
       // Restore on failure so user can retry.
       setPendingAttachments((prev) => [...prev, att])
+    }
+  }
+
+  // A recorded voice note → uploaded as a 'voice' attachment (server transcribes
+  // it at the edge) and staged into the pending list like any other upload.
+  const onVoiceRecorded = async (blob: Blob) => {
+    if (!id || mediaBusy || pendingAttachments.length >= 5) return
+    setAttachError(null)
+    setMediaBusy(true)
+    try {
+      const r = await uploadVoice(id, blob)
+      setPendingAttachments((prev) => [...prev, r.attachment])
+      setComposeMedia('none')
+    } catch (err) {
+      setAttachError(err instanceof ApiError ? err.message : t.attachError)
+    } finally {
+      setMediaBusy(false)
+    }
+  }
+
+  // The drawn Excalidraw scene → uploaded as a 'sketch' attachment. An empty
+  // canvas just closes the panel (nothing to attach).
+  const onAttachSketch = async () => {
+    if (!id || mediaBusy) return
+    const api = sketchApiRef.current
+    const elements = api ? [...api.getSceneElements()] : []
+    if (elements.length === 0) {
+      sketchApiRef.current = null
+      setComposeMedia('none')
+      return
+    }
+    if (pendingAttachments.length >= 5) return
+    setAttachError(null)
+    setMediaBusy(true)
+    try {
+      const r = await uploadSketch(id, { elements })
+      setPendingAttachments((prev) => [...prev, r.attachment])
+      sketchApiRef.current = null
+      setComposeMedia('none')
+    } catch (err) {
+      setAttachError(err instanceof ApiError ? err.message : t.attachError)
+    } finally {
+      setMediaBusy(false)
     }
   }
 
@@ -955,6 +1032,14 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     requiredEmptyConfirm={t.requiredEmptyConfirm}
                     onChange={onIntakeChange}
                   />
+                  {parsed.voiceNapkin && (
+                    <div className="session-voicenapkin">
+                      <span className="mono session-voicenapkin__label">
+                        🎙 {tMedia.thread.voiceLabel}
+                      </span>
+                      <p className="session-voicenapkin__text">{parsed.voiceNapkin.transcript}</p>
+                    </div>
+                  )}
                 </>
               ) : intakePretty ? (
                 <pre className="mono session-page__intake">{intakePretty}</pre>
@@ -1094,6 +1179,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                                   key={a.id}
                                   att={a}
                                   sessionId={session.id}
+                                  lang={lang}
                                   openLabel={t.attachOpen}
                                 />
                               ))}
@@ -1146,29 +1232,103 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 />
                 {pendingAttachments.length > 0 && (
                   <ul className="thread__attach-pending" aria-label="pending attachments">
-                    {pendingAttachments.map((a) => (
-                      <li key={a.id} className="thread__attach-chip">
-                        <span className="mono thread__attach-name">{a.filename}</span>
-                        <span className="mono thread__attach-size">{formatFileSize(a.size)}</span>
-                        <button
-                          type="button"
-                          className="link-btn mono thread__attach-remove"
-                          onClick={() => onRemoveAttachment(a)}
-                          aria-label={`${t.attachRemove} ${a.filename}`}
+                    {pendingAttachments.map((a) => {
+                      const chipLabel =
+                        a.kind === 'voice'
+                          ? tMedia.compose.voiceChip
+                          : a.kind === 'sketch'
+                            ? tMedia.compose.sketchChip
+                            : a.filename
+                      return (
+                        <li
+                          key={a.id}
+                          className={`thread__attach-chip thread__attach-chip--${a.kind}`}
                         >
-                          ×
-                        </button>
-                      </li>
-                    ))}
+                          <span className="mono thread__attach-name">{chipLabel}</span>
+                          {a.kind === 'file' && (
+                            <span className="mono thread__attach-size">
+                              {formatFileSize(a.size)}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            className="link-btn mono thread__attach-remove"
+                            onClick={() => onRemoveAttachment(a)}
+                            aria-label={`${t.attachRemove} ${chipLabel}`}
+                          >
+                            ×
+                          </button>
+                        </li>
+                      )
+                    })}
                   </ul>
                 )}
+
+                {composeMedia === 'voice' && (
+                  <div className="thread__media-panel">
+                    <VoiceRecorder
+                      lang={lang}
+                      consent={tMedia.compose.voiceConsent}
+                      confirmLabel={tMedia.compose.voiceAttach}
+                      busy={mediaBusy}
+                      onRecorded={onVoiceRecorded}
+                      onCancel={() => setComposeMedia('none')}
+                    />
+                  </div>
+                )}
+
+                {composeMedia === 'sketch' && (
+                  <div className="thread__media-panel">
+                    <p className="field__hint">{tMedia.compose.sketchHint}</p>
+                    <Suspense
+                      fallback={
+                        <div className="napkin__canvas-wrap">
+                          <div className="napkin__loading mono">
+                            {DICT[lang].napkin.loadingCanvas}
+                          </div>
+                        </div>
+                      }
+                    >
+                      <SketchCanvas
+                        loadingLabel={DICT[lang].napkin.loadingCanvas}
+                        onApiReady={(api) => {
+                          sketchApiRef.current = api
+                        }}
+                      />
+                    </Suspense>
+                    <div className="thread__media-panel-actions">
+                      <button
+                        type="button"
+                        className="hero__cta"
+                        disabled={mediaBusy}
+                        onClick={onAttachSketch}
+                      >
+                        {mediaBusy ? tMedia.compose.processing : tMedia.compose.sketchAttach}
+                      </button>
+                      <button
+                        type="button"
+                        className="link-btn mono"
+                        disabled={mediaBusy}
+                        onClick={() => {
+                          sketchApiRef.current = null
+                          setComposeMedia('none')
+                        }}
+                      >
+                        {tMedia.compose.sketchCancel}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="thread__form-actions">
                   <label className="link-btn mono thread__attach-trigger">
                     <input
                       type="file"
                       multiple
                       className="thread__attach-input"
-                      disabled={uploading || pendingAttachments.length >= 5}
+                      disabled={
+                        uploading || composeMedia !== 'none' || pendingAttachments.length >= 5
+                      }
                       onChange={(e) => {
                         void onAttach(e.target.files)
                         e.target.value = ''
@@ -1176,6 +1336,22 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     />
                     {uploading ? t.attaching : `+ ${t.attachLabel}`}
                   </label>
+                  <button
+                    type="button"
+                    className="link-btn mono thread__media-trigger"
+                    disabled={composeMedia !== 'none' || pendingAttachments.length >= 5}
+                    onClick={() => setComposeMedia('voice')}
+                  >
+                    {tMedia.compose.voiceTrigger}
+                  </button>
+                  <button
+                    type="button"
+                    className="link-btn mono thread__media-trigger"
+                    disabled={composeMedia !== 'none' || pendingAttachments.length >= 5}
+                    onClick={() => setComposeMedia('sketch')}
+                  >
+                    {tMedia.compose.sketchTrigger}
+                  </button>
                   <span className="field__hint thread__attach-max">{t.attachMax}</span>
                   {attachError && (
                     <span
@@ -1189,7 +1365,10 @@ export function SessionPage({ lang }: { lang: Lang }) {
                   <button
                     type="submit"
                     disabled={
-                      sending || uploading || (!draft.trim() && pendingAttachments.length === 0)
+                      sending ||
+                      uploading ||
+                      mediaBusy ||
+                      (!draft.trim() && pendingAttachments.length === 0)
                     }
                     className="hero__cta"
                   >
@@ -1219,16 +1398,107 @@ export function SessionPage({ lang }: { lang: Lang }) {
   )
 }
 
+/**
+ * One sketch attachment in a thread. The editable Excalidraw scene is fetched
+ * on demand (the ~600 KB canvas chunk + the network round-trip only land when
+ * a visitor actually opens it) and rendered through <NapkinReplay>, so a
+ * message sketch is pan/zoomable and replays stroke-by-stroke like the intake
+ * napkin does.
+ */
+function SketchAttachment({
+  att,
+  sessionId,
+  lang,
+}: {
+  att: AttachmentRow
+  sessionId: string
+  lang: Lang
+}) {
+  const tm = DICT[lang].media.thread
+  const [open, setOpen] = useState(false)
+  const [scene, setScene] = useState<NapkinScene | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  const reveal = async () => {
+    setOpen(true)
+    if (scene || failed) return
+    try {
+      const res = await fetch(attachmentUrl(sessionId, att.id), { credentials: 'same-origin' })
+      if (!res.ok) {
+        setFailed(true)
+        return
+      }
+      const json = (await res.json()) as { elements?: unknown }
+      if (json && Array.isArray(json.elements)) setScene({ elements: json.elements })
+      else setFailed(true)
+    } catch {
+      setFailed(true)
+    }
+  }
+
+  return (
+    <li className="thread__attach-tile thread__attach-tile--sketch">
+      <div className="thread__sketch-head">
+        <span className="mono thread__sketch-label">✎ {tm.sketchLabel}</span>
+        <button
+          type="button"
+          className="link-btn mono"
+          onClick={open ? () => setOpen(false) : reveal}
+        >
+          {open ? tm.sketchClose : tm.sketchOpen}
+        </button>
+      </div>
+      {open && scene && <NapkinReplay lang={lang} scene={scene} />}
+      {open && !scene && !failed && (
+        <div className="napkin__loading mono">{DICT[lang].napkin.loadingCanvas}</div>
+      )}
+      {open && failed && <p className="mono thread__transcript-pending">—</p>}
+    </li>
+  )
+}
+
 function AttachmentTile({
   att,
   sessionId,
+  lang,
   openLabel,
 }: {
   att: AttachmentRow
   sessionId: string
+  lang: Lang
   openLabel: string
 }) {
   const url = attachmentUrl(sessionId, att.id)
+  const tm = DICT[lang].media.thread
+
+  // Voice note — an inline player plus the edge transcript (collapsed; Marc
+  // reads to scan, listens when a session is borderline).
+  if (att.kind === 'voice') {
+    return (
+      <li className="thread__attach-tile thread__attach-tile--voice">
+        <div className="thread__voice">
+          <span className="mono thread__voice-label">🎙 {tm.voiceLabel}</span>
+          {/* No caption track for a visitor-recorded clip — the edge transcript
+              rendered just below is the accessible text equivalent. */}
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <audio className="thread__voice-player" src={url} controls preload="metadata" />
+        </div>
+        {att.transcript ? (
+          <details className="thread__transcript">
+            <summary className="mono thread__transcript-label">{tm.transcriptLabel}</summary>
+            <p className="thread__transcript-text">{att.transcript}</p>
+          </details>
+        ) : (
+          <p className="mono thread__transcript-pending">{tm.transcriptPending}</p>
+        )}
+      </li>
+    )
+  }
+
+  if (att.kind === 'sketch') {
+    return <SketchAttachment att={att} sessionId={sessionId} lang={lang} />
+  }
+
   const isImage = att.content_type.startsWith('image/')
   if (isImage) {
     return (
