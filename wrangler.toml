@@ -64,8 +64,8 @@ binding = "AI"
 # Care ($400/yr). Create each as a recurring CAD price in the Stripe Dashboard
 # (test mode now, live mode at the test→live cutover — Stripe isolates the
 # catalogs) and paste the price_xxx here.
-STRIPE_CUSTODIAN_WATCH_PRICE_ID = ""
-STRIPE_CUSTODIAN_CARE_PRICE_ID = ""
+STRIPE_CUSTODIAN_WATCH_PRICE_ID = "price_1TZzrhGnRBlK2p4G3pPXSyP3"
+STRIPE_CUSTODIAN_CARE_PRICE_ID = "price_1TZzrtGnRBlK2p4GfZx3BgeK"
 
 # Optional env vars (feat-2026-018 — automate buyer custom-domain attach).
 # When all three are set, /admin/fleet/new attaches the buyer's domain to this
