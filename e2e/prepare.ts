@@ -42,19 +42,25 @@ export async function settle(page: Page): Promise<void> {
       }),
   )
 
-  // Phase 2 — fonts ready, then every image fully loaded (or failed). A
-  // lazy image still in flight reserves no box until it lands.
+  // Phase 2 — fonts ready, then every *visible* image settled. Two guards
+  // matter here: skip images with no layout box — a display:none responsive
+  // variant never loads and fires neither `load` nor `error`, so waiting on
+  // it hangs forever — and cap each wait so a broken/stalled src can't hang
+  // the suite either. Phase 3 is the real height guarantee regardless.
   await page.evaluate(async () => {
     await document.fonts.ready
     await Promise.all(
-      Array.from(document.images).map((img) =>
-        img.complete
-          ? Promise.resolve()
-          : new Promise<void>((res) => {
-              img.addEventListener('load', () => res(), { once: true })
-              img.addEventListener('error', () => res(), { once: true })
+      Array.from(document.images)
+        .filter((img) => !img.complete && img.getClientRects().length > 0)
+        .map(
+          (img) =>
+            new Promise<void>((res) => {
+              const done = () => res()
+              img.addEventListener('load', done, { once: true })
+              img.addEventListener('error', done, { once: true })
+              setTimeout(done, 3000)
             }),
-      ),
+        ),
     )
   })
 
