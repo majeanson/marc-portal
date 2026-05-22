@@ -54,7 +54,7 @@
       "full": "/atelier/full/phone/me-data.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1156,
+      "fullH": 1235,
       "cropped": true
     },
     {
@@ -72,7 +72,7 @@
       "full": "/atelier/full/phone/root.png",
       "thumbW": 510,
       "thumbH": 816,
-      "fullH": 14802,
+      "fullH": 14881,
       "cropped": true
     },
     {
@@ -90,7 +90,7 @@
       "full": "/atelier/full/phone/en-me-data.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1131,
+      "fullH": 1210,
       "cropped": true
     },
     {
@@ -108,7 +108,7 @@
       "full": "/atelier/full/phone/en.png",
       "thumbW": 510,
       "thumbH": 816,
-      "fullH": 14194,
+      "fullH": 14274,
       "cropped": true
     },
     {
@@ -126,7 +126,7 @@
       "full": "/atelier/full/phone/tier-0.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6701,
+      "fullH": 6780,
       "cropped": true
     },
     {
@@ -144,7 +144,7 @@
       "full": "/atelier/full/phone/en-tier-0.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6406,
+      "fullH": 6485,
       "cropped": true
     },
     {
@@ -162,7 +162,7 @@
       "full": "/atelier/full/phone/intake.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1720,
+      "fullH": 1800,
       "cropped": true
     },
     {
@@ -180,7 +180,7 @@
       "full": "/atelier/full/phone/en-intake.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1695,
+      "fullH": 1775,
       "cropped": true
     },
     {
@@ -198,7 +198,7 @@
       "full": "/atelier/full/phone/parcours.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 5871,
+      "fullH": 5951,
       "cropped": true
     },
     {
@@ -216,7 +216,7 @@
       "full": "/atelier/full/phone/en-journey.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 5716,
+      "fullH": 5796,
       "cropped": true
     },
     {
@@ -234,7 +234,7 @@
       "full": "/atelier/full/phone/projects.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 3903,
+      "fullH": 3983,
       "cropped": true
     },
     {
@@ -252,7 +252,7 @@
       "full": "/atelier/full/phone/projects-empty.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1908,
+      "fullH": 1987,
       "cropped": true
     },
     {
@@ -270,7 +270,7 @@
       "full": "/atelier/full/phone/projects-error.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1924,
+      "fullH": 2003,
       "cropped": true
     },
     {
@@ -288,7 +288,7 @@
       "full": "/atelier/full/phone/en-projects.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 3858,
+      "fullH": 3937,
       "cropped": true
     },
     {
@@ -306,7 +306,7 @@
       "full": "/atelier/full/phone/vouches.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1888,
+      "fullH": 1968,
       "cropped": true
     },
     {
@@ -324,7 +324,7 @@
       "full": "/atelier/full/phone/vouches-empty.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1313,
+      "fullH": 1392,
       "cropped": true
     },
     {
@@ -342,7 +342,7 @@
       "full": "/atelier/full/phone/vouches-error.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1388,
+      "fullH": 1468,
       "cropped": true
     },
     {
@@ -360,7 +360,7 @@
       "full": "/atelier/full/phone/en-vouches.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1816,
+      "fullH": 1895,
       "cropped": true
     },
     {
@@ -378,7 +378,7 @@
       "full": "/atelier/full/phone/vouch.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1924,
+      "fullH": 2004,
       "cropped": true
     },
     {
@@ -396,7 +396,7 @@
       "full": "/atelier/full/phone/en-vouch.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1872,
+      "fullH": 1951,
       "cropped": true
     },
     {
@@ -414,7 +414,7 @@
       "full": "/atelier/full/phone/handoff.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 5877,
+      "fullH": 5957,
       "cropped": true
     },
     {
@@ -432,7 +432,7 @@
       "full": "/atelier/full/phone/en-handoff.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 5444,
+      "fullH": 5523,
       "cropped": true
     },
     {
@@ -450,7 +450,7 @@
       "full": "/atelier/full/phone/handoff-checklist.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 3781,
+      "fullH": 3860,
       "cropped": true
     },
     {
@@ -468,7 +468,7 @@
       "full": "/atelier/full/phone/en-handoff-checklist.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 3567,
+      "fullH": 3647,
       "cropped": true
     },
     {
@@ -486,7 +486,7 @@
       "full": "/atelier/full/phone/login.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1156,
+      "fullH": 1235,
       "cropped": true
     },
     {
@@ -504,7 +504,7 @@
       "full": "/atelier/full/phone/en-login.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1131,
+      "fullH": 1210,
       "cropped": true
     },
     {
@@ -522,7 +522,7 @@
       "full": "/atelier/full/phone/login-sent.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1200,
+      "fullH": 1280,
       "cropped": true
     },
     {
@@ -540,7 +540,7 @@
       "full": "/atelier/full/phone/en-login-sent.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1131,
+      "fullH": 1210,
       "cropped": true
     },
     {
@@ -558,7 +558,7 @@
       "full": "/atelier/full/phone/me.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1156,
+      "fullH": 1235,
       "cropped": true
     },
     {
@@ -576,7 +576,7 @@
       "full": "/atelier/full/phone/en-me.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1131,
+      "fullH": 1210,
       "cropped": true
     },
     {
@@ -594,7 +594,7 @@
       "full": "/atelier/full/phone/meta.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6530,
+      "fullH": 6610,
       "cropped": true
     },
     {
@@ -612,7 +612,7 @@
       "full": "/atelier/full/phone/en-meta.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6453,
+      "fullH": 6532,
       "cropped": true
     },
     {
@@ -630,7 +630,7 @@
       "full": "/atelier/full/phone/carte.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1881,
+      "fullH": 1961,
       "cropped": true
     },
     {
@@ -648,7 +648,7 @@
       "full": "/atelier/full/phone/en-map.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1838,
+      "fullH": 1918,
       "cropped": true
     },
     {
@@ -666,7 +666,7 @@
       "full": "/atelier/full/phone/confidentialite.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6412,
+      "fullH": 6492,
       "cropped": true
     },
     {
@@ -684,7 +684,7 @@
       "full": "/atelier/full/phone/en-privacy.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 5799,
+      "fullH": 5879,
       "cropped": true
     },
     {
@@ -702,7 +702,7 @@
       "full": "/atelier/full/phone/pia.png",
       "thumbW": 532,
       "thumbH": 851,
-      "fullH": 14342,
+      "fullH": 14422,
       "cropped": true
     },
     {
@@ -720,7 +720,7 @@
       "full": "/atelier/full/phone/en-pia.png",
       "thumbW": 532,
       "thumbH": 851,
-      "fullH": 14258,
+      "fullH": 14337,
       "cropped": true
     },
     {
@@ -737,8 +737,8 @@
       "thumb": "/atelier/thumbs/narrow/me-data.webp",
       "full": "/atelier/full/narrow/me-data.png",
       "thumbW": 600,
-      "thumbH": 674,
-      "fullH": 1123,
+      "thumbH": 721,
+      "fullH": 1202,
       "cropped": false
     },
     {
@@ -756,7 +756,7 @@
       "full": "/atelier/full/narrow/root.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12797,
+      "fullH": 12876,
       "cropped": true
     },
     {
@@ -773,8 +773,8 @@
       "thumb": "/atelier/thumbs/narrow/en-me-data.webp",
       "full": "/atelier/full/narrow/en-me-data.png",
       "thumbW": 600,
-      "thumbH": 662,
-      "fullH": 1104,
+      "thumbH": 710,
+      "fullH": 1183,
       "cropped": false
     },
     {
@@ -792,7 +792,7 @@
       "full": "/atelier/full/narrow/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12641,
+      "fullH": 12721,
       "cropped": true
     },
     {
@@ -810,7 +810,7 @@
       "full": "/atelier/full/narrow/tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5484,
+      "fullH": 5564,
       "cropped": true
     },
     {
@@ -828,7 +828,7 @@
       "full": "/atelier/full/narrow/en-tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5238,
+      "fullH": 5318,
       "cropped": true
     },
     {
@@ -845,8 +845,8 @@
       "thumb": "/atelier/thumbs/narrow/intake.webp",
       "full": "/atelier/full/narrow/intake.png",
       "thumbW": 600,
-      "thumbH": 807,
-      "fullH": 1345,
+      "thumbH": 854,
+      "fullH": 1424,
       "cropped": false
     },
     {
@@ -863,8 +863,8 @@
       "thumb": "/atelier/thumbs/narrow/en-intake.webp",
       "full": "/atelier/full/narrow/en-intake.png",
       "thumbW": 600,
-      "thumbH": 779,
-      "fullH": 1299,
+      "thumbH": 827,
+      "fullH": 1378,
       "cropped": false
     },
     {
@@ -882,7 +882,7 @@
       "full": "/atelier/full/narrow/parcours.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4396,
+      "fullH": 4475,
       "cropped": true
     },
     {
@@ -900,7 +900,7 @@
       "full": "/atelier/full/narrow/en-journey.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4215,
+      "fullH": 4295,
       "cropped": true
     },
     {
@@ -918,7 +918,7 @@
       "full": "/atelier/full/narrow/projects.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 2638,
+      "fullH": 2718,
       "cropped": true
     },
     {
@@ -935,9 +935,9 @@
       "thumb": "/atelier/thumbs/narrow/projects-empty.webp",
       "full": "/atelier/full/narrow/projects-empty.png",
       "thumbW": 600,
-      "thumbH": 929,
-      "fullH": 1548,
-      "cropped": false
+      "thumbH": 960,
+      "fullH": 1627,
+      "cropped": true
     },
     {
       "slug": "projects-error",
@@ -953,9 +953,9 @@
       "thumb": "/atelier/thumbs/narrow/projects-error.webp",
       "full": "/atelier/full/narrow/projects-error.png",
       "thumbW": 600,
-      "thumbH": 938,
-      "fullH": 1564,
-      "cropped": false
+      "thumbH": 960,
+      "fullH": 1643,
+      "cropped": true
     },
     {
       "slug": "en-projects",
@@ -972,7 +972,7 @@
       "full": "/atelier/full/narrow/en-projects.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 2599,
+      "fullH": 2678,
       "cropped": true
     },
     {
@@ -990,7 +990,7 @@
       "full": "/atelier/full/narrow/vouches.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1684,
+      "fullH": 1764,
       "cropped": true
     },
     {
@@ -1007,8 +1007,8 @@
       "thumb": "/atelier/thumbs/narrow/vouches-empty.webp",
       "full": "/atelier/full/narrow/vouches-empty.png",
       "thumbW": 600,
-      "thumbH": 717,
-      "fullH": 1195,
+      "thumbH": 764,
+      "fullH": 1274,
       "cropped": false
     },
     {
@@ -1025,8 +1025,8 @@
       "thumb": "/atelier/thumbs/narrow/vouches-error.webp",
       "full": "/atelier/full/narrow/vouches-error.png",
       "thumbW": 600,
-      "thumbH": 760,
-      "fullH": 1266,
+      "thumbH": 807,
+      "fullH": 1345,
       "cropped": false
     },
     {
@@ -1044,7 +1044,7 @@
       "full": "/atelier/full/narrow/en-vouches.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1645,
+      "fullH": 1724,
       "cropped": true
     },
     {
@@ -1062,7 +1062,7 @@
       "full": "/atelier/full/narrow/vouch.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1655,
+      "fullH": 1735,
       "cropped": true
     },
     {
@@ -1080,7 +1080,7 @@
       "full": "/atelier/full/narrow/en-vouch.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1636,
+      "fullH": 1715,
       "cropped": true
     },
     {
@@ -1098,7 +1098,7 @@
       "full": "/atelier/full/narrow/handoff.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4268,
+      "fullH": 4348,
       "cropped": true
     },
     {
@@ -1116,7 +1116,7 @@
       "full": "/atelier/full/narrow/en-handoff.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3988,
+      "fullH": 4068,
       "cropped": true
     },
     {
@@ -1134,7 +1134,7 @@
       "full": "/atelier/full/narrow/handoff-checklist.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3136,
+      "fullH": 3215,
       "cropped": true
     },
     {
@@ -1152,7 +1152,7 @@
       "full": "/atelier/full/narrow/en-handoff-checklist.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 2935,
+      "fullH": 3015,
       "cropped": true
     },
     {
@@ -1169,8 +1169,8 @@
       "thumb": "/atelier/thumbs/narrow/login.webp",
       "full": "/atelier/full/narrow/login.png",
       "thumbW": 600,
-      "thumbH": 674,
-      "fullH": 1123,
+      "thumbH": 721,
+      "fullH": 1202,
       "cropped": false
     },
     {
@@ -1187,8 +1187,8 @@
       "thumb": "/atelier/thumbs/narrow/en-login.webp",
       "full": "/atelier/full/narrow/en-login.png",
       "thumbW": 600,
-      "thumbH": 662,
-      "fullH": 1104,
+      "thumbH": 710,
+      "fullH": 1183,
       "cropped": false
     },
     {
@@ -1205,8 +1205,8 @@
       "thumb": "/atelier/thumbs/narrow/login-sent.webp",
       "full": "/atelier/full/narrow/login-sent.png",
       "thumbW": 600,
-      "thumbH": 674,
-      "fullH": 1123,
+      "thumbH": 721,
+      "fullH": 1202,
       "cropped": false
     },
     {
@@ -1223,8 +1223,8 @@
       "thumb": "/atelier/thumbs/narrow/en-login-sent.webp",
       "full": "/atelier/full/narrow/en-login-sent.png",
       "thumbW": 600,
-      "thumbH": 662,
-      "fullH": 1104,
+      "thumbH": 710,
+      "fullH": 1183,
       "cropped": false
     },
     {
@@ -1241,8 +1241,8 @@
       "thumb": "/atelier/thumbs/narrow/me.webp",
       "full": "/atelier/full/narrow/me.png",
       "thumbW": 600,
-      "thumbH": 674,
-      "fullH": 1123,
+      "thumbH": 721,
+      "fullH": 1202,
       "cropped": false
     },
     {
@@ -1259,8 +1259,8 @@
       "thumb": "/atelier/thumbs/narrow/en-me.webp",
       "full": "/atelier/full/narrow/en-me.png",
       "thumbW": 600,
-      "thumbH": 662,
-      "fullH": 1104,
+      "thumbH": 710,
+      "fullH": 1183,
       "cropped": false
     },
     {
@@ -1278,7 +1278,7 @@
       "full": "/atelier/full/narrow/meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3630,
+      "fullH": 3709,
       "cropped": true
     },
     {
@@ -1296,7 +1296,7 @@
       "full": "/atelier/full/narrow/en-meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3562,
+      "fullH": 3641,
       "cropped": true
     },
     {
@@ -1314,7 +1314,7 @@
       "full": "/atelier/full/narrow/carte.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1730,
+      "fullH": 1810,
       "cropped": true
     },
     {
@@ -1332,7 +1332,7 @@
       "full": "/atelier/full/narrow/en-map.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1711,
+      "fullH": 1791,
       "cropped": true
     },
     {
@@ -1350,7 +1350,7 @@
       "full": "/atelier/full/narrow/confidentialite.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4285,
+      "fullH": 4364,
       "cropped": true
     },
     {
@@ -1368,7 +1368,7 @@
       "full": "/atelier/full/narrow/en-privacy.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4029,
+      "fullH": 4108,
       "cropped": true
     },
     {
@@ -1386,7 +1386,7 @@
       "full": "/atelier/full/narrow/pia.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 9843,
+      "fullH": 9923,
       "cropped": true
     },
     {
@@ -1404,7 +1404,7 @@
       "full": "/atelier/full/narrow/en-pia.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 9742,
+      "fullH": 9821,
       "cropped": true
     },
     {
@@ -1421,8 +1421,8 @@
       "thumb": "/atelier/thumbs/wide/me-data.webp",
       "full": "/atelier/full/wide/me-data.png",
       "thumbW": 600,
-      "thumbH": 443,
-      "fullH": 1063,
+      "thumbH": 476,
+      "fullH": 1143,
       "cropped": false
     },
     {
@@ -1440,7 +1440,7 @@
       "full": "/atelier/full/wide/root.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 13054,
+      "fullH": 13134,
       "cropped": true
     },
     {
@@ -1457,8 +1457,8 @@
       "thumb": "/atelier/thumbs/wide/en-me-data.webp",
       "full": "/atelier/full/wide/en-me-data.png",
       "thumbW": 600,
-      "thumbH": 435,
-      "fullH": 1044,
+      "thumbH": 468,
+      "fullH": 1123,
       "cropped": false
     },
     {
@@ -1476,7 +1476,7 @@
       "full": "/atelier/full/wide/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12899,
+      "fullH": 12978,
       "cropped": true
     },
     {
@@ -1494,7 +1494,7 @@
       "full": "/atelier/full/wide/tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5424,
+      "fullH": 5504,
       "cropped": true
     },
     {
@@ -1512,7 +1512,7 @@
       "full": "/atelier/full/wide/en-tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5179,
+      "fullH": 5258,
       "cropped": true
     },
     {
@@ -1529,8 +1529,8 @@
       "thumb": "/atelier/thumbs/wide/intake.webp",
       "full": "/atelier/full/wide/intake.png",
       "thumbW": 600,
-      "thumbH": 535,
-      "fullH": 1285,
+      "thumbH": 569,
+      "fullH": 1365,
       "cropped": false
     },
     {
@@ -1547,8 +1547,8 @@
       "thumb": "/atelier/thumbs/wide/en-intake.webp",
       "full": "/atelier/full/wide/en-intake.png",
       "thumbW": 600,
-      "thumbH": 516,
-      "fullH": 1239,
+      "thumbH": 549,
+      "fullH": 1318,
       "cropped": false
     },
     {
@@ -1566,7 +1566,7 @@
       "full": "/atelier/full/wide/parcours.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4360,
+      "fullH": 4440,
       "cropped": true
     },
     {
@@ -1584,7 +1584,7 @@
       "full": "/atelier/full/wide/en-journey.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4180,
+      "fullH": 4260,
       "cropped": true
     },
     {
@@ -1602,7 +1602,7 @@
       "full": "/atelier/full/wide/projects.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 2579,
+      "fullH": 2658,
       "cropped": true
     },
     {
@@ -1619,8 +1619,8 @@
       "thumb": "/atelier/thumbs/wide/projects-empty.webp",
       "full": "/atelier/full/wide/projects-empty.png",
       "thumbW": 600,
-      "thumbH": 620,
-      "fullH": 1488,
+      "thumbH": 653,
+      "fullH": 1568,
       "cropped": false
     },
     {
@@ -1637,8 +1637,8 @@
       "thumb": "/atelier/thumbs/wide/projects-error.webp",
       "full": "/atelier/full/wide/projects-error.png",
       "thumbW": 600,
-      "thumbH": 627,
-      "fullH": 1504,
+      "thumbH": 660,
+      "fullH": 1584,
       "cropped": false
     },
     {
@@ -1656,7 +1656,7 @@
       "full": "/atelier/full/wide/en-projects.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 2539,
+      "fullH": 2619,
       "cropped": true
     },
     {
@@ -1673,8 +1673,8 @@
       "thumb": "/atelier/thumbs/wide/vouches.webp",
       "full": "/atelier/full/wide/vouches.png",
       "thumbW": 600,
-      "thumbH": 677,
-      "fullH": 1624,
+      "thumbH": 710,
+      "fullH": 1704,
       "cropped": false
     },
     {
@@ -1691,8 +1691,8 @@
       "thumb": "/atelier/thumbs/wide/vouches-empty.webp",
       "full": "/atelier/full/wide/vouches-empty.png",
       "thumbW": 600,
-      "thumbH": 473,
-      "fullH": 1135,
+      "thumbH": 506,
+      "fullH": 1215,
       "cropped": false
     },
     {
@@ -1709,8 +1709,8 @@
       "thumb": "/atelier/thumbs/wide/vouches-error.webp",
       "full": "/atelier/full/wide/vouches-error.png",
       "thumbW": 600,
-      "thumbH": 503,
-      "fullH": 1206,
+      "thumbH": 536,
+      "fullH": 1286,
       "cropped": false
     },
     {
@@ -1727,8 +1727,8 @@
       "thumb": "/atelier/thumbs/wide/en-vouches.webp",
       "full": "/atelier/full/wide/en-vouches.png",
       "thumbW": 600,
-      "thumbH": 660,
-      "fullH": 1585,
+      "thumbH": 694,
+      "fullH": 1665,
       "cropped": false
     },
     {
@@ -1745,8 +1745,8 @@
       "thumb": "/atelier/thumbs/wide/vouch.webp",
       "full": "/atelier/full/wide/vouch.png",
       "thumbW": 600,
-      "thumbH": 665,
-      "fullH": 1596,
+      "thumbH": 698,
+      "fullH": 1675,
       "cropped": false
     },
     {
@@ -1763,8 +1763,8 @@
       "thumb": "/atelier/thumbs/wide/en-vouch.webp",
       "full": "/atelier/full/wide/en-vouch.png",
       "thumbW": 600,
-      "thumbH": 657,
-      "fullH": 1576,
+      "thumbH": 690,
+      "fullH": 1656,
       "cropped": false
     },
     {
@@ -1782,7 +1782,7 @@
       "full": "/atelier/full/wide/handoff.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4209,
+      "fullH": 4288,
       "cropped": true
     },
     {
@@ -1800,7 +1800,7 @@
       "full": "/atelier/full/wide/en-handoff.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3929,
+      "fullH": 4008,
       "cropped": true
     },
     {
@@ -1818,7 +1818,7 @@
       "full": "/atelier/full/wide/handoff-checklist.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3076,
+      "fullH": 3156,
       "cropped": true
     },
     {
@@ -1836,7 +1836,7 @@
       "full": "/atelier/full/wide/en-handoff-checklist.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 2876,
+      "fullH": 2955,
       "cropped": true
     },
     {
@@ -1853,8 +1853,8 @@
       "thumb": "/atelier/thumbs/wide/login.webp",
       "full": "/atelier/full/wide/login.png",
       "thumbW": 600,
-      "thumbH": 443,
-      "fullH": 1063,
+      "thumbH": 476,
+      "fullH": 1143,
       "cropped": false
     },
     {
@@ -1871,8 +1871,8 @@
       "thumb": "/atelier/thumbs/wide/en-login.webp",
       "full": "/atelier/full/wide/en-login.png",
       "thumbW": 600,
-      "thumbH": 435,
-      "fullH": 1044,
+      "thumbH": 468,
+      "fullH": 1123,
       "cropped": false
     },
     {
@@ -1889,8 +1889,8 @@
       "thumb": "/atelier/thumbs/wide/login-sent.webp",
       "full": "/atelier/full/wide/login-sent.png",
       "thumbW": 600,
-      "thumbH": 443,
-      "fullH": 1063,
+      "thumbH": 476,
+      "fullH": 1143,
       "cropped": false
     },
     {
@@ -1907,8 +1907,8 @@
       "thumb": "/atelier/thumbs/wide/en-login-sent.webp",
       "full": "/atelier/full/wide/en-login-sent.png",
       "thumbW": 600,
-      "thumbH": 435,
-      "fullH": 1044,
+      "thumbH": 468,
+      "fullH": 1123,
       "cropped": false
     },
     {
@@ -1925,8 +1925,8 @@
       "thumb": "/atelier/thumbs/wide/me.webp",
       "full": "/atelier/full/wide/me.png",
       "thumbW": 600,
-      "thumbH": 443,
-      "fullH": 1063,
+      "thumbH": 476,
+      "fullH": 1143,
       "cropped": false
     },
     {
@@ -1943,8 +1943,8 @@
       "thumb": "/atelier/thumbs/wide/en-me.webp",
       "full": "/atelier/full/wide/en-me.png",
       "thumbW": 600,
-      "thumbH": 435,
-      "fullH": 1044,
+      "thumbH": 468,
+      "fullH": 1123,
       "cropped": false
     },
     {
@@ -1962,7 +1962,7 @@
       "full": "/atelier/full/wide/meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3570,
+      "fullH": 3650,
       "cropped": true
     },
     {
@@ -1980,7 +1980,7 @@
       "full": "/atelier/full/wide/en-meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3502,
+      "fullH": 3582,
       "cropped": true
     },
     {
@@ -1997,8 +1997,8 @@
       "thumb": "/atelier/thumbs/wide/carte.webp",
       "full": "/atelier/full/wide/carte.png",
       "thumbW": 600,
-      "thumbH": 773,
-      "fullH": 1855,
+      "thumbH": 806,
+      "fullH": 1935,
       "cropped": false
     },
     {
@@ -2015,8 +2015,8 @@
       "thumb": "/atelier/thumbs/wide/en-map.webp",
       "full": "/atelier/full/wide/en-map.png",
       "thumbW": 600,
-      "thumbH": 765,
-      "fullH": 1836,
+      "thumbH": 798,
+      "fullH": 1916,
       "cropped": false
     },
     {
@@ -2034,7 +2034,7 @@
       "full": "/atelier/full/wide/confidentialite.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4225,
+      "fullH": 4305,
       "cropped": true
     },
     {
@@ -2052,7 +2052,7 @@
       "full": "/atelier/full/wide/en-privacy.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3969,
+      "fullH": 4048,
       "cropped": true
     },
     {
@@ -2070,7 +2070,7 @@
       "full": "/atelier/full/wide/pia.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 9784,
+      "fullH": 9863,
       "cropped": true
     },
     {
@@ -2088,7 +2088,7 @@
       "full": "/atelier/full/wide/en-pia.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 9682,
+      "fullH": 9762,
       "cropped": true
     },
     {
@@ -2141,8 +2141,8 @@
       "thumb": "/atelier/thumbs/dark/en-me-data.webp",
       "full": "/atelier/full/dark/en-me-data.png",
       "thumbW": 600,
-      "thumbH": 435,
-      "fullH": 1044,
+      "thumbH": 468,
+      "fullH": 1123,
       "cropped": false
     },
     {
@@ -2160,7 +2160,7 @@
       "full": "/atelier/full/dark/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 12899,
+      "fullH": 12978,
       "cropped": true
     },
     {
@@ -2231,8 +2231,8 @@
       "thumb": "/atelier/thumbs/dark/en-intake.webp",
       "full": "/atelier/full/dark/en-intake.png",
       "thumbW": 600,
-      "thumbH": 516,
-      "fullH": 1239,
+      "thumbH": 549,
+      "fullH": 1318,
       "cropped": false
     },
     {
@@ -2268,7 +2268,7 @@
       "full": "/atelier/full/dark/en-journey.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4180,
+      "fullH": 4260,
       "cropped": true
     },
     {
@@ -2412,7 +2412,7 @@
       "full": "/atelier/full/dark/en-handoff.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3929,
+      "fullH": 4008,
       "cropped": true
     },
     {
@@ -2448,7 +2448,7 @@
       "full": "/atelier/full/dark/en-handoff-checklist.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 2876,
+      "fullH": 2955,
       "cropped": true
     },
     {
@@ -2483,8 +2483,8 @@
       "thumb": "/atelier/thumbs/dark/en-login.webp",
       "full": "/atelier/full/dark/en-login.png",
       "thumbW": 600,
-      "thumbH": 435,
-      "fullH": 1044,
+      "thumbH": 468,
+      "fullH": 1123,
       "cropped": false
     },
     {
@@ -2519,8 +2519,8 @@
       "thumb": "/atelier/thumbs/dark/en-login-sent.webp",
       "full": "/atelier/full/dark/en-login-sent.png",
       "thumbW": 600,
-      "thumbH": 435,
-      "fullH": 1044,
+      "thumbH": 468,
+      "fullH": 1123,
       "cropped": false
     },
     {
@@ -2555,8 +2555,8 @@
       "thumb": "/atelier/thumbs/dark/en-me.webp",
       "full": "/atelier/full/dark/en-me.png",
       "thumbW": 600,
-      "thumbH": 435,
-      "fullH": 1044,
+      "thumbH": 468,
+      "fullH": 1123,
       "cropped": false
     },
     {
@@ -2592,7 +2592,7 @@
       "full": "/atelier/full/dark/en-meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 3502,
+      "fullH": 3582,
       "cropped": true
     },
     {
@@ -2609,8 +2609,8 @@
       "thumb": "/atelier/thumbs/dark/carte.webp",
       "full": "/atelier/full/dark/carte.png",
       "thumbW": 600,
-      "thumbH": 773,
-      "fullH": 1855,
+      "thumbH": 806,
+      "fullH": 1935,
       "cropped": false
     },
     {
@@ -2627,8 +2627,8 @@
       "thumb": "/atelier/thumbs/dark/en-map.webp",
       "full": "/atelier/full/dark/en-map.png",
       "thumbW": 600,
-      "thumbH": 765,
-      "fullH": 1836,
+      "thumbH": 798,
+      "fullH": 1916,
       "cropped": false
     },
     {
@@ -2646,7 +2646,7 @@
       "full": "/atelier/full/dark/confidentialite.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4225,
+      "fullH": 4305,
       "cropped": true
     },
     {
