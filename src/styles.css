@@ -7067,6 +7067,21 @@ button.intake__progress-step:disabled {
 .home .section {
   scroll-margin-top: 0;
 }
+/* Below-the-fold home sections skip layout + paint until scrolled near.
+   The homepage prerenders ~700 elements; laying every one of them out
+   before first paint was the bulk of the Style & Layout time. With
+   content-visibility:auto the browser lays out only the hero (and whatever
+   else is in the viewport) for first paint and defers the rest.
+   contain-intrinsic-size carries the `auto` keyword, so each section's real
+   height is measured and remembered on its first render — the 760px
+   placeholder only stands in for the very first paint, before the section
+   has ever been laid out. Hero is excluded: it IS above the fold. */
+@supports (content-visibility: auto) {
+  .home .section:not(#hero) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 760px;
+  }
+}
 
 .section__head {
   position: relative;
