@@ -21,6 +21,10 @@ jobs:
       actions: write
     steps:
       - uses: actions/checkout@v4
+        # Full history so `git pull --rebase` before the commit-back push has
+        # a real merge base to rebase onto (a shallow clone can't).
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -47,6 +51,12 @@ jobs:
             echo "no baseline changes"
           else
             git commit -m "chore(e2e): regenerate visual baselines + atelier manifest on the CI runner"
+            # The lighthouse workflow auto-commits lighthouse-history.json back
+            # to this same branch after every deploy. If one of those landed
+            # while this run was busy regenerating baselines, a bare push is
+            # rejected as non-fast-forward. Rebase our commit onto the remote
+            # tip first — the two touch disjoint files, so it never conflicts.
+            git pull --rebase --autostash origin ${{ github.ref_name }}
             git push origin HEAD:${{ github.ref_name }}
           fi
       # A push made with the default GITHUB_TOKEN does NOT trigger other
