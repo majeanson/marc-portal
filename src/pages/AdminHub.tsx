@@ -12,11 +12,15 @@
  * map's Admin layer can render the same grouped tile structure.
  */
 
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { LangPrefCard } from '../components/LangPrefCard'
 import { buildAdminSections, type AdminTile } from '../lib/admin/hubSections'
+import { ProposalSheet } from '../components/intake/ProposalSheet'
+import type { Account } from '../components/intake/AccountStep'
+import type { FormData } from '../components/intake/TypeForm'
+import { getSchemaForType, type ProblemType } from '../lib/intakeSchemas'
 
 const COPY = {
   fr: {
@@ -71,8 +75,80 @@ export function AdminHub({ lang }: { lang: Lang }) {
         </section>
       ))}
 
+      <ProposalProof lang={lang} />
+
       <LangPrefCard lang={lang} />
     </article>
+  )
+}
+
+/**
+ * Operator tool — print a sample one-page proposal without walking the
+ * whole intake flow. It mounts a ProposalSheet (see ProposalSheet.tsx)
+ * filled with representative answers, then opens the print dialog, so the
+ * printed brief can be eyeballed on demand.
+ */
+function ProposalProof({ lang }: { lang: Lang }) {
+  const [mounted, setMounted] = useState(false)
+  const copy =
+    lang === 'fr'
+      ? {
+          heading: 'Outils',
+          label: 'Tester le dossier PDF',
+          hint: 'Ouvre l’aperçu d’impression avec un dossier d’exemple — aucun intake à remplir.',
+        }
+      : {
+          heading: 'Tools',
+          label: 'Test the proposal PDF',
+          hint: 'Opens the print preview with a sample brief — no intake to fill out.',
+        }
+
+  // A fully-answered sample: select/radio take their first option, the
+  // rest get representative text, so the printed sheet looks real.
+  const sample = useMemo(() => {
+    const type: ProblemType = 'paperasse'
+    const values: FormData = {}
+    for (const field of getSchemaForType(type).fields) {
+      if ((field.type === 'select' || field.type === 'radio') && field.options?.length) {
+        values[field.id] = field.options[0].value
+      } else if (field.type === 'number') {
+        values[field.id] = '24'
+      } else {
+        values[field.id] =
+          lang === 'fr'
+            ? 'Réponse d’exemple — du texte représentatif pour juger la mise en page.'
+            : 'Sample answer — representative text to judge the layout.'
+      }
+    }
+    const account: Account = { email: 'apercu@exemple.ca', name: 'Sophie Tremblay' }
+    return { account, type, values, submittedAt: new Date().toISOString().slice(0, 10) }
+  }, [lang])
+
+  const onTest = () => {
+    setMounted(true)
+    // Let the sheet commit to the DOM before the print dialog reads it.
+    requestAnimationFrame(() => requestAnimationFrame(() => window.print()))
+  }
+
+  return (
+    <section className="admin-hub__section">
+      <h2 className="admin-hub__section-title mono">{copy.heading}</h2>
+      <p>
+        <button type="button" className="link-btn mono" onClick={onTest}>
+          {copy.label}
+        </button>
+      </p>
+      <p className="field__hint">{copy.hint}</p>
+      {mounted && (
+        <ProposalSheet
+          lang={lang}
+          account={sample.account}
+          type={sample.type}
+          values={sample.values}
+          submittedAt={sample.submittedAt}
+        />
+      )}
+    </section>
   )
 }
 
