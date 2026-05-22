@@ -14,6 +14,7 @@ import { Header } from '../components/Header'
 import { PAGE_FEATURE } from '../lib/features'
 import { DICT, type Lang } from '../i18n'
 import { ApiError } from '../lib/api'
+import { frPunct } from '../lib/frPunct'
 import {
   VOUCH_LIMITS,
   VOUCH_RELATIONSHIPS,
@@ -200,7 +201,7 @@ export function Vouch({ lang }: { lang: Lang }) {
       <Header lang={lang} />
       <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
         <section className="page__panel">
-          <h1>{ts.heading}</h1>
+          <h1>{frPunct(ts.heading)}</h1>
           <p>{ts.lead}</p>
           {sessionFor && (
             <p className="field__hint vouch-form__for-project">

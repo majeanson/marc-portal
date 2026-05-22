@@ -221,6 +221,12 @@ h3 {
   font-weight: 600;
   color: var(--text);
 }
+/* frPunct() wraps French tight pairs ("mot ?", "« mot", "mot »") in this so
+   the punctuation can't strand on its own line — works even under
+   `text-wrap: balance`, which ignores plain no-break spaces. */
+.fr-tight {
+  white-space: nowrap;
+}
 p {
   margin: 0 0 1em;
   color: var(--text-mid);

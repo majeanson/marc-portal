@@ -8,6 +8,7 @@ import { PageMast } from '../components/PageMast'
 import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
+import { frPunct } from '../lib/frPunct'
 
 /**
  * The full journey — a visual, phased walkthrough from "stranger lands on the
@@ -237,7 +238,7 @@ export function Journey({ lang }: { lang: Lang }) {
                                 <span className="journey__step-where mono">{step.where}</span>
                               </div>
                             </div>
-                            <h3 className="journey__step-title">{step.title}</h3>
+                            <h3 className="journey__step-title">{frPunct(step.title)}</h3>
                             <p className="journey__step-body">{step.body}</p>
                           </article>
                         </li>
