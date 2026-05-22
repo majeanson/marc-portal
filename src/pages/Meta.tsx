@@ -1,20 +1,17 @@
 /**
- * /meta (FR canonical) — the portal documents itself in its own format.
+ * /meta (FR canonical) — the portal documents itself.
  *
  * Reads src/data/lac-features.json (generated at prebuild by
  * scripts/build-lac-meta.mjs) and renders a public grid of the portal's
- * features. Each feature.json now lives co-located next to the code it
- * documents (src/.../<Component>.feature.json) and is written from what
- * that code actually does. Clicking a card expands it in place to show
- * the readable feature.json — problem, how it's built, decisions, success
- * criteria, known limitations, the state history — plus a "voir en direct"
- * link to the live surface.
+ * features. Each feature's documentation lives co-located next to the
+ * code it documents (src/.../<Component>.feature.json) and is written
+ * from what that code actually does. Clicking a card expands it in place
+ * to show the readable record — problem, how it's built, decisions,
+ * success criteria, known limitations, the state history — plus a
+ * "voir en direct" link to the live surface.
  *
- * Why this exists: Marc's tool of trade (the Life-as-Code ecosystem) is
- * built around feature.json as a structured artifact. The portal uses it
- * on itself. Publishing the result is (a) honest "build in public", (b)
- * very low-competition long-tail SEO, (c) defensive — no other solo-dev
- * portal can clone it without adopting LAC first.
+ * Why this exists: publishing how the portal is built is (a) honest
+ * "build in public", (b) very low-competition long-tail SEO.
  *
  * No runtime API call — the manifest is static at deploy time.
  */
@@ -72,11 +69,11 @@ const COPY = {
   fr: {
     pageTitle: 'Sous le capot — Marc',
     metaDescription:
-      'Le portail marc.portal documenté par lui-même : chaque fonctionnalité, son problème, ses décisions. Format LAC (Life-as-Code).',
+      'Le portail marc.portal documenté par lui-même : chaque fonctionnalité, son problème, ses décisions.',
     backHome: "← Retour à l'accueil",
     eyebrow: 'méta · le portail, raconté par lui-même',
     title: 'Sous le capot',
-    lead: "Ce portail utilise mon propre outil (LAC — Life-as-Code) pour se documenter. Chaque fonctionnalité ci-dessous est un fichier `feature.json`, écrit à partir de ce que le code fait vraiment et rangé juste à côté de ce code. C'est ce qui me permet de te dire « oui c'est solide » sans avoir à le prouver à chaque fois.",
+    lead: "Ce portail se documente lui-même. Chaque fonctionnalité ci-dessous est décrite à partir de ce que le code fait vraiment, et la description est rangée juste à côté de ce code. C'est ce qui me permet de te dire « oui c'est solide » sans avoir à le prouver à chaque fois.",
     leadSecond:
       "Clique une carte pour l'ouvrir : le problème, comment c'est bâti, les décisions prises, les limites connues. La date à droite est la dernière transition d'état — vert sous 90 jours, jaune entre 90 et 180, ambre au-delà.",
     countLabel: (n: number) => `${n} fonctionnalité${n === 1 ? '' : 's'}`,
@@ -97,8 +94,6 @@ const COPY = {
     freshFresh: 'frais',
     freshWarm: 'tiède',
     freshStale: 'à revoir',
-    learnMore: 'En savoir plus sur LAC ↗',
-    learnMoreHref: 'https://lifeascode.dev',
     journeyCta: 'Voir le parcours complet (les 12 étapes) →',
     statusLabels: {
       active: 'actif',
@@ -110,11 +105,11 @@ const COPY = {
   en: {
     pageTitle: 'Under the hood — Marc',
     metaDescription:
-      'The marc.portal site documented in its own format: every feature, its problem, its decisions. LAC (Life-as-Code) format.',
+      'The marc.portal site documented in its own format: every feature, its problem, its decisions.',
     backHome: '← Back home',
     eyebrow: 'meta · the portal, in its own words',
     title: 'Under the hood',
-    lead: 'This portal uses my own tool (LAC — Life-as-Code) to document itself. Each feature below is a `feature.json` file, written from what the code actually does and kept right next to that code. That\'s what lets me say "yes it\'s solid" without having to prove it from scratch each time.',
+    lead: 'This portal documents itself. Each feature below is described from what the code actually does, and the description is kept right next to that code. That\'s what lets me say "yes it\'s solid" without having to prove it from scratch each time.',
     leadSecond:
       "Click a card to open it: the problem, how it's built, the decisions taken, the known limitations. The date on the right is the last status transition — green within 90 days, yellow between 90 and 180, amber beyond.",
     countLabel: (n: number) => `${n} feature${n === 1 ? '' : 's'}`,
@@ -135,8 +130,6 @@ const COPY = {
     freshFresh: 'fresh',
     freshWarm: 'warm',
     freshStale: 'stale',
-    learnMore: 'Learn more about LAC ↗',
-    learnMoreHref: 'https://lifeascode.dev',
     journeyCta: 'See the full journey (all 12 steps) →',
     statusLabels: {
       active: 'active',
@@ -204,8 +197,8 @@ export function Meta({ lang }: { lang: Lang }) {
                   ? `№ ${PAGE_FOLIOS.meta} — sous le capot`
                   : `№ ${PAGE_FOLIOS.meta} — under the hood`
               }
-              stampLabel="LAC"
-              stampSub="LIFE · AS · CODE"
+              stampLabel={lang === 'fr' ? 'MÉTA' : 'META'}
+              stampSub={lang === 'fr' ? 'SOUS · LE · CAPOT' : 'UNDER · THE · HOOD'}
               feature="meta"
               lang={lang}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}
@@ -388,11 +381,6 @@ export function Meta({ lang }: { lang: Lang }) {
               })}
             </ul>
 
-            <p className="meta-page__cta mono">
-              <a href={t.learnMoreHref} target="_blank" rel="noreferrer">
-                {t.learnMore}
-              </a>
-            </p>
             <p className="meta-page__cta mono">
               <a href={lang === 'fr' ? '/parcours' : '/en/journey'}>{t.journeyCta}</a>
             </p>
