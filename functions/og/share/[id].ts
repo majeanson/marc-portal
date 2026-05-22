@@ -117,7 +117,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
     ? `<div style="display:flex;margin-top:28px;font-size:28px;color:#3f3c34;line-height:1.35;max-width:1040px;font-weight:400;">${escapeHtml(safeTagline)}</div>`
     : ''
   const html =
-    `<div style="display:flex;flex-direction:column;position:relative;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
+    // Root must use explicit pixel dimensions, not width/height:100%. Satori
+    // has no parent for the root element, so a `%` size can't resolve and the
+    // container collapses to fit-content — masked here only when a tagline
+    // (max-width:1040px) stretches it; an empty-tagline card would collapse.
+    `<div style="display:flex;flex-direction:column;position:relative;width:1200px;height:630px;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
     // brand watermark — one oversized faint glyph filling the right side.
     // No rotation, no stroke, no image: a single text node, deliberately the
     // cheapest possible element given the reverted-stamp 1102 history below.

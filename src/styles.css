@@ -11584,6 +11584,39 @@ button.intake__progress-step:disabled {
   }
 }
 
+/* Rescue note — a parallel-entry callout below the tier ladder. Same visual
+   treatment as the custodian note (left-bordered card). */
+.tier__rescue-note {
+  margin: 24px 0 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 18px 22px 16px;
+}
+.tier__rescue-heading {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.tier__rescue-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-mid);
+}
+@media (max-width: 640px) {
+  .tier__rescue-note {
+    padding: 16px 16px 14px;
+  }
+  .tier__rescue-body {
+    font-size: 13.5px;
+  }
+}
+
 /* About — ownership note paragraph above the outbound-links list. */
 .about__ownership-note {
   margin-top: 12px;

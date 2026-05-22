@@ -142,7 +142,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   // string and force display:flex on every container. Same convention
   // as functions/og/share/[id].ts — see the long comment there.
   const html =
-    `<div style="display:flex;flex-direction:column;position:relative;width:100%;height:100%;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
+    // Root must use explicit pixel dimensions, not width/height:100%. Satori
+    // has no parent for the root element, so a `%` size can't resolve and the
+    // container collapses to fit-content (the widest text line), leaving the
+    // right side as bare canvas and mis-anchoring the absolute watermark.
+    `<div style="display:flex;flex-direction:column;position:relative;width:1200px;height:630px;padding:80px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
     // brand watermark — one oversized faint glyph filling the right side.
     // No rotation, no stroke, no image: a single text node, so satori render
     // cost stays negligible (see the 1102 note in og/share/[id].ts).

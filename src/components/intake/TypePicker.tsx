@@ -5,7 +5,7 @@ import { SCHEMAS } from '../../lib/intakeSchemas'
 import type { ProblemType } from '../../lib/intakeSchemas'
 import { localized } from '../../lib/intakeSchemas'
 
-const TYPES: ProblemType[] = ['paperasse', 'suivi', 'coordination', 'autre']
+const TYPES: ProblemType[] = ['paperasse', 'suivi', 'coordination', 'autre', 'rescue']
 
 export function TypePicker({
   lang,

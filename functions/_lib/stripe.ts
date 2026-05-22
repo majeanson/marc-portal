@@ -5,7 +5,7 @@
 //
 // What's here:
 //   - createOneTimeCheckoutSession()         — Tier 1 / Tier 2 deposit / etc.
-//   - createSubscriptionCheckoutSession()    — Custodian mode $200/yr
+//   - createSubscriptionCheckoutSession()    — Custodian (Watch $120/yr · Care $400/yr)
 //   - createBillingPortalSession()           — Customer Portal link for sub mgmt
 //   - verifyWebhookSignature()               — Stripe-Signature header check
 //

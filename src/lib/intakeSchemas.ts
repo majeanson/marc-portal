@@ -1,6 +1,6 @@
 import type { Lang } from '../i18n'
 
-export type ProblemType = 'paperasse' | 'suivi' | 'coordination' | 'autre'
+export type ProblemType = 'paperasse' | 'suivi' | 'coordination' | 'autre' | 'rescue'
 
 export type FieldType = 'text' | 'textarea' | 'select' | 'radio' | 'number'
 
@@ -44,6 +44,10 @@ const TYPE_TITLES: Record<ProblemType, { fr: string; en: string }> = {
     fr: 'Autre — décris-moi ça librement',
     en: 'Other — describe it in your own words',
   },
+  rescue: {
+    fr: 'Réparer un truc qui existe déjà',
+    en: 'Fix something that already exists',
+  },
 }
 
 const TYPE_DESCRIPTIONS: Record<ProblemType, { fr: string; en: string }> = {
@@ -60,8 +64,12 @@ const TYPE_DESCRIPTIONS: Record<ProblemType, { fr: string; en: string }> = {
     en: 'For when several people need to know who does what, when: team, volunteers, neighbourhood, committee.',
   },
   autre: {
-    fr: 'Si rien des trois autres ne colle. Marc lit chaque formulaire lui-même et te répondra honnêtement.',
-    en: 'If none of the other three fit. Marc reads every form himself and will reply honestly.',
+    fr: 'Si rien des autres types ne colle. Marc lit chaque formulaire lui-même et te répondra honnêtement.',
+    en: 'If none of the other types fit. Marc reads every form himself and will reply honestly.',
+  },
+  rescue: {
+    fr: "Tu as déjà quelque chose qui marche mal — une app générée par une IA qui plante, ou un vieux code que plus personne ne veut toucher. Je regarde ce qu'il a, puis je le répare ou je le refais à neuf.",
+    en: "You already have something that works badly — an AI-generated app that keeps crashing, or old code nobody wants to touch anymore. I look at what's wrong, then fix it or bring it up to date.",
   },
 }
 
@@ -326,6 +334,136 @@ const AUTRE_FIELDS: FieldDef[] = [
   },
 ]
 
+// Rescue is the one intake type pointed at something that *already exists*
+// rather than a problem to solve fresh. The first field (rescueKind) is the
+// discriminator: AI-generated slop to clean up vs. a real codebase to
+// modernize — two different jobs, and Marc triages them differently. The
+// remaining fields are written to serve both cases.
+const RESCUE_FIELDS: FieldDef[] = [
+  {
+    id: 'rescueKind',
+    type: 'radio',
+    label: {
+      fr: "C'est quoi, au juste?",
+      en: 'What is it, exactly?',
+    },
+    options: [
+      {
+        value: 'ai-build',
+        label: {
+          fr: "Une app que j'ai générée avec une IA ou un outil no-code",
+          en: 'An app I generated with an AI or no-code tool',
+        },
+      },
+      {
+        value: 'codebase',
+        label: {
+          fr: "Un vrai code source qui existe déjà (vieux site, app, projet laissé par quelqu'un)",
+          en: 'A real codebase that already exists (an old site, an app, a project someone left behind)',
+        },
+      },
+    ],
+    required: true,
+    hint: {
+      fr: "Ça m'aide à savoir dans quoi je m'embarque : nettoyer une app générée par une IA et moderniser du vrai code, c'est deux jobs pas mal différentes.",
+      en: "It tells me what I'm walking into — cleaning up AI-generated output and modernizing a real codebase are two different jobs.",
+    },
+  },
+  {
+    id: 'builtWith',
+    type: 'text',
+    label: {
+      fr: "C'est bâti avec quoi, autant que tu saches?",
+      en: "What's it built with, as far as you know?",
+    },
+    placeholder: {
+      fr: 'Ex : Lovable, Bolt, Bubble... ou React, un vieux WordPress, du PHP de 2015.',
+      en: 'Ex: Lovable, Bolt, Bubble... or React, an old WordPress, PHP from 2015.',
+    },
+    required: true,
+    hint: {
+      fr: "Pas sûr? Nomme juste l'outil que tu as utilisé, ou écris « aucune idée ».",
+      en: "Not sure? Just name the tool you used, or write 'no idea.'",
+    },
+  },
+  {
+    id: 'whereItLives',
+    type: 'textarea',
+    rows: 3,
+    label: {
+      fr: 'Où ça vit, et comment je fais pour entrer?',
+      en: 'Where does it live, and how do I get in?',
+    },
+    placeholder: {
+      fr: "Ex : un lien vers l'app, un dépôt GitHub, un fichier exporté. Et comment entrer — un login, une invitation, un zip à m'envoyer.",
+      en: 'Ex: a link to the app, a GitHub repo, an exported file. And how to get in — a login, an invite, a zip to send me.',
+    },
+    required: true,
+  },
+  {
+    id: 'whatsBroken',
+    type: 'textarea',
+    rows: 3,
+    label: {
+      fr: "Qu'est-ce qui ne marche pas, ou qui manque?",
+      en: "What's broken, or what's missing?",
+    },
+    placeholder: {
+      fr: "Ex : ça plante quand plusieurs personnes l'utilisent, les données se perdent, je suis bloqué sur la seule fonction qu'il me faut, personne ne sait l'héberger, le dev d'avant a disparu.",
+      en: "Ex: it crashes when several people use it, the data vanishes, I'm stuck on the one feature I need, nobody can host it, the previous dev disappeared.",
+    },
+    required: true,
+  },
+  {
+    id: 'inUse',
+    type: 'select',
+    label: {
+      fr: "Est-ce que quelqu'un l'utilise en ce moment?",
+      en: 'Is anyone using it right now?',
+    },
+    options: [
+      {
+        value: 'live',
+        label: { fr: "Oui, c'est en ligne pour de vrai", en: "Yes, it's genuinely live" },
+      },
+      {
+        value: 'halfway',
+        label: { fr: 'À moitié — ça marche par bouts', en: 'Halfway — it works in patches' },
+      },
+      {
+        value: 'never',
+        label: { fr: "Non, ça n'a jamais vraiment marché", en: 'No, it never really worked' },
+      },
+      {
+        value: 'prototype',
+        label: {
+          fr: "C'est juste un prototype ou un essai",
+          en: "It's just a prototype or a test",
+        },
+      },
+    ],
+    required: true,
+  },
+  {
+    id: 'idealOutcome',
+    type: 'textarea',
+    rows: 3,
+    label: {
+      fr: '« Réparé », ça ressemble à quoi? (en une phrase)',
+      en: "What does 'fixed' look like? (in one sentence)",
+    },
+    placeholder: {
+      fr: "Ex : ça tient quand 10 personnes l'utilisent, je peux ajouter mes affaires sans tout casser, c'est à moi et hébergé pour de bon.",
+      en: "Ex: it holds up when 10 people use it, I can add my own things without breaking it, it's mine and hosted for good.",
+    },
+    required: true,
+    hint: {
+      fr: "Pas besoin de techno — décris juste l'effet.",
+      en: 'No tech needed — just describe the effect.',
+    },
+  },
+]
+
 export const SCHEMAS: Record<ProblemType, IntakeSchema> = {
   paperasse: {
     type: 'paperasse',
@@ -350,6 +488,12 @@ export const SCHEMAS: Record<ProblemType, IntakeSchema> = {
     title: TYPE_TITLES.autre,
     description: TYPE_DESCRIPTIONS.autre,
     fields: AUTRE_FIELDS,
+  },
+  rescue: {
+    type: 'rescue',
+    title: TYPE_TITLES.rescue,
+    description: TYPE_DESCRIPTIONS.rescue,
+    fields: RESCUE_FIELDS,
   },
 }
 

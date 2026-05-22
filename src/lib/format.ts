@@ -41,6 +41,23 @@ export function formatDateTime(input: number | string | null | undefined, lang: 
 }
 
 /**
+ * Format CAD cents as currency — OQLF convention (fr-CA) or standard (en-CA).
+ * Round-dollar amounts drop the cents: 75000 → "750 $" (fr) / "$750" (en);
+ * 180000 → "1 800 $" / "$1,800". This is the single formatter behind every
+ * price the UI renders, so the thousands separator stays consistent.
+ */
+export function formatCadCents(cents: number, lang: Lang): string {
+  const isRound = cents % 100 === 0
+  return new Intl.NumberFormat(LOCALES[lang], {
+    style: 'currency',
+    currency: 'CAD',
+    currencyDisplay: lang === 'fr' ? 'symbol' : 'narrowSymbol',
+    minimumFractionDigits: isRound ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(cents / 100)
+}
+
+/**
  * The 72-hour SLA Marc promises in the intake confirmation copy. Applies
  * while the session is in 'draft' or 'triage' status. Once it moves to
  * 'active' the build itself takes over from the response window.

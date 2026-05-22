@@ -61,7 +61,7 @@ const FR = {
     },
   },
 
-  brandTitle: '№ 01 · Marc — dev québécois',
+  brandTitle: '№ 01 · Marc, dev québécois',
   // Title swapped in when the tab loses focus (visibilitychange → hidden).
   // Restored on refocus. Echoes the napperon "fait main" voice — a tiny
   // wave at visitors who have tab-parked us. Home-only.
@@ -71,7 +71,7 @@ const FR = {
 
   hero: {
     eyebrow: 'side-gig · Québec · async',
-    folio: '№ 01 — Marc, dev québécois',
+    folio: '№ 01 · Marc, dev québécois',
     salut: 'Marc-Antoine, là pour résoudre des problèmes importants pour ma communauté',
     display: {
       pre: 'Marc-Antoine,',
@@ -79,7 +79,7 @@ const FR = {
       emphasis: 'des problèmes importants',
       tail: 'pour ma communauté.',
     },
-    signature: 'Marc — dev québécois',
+    signature: 'Marc, dev québécois',
     body2:
       "Tu as une affaire plate qui revient chaque semaine. De la paperasse à retaper, un suivi qui se perd, du monde à coordonner. C'est pas un enjeu national, mais c'est assez tannant pour mériter mieux. Raconte-moi ça.",
     cta: 'Crée ton compte gratuit →',
@@ -88,7 +88,7 @@ const FR = {
     mySessionsLink: 'Voir mes sessions',
     // Split so the language word ("anglais") renders as a link that
     // switches the page to that language. See Hero.tsx.
-    bilingual: { pre: '(Aussi en ', link: 'anglais', post: ' — je réponds dans ta langue.)' },
+    bilingual: { pre: '(Aussi en ', link: 'anglais', post: ', je réponds dans ta langue.)' },
   },
 
   how: {
@@ -110,12 +110,12 @@ const FR = {
       {
         num: '01',
         title: 'Tu décris ton problème',
-        body: "Tu remplis un formulaire guidé, pas un appel à planifier. Ça se sauvegarde tout seul à mesure, fait que tu peux fermer l'onglet et revenir quand ça te tente.",
+        body: "Tu remplis un formulaire guidé. Aucun appel à planifier. Ça se sauvegarde tout seul à mesure, fait que tu peux fermer l'onglet et revenir quand ça te tente.",
       },
       {
         num: '02',
         title: 'Je te réponds en 72 h',
-        body: 'Oui, non, ou « raconte-moi plus ». Je lis chaque formulaire moi-même — pas d’IA entre toi et moi.',
+        body: 'Oui, non, ou « raconte-moi plus ». Je lis chaque formulaire moi-même. Pas d’IA entre toi et moi.',
       },
       {
         num: '03',
@@ -149,7 +149,7 @@ const FR = {
     tierPrefix: 'Niveau',
     emptyTitle: 'Le premier projet atterrit ici très bientôt.',
     emptyBody:
-      'Pas encore de projet publié — la galerie est neuve. Tu peux quand même découvrir comment ça marche, ou m’écrire via le portail pour ouvrir le premier dossier.',
+      'Pas encore de projet publié, la galerie est neuve. Tu peux quand même découvrir comment ça marche, ou m’écrire via le portail pour ouvrir le premier dossier.',
     emptyCta: 'Décris ton problème →',
     errorTitle: 'Impossible de charger les projets pour le moment.',
     errorBody: 'Tu peux toujours ouvrir la galerie complète, ou écrire via le portail.',
@@ -158,12 +158,12 @@ const FR = {
   featuredTestimonials: {
     eyebrow: 'preuves sociales',
     title: 'Quelques mots de gens qui ont travaillé avec moi',
-    sub: 'Témoignages courts, soumis par les vrais collaborateurs. Je relis, je peux resserrer la formulation — mais le contenu reste leur voix.',
+    sub: 'Témoignages courts, soumis par les vrais collaborateurs. Je relis, je peux resserrer la formulation, mais le contenu reste leur voix.',
     writeOne: 'Tu as travaillé avec moi ? Écris un témoignage →',
     galleryCard: {
       eyebrow: 'tu veux tout lire ?',
       title: 'Tous les témoignages, sur une seule page',
-      body: 'La liste complète vit sur /vouches — chronologique, sans filtre, avec le nom et le lien de chaque personne.',
+      body: 'La liste complète vit sur /vouches : chronologique, sans filtre, avec le nom et le lien de chaque personne.',
       cta: 'Voir tous les témoignages →',
     },
   },
@@ -195,7 +195,7 @@ const FR = {
   bringAnything: {
     eyebrow: 'aucune idée trop petite',
     title: 'Apporte-moi n’importe quoi',
-    body: 'Je veux toutes les idées arriver dans ma boîte — petites, weird, à moitié formées, peu importe. Mon job, c’est de filtrer. Le tien, c’est juste de décrire ce qui te trotte dans la tête.',
+    body: 'Je veux que toutes les idées arrivent dans ma boîte : petites, weird, à moitié formées, peu importe. Mon job, c’est de filtrer. Le tien, c’est juste de décrire ce qui te trotte dans la tête.',
     examplesTitle: 'Des idées que je prendrais sans hésiter',
     examples: [
       'Tes notes vocales du truck → un brouillon de facture qui t’attend le dimanche matin',
@@ -209,21 +209,25 @@ const FR = {
       'Une carte des bons cafés sur le bord de la 132',
     ],
     reassure:
-      'Si c’est trop petit pour mes prix, je te dis comment le faire toi-même (Niveau 0, gratuit). Si c’est trop gros, je suis honnête. Si c’est entre les deux, je triage. Mais je veux le voir avant de décider.',
+      'Si c’est trop petit pour mes prix, je te montre comment le faire toi-même (Niveau 0, gratuit). Trop gros ou entre les deux, on en parle et je triage. Dans tous les cas, je veux le voir avant de décider.',
     cta: 'Décris ton idée →',
   },
 
   pricing: {
     eyebrow: 'prix publics',
     title: 'Combien ça coûte',
-    body: 'Prix concrets, pas de devis caché. Chaque niveau renvoie à des projets réels du même calibre — tu vois ce que ça donne avant de soumettre.',
+    body: 'Prix concrets, pas de devis caché. Chaque niveau renvoie à des projets réels du même calibre. Tu vois ce que ça donne avant de soumettre.',
     asOf: 'Prix publics, en vigueur depuis 2026-06-01.',
     disclaimer:
-      'Les prix sont fixes avant qu’on commence. Pas de surprise après — si je dépasse, c’est mon problème. Taxes en sus si applicable.',
+      'Les prix sont fixes avant qu’on commence. Pas de surprise après : si je dépasse, c’est mon problème. Taxes en sus si applicable.',
     custodianNote:
-      'Mode dépositaire — après la livraison, je garde le site en ligne et à jour. Deux forfaits annuels : Watch (120 $/an) ou Care (400 $/an, avec 2 h/an de retouches). Les changements plus gros se facturent à 75 $/h. Tu peux choisir « Tout à toi » à la place si tu préfères gérer toi-même.',
+      'Mode dépositaire : après la livraison, je garde le site en ligne et à jour. Deux forfaits annuels : Watch (120 $/an) ou Care (400 $/an, avec 2 h/an de retouches). Les changements plus gros se facturent à 75 $/h. Tu peux choisir « Tout à toi » à la place si tu préfères gérer toi-même.',
     custodianNoteHeading: 'Et après la livraison ?',
     custodianNoteCta: 'Comment ça finit →',
+    rescueNoteHeading: 'Tu as déjà quelque chose ?',
+    rescueNote:
+      'Une app générée par une IA qui plante, un site laissé en plan, un vieux code que personne ne veut toucher. Je commence par regarder ce qu’il a (rapport de cadrage, 250 $, crédité sur la réparation), puis je le répare ou je le refais à neuf. Le prix de la réparation, je te le donne après, une fois que je sais à quoi j’ai affaire.',
+    rescueNoteCta: 'Décrire ce que tu as →',
     tiers: [
       {
         name: 'Niveau 0',
@@ -231,16 +235,15 @@ const FR = {
         scope:
           'Ton problème est trop petit pour engager un dev. Je te redirige vers un patron (modèle prêt-à-utiliser) ou un template no-code.',
         example:
-          'Ex. la rotation de pelletage du voisinage, ou le RSVP d’un party — un patron, et tu pars avec.',
+          'Ex. la rotation de pelletage du voisinage, ou le RSVP d’un party : un patron, et tu pars avec.',
         after: 'auto-service',
       },
       {
         name: 'Niveau 1',
         price: '750 $',
         scope:
-          'Un truc qui marche, hébergé et livré fonctionnel — pas une démo que tu dois garder en vie toi-même. Un livrable précis : un formulaire, un script, une automatisation, une page. Sans compte, sans multi-utilisateur.',
-        example:
-          'Ex. un formulaire web qui rentre direct dans ton chiffrier — pas besoin de retaper.',
+          'Un truc qui marche, hébergé et mis en ligne. Pas une démo que tu dois garder en vie toi-même. Un livrable précis : un formulaire, un script, une automatisation, une page. Sans compte, sans multi-utilisateur.',
+        example: 'Ex. un formulaire web qui rentre direct dans ton chiffrier, sans rien retaper.',
         after: 'payé en plein',
       },
       {
@@ -285,12 +288,12 @@ const FR = {
   stickyCta: {
     label: 'Démarrer une session',
     short: 'Démarrer →',
-    ariaLabel: 'Démarrer une session — ouvrir le formulaire',
+    ariaLabel: 'Démarrer une session, ouvrir le formulaire',
     // Swapped in once the visitor scrolls past most of the page — same
     // destination, different mood.
     farLabel: 'T’es rendu loin →',
     dismissLabel: 'Cacher',
-    pebbleAriaLabel: 'Reprendre — démarrer une session',
+    pebbleAriaLabel: 'Reprendre, démarrer une session',
   },
 
   themeToggle: {
@@ -301,13 +304,13 @@ const FR = {
   napkin: {
     eyebrow: 'sur un napperon',
     title: 'Dessine-moi le problème',
-    instruction: "Une boîte, deux flèches, un mot — n'importe quoi qui aide à comprendre.",
+    instruction: "Une boîte, deux flèches, un mot, n'importe quoi qui aide à comprendre.",
     descLabel: 'En une phrase, c’est quoi?',
     descPlaceholder: 'Ex. « Mon café veut savoir qui prend quels quarts. »',
     loadingCanvas: 'Chargement du tableau blanc…',
     homeTeaser: 'Tu préfères dessiner ? Le napperon est dans le formulaire →',
     formTeaser: 'Les mots ne suffisent pas ? Dessine-le →',
-    formReopen: 'Croquis joint — voir ou modifier →',
+    formReopen: 'Croquis joint, voir ou modifier →',
     formHide: 'Masquer le croquis',
     formRemove: 'Retirer le croquis',
     pillView: 'Voir le dessin',
@@ -327,7 +330,7 @@ const FR = {
       retry: 'Réessayer',
       working: 'Un instant…',
       error:
-        "Le micro n'a pas répondu — vérifie la permission du navigateur, ou écris-le simplement.",
+        "Le micro n'a pas répondu. Vérifie la permission du navigateur, ou écris-le simplement.",
     },
     compose: {
       voiceTrigger: '🎙 Note vocale',
@@ -353,11 +356,11 @@ const FR = {
     },
     intake: {
       voiceTeaser: 'Tu préfères le dire à voix haute ? Enregistre une note vocale →',
-      voiceReopen: 'Note vocale enregistrée — revoir →',
+      voiceReopen: 'Note vocale enregistrée, revoir →',
       voiceHide: 'Masquer la note vocale',
       voiceRemove: 'Retirer la note vocale',
       voiceConsent:
-        'Utilise ton micro. Le clip est transcrit sur Cloudflare puis aussitôt supprimé — seul le texte ci-dessous est gardé avec ta demande.',
+        'Utilise ton micro. Le clip est transcrit sur Cloudflare puis aussitôt supprimé. Seul le texte ci-dessous est gardé avec ta demande.',
       voiceUse: 'Transcrire',
       title: 'Dis-moi le problème à voix haute',
       transcriptLabel: 'Ce que j’ai entendu (corrige au besoin)',
@@ -382,13 +385,14 @@ const FR = {
 
   inlineTeaser: {
     eyebrow: 'commence ici',
-    title: "Choisis ton type de problème — je m'occupe du reste",
+    title: "Choisis ton type de problème, je m'occupe du reste",
     sub: 'Un clic et tu sautes l’étape « type de problème » dans le formulaire. Tu peux changer d’idée plus tard.',
     types: {
       paperasse: 'Paperasse à automatiser',
       suivi: 'Suivi (clients, inventaire, projets)',
       coordination: 'Coordination (équipe, bénévoles, voisinage)',
-      autre: 'Autre — décris-moi ça librement',
+      autre: 'Autre, décris-moi ça librement',
+      rescue: 'Réparer un truc qui existe déjà',
     },
     cta: 'Continuer →',
   },
@@ -404,31 +408,31 @@ const FR = {
     items: [
       {
         q: 'Le prix annoncé, c’est vraiment ça?',
-        a: 'Oui. Le Niveau 0 est à 0 $ et sert à se voir si on est compatibles. Les niveaux 1 à 3 ont un prix forfaitaire avant de commencer — on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise. Le reçu officiel vient de Stripe — c’est normal, c’est mon processeur de paiement.',
+        a: 'Oui. Le Niveau 0 est à 0 $ et sert à se voir si on est compatibles. Les niveaux 1 à 3 ont un prix forfaitaire avant de commencer, et on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise. Le reçu officiel vient de Stripe : c’est normal, c’est mon processeur de paiement.',
       },
       {
         q: 'Je pourrais pas juste le faire moi-même avec un générateur d’app IA?',
-        a: 'Pour un problème de Niveau 0, probablement que oui, et je te pointe vers un outil ou un template gratuitement — c’est exactement à ça que sert le Niveau 0. Pour le reste, construire n’a jamais été la partie difficile. Un générateur IA a besoin que tu saches exactement quoi lui demander, et la plupart des gens ne le savent pas encore; trouver ça, c’est le triage. Il te sort une démo rapide, puis te laisse pris avec le login qui marche à moitié, les données qui disparaissent en silence, l’hébergement, le domaine. C’est toi qui debugges à 21 h sans personne à appeler. Ce que tu paies, c’est un prix fixe, un modèle de données qui tient à l’usage, et un nom responsable quand quelque chose brise des mois plus tard. Si ton idée est assez petite pour que rien de ça ne te dérange, prends le générateur — je te le dirai franchement.',
+        a: 'Pour un problème de Niveau 0, probablement que oui, et je te pointe vers un outil ou un template gratuitement. C’est exactement à ça que sert le Niveau 0. Pour le reste, construire n’a jamais été la partie difficile. Un générateur IA a besoin que tu saches exactement quoi lui demander, et la plupart des gens ne le savent pas encore. Trouver ça, c’est le triage. Il te sort une démo rapide, puis te laisse pris avec le login qui marche à moitié, les données qui se perdent, l’hébergement, le nom de domaine. C’est toi qui debugges à 21 h sans personne à appeler. Ce que tu paies, c’est un prix fixe, un outil qui tient le coup pour de vrai, et un nom responsable quand quelque chose brise des mois plus tard. Déjà pris avec une app IA à moitié faite ? Ça, c’est un <a href="/intake">sauvetage</a> : je regarde ce qui cloche et je te dis franchement si ça se répare. Si ton idée est assez petite pour que rien de ça ne te dérange, prends le générateur, je te le dirai franchement.',
       },
       {
         q: 'Et si ça prend plus de temps que prévu?',
-        a: 'Si je dépasse, c’est mon problème — le prix reste celui du devis. Si la portée change en cours de route (tu ajoutes des choses), on s’arrête, on regarde, et on décide ensemble : ajuster le devis ou couper.',
+        a: 'Si je dépasse, c’est mon problème : le prix reste celui du devis. Si la portée change en cours de route (tu ajoutes des choses), on s’arrête, on regarde, et on décide ensemble : ajuster le devis ou couper.',
       },
       {
         q: 'Et si je n’aime pas le résultat?',
-        a: 'Tu vois une démo testable à chaque étape — pas juste à la fin. Si à mi-chemin tu réalises que ça ne convient pas, on arrête. Je facture le travail fait à ce jour, pas un cent de plus. Aucun engagement à finir.',
+        a: 'Tu vois une démo testable à chaque étape, pas juste à la fin. Si à mi-chemin tu réalises que ça ne convient pas, on arrête. Je facture le travail fait à ce jour, pas un cent de plus. Aucun engagement à finir.',
       },
       {
         q: 'Je ne sais pas exactement ce que je veux. C’est ok?',
-        a: 'C’est même attendu. Décris comme il te vient, dans tes mots — sans te filtrer. Si ça sonne trop petit, trop weird, ou pas assez « professionnel », écris-le pareil. C’est moi qui décide ce qui rentre. Mon job c’est de poser les bonnes questions et de te montrer une version concrète sur laquelle tu peux réagir.',
+        a: 'C’est même attendu. Décris comme il te vient, dans tes mots, sans te filtrer. Si ça sonne trop petit, trop weird, ou pas assez « professionnel », écris-le pareil. C’est moi qui décide ce qui rentre. Mon job c’est de poser les bonnes questions et de te montrer une version concrète sur laquelle tu peux réagir.',
       },
       {
         q: 'À qui appartient le code à la fin?',
-        a: 'À toi, dans tous les cas. Deux modes : « Tout à toi » (tu détiens repo, domaine et comptes dès le jour 1) ou « Je m’en occupe » (je suis dépositaire des clés, transférables sur demande, sans frais, en environ une semaine). Aucun des deux ne te coince — <a href="/handoff">voir comment ça finit →</a>',
+        a: 'À toi, dans tous les cas. Deux modes : « Tout à toi » (tu détiens repo, domaine et comptes dès le jour 1) ou « Je m’en occupe » (je suis dépositaire des clés, transférables sur demande, sans frais, en environ une semaine). Aucun des deux ne te coince. <a href="/handoff">Voir comment ça finit →</a>',
       },
       {
         q: 'Je peux apporter mes propres designs ou maquettes?',
-        a: 'Avec plaisir. Figma, Sketch, dessin sur napperon — tout est bienvenu. Sinon, je propose une direction visuelle simple et on l’ajuste ensemble.',
+        a: 'Avec plaisir. Figma, Sketch, dessin sur napperon, tout est bienvenu. Sinon, je propose une direction visuelle simple et on l’ajuste ensemble.',
       },
     ],
   },
@@ -436,9 +440,9 @@ const FR = {
   about: {
     eyebrow: 'qui je suis',
     title: 'À propos',
-    body: 'Je suis dev depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible — pour toi comme pour moi.',
+    body: 'Je suis dev depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible, pour toi comme pour moi.',
     body2:
-      'Ce n’est pas une agence, et le portail n’est pas une plateforme géante. C’est un gars qui décide, avec juste ce qu’il faut de machine pour gérer la logistique. C’est ça qui nous garde nos soirées, à tous les deux.',
+      'C’est un gars qui décide, avec juste ce qu’il faut de machine pour gérer la logistique. Pas une agence, pas une plateforme géante. C’est ça qui nous garde nos soirées, à tous les deux.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
   },
@@ -454,13 +458,13 @@ const FR = {
   },
 
   pullQuote: {
-    body: 'Je serai toujours honnête sur ton projet — même quand la réponse, c’est « garde ton argent ».',
+    body: 'Je serai toujours honnête sur ton projet, même quand la réponse, c’est « garde ton argent ».',
     attribution: 'Marc',
   },
 
   engagement: {
     statusBarLabel: "Étape de l'engagement",
-    demoNotice: 'EXEMPLE — engagement en cours',
+    demoNotice: 'EXEMPLE · engagement en cours',
     startedOn: 'commencé le',
     backHome: "← Retour à l'accueil",
     stages: {
@@ -474,7 +478,7 @@ const FR = {
       title: 'Aperçu testable',
       iframeTitle: 'Aperçu en direct du livrable',
       notDeployedYet:
-        "Pas encore déployé — l'aperçu apparaîtra ici dès le jour 5 (engagement type Niveau 2).",
+        "Pas encore déployé. L'aperçu apparaîtra ici dès le jour 5 (engagement type Niveau 2).",
     },
     thread: {
       title: "Le fil de l'engagement",
@@ -490,28 +494,28 @@ const FR = {
     },
     notFound: {
       title: 'Engagement introuvable',
-      body: "Cette URL ne correspond à aucun engagement public. Si tu es un client, vérifie ton lien — sinon, retour à l'accueil.",
+      body: "Cette URL ne correspond à aucun engagement public. Si tu es un client, vérifie ton lien. Sinon, retour à l'accueil.",
     },
   },
 
   tier0: {
-    pageTitle: 'Niveau 0 — outils gratuits pour problèmes plus petits',
+    pageTitle: 'Niveau 0 · outils gratuits pour problèmes plus petits',
     metaDescription:
       "Patrons gratuits pour les problèmes du quotidien trop petits pour engager un dev : rotation de pelletage, RSVP, suivi d'heures, prêts entre voisins.",
     backHome: "← Retour à l'accueil",
     eyebrow: 'Niveau 0 · auto-service · gratuit',
-    title: 'Ton problème est trop petit pour engager un dev — voici comment le régler toi-même',
+    title: 'Ton problème est trop petit pour engager un dev. Voici comment le régler toi-même',
     intro:
-      "Pas de honte. Si ton budget est sous 200 $ et que ton problème entre dans une de ces 4 catégories, voici la recette. Tu n'as rien à acheter et tu n'as pas besoin de moi.",
+      "Pas de honte. Si ton budget est sous 750 $ et que ton problème entre dans une de ces 4 catégories, voici la recette. Tu n'as rien à acheter et tu n'as pas besoin de moi.",
     problemLabel: 'Le problème',
     recipeLabel: 'La recette',
     growBack:
-      "Si un de ces patrons ne suffit plus, c'est que ton problème a grandi. Bonne nouvelle, c'est probablement Niveau 1 ou 2 maintenant — décris-moi ça.",
+      "Si un de ces patrons ne suffit plus, c'est que ton problème a grandi. Bonne nouvelle, c'est probablement Niveau 1 ou 2 maintenant. Décris-moi ça.",
     intakeCta: 'Mon problème a grandi → ouvrir le formulaire',
   },
 
   intake: {
-    pageTitle: 'Décris ton problème — formulaire',
+    pageTitle: 'Décris ton problème · formulaire',
     metaDescription:
       "Formulaire d'intake (demande de projet) pour Marc. Async, à ton rythme. Sauvegarde automatique. Réponse en 72 h.",
     backHome: "← Retour à l'accueil",
@@ -529,7 +533,7 @@ const FR = {
     },
     capacity: {
       atCap:
-        "Je suis plein en ce moment. Tu peux quand même soumettre — je te mets sur la liste d'attente et je te réponds quand un slot ouvre.",
+        "Je suis plein en ce moment. Tu peux quand même soumettre : je te mets sur la liste d'attente et je te réponds quand un slot ouvre.",
     },
     steps: {
       vibe: 'On se comprend',
@@ -543,18 +547,18 @@ const FR = {
       confirm: "J'ai lu, ça matche, je continue.",
       // Quirky swap-in shown after the visitor ticks the box — same
       // checkbox, warmer text. Non-blocking: the CTA always works.
-      ackThanks: "✓ Merci d'avoir lu — t'as compris la vibe.",
+      ackThanks: "✓ Merci d'avoir lu, t'as compris la vibe.",
       cta: 'Continuer →',
     },
     account: {
       eyebrow: 'compte gratuit',
       title: "J'ai besoin d'une adresse courriel",
-      body: "C'est tout. Pas de mot de passe pendant que tu remplis. Si tu reviens plus tard, je t'envoie un lien de connexion par courriel pour reprendre — pas de compte à créer, pas de mot de passe à inventer. Le brouillon se sauvegarde tout seul à chaque champ.",
+      body: "C'est tout. Pas de mot de passe pendant que tu remplis. Si tu reviens plus tard, je t'envoie un lien de connexion par courriel pour reprendre. Pas de compte à créer, pas de mot de passe à inventer. Le brouillon se sauvegarde tout seul à chaque champ.",
       emailLabel: 'Courriel',
       nameLabel: 'Ton prénom (optionnel)',
       namePlaceholder: 'Marie',
-      hint: 'Marc lit chaque formulaire lui-même. Aucun spam, aucune liste, aucune revente.',
-      autosaveNote: '✓ Pas de pression — ton brouillon t’attend si tu reviens.',
+      hint: 'Marc lit chaque formulaire lui-même. Aucun spam, aucune revente.',
+      autosaveNote: '✓ Pas de pression, ton brouillon t’attend si tu reviens.',
       cta: 'Continuer →',
       alreadyHaveAccount: 'Tu as déjà un compte ?',
       signIn: 'Connecte-toi →',
@@ -568,7 +572,7 @@ const FR = {
     typePicker: {
       eyebrow: 'quel genre de problème',
       title: 'Quel genre de problème?',
-      body: 'Choisis celui qui se rapproche le plus. Si rien ne colle, prends « autre » — Marc va le lire et le rediriger au besoin.',
+      body: 'Choisis celui qui se rapproche le plus. Si rien ne colle, prends « autre » : Marc va le lire et le rediriger au besoin.',
     },
     form: {
       eyebrow: 'le détail',
@@ -577,20 +581,20 @@ const FR = {
       continue: 'Soumettre →',
       handoffMode: {
         label: 'Préférence de gestion (optionnel)',
-        hint: "À la livraison, qui détient les clés? Par défaut Marc s'en occupe (forfait annuel) — c'est ce qui t'évite de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
+        hint: "À la livraison, qui détient les clés? Par défaut Marc s'en occupe (forfait annuel), ce qui t'évite de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
         learnMore: 'Voir comment ça finit →',
-        optionJe: "Je m'en occupe — Marc garde les clés (forfait annuel, mode recommandé)",
-        optionTout: 'Tout à toi — je gère DNS, Cloudflare, Resend moi-même',
+        optionJe: "Je m'en occupe : Marc garde les clés (forfait annuel, mode recommandé)",
+        optionTout: 'Tout à toi : je gère DNS, Cloudflare, Resend moi-même',
         optionParle: 'On en parle plus tard',
       },
     },
     confirmation: {
       eyebrowAccepted: 'reçu',
-      eyebrowWaitlist: "reçu — liste d'attente",
+      eyebrowWaitlist: "reçu · liste d'attente",
       titleAccepted: "Merci, c'est reçu.",
       titleWaitlist: "Merci, tu es sur la liste d'attente.",
       bodyAccepted:
-        "Je lis chaque formulaire moi-même. Pas d'IA entre toi et moi. Tu auras une réponse honnête en 72 h, par courriel — oui, non, ou « raconte-moi plus ».",
+        "Je lis chaque formulaire moi-même. Pas d'IA entre toi et moi. Tu auras une réponse honnête en 72 h, par courriel : oui, non, ou « raconte-moi plus ».",
       bodyWaitlist:
         "Je suis plein en ce moment : 1 projet actif + 1 en triage, c'est mon plafond pour respecter ma famille. Je te réponds dès qu'un slot ouvre, en général quelques semaines. Le brouillon reste sauvegardé.",
       sla: 'Réponse honnête en 72 h — oui, non, ou « raconte-moi plus ».',
@@ -603,29 +607,29 @@ const FR = {
       startOver: 'Recommencer un nouveau formulaire',
       submitting: 'Envoi en cours…',
       submitError:
-        'Hmm, problème de connexion en envoyant ton intake. Ton brouillon est sauvegardé — réessaie dans un instant.',
+        'Hmm, problème de connexion en envoyant ton intake. Ton brouillon est sauvegardé, réessaie dans un instant.',
       sessionLinkLabel: 'Voir ta session →',
       sessionLinkHint: 'Ta proposition est enregistrée. Tu peux la suivre et y répondre ici.',
       sessionEditHint:
         'Tu peux modifier tes réponses à tout moment depuis ton portail (« Mes sessions »).',
       magicLinkSentTitle: 'Vérifie ton courriel pour finaliser',
       magicLinkSentBody: (email: string) =>
-        `Je t’ai envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session — il expire dans 30 minutes.`,
+        `Je t’ai envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session. Il expire dans 30 minutes.`,
       magicLinkAgain: 'Pas reçu ? Renvoyer le lien',
-      parkedStripHint: 'Ton formulaire est en attente — il démarre dès ta connexion.',
+      parkedStripHint: 'Ton formulaire est en attente, il démarre dès ta connexion.',
     },
   },
 
   sessionAdvancements: {
     heading: 'Avancées du build',
     subtitle:
-      'Étapes du build avec un lien vers le déploiement Cloudflare correspondant — chaque entrée est un build que tu peux ouvrir.',
+      'Étapes du build avec un lien vers le déploiement Cloudflare correspondant. Chaque entrée est un build que tu peux ouvrir.',
     loading: 'Chargement…',
     empty: 'Aucune avancée publiée pour l’instant.',
     currentLabel: 'Build actuel',
     formEyebrow: 'Publier une avancée',
     formLabel: 'Titre',
-    formLabelPlaceholder: 'Rev 1 — première démo testable',
+    formLabelPlaceholder: 'Rev 1 · première démo testable',
     formBody: 'Description',
     formBodyPlaceholder: 'Ce qui a changé dans ce build, ce qu’il y a à tester.',
     formIframePath: 'Chemin de l’iframe (optionnel)',
@@ -644,7 +648,7 @@ const FR = {
     formSubmitting: 'Publication…',
     formStampHint:
       'Le lien Cloudflare et le commit sont ajoutés automatiquement au prochain déploiement.',
-    formError: 'Échec — réessaie.',
+    formError: 'Échec, réessaie.',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
     doneEditing: 'Terminer',
@@ -691,7 +695,7 @@ const FR = {
       empty: 'Pas encore de témoignages pour ce projet.',
       ctaTitle: 'Tu as touché à ce projet ?',
       ctaBody:
-        'Si Marc t’a aidé sur ce projet précis, dis-le en quelques phrases — ça paraîtra ici.',
+        'Si Marc t’a aidé sur ce projet précis, dis-le en quelques phrases, ça paraîtra ici.',
       ctaButton: 'Écrire un témoignage →',
     },
   },
@@ -700,7 +704,7 @@ const FR = {
     eyebrow: 'projets',
     heading: 'Projets en cours',
     intro:
-      'Sessions que je publie au public — chacune un projet vivant, avec son dernier build accessible.',
+      'Sessions que je publie au public, chacune un projet vivant, avec son dernier build accessible.',
     loading: 'Chargement…',
     empty: 'Rien de publié pour le moment. Reviens bientôt.',
     error: 'Impossible de charger les projets.',
@@ -712,7 +716,7 @@ const FR = {
     tierPrefix: 'Niveau',
     placeholderEyebrow: 'ton projet ici',
     placeholderHeading: 'Une place t’attend',
-    placeholderIntro: 'Peu importe le niveau — un point de départ.',
+    placeholderIntro: 'Peu importe le niveau, un point de départ.',
     placeholderT0Cta: 'Voir Niveau 0 →',
     placeholderIntakeCta: "Démarrer l'intake →",
   },
@@ -723,7 +727,7 @@ const FR = {
       'Quand tu actives la vitrine, cette session apparaît sur /projects avec le titre et le sous-titre que tu donnes ici.',
     enabledLabel: 'Publier comme projet sur /projects',
     titleLabel: 'Titre du projet (optionnel)',
-    titlePlaceholder: 'Truck Notes — voix → facture',
+    titlePlaceholder: 'Truck Notes · voix → facture',
     taglineLabel: 'Sous-titre court (optionnel)',
     taglinePlaceholder: 'Notes vocales du truck → brouillon de facture le dimanche.',
     tierLabel: 'Niveau',
@@ -736,21 +740,21 @@ const FR = {
     tierOption4: 'Niveau 4 · sur devis',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
-    saveError: 'Échec — réessaie.',
+    saveError: 'Échec, réessaie.',
     saved: 'Enregistré ✓',
     galleryLink: 'Voir la galerie →',
     previewHeading: 'Aperçu du carton de partage',
     previewHint:
-      'Voici ce qu’afficheront Slack, iMessage, etc. quand quelqu’un colle le lien de cette session. L’aperçu reflète la version *publiée* — enregistre pour le voir bouger.',
+      'Voici ce qu’afficheront Slack, iMessage, etc. quand quelqu’un colle le lien de cette session. L’aperçu reflète la version *publiée*. Enregistre pour le voir bouger.',
     previewDisabledHint:
-      'Active la vitrine et enregistre — l’aperçu apparaîtra ici une fois la session publiée.',
+      'Active la vitrine et enregistre : l’aperçu apparaîtra ici une fois la session publiée.',
     previewOpenInTab: 'Ouvrir le PNG',
   },
 
   adminShowcaseOverview: {
-    eyebrow: 'vitrine — vue d’ensemble',
+    eyebrow: 'vitrine · vue d’ensemble',
     title: 'Toutes les vitrines, d’un coup d’œil',
-    sub: 'Vérifie la cohérence visuelle des cartes sociales avant qu’elles ne sortent. Titre trop long, sous-titre manquant, tier non assigné — tout est repéré ici.',
+    sub: 'Vérifie la cohérence visuelle des cartes sociales avant qu’elles ne sortent. Titre trop long, sous-titre manquant, tier non assigné : tout est repéré ici.',
     loading: 'Chargement…',
     empty:
       'Aucune session en vitrine pour l’instant. Active la vitrine sur une session pour la voir apparaître ici.',
@@ -769,7 +773,7 @@ const FR = {
   },
 
   journey: {
-    pageTitle: 'Le parcours complet — de l’idée au paiement',
+    pageTitle: 'Le parcours complet, de l’idée au paiement',
     metaDescription:
       'Le parcours complet, étape par étape : de ta première visite jusqu’au projet livré et payé. 12 étapes. Tu en fais la moitié. Ton temps total : ~20 minutes.',
     backHome: '← Retour à l’accueil',
@@ -802,7 +806,7 @@ const FR = {
             duration: '30 s',
             where: 'page publique',
             title: 'Tu arrives sur le site',
-            body: 'Pas de compte requis. Tu lis la vibe, les prix publics, les projets en cours. Si rien ne matche, tu repars — pas de frais, pas de drame.',
+            body: 'Pas de compte requis. Tu lis la vibe, les prix publics, les projets en cours. Si rien ne matche, tu repars. Pas de frais, pas de drame.',
           },
           {
             num: '02',
@@ -810,7 +814,7 @@ const FR = {
             duration: '5–10 min',
             where: 'portail',
             title: 'Tu décris ton problème',
-            body: 'Formulaire guidé. Pas un call. Sauvegarde automatique — tu pars manger, tu reviens, ton brouillon est là. Tu peux même dessiner un croquis si les mots manquent.',
+            body: 'Formulaire guidé. Pas un call. Sauvegarde automatique : tu pars manger, tu reviens, ton brouillon est là. Tu peux même dessiner un croquis si les mots manquent.',
           },
           {
             num: '03',
@@ -833,7 +837,7 @@ const FR = {
             duration: '≤ 72 h',
             where: 'async',
             title: 'Je lis ce que tu as écrit',
-            body: 'Pas d’IA entre toi et moi. Je lis chaque formulaire moi-même, en français ou en anglais — dans ta langue, je réponds dans ta langue.',
+            body: 'Pas d’IA entre toi et moi. Je lis chaque formulaire moi-même, en français ou en anglais. Dans ta langue, je réponds dans ta langue.',
           },
           {
             num: '05',
@@ -843,7 +847,7 @@ const FR = {
             // frPunct() keeps ":" and the « » glued to their words
             // at render time (a literal U+00A0 does not survive the build).
             title: 'Je réponds : oui, non, ou « raconte-moi plus »',
-            body: 'Si oui : devis ferme écrit dans ton portail. Si non : je te redirige vers un patron Niveau 0 gratuit, ou un dev qui matche mieux. Si entre les deux : je pose mes questions.',
+            body: 'Si c’est oui, un devis ferme s’écrit dans ton portail. Si c’est non, je te redirige vers un patron Niveau 0 gratuit, ou vers un dev qui matche mieux. Entre les deux, je pose mes questions.',
           },
         ],
       },
@@ -866,7 +870,7 @@ const FR = {
             duration: 'dès le jour 2',
             where: 'portail',
             title: 'Démo testable en continu',
-            body: 'Je push chaque jour. Tu cliques quand tu veux voir où on en est — pas besoin d’attendre une réunion de mise à jour. Il n’y en a pas.',
+            body: 'Je push chaque jour. Tu cliques quand tu veux voir où on en est. Pas besoin d’attendre une réunion de mise à jour. Il n’y en a pas.',
           },
           {
             num: '08',
@@ -888,7 +892,7 @@ const FR = {
             actor: 'me',
             duration: 'à la livraison',
             where: 'portail',
-            title: 'Je livre — ton projet devient une page publique',
+            title: 'Je livre, ton projet devient une page publique',
             body: 'Le build vit en ligne. Option : cacher tes données commerciales (noms de clients, chiffres) avant publication. Toi seul décides ce qui est public.',
           },
           {
@@ -897,7 +901,7 @@ const FR = {
             duration: '1 min',
             where: 'Stripe',
             title: 'Tu paies le solde',
-            body: 'Niveau 2 : les 750 $ qui restent. Niveau 3 : le solde du devis. Reçu officiel Stripe — c’est ce qui sort sur ta compta.',
+            body: 'Niveau 2 : les 900 $ qui restent. Niveaux 3-4 : le versement suivant. Reçu officiel Stripe : c’est ce qui sort sur ta compta.',
           },
           {
             num: '11',
@@ -913,7 +917,7 @@ const FR = {
             duration: 'à toi de choisir',
             where: 'page Mon compte',
             title: 'Handoff ou mode Dépositaire',
-            body: 'Tu prends tout à ton nom (repo, domaine, comptes) OU tu me laisses garder les clés — Watch (120 $/an) ou Care (400 $/an, avec 2 h/an de retouches). Annulable n’importe quand — bascule automatique vers « Tout à toi ».',
+            body: 'Tu prends tout à ton nom (repo, domaine, comptes) OU tu me laisses garder les clés : Watch (120 $/an) ou Care (400 $/an, avec 2 h/an de retouches). Annulable n’importe quand, avec bascule automatique vers « Tout à toi ».',
           },
         ],
       },
@@ -943,13 +947,13 @@ const FR = {
       // frPunct() keeps the "?" glued to "moi" at render time
       // (a literal U+00A0 does not survive the build).
       heading: 'Tu as déjà travaillé avec moi ? Dis-le en quelques phrases.',
-      lead: 'Court, honnête, à ta voix. Je relis avant que ça paraisse — coquilles, longueur, ton. Ton courriel reste en privé : c’est seulement pour pouvoir te recontacter si je dois ajuster un mot.',
+      lead: 'Court, honnête, à ta voix. Je relis avant que ça paraisse : coquilles, longueur, ton. Ton courriel reste en privé : c’est seulement pour pouvoir te recontacter si je dois ajuster un mot.',
       forProjectPrefix: 'Tu témoignes à propos du projet ',
       forProjectLink: 'ouvrir le projet',
-      forProjectSuffix: ' — il sera affiché sur sa page une fois approuvé.',
+      forProjectSuffix: ', il sera affiché sur sa page une fois approuvé.',
       privacy:
         'Ton nom et tes mots seront visibles publiquement. Ton courriel ne sera jamais affiché.',
-      successHeading: 'Reçu — merci.',
+      successHeading: 'Reçu. Merci.',
       successBody:
         'Je relis dans les prochains jours. Si c’est bon tel quel, ça paraît sans autre étape. Si je veux resserrer un mot, je t’écris.',
       submitAnother: 'Soumettre un autre témoignage',
@@ -968,13 +972,13 @@ const FR = {
         bodyHint: '30 à 600 caractères.',
         linkLabel: 'Lien (optionnel)',
         linkPlaceholder: 'https://tonsite.ca',
-        linkHint: 'Ton site, LinkedIn, GitHub — affiché à côté de ton nom.',
+        linkHint: 'Ton site, LinkedIn, GitHub, affiché à côté de ton nom.',
       },
       submitButton: 'Envoyer',
       submitting: 'Envoi…',
       errors: {
-        rateLimit: 'Trop d’envois récents — réessaie dans une heure.',
-        invalidName: 'Nom invalide — 2 à 80 caractères.',
+        rateLimit: 'Trop d’envois récents, réessaie dans une heure.',
+        invalidName: 'Nom invalide : 2 à 80 caractères.',
         invalidEmail: 'Courriel invalide.',
         invalidRelationship: 'Choisis une option.',
         invalidBody: 'Le mot doit faire entre 30 et 600 caractères.',
@@ -1187,6 +1191,10 @@ const EN: Copy = {
       'Custodian mode — after delivery, I keep the site online and up to date. Two annual plans: Watch ($120/yr) or Care ($400/yr, with 2h/yr of tweaks). Bigger changes are billed at $75/hr. You can opt for "All yours" instead if you’d rather manage it yourself.',
     custodianNoteHeading: 'After delivery, then what?',
     custodianNoteCta: 'How it ends →',
+    rescueNoteHeading: 'Already have something?',
+    rescueNote:
+      "An AI-generated app that keeps crashing, a site left half-done, old code nobody wants to touch. I start by looking at what's wrong (scoping report, $250, credited to the repair), then fix it or bring it up to date. The price for the repair I give you after, once I know what I'm dealing with.",
+    rescueNoteCta: 'Describe what you have →',
     tiers: [
       {
         name: 'Tier 0',
@@ -1347,6 +1355,7 @@ const EN: Copy = {
       suivi: 'Tracking (clients, inventory, projects)',
       coordination: 'Coordination (team, volunteers, neighbours)',
       autre: 'Other — describe it in your own words',
+      rescue: 'Fix something that already exists',
     },
     cta: 'Continue →',
   },
@@ -1366,7 +1375,7 @@ const EN: Copy = {
       },
       {
         q: "Couldn't I just build this myself with an AI app builder?",
-        a: "For a Tier 0 problem, you probably can, and I'll point you to a builder or a template for free — that's what Tier 0 is for. For anything bigger, the building was never the hard part. An AI builder needs you to know exactly what to ask it, and most people don't yet; working that out is the triage. It gets you a quick demo, then leaves you stuck on the login that half-works, the data that quietly goes missing, the hosting, the domain. You'd be the one debugging at 9pm with nobody to call. What you pay me for is a fixed price, a data model that survives real use, and a name that's accountable when something breaks months later. If your idea is small enough that none of that bites, use the builder — I'll tell you so honestly.",
+        a: "For a Tier 0 problem, you probably can, and I'll point you to a builder or a template for free — that's what Tier 0 is for. For anything bigger, the building was never the hard part. An AI builder needs you to know exactly what to ask it, and most people don't yet. Figuring that out is the triage. It gets you a quick demo, then leaves you stuck on the login that half-works, the data that goes missing, the hosting, the domain. You'd be the one debugging at 9pm with nobody to call. What you pay me for is a fixed price, a data model that holds up when it's really used, and a name that's accountable when something breaks months later. Already stuck with a half-working AI build? That's a <a href=\"/en/intake\">rescue</a>: I look at it and tell you straight whether it's worth fixing. If your idea is small enough that none of that bites, use the builder — I'll tell you so honestly.",
       },
       {
         q: 'What if it takes longer than expected?',
@@ -1460,7 +1469,7 @@ const EN: Copy = {
     eyebrow: 'Tier 0 · self-service · free',
     title: "Your problem is too small to hire a dev — here's how to handle it yourself",
     intro:
-      "No shame. If your budget is under $200 and your problem fits one of these 4 categories, here's the recipe. You don't need to buy anything and you don't need me.",
+      "No shame. If your budget is under $750 and your problem fits one of these 4 categories, here's the recipe. You don't need to buy anything and you don't need me.",
     problemLabel: 'The problem',
     recipeLabel: 'The recipe',
     growBack:
@@ -1687,8 +1696,8 @@ const EN: Copy = {
     tierOptionNone: 'Unclassified',
     tierOption0: 'Tier 0 · self-service',
     tierOption1: 'Tier 1 · $750',
-    tierOption2: 'Tier 2 · $1800',
-    tierOption3: 'Tier 3 · $3600',
+    tierOption2: 'Tier 2 · $1,800',
+    tierOption3: 'Tier 3 · $3,600',
     tierOption4: 'Tier 4 · quoted',
     save: 'Save',
     saving: 'Saving…',

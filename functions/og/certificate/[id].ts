@@ -220,7 +220,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   // divs keep their text on the same line. Text-only, no images: keeps the
   // render cheap.
   const html =
-    `<div style="display:flex;width:100%;height:100%;padding:48px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
+    // Root must use explicit pixel dimensions, not width/height:100%. Satori
+    // has no parent for the root element, so a `%` size can't resolve and the
+    // container collapses to fit-content — the bordered box would shrink to
+    // its widest text line instead of filling the 1000×1400 canvas.
+    `<div style="display:flex;width:1000px;height:1400px;padding:48px;background:linear-gradient(180deg,#fbf7ec 0%,#f6f1e6 100%);font-family:FiraSans;">` +
     `<div style="display:flex;flex-direction:column;flex:1;border:2px solid #d6cdb8;padding:64px 72px;">` +
     `<div style="display:flex;color:#7a7568;font-size:22px;letter-spacing:4px;">${escapeHtml(t.eyebrow)}</div>` +
     `<div style="display:flex;margin-top:34px;font-size:58px;font-weight:700;color:#1f1d18;letter-spacing:-0.01em;">${escapeHtml(t.title)}</div>` +

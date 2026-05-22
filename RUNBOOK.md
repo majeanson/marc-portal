@@ -371,22 +371,22 @@ Any future expiry (e.g. `12/30`), any 3-digit CVC, any postal (e.g. `H1A 1A1`).
 
 1. As admin, set a session to `status='active'`, `tier=1`.
 2. Log in as the visitor; load `/me`. Confirm the "TEST MODE" banner is
-   visible and `Payer Tier 1 (≈ 300 $)` is enabled.
+   visible and `Payer (750 $)` is enabled.
 3. Click → redirect to Stripe → enter `4242…4242` → submit.
-4. Redirected back to `/me?paid=1&pay=pay_*`. UI flips to `Payé · 300,00 $`.
+4. Redirected back to `/me?paid=1&pay=pay_*`. UI flips to `Payé · 750,00 $`.
 5. Verify D1: `wrangler d1 execute marc-portal-db --command "SELECT id, status, paid_at FROM payments ORDER BY created_at DESC LIMIT 1"` →
    one row, `status='paid'`, `paid_at` set.
-6. Verify Stripe Dashboard → Payments → one $300 CAD entry, marked "Succeeded".
+6. Verify Stripe Dashboard → Payments → one $750 CAD entry, marked "Succeeded".
 
 **Tier 2 (deposit + final) — exercises the new auto-prompt**
 
 1. Set a session to `tier=2`.
-2. Pay deposit (≈ 750 $) — same card flow as above.
+2. Pay the first installment (900 $) — same card flow as above.
 3. **Verify the auto-prompt email fires.** Either inspect Resend's audit
    trail or watch the `stripe listen` output for `checkout.session.completed`
    → check the test inbox for "Dépôt Tier 2 reçu — solde final disponible".
-4. Refresh `/me`. The button should now read `Payer le solde (≈ 750 $)`.
-5. Pay the final → `/me` shows `Payé · 1 500,00 $` (sum, not just the leg).
+4. Refresh `/me`. The button should now read `Payer le versement 2/2 (900 $)`.
+5. Pay the final → `/me` shows `Payé · 1 800,00 $` (sum, not just the leg).
 6. Verify D1: two rows, both `status='paid'`, both `paid_at` set.
 
 **Tier 2 retry-idempotency check (critical)**
@@ -401,13 +401,13 @@ The auto-prompt email MUST fire exactly once. To prove it:
 
 **Custodian subscription**
 
-1. On `/me`, click `Activer le mode dépositaire (200 $/an)`.
+1. On `/me`, click `Activer Watch (120 $/an)` (or `Activer Care (400 $/an)`).
 2. Pay with `4242…` → redirect back. UI shows `actif` + `Gérer
    l'abonnement`.
 3. Click "Gérer" → opens Stripe Customer Portal.
 4. Verify D1: `sessions.custodian_status='active'`,
    `sessions.custodian_subscription_id='sub_*'`. One `payments` row with
-   `kind='custodian-sub'`, `stripe_invoice_id='in_*'`.
+   `kind='custodian'`, `custodian_plan='watch'`, `stripe_invoice_id='in_*'`.
 5. From the Portal, cancel the subscription → webhook fires
    `customer.subscription.deleted` → D1 flips to
    `custodian_status='switched_to_tout_a_toi'`. Admin gets the

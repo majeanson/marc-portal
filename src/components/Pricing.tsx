@@ -18,6 +18,9 @@ export function Pricing({ lang }: { lang: Lang }) {
   // (keys). Reading from PAGE_FEATURE keeps the colour in sync if that
   // page ever moves clusters.
   const handoffFeature = PAGE_FEATURE['page.handoff']
+  // Rescue is a parallel entry point (not a tier) — its callout links into
+  // the intake, so it carries the intake cluster's colour.
+  const intakeFeature = PAGE_FEATURE['page.intake']
   return (
     <section
       className="section section--alt section--editorial"
@@ -70,6 +73,25 @@ export function Pricing({ lang }: { lang: Lang }) {
             )
           })}
         </ol>
+        {/* Rescue — a parallel entry point, not a tier. The ladder above
+            measures build size; a rescue is sized by its audit, so it sits
+            below the ladder as its own note and links into the intake. */}
+        <aside className="tier__rescue-note" aria-labelledby="tier-rescue-heading">
+          <h3 id="tier-rescue-heading" className="tier__rescue-heading mono">
+            {t.rescueNoteHeading}
+          </h3>
+          <p className="tier__rescue-body">
+            {t.rescueNote}{' '}
+            <CrossFeatureLink
+              lang={lang}
+              feature={intakeFeature}
+              href={`${langPrefix}/intake`}
+              mono
+            >
+              {t.rescueNoteCta}
+            </CrossFeatureLink>
+          </p>
+        </aside>
         {/* Custodian-mode mini-section. Previously rendered only under the
             Tier-2 card via tier2Note, which falsely implied custodian was a
             Tier-2-only option. It applies to every paid tier (1, 2, 3) by

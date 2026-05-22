@@ -9,14 +9,14 @@ import {
   type PaymentKind,
   type PaymentSummary,
 } from '../lib/paymentsApi'
-import { formatDate } from '../lib/format'
+import { formatDate, formatCadCents } from '../lib/format'
 
 const COPY = {
   fr: {
     // Project payment section.
-    // Button-label amounts mirror the Intl.NumberFormat output below
-    // (formatCadCents) so the button and the post-payment "Payé · X $"
-    // pill use the same convention. OQLF: thin-space + dollar sign after.
+    // Button-label amounts come from formatCadCents (lib/format) so the
+    // button and the post-payment "Payé · X $" pill use the same
+    // convention. OQLF: thin-space + dollar sign after.
     projectHeading: 'Paiement du projet',
     payInstallment: (idx: number, of: number, amount: string) =>
       of > 1 ? `Payer le versement ${idx}/${of} (${amount}) →` : `Payer (${amount}) →`,
@@ -36,7 +36,7 @@ const COPY = {
     checkoutPending: 'Ouverture du paiement…',
 
     // Custodian section — the recommended default at delivery. Two annual
-    // plans (Watch / Care); bigger changes are metered (Evolve, $75/h).
+    // plans (Watch / Care); bigger changes are billed hourly ($75/h).
     custodianHeading: 'Mode dépositaire',
     custodianRecommended: 'recommandé',
     custodianActive: 'mode actuel',
@@ -636,19 +636,4 @@ export function PaymentActions({
       })()}
     </div>
   )
-}
-
-/**
- * Format CAD cents per OQLF convention (FR) or standard locale (EN).
- * Round-dollar amounts drop the cents. 75000 → "750 $" (fr-CA) / "$750" (en-CA).
- */
-function formatCadCents(cents: number, lang: Lang): string {
-  const isRound = cents % 100 === 0
-  return new Intl.NumberFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', {
-    style: 'currency',
-    currency: 'CAD',
-    currencyDisplay: lang === 'fr' ? 'symbol' : 'narrowSymbol',
-    minimumFractionDigits: isRound ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100)
 }

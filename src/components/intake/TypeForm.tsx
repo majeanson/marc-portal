@@ -27,7 +27,7 @@ export type FormData = Record<string, string>
  */
 const HANDOFF_MODE_KEY = '__handoff_mode'
 type HandoffMode = 'tout-a-toi' | 'je-men-occupe' | 'on-en-parle'
-// Default to Custodian ('je-men-occupe') — the $200/yr is what lets Marc
+// Default to Custodian ('je-men-occupe') — a custodian plan is what lets Marc
 // handle DNS, Cloudflare, Resend, D1 and secret rotation without explaining
 // each one. Visitors who want out can pick 'tout-a-toi' here, then confirm
 // with a skills checklist on /session/:id at delivery (the PaymentActions

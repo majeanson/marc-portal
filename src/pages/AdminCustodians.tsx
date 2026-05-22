@@ -14,7 +14,8 @@ import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
 import { listSessions, type SessionRow } from '../lib/sessionsApi'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
-import { formatDate } from '../lib/format'
+import { formatDate, formatCadCents } from '../lib/format'
+import { CUSTODIAN_CENTS } from '../lib/pricing'
 
 const COPY = {
   fr: {
@@ -32,7 +33,7 @@ const COPY = {
     sectionEmpty: 'Aucun.',
     countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
     mrrLabel: 'MRR équivalent',
-    mrrNote: '(200 $/an × actifs ÷ 12)',
+    mrrNote: '(Watch–Care · actifs ÷ 12)',
     untitled: 'Session sans intake',
     open: 'Ouvrir →',
     ackedOnLabel: 'confirmé le',
@@ -59,7 +60,7 @@ const COPY = {
     sectionEmpty: 'None.',
     countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
     mrrLabel: 'MRR equivalent',
-    mrrNote: '($200/yr × active ÷ 12)',
+    mrrNote: '(Watch–Care · active ÷ 12)',
     untitled: 'Session without intake',
     open: 'Open →',
     ackedOnLabel: 'confirmed on',
@@ -93,11 +94,6 @@ function previewFromIntake(raw: string | null): IntakePreview | null {
   }
   return null
 }
-
-/** Annual subscription price in CAD, hardcoded to mirror the public copy
- *  ($200/yr) and the canonical Stripe product. Kept here (not imported from
- *  a server const) because this page is purely informational. */
-const CUSTODIAN_YEARLY_CAD = 200
 
 export function AdminCustodians({ lang }: { lang: Lang }) {
   const t = COPY[lang]
@@ -160,7 +156,12 @@ export function AdminCustodians({ lang }: { lang: Lang }) {
     return { active, pastDue, ended, allYoursAcked }
   }, [sessions])
 
-  const mrrCad = (buckets.active.length * CUSTODIAN_YEARLY_CAD) / 12
+  // Each active sub is Watch ($120) or Care ($400); the sessions list this
+  // page reads doesn't carry which plan, so MRR is shown as a Watch–Care
+  // range rather than a false-precision single figure.
+  const activeCount = buckets.active.length
+  const mrrMinCents = Math.round((activeCount * CUSTODIAN_CENTS.watch) / 12)
+  const mrrMaxCents = Math.round((activeCount * CUSTODIAN_CENTS.care) / 12)
 
   if (authLoading) {
     return (
@@ -211,7 +212,8 @@ export function AdminCustodians({ lang }: { lang: Lang }) {
               <h1 className="session-frame__title">{t.title}</h1>
               <p>{t.intro}</p>
               <p className="mono admin-custodians__mrr">
-                {t.mrrLabel}: {formatCadDollars(mrrCad, lang)} {t.mrrNote}
+                {t.mrrLabel}: {formatCadCents(mrrMinCents, lang)} –{' '}
+                {formatCadCents(mrrMaxCents, lang)} {t.mrrNote}
               </p>
             </header>
 
@@ -362,11 +364,5 @@ function CustodianRow({
   )
 }
 
-function formatCadDollars(dollars: number, lang: Lang): string {
-  return new Intl.NumberFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', {
-    style: 'currency',
-    currency: 'CAD',
-    currencyDisplay: lang === 'fr' ? 'symbol' : 'narrowSymbol',
-    maximumFractionDigits: 2,
-  }).format(dollars)
-}
+// Format helpers live in lib/format — formatCadCents is shared with
+// PaymentActions and SessionTierStrip so every CAD figure renders alike.

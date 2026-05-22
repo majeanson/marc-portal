@@ -25,7 +25,7 @@ const COPY = {
     eyebrow: 'comment ça finit',
     title: "Tu n'es jamais pris au piège",
     lead: "À la livraison, deux modes : je m'en occupe, ou tout à toi. Aucun ne te coince — et tu peux changer d'idée n'importe quand.",
-    asOf: 'En vigueur : 2026-05-15.',
+    asOf: 'En vigueur : 2026-06-01.',
 
     modes: {
       title: 'Les deux modes',
@@ -40,11 +40,11 @@ const COPY = {
             'Je détiens repo, domaine et comptes en mon nom (en dépositaire)',
             'Je gère DNS, renouvellements de domaine, certificats, mises à jour de sécurité',
             'Resend (SPF, DKIM, DMARC), Cloudflare Pages, exports D1 : à mon nom, sous ma responsabilité',
-            'Petites retouches incluses (jusqu’à 2 h / mois)',
-            "Au-delà de 2 h, je facture à l'heure (au tarif Tier 2), seulement après ton OK",
+            'Deux forfaits annuels : Watch (surveillance, correctifs de sécurité, mises à jour des dépendances) ou Care (tout Watch, plus 2 h/an de retouches et la file prioritaire)',
+            'Les changements plus gros : 75 $/h, seulement après ton OK',
             'Renouvellement annuel ; si non renouvelé, bascule automatique vers « Tout à toi »',
           ],
-          cost: '200 $ / an (couvre domaine + petites retouches + ops)',
+          cost: 'Watch 120 $/an · Care 400 $/an (domaine + ops inclus)',
           autonomy:
             "Tu peux basculer vers « Tout à toi » n'importe quand, gratuit, en environ une semaine. Aucun frais de sortie, aucune question.",
         },
@@ -152,8 +152,8 @@ const COPY = {
           a: "Le mode bascule automatiquement vers « Tout à toi » — pas de coupure, pas de chantage. Je transfère les comptes à ton nom, je t'envoie les instructions, et c'est fini. C'est exactement comme si tu avais choisi « Tout à toi » dès le début.",
         },
         {
-          q: 'Le tarif annuel couvre quoi exactement?',
-          a: "Le coût du domaine (~15 $/an, je passe au prix coûtant), le monitoring de santé du site, les mises à jour de sécurité automatiques, et jusqu'à 2 heures de petites retouches par mois (changer un texte, ajuster une couleur, ajouter un champ simple). Au-delà, je facture à l'heure au tarif Tier 2 — on en parle avant, jamais de surprise.",
+          q: 'Les forfaits annuels couvrent quoi exactement?',
+          a: 'Ça dépend du forfait. Watch (120 $/an) couvre le coût du domaine (~15 $/an, au prix coûtant), le monitoring de santé du site, les correctifs de sécurité et les mises à jour des dépendances. Care (400 $/an) ajoute 2 heures de petites retouches par année (changer un texte, ajuster une couleur, ajouter un champ simple) et la file prioritaire. Au-delà, je facture 75 $/h — on en parle avant, jamais de surprise.',
         },
         {
           q: 'Est-ce que je peux changer de mode plus tard?',
@@ -181,7 +181,7 @@ const COPY = {
     eyebrow: 'how it ends',
     title: 'You are never trapped',
     lead: 'At delivery, two modes: I handle it, or all yours. Neither traps you — and you can switch your mind anytime.',
-    asOf: 'Effective: 2026-05-15.',
+    asOf: 'Effective: 2026-06-01.',
 
     modes: {
       title: 'The two modes',
@@ -196,11 +196,11 @@ const COPY = {
             'I hold repo, domain, and accounts in my name (as custodian)',
             'I manage DNS, domain renewals, TLS certificates, security updates',
             'Resend (SPF, DKIM, DMARC), Cloudflare Pages, D1 exports: in my name, on my hook',
-            'Small tweaks included (up to 2h / month)',
-            'Beyond 2h, I bill hourly (at the Tier 2 rate), only after you approve',
+            'Two annual plans: Watch (monitoring, security patches, dependency updates) or Care (everything in Watch, plus 2h/yr of tweaks and the priority queue)',
+            'Bigger changes: $75/hr, only after you approve',
             "Annual renewal; if not renewed, auto-switch to 'All yours'",
           ],
-          cost: '$200 / year (covers domain + small tweaks + ops)',
+          cost: 'Watch $120/yr · Care $400/yr (domain + ops included)',
           autonomy:
             "You can switch to 'All yours' anytime, free, in about a week. No exit fee, no questions.",
         },
@@ -308,8 +308,8 @@ const COPY = {
           a: "The mode auto-switches to 'All yours' — no service cutoff, no leverage play. I transfer the accounts into your name, I send the instructions, and we're done. Exactly as if you'd picked 'All yours' from the start.",
         },
         {
-          q: 'What does the annual fee cover, exactly?',
-          a: 'Domain cost (~$15/yr, pass-through), site health monitoring, automatic security updates, and up to 2 hours of small tweaks per month (change a text, adjust a color, add a simple field). Beyond that, hourly at the Tier 2 rate — we discuss first, no surprises.',
+          q: 'What do the annual plans cover, exactly?',
+          a: 'Depends on the plan. Watch ($120/yr) covers the domain cost (~$15/yr, pass-through), site health monitoring, security patches, and dependency updates. Care ($400/yr) adds 2 hours of small tweaks per year (change a text, adjust a color, add a simple field) and the priority queue. Beyond that, $75/hr — we discuss first, no surprises.',
         },
         {
           q: 'Can I change modes later?',

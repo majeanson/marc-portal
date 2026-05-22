@@ -422,8 +422,8 @@ export const trackB: Track = {
       title: { fr: 'Décision Custodian vs Tout à toi', en: 'Custodian vs All-yours' },
       time: 'à la livraison',
       summary: {
-        fr: 'Visiteur choisit : « je te paie 200 $/an pour gérer » ou « je reprends tout ».',
-        en: 'Visitor chooses: “I pay you $200/yr to handle it” or “I take everything back”.',
+        fr: 'Visiteur choisit : « je te paie pour gérer » (Watch ou Care) ou « je reprends tout ».',
+        en: 'Visitor chooses: “I pay you to handle it” (Watch or Care) or “I take everything back”.',
       },
       why: {
         fr: 'Le modèle économique récurrent vit ou meurt ici. Custodian = MRR ; Tout à toi = transfert d’opérations (DNS, Cloudflare, Resend, Stripe).',
@@ -431,12 +431,12 @@ export const trackB: Track = {
       },
       how: {
         fr: [
-          'Visiteur clique « Custodian » → abonnement Stripe 200 $/an récurrent',
+          'Visiteur clique « Watch » ou « Care » → abonnement Stripe annuel récurrent',
           '« Tout à toi » → checklist technique à cocher (5 cases) + confirmation',
           'Si Tout à toi : opérateur transfère via /handoff/checklist',
         ],
         en: [
-          'Visitor clicks “Custodian” → recurring $200/yr Stripe subscription',
+          'Visitor clicks “Watch” or “Care” → recurring annual Stripe subscription',
           '“All yours” → technical checklist (5 items) + confirmation',
           'If All-yours: operator transfers via /handoff/checklist',
         ],

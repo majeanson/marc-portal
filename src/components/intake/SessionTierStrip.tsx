@@ -1,26 +1,21 @@
 import type { Lang } from '../../i18n'
 import type { SessionTier } from '../../lib/sessionsApi'
+import { formatCadCents } from '../../lib/format'
+import { TIER_TOTAL_CENTS } from '../../lib/pricing'
 
 const COPY = {
-  fr: {
-    label: 'Tier de la session',
-    t0: 'T0 · gratuit',
-    t1: 'T1 · 750 $',
-    t2: 'T2 · 1800 $',
-    t3: 'T3 · 3600 $',
-    t4: 'T4 · sur devis',
-    clear: 'Aucun',
-  },
-  en: {
-    label: 'Session tier',
-    t0: 'T0 · free',
-    t1: 'T1 · $750',
-    t2: 'T2 · $1800',
-    t3: 'T3 · $3600',
-    t4: 'T4 · quoted',
-    clear: 'None',
-  },
+  fr: { label: 'Tier de la session', free: 'gratuit', quoted: 'sur devis', clear: 'Aucun' },
+  en: { label: 'Session tier', free: 'free', quoted: 'quoted', clear: 'None' },
 } as const
+
+/** "T2 · 1 800 $" — the tier price comes from the canonical ladder
+ *  (lib/pricing) through the shared formatter, so the strip can't drift from
+ *  the public pricing or its number formatting. T0 is free, T4 is quoted. */
+function tierLabel(n: SessionTier, lang: Lang, t: (typeof COPY)[Lang]): string {
+  if (n === 1 || n === 2 || n === 3) return `T${n} · ${formatCadCents(TIER_TOTAL_CENTS[n], lang)}`
+  if (n === 4) return `T4 · ${t.quoted}`
+  return `T0 · ${t.free}`
+}
 
 const TIERS: SessionTier[] = [0, 1, 2, 3, 4]
 
@@ -48,7 +43,7 @@ export function SessionTierStrip({
       {TIERS.map((n) => {
         const isCurrent = tier === n
         const stepClass = `intake__progress-step${isCurrent ? ' intake__progress-step--done intake__progress-step--current' : ''}`
-        const label = t[`t${n}` as 't0' | 't1' | 't2' | 't3' | 't4']
+        const label = tierLabel(n, lang, t)
         return (
           <li key={n} className="intake__progress-item">
             <button
