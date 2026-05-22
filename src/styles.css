@@ -7634,13 +7634,17 @@ button.intake__progress-step:disabled {
 }
 .hero__display-line {
   display: block;
-  /* First-paint reveal — staggered fade-up. Wrapped in a media query for
-     reduced-motion respect; non-animated state stays visually identical. */
+  /* First-paint reveal — staggered slide-up. Wrapped in a media query for
+     reduced-motion respect; non-animated state stays visually identical.
+     The reveal is transform-ONLY (no opacity fade): this <h1> is the
+     homepage's LCP element, and an element at opacity:0 does not count as
+     "contentful" — fading it in would push LCP out by the full animation
+     duration (~1s). A translated element still paints, so LCP fires on the
+     prerendered first paint while the line still visibly slides into place. */
   opacity: 1;
 }
 @media (prefers-reduced-motion: no-preference) {
   .hero__display-line {
-    opacity: 0;
     transform: translateY(14px);
     animation: hero-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
   }
