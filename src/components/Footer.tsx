@@ -16,8 +16,22 @@ const SENTRY_URL = 'https://sentry.io/issues/'
 function formatBuildDate(iso: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+  // Format in Quebec time, fixed — NOT the visitor's local timezone. The
+  // build date is a fact about the deploy, not a visitor-relative value, and
+  // the footer clock beside it already shows Quebec time; a fixed zone keeps
+  // the prerendered snapshot and the re-rendered page showing one stable
+  // string instead of flashing from the build machine's zone to the visitor's.
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Toronto',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(d)
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? '00'
+  return `${part('year')}-${part('month')}-${part('day')} ${part('hour')}:${part('minute')}`
 }
 
 /** Current Quebec wall-clock time, formatted per language. FR: `23h47`
