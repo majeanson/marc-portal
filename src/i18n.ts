@@ -597,7 +597,7 @@ const FR = {
         "Je lis chaque formulaire moi-même. Pas d'IA entre toi et moi. Tu auras une réponse honnête en 72 h, par courriel : oui, non, ou « raconte-moi plus ».",
       bodyWaitlist:
         "Je suis plein en ce moment : 1 projet actif + 1 en triage, c'est mon plafond pour respecter ma famille. Je te réponds dès qu'un slot ouvre, en général quelques semaines. Le brouillon reste sauvegardé.",
-      sla: 'Réponse honnête en 72 h — oui, non, ou « raconte-moi plus ».',
+      sla: 'Réponse honnête en 72 h : oui, non, ou « raconte-moi plus ».',
       summaryTitle: "Ce que tu m'as envoyé",
       summaryEmail: 'Courriel',
       summaryName: 'Prénom',
@@ -1031,14 +1031,14 @@ const EN: Copy = {
     },
   },
 
-  brandTitle: '№ 01 · Marc — Québécois dev',
+  brandTitle: '№ 01 · Marc, Québécois dev',
   tabAway: '👋 come back · Marc',
   metaDescription:
     'Marc, a Québécois dev. Evenings and weekends, I help people solve everyday problems with code. Everything runs async, no meetings, at your pace.',
 
   hero: {
     eyebrow: 'side-practice · Quebec · async',
-    folio: '№ 01 — Marc, a Québécois dev',
+    folio: '№ 01 · Marc, a Québécois dev',
     salut: 'Marc-Antoine, here to solve important problems for my community',
     display: {
       pre: 'Marc-Antoine,',
@@ -1046,7 +1046,7 @@ const EN: Copy = {
       emphasis: 'important problems',
       tail: 'for my community.',
     },
-    signature: 'Marc — Québécois dev',
+    signature: 'Marc, Québécois dev',
     body2:
       "There's something that comes back every week. Paperwork you keep re-typing, a thread that gets lost, people to wrangle. It's no national crisis, but it's annoying enough to deserve better. Tell me about it.",
     cta: 'Create a free account →',
@@ -1055,7 +1055,7 @@ const EN: Copy = {
     mySessionsLink: 'View my sessions',
     // Split so the language word ("French") renders as a link that
     // switches the page to that language. See Hero.tsx.
-    bilingual: { pre: '(Also in ', link: 'French', post: ' — I reply in your language.)' },
+    bilingual: { pre: '(Also in ', link: 'French', post: ', I reply in your language.)' },
   },
 
   how: {
@@ -1077,12 +1077,12 @@ const EN: Copy = {
       {
         num: '01',
         title: 'You describe your problem',
-        body: 'You fill out a guided form, not a call to schedule. It saves itself as you go, so you can close the tab and come back to a saved draft whenever you like.',
+        body: 'You fill out a guided form. No call to schedule. It saves itself as you go, so you can close the tab and come back to a saved draft whenever you like.',
       },
       {
         num: '02',
         title: 'I reply within 72h',
-        body: "Yes, no, or 'tell me more.' I read every form myself — no AI between you and me.",
+        body: "Yes, no, or 'tell me more.' I read every form myself. No AI between you and me.",
       },
       {
         num: '03',
@@ -1116,7 +1116,7 @@ const EN: Copy = {
     tierPrefix: 'Tier',
     emptyTitle: 'The first project lands here very soon.',
     emptyBody:
-      'No published projects yet — the gallery is new. You can still see how it works, or open the first one through the portal.',
+      'No published projects yet, the gallery is new. You can still see how it works, or open the first one through the portal.',
     emptyCta: 'Describe your problem →',
     errorTitle: 'Can’t load the projects right now.',
     errorBody: 'You can still open the full gallery, or write through the portal.',
@@ -1125,12 +1125,12 @@ const EN: Copy = {
   featuredTestimonials: {
     eyebrow: 'social proof',
     title: 'A few words from people who worked with me',
-    sub: 'Short vouches, submitted by actual collaborators. I read before they ship and may tighten the wording — but the substance is their voice.',
+    sub: 'Short vouches, submitted by actual collaborators. I read before they ship and may tighten the wording, but the substance is their voice.',
     writeOne: 'Worked with me? Write a vouch →',
     galleryCard: {
       eyebrow: 'want to read everything?',
       title: 'All vouches, on one page',
-      body: 'The full list lives on /vouches — chronological, unfiltered, with each person’s name and link.',
+      body: 'The full list lives on /vouches: chronological, unfiltered, with each person’s name and link.',
       cta: 'See all vouches →',
     },
   },
@@ -1138,7 +1138,7 @@ const EN: Copy = {
   vibe: {
     eyebrow: 'catch the vibe',
     title: 'What I do, what I don’t',
-    body: "Read this before filling out the form. If it matches, we'll get along. If not, no drama — there are plenty of other devs who do other things.",
+    body: "Read this before filling out the form. If it matches, we'll get along. If not, no drama. There are plenty of other devs who do other things.",
     do: {
       title: 'I do',
       items: [
@@ -1162,7 +1162,7 @@ const EN: Copy = {
   bringAnything: {
     eyebrow: 'no idea too small',
     title: 'Bring me anything',
-    body: "I want every idea to land in my inbox — small, weird, half-formed, doesn't matter. My job is to filter. Yours is just to describe whatever's been rattling around in your head.",
+    body: "I want every idea to land in my inbox: small, weird, half-formed, doesn't matter. My job is to filter. Yours is just to describe whatever's been rattling around in your head.",
     examplesTitle: "Ideas I'd happily take",
     examples: [
       'Your truck voice-notes → a draft invoice waiting for you Sunday morning',
@@ -1176,19 +1176,19 @@ const EN: Copy = {
       'An interactive map of good coffee shops along Route 132',
     ],
     reassure:
-      "If it's too small for my pricing, I'll show you how to do it yourself (Tier 0, free). If it's too big, I'll be honest. If it's in between, I triage. But I want to see it before I decide.",
+      "If it's too small for my pricing, I'll show you how to do it yourself (Tier 0, free). Too big or somewhere in between, we talk it through and I triage. Either way, I want to see it before I decide.",
     cta: 'Describe your idea →',
   },
 
   pricing: {
     eyebrow: 'public pricing',
     title: 'What it costs',
-    body: 'Concrete prices, no hidden quotes. Each tier (price level) links to actual past projects of the same level — you see what it looks like before you submit.',
+    body: 'Concrete prices, no hidden quotes. Each tier (price level) links to actual past projects of the same level. You see what it looks like before you submit.',
     asOf: 'Public prices, effective 2026-06-01.',
     disclaimer:
-      'Prices are fixed before we start. No surprise after — if I run over, that’s on me. Taxes extra where applicable.',
+      'Prices are fixed before we start. No surprise after: if I run over, that’s on me. Taxes extra where applicable.',
     custodianNote:
-      'Custodian mode — after delivery, I keep the site online and up to date. Two annual plans: Watch ($120/yr) or Care ($400/yr, with 2h/yr of tweaks). Bigger changes are billed at $75/hr. You can opt for "All yours" instead if you’d rather manage it yourself.',
+      'Custodian mode: after delivery, I keep the site online and up to date. Two annual plans: Watch ($120/yr) or Care ($400/yr, with 2h/yr of tweaks). Bigger changes are billed at $75/hr. You can opt for "All yours" instead if you’d rather manage it yourself.',
     custodianNoteHeading: 'After delivery, then what?',
     custodianNoteCta: 'How it ends →',
     rescueNoteHeading: 'Already have something?',
@@ -1202,15 +1202,15 @@ const EN: Copy = {
         scope:
           'Your problem is too small to hire a dev. I redirect you to a similar pattern (a ready-made recipe) or a no-code template.',
         example:
-          'e.g. neighbourhood snow-shovel rotation, or a party RSVP — pick a recipe, you’re done.',
+          'e.g. neighbourhood snow-shovel rotation, or a party RSVP: pick a recipe, you’re done.',
         after: 'self-service',
       },
       {
         name: 'Tier 1',
         price: '$750',
         scope:
-          'A working thing, hosted and handed over running — not a demo you have to keep alive yourself. One clear deliverable: a form, a script, an automation, a one-pager. No login, no multi-user.',
-        example: 'e.g. a web form that drops straight into your spreadsheet — no retyping.',
+          'A working thing, hosted and handed over running. Not a demo you have to keep alive yourself. One clear deliverable: a form, a script, an automation, a one-pager. No login, no multi-user.',
+        example: 'e.g. a web form that drops straight into your spreadsheet, no retyping.',
         after: 'paid in full',
       },
       {
@@ -1244,7 +1244,7 @@ const EN: Copy = {
   cta: {
     eyebrow: 'ready?',
     title: 'Describe your problem',
-    body: "Free account. No call. I read every form myself and reply within 72h — yes, no, or 'tell me more.'",
+    body: "Free account. No call. I read every form myself and reply within 72h: yes, no, or 'tell me more.'",
     button: 'Open the form →',
     buttonLoggedIn: 'Start a new proposal →',
     micro: "If I'm full, you can still create an account and join the waitlist.",
@@ -1253,10 +1253,10 @@ const EN: Copy = {
   stickyCta: {
     label: 'Start a session',
     short: 'Start →',
-    ariaLabel: 'Start a session — open the form',
+    ariaLabel: 'Start a session, open the form',
     farLabel: 'Almost there →',
     dismissLabel: 'Hide',
-    pebbleAriaLabel: 'Resume — start a session',
+    pebbleAriaLabel: 'Resume, start a session',
   },
 
   themeToggle: {
@@ -1267,13 +1267,13 @@ const EN: Copy = {
   napkin: {
     eyebrow: 'on a napkin',
     title: 'Sketch me the problem',
-    instruction: 'A box, two arrows, a word — anything that helps me understand.',
+    instruction: 'A box, two arrows, a word, anything that helps me understand.',
     descLabel: 'In one sentence, what is it?',
     descPlaceholder: "e.g. 'My café wants to know who works which shifts.'",
     loadingCanvas: 'Loading the whiteboard…',
     homeTeaser: 'Prefer to draw? The napkin lives in the form →',
     formTeaser: 'Words not landing? Sketch it →',
-    formReopen: 'Sketch attached — view or edit →',
+    formReopen: 'Sketch attached, view or edit →',
     formHide: 'Hide the sketch',
     formRemove: 'Remove the sketch',
     pillView: 'View sketch',
@@ -1293,7 +1293,7 @@ const EN: Copy = {
       retry: 'Try again',
       working: 'One sec…',
       error:
-        "Couldn't reach the microphone — check the browser permission, or just type it instead.",
+        "Couldn't reach the microphone. Check the browser permission, or just type it instead.",
     },
     compose: {
       voiceTrigger: '🎙 Voice note',
@@ -1319,11 +1319,11 @@ const EN: Copy = {
     },
     intake: {
       voiceTeaser: 'Rather say it out loud? Record a voice note →',
-      voiceReopen: 'Voice note recorded — review →',
+      voiceReopen: 'Voice note recorded, review →',
       voiceHide: 'Hide the voice note',
       voiceRemove: 'Remove the voice note',
       voiceConsent:
-        'Uses your microphone. The clip is transcribed on Cloudflare and immediately discarded — only the text below is kept with your intake.',
+        'Uses your microphone. The clip is transcribed on Cloudflare and immediately discarded. Only the text below is kept with your intake.',
       voiceUse: 'Transcribe it',
       title: 'Say the problem out loud',
       transcriptLabel: 'What I heard (edit if needed)',
@@ -1348,13 +1348,13 @@ const EN: Copy = {
 
   inlineTeaser: {
     eyebrow: 'start here',
-    title: "Pick the kind of problem — I'll take it from there",
+    title: "Pick the kind of problem, I'll take it from there",
     sub: "One click and you'll skip the 'project type' step in the form. You can change your mind later.",
     types: {
       paperasse: 'Paperwork to automate',
       suivi: 'Tracking (clients, inventory, projects)',
       coordination: 'Coordination (team, volunteers, neighbours)',
-      autre: 'Other — describe it in your own words',
+      autre: 'Other, describe it in your own words',
       rescue: 'Fix something that already exists',
     },
     cta: 'Continue →',
@@ -1371,31 +1371,31 @@ const EN: Copy = {
     items: [
       {
         q: 'Is the price really that price?',
-        a: "Yes. Tier 0 is $0 and exists so we can see if we're a fit. Tiers 1–3 are fixed-price quoted before we start — I won't go past the quote without a conversation first. No surprise invoice. The official receipt comes from Stripe — that's normal, it's my payment processor.",
+        a: "Yes. Tier 0 is $0 and exists so we can see if we're a fit. Tiers 1–3 are fixed-price quoted before we start, and I won't go past the quote without a conversation first. No surprise invoice. The official receipt comes from Stripe: that's normal, it's my payment processor.",
       },
       {
         q: "Couldn't I just build this myself with an AI app builder?",
-        a: "For a Tier 0 problem, you probably can, and I'll point you to a builder or a template for free — that's what Tier 0 is for. For anything bigger, the building was never the hard part. An AI builder needs you to know exactly what to ask it, and most people don't yet. Figuring that out is the triage. It gets you a quick demo, then leaves you stuck on the login that half-works, the data that goes missing, the hosting, the domain. You'd be the one debugging at 9pm with nobody to call. What you pay me for is a fixed price, a data model that holds up when it's really used, and a name that's accountable when something breaks months later. Already stuck with a half-working AI build? That's a <a href=\"/en/intake\">rescue</a>: I look at it and tell you straight whether it's worth fixing. If your idea is small enough that none of that bites, use the builder — I'll tell you so honestly.",
+        a: "For a Tier 0 problem, you probably can, and I'll point you to a builder or a template for free, which is what Tier 0 is for. For anything bigger, the building was never the hard part. An AI builder needs you to know exactly what to ask it, and most people don't yet. Figuring that out is the triage. It gets you a quick demo, then leaves you stuck on the login that half-works, the data that goes missing, the hosting, the domain. You'd be the one debugging at 9pm with nobody to call. What you pay me for is a fixed price, a data model that holds up when it's really used, and a name that's accountable when something breaks months later. Already stuck with a half-working AI build? That's a <a href=\"/en/intake\">rescue</a>: I look at it and tell you straight whether it's worth fixing. If your idea is small enough that none of that bites, use the builder, I'll tell you so honestly.",
       },
       {
         q: 'What if it takes longer than expected?',
-        a: "If I run over, that's on me — the price stays what was quoted. If the scope changes mid-flight (you're adding new things), we pause, look at it, and decide together: adjust the quote or cut.",
+        a: "If I run over, that's on me: the price stays what was quoted. If the scope changes mid-flight (you're adding new things), we pause, look at it, and decide together: adjust the quote or cut.",
       },
       {
         q: "What if I don't like the result?",
-        a: "You see a testable demo at every step — not just at the end. If halfway through you realize it's not what you wanted, we stop. I bill for the work done to date, not a penny more. No obligation to finish.",
+        a: "You see a testable demo at every step, not just at the end. If halfway through you realize it's not what you wanted, we stop. I bill for the work done to date, not a penny more. No obligation to finish.",
       },
       {
         q: "I don't know exactly what I want. Is that ok?",
-        a: 'It\'s expected. Describe it the way it comes, in your own words — don\'t pre-filter. If it sounds too small, too weird, or not "professional enough," write it anyway. I decide what fits. My job is to ask the right questions and put a concrete version in front of you to react to.',
+        a: 'It\'s expected. Describe it the way it comes, in your own words. Don\'t pre-filter. If it sounds too small, too weird, or not "professional enough," write it anyway. I decide what fits. My job is to ask the right questions and put a concrete version in front of you to react to.',
       },
       {
         q: 'Who owns the code at the end?',
-        a: "Yours either way. Two modes: 'All yours' (you hold the repo, domain, and accounts from day 1) or 'I handle it' (I'm custodian of the keys, transferable on demand, no fee, in about a week). Neither traps you — <a href=\"/en/handoff\">see how it ends →</a>",
+        a: "Yours either way. Two modes: 'All yours' (you hold the repo, domain, and accounts from day 1) or 'I handle it' (I'm custodian of the keys, transferable on demand, no fee, in about a week). Neither traps you. <a href=\"/en/handoff\">See how it ends →</a>",
       },
       {
         q: 'Can I bring my own designs or mockups?',
-        a: 'Please do. Figma, Sketch, napkin sketch — all welcome. Otherwise, I propose a simple visual direction and we adjust together.',
+        a: 'Please do. Figma, Sketch, napkin sketch, all welcome. Otherwise, I propose a simple visual direction and we adjust together.',
       },
     ],
   },
@@ -1403,9 +1403,9 @@ const EN: Copy = {
   about: {
     eyebrow: 'who I am',
     title: 'About',
-    body: "I've been a dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible — for both of us.",
+    body: "I've been a dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible, for both of us.",
     body2:
-      'It’s not an agency, and the portal isn’t some sprawling platform. It’s one person making the calls, with just enough machine in the middle to handle the logistics. That’s what keeps the evenings ours, yours and mine.',
+      'It’s one person making the calls, with just enough machine in the middle to handle the logistics. Not an agency, not some sprawling platform. That’s what keeps the evenings ours, yours and mine.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
   },
@@ -1421,13 +1421,13 @@ const EN: Copy = {
   },
 
   pullQuote: {
-    body: 'I’ll always be honest about your project — even when the answer is “keep your money.”',
+    body: 'I’ll always be honest about your project, even when the answer is “keep your money.”',
     attribution: 'Marc',
   },
 
   engagement: {
     statusBarLabel: 'Engagement stage',
-    demoNotice: 'EXAMPLE — engagement in progress',
+    demoNotice: 'EXAMPLE · engagement in progress',
     startedOn: 'started on',
     backHome: '← Back home',
     stages: {
@@ -1441,7 +1441,7 @@ const EN: Copy = {
       title: 'Testable preview',
       iframeTitle: 'Live preview of the deliverable',
       notDeployedYet:
-        'Not deployed yet — the preview appears here from day 5 (typical Tier 2 engagement).',
+        'Not deployed yet. The preview appears here from day 5 (typical Tier 2 engagement).',
     },
     thread: {
       title: 'Engagement thread',
@@ -1457,28 +1457,28 @@ const EN: Copy = {
     },
     notFound: {
       title: 'Engagement not found',
-      body: "This URL doesn't match any public engagement. If you're a client, check your link — otherwise, back to home.",
+      body: "This URL doesn't match any public engagement. If you're a client, check your link. Otherwise, back to home.",
     },
   },
 
   tier0: {
-    pageTitle: 'Tier 0 — free tools for smaller problems',
+    pageTitle: 'Tier 0 · free tools for smaller problems',
     metaDescription:
       'Free patterns for everyday problems too small to hire a dev: snow rotation, RSVP, hours tracking, neighbour lending.',
     backHome: '← Back home',
     eyebrow: 'Tier 0 · self-service · free',
-    title: "Your problem is too small to hire a dev — here's how to handle it yourself",
+    title: "Your problem is too small to hire a dev. Here's how to handle it yourself",
     intro:
       "No shame. If your budget is under $750 and your problem fits one of these 4 categories, here's the recipe. You don't need to buy anything and you don't need me.",
     problemLabel: 'The problem',
     recipeLabel: 'The recipe',
     growBack:
-      "If one of these patterns isn't enough anymore, your problem grew. Good news — it's probably Tier 1 or 2 now. Tell me about it.",
+      "If one of these patterns isn't enough anymore, your problem grew. Good news: it's probably Tier 1 or 2 now. Tell me about it.",
     intakeCta: 'My problem grew → open the form',
   },
 
   intake: {
-    pageTitle: 'Describe your problem — form',
+    pageTitle: 'Describe your problem · form',
     metaDescription:
       "Intake (project request) form for Marc's side-practice. Async, at your pace. Auto-save. Reply within 72h.",
     backHome: '← Back home',
@@ -1496,7 +1496,7 @@ const EN: Copy = {
     },
     capacity: {
       atCap:
-        "I'm full right now. You can still submit — I'll put you on the waitlist and reply when a slot opens.",
+        "I'm full right now. You can still submit: I'll put you on the waitlist and reply when a slot opens.",
     },
     steps: {
       vibe: 'We agree',
@@ -1510,18 +1510,18 @@ const EN: Copy = {
       confirm: "I've read it, it matches, I want to continue.",
       // Quirky swap-in shown after the visitor ticks the box — same
       // checkbox, warmer text. Non-blocking: the CTA always works.
-      ackThanks: '✓ Thanks for reading — you got the vibe.',
+      ackThanks: '✓ Thanks for reading, you got the vibe.',
       cta: 'Continue →',
     },
     account: {
       eyebrow: 'free account',
       title: 'I just need an email',
-      body: "That's it. No password while you fill the form. If you come back later, I'll send a sign-in link by email to resume — no account to create, no password to invent. Your draft auto-saves on every field.",
+      body: "That's it. No password while you fill the form. If you come back later, I'll send a sign-in link by email to resume. No account to create, no password to invent. Your draft auto-saves on every field.",
       emailLabel: 'Email',
       nameLabel: 'First name (optional)',
       namePlaceholder: 'Marie',
-      hint: 'Marc reads every form himself. No spam, no lists, no resale.',
-      autosaveNote: '✓ No pressure — your draft will be here if you come back.',
+      hint: 'Marc reads every form himself. No spam, no resale.',
+      autosaveNote: '✓ No pressure, your draft will be here if you come back.',
       cta: 'Continue →',
       alreadyHaveAccount: 'Already have an account?',
       signIn: 'Sign in →',
@@ -1535,7 +1535,7 @@ const EN: Copy = {
     typePicker: {
       eyebrow: 'what kind of problem',
       title: 'What kind of problem?',
-      body: "Pick the closest one. If nothing matches, choose 'other' — Marc reads it personally and reroutes if needed.",
+      body: "Pick the closest one. If nothing matches, choose 'other': Marc reads it personally and reroutes if needed.",
     },
     form: {
       eyebrow: 'the details',
@@ -1544,23 +1544,23 @@ const EN: Copy = {
       continue: 'Submit →',
       handoffMode: {
         label: 'Management preference (optional)',
-        hint: "At delivery, who holds the keys? By default Marc handles it (annual plan) — that's what saves you from managing DNS, Cloudflare, Resend yourself. Can change later; 'All yours' requires an explicit confirmation at delivery.",
+        hint: "At delivery, who holds the keys? By default Marc handles it (annual plan), which saves you from managing DNS, Cloudflare, Resend yourself. Can change later; 'All yours' requires an explicit confirmation at delivery.",
         learnMore: 'See how it ends →',
-        optionJe: 'I handle it — Marc keeps the keys (annual plan, recommended)',
-        optionTout: 'All yours — I manage DNS, Cloudflare, Resend myself',
+        optionJe: 'I handle it: Marc keeps the keys (annual plan, recommended)',
+        optionTout: 'All yours: I manage DNS, Cloudflare, Resend myself',
         optionParle: "Let's talk later",
       },
     },
     confirmation: {
       eyebrowAccepted: 'received',
-      eyebrowWaitlist: 'received — waitlist',
+      eyebrowWaitlist: 'received · waitlist',
       titleAccepted: "Thanks, it's received.",
       titleWaitlist: "Thanks, you're on the waitlist.",
       bodyAccepted:
-        "I read every form myself. No AI between you and me. You'll get an honest reply in 72h, by email — yes, no, or 'tell me more.'",
+        "I read every form myself. No AI between you and me. You'll get an honest reply in 72h, by email: yes, no, or 'tell me more.'",
       bodyWaitlist:
-        "I'm full right now: 1 active build + 1 in triage — my cap, to respect my family time. I'll reply as soon as a slot opens, usually a few weeks. Your draft stays saved.",
-      sla: "Honest reply in 72h — yes, no, or 'tell me more.'",
+        "I'm full right now: 1 active build + 1 in triage, which is my cap, to respect my family time. I'll reply as soon as a slot opens, usually a few weeks. Your draft stays saved.",
+      sla: "Honest reply in 72h: yes, no, or 'tell me more.'",
       summaryTitle: 'What you sent me',
       summaryEmail: 'Email',
       summaryName: 'First name',
@@ -1570,28 +1570,28 @@ const EN: Copy = {
       startOver: 'Start a new form',
       submitting: 'Sending…',
       submitError:
-        'Connection hiccup while sending your intake. Your draft is saved — try again in a moment.',
+        'Connection hiccup while sending your intake. Your draft is saved, try again in a moment.',
       sessionLinkLabel: 'See your session →',
       sessionLinkHint: 'Your proposal is saved. You can follow it and reply here.',
       sessionEditHint: 'You can edit your answers anytime from your portal ("My sessions").',
       magicLinkSentTitle: 'Check your email to finish',
       magicLinkSentBody: (email: string) =>
-        `I sent a sign-in link to ${email}. Open it to access your session — it expires in 30 minutes.`,
+        `I sent a sign-in link to ${email}. Open it to access your session. It expires in 30 minutes.`,
       magicLinkAgain: "Didn't get it? Resend the link",
-      parkedStripHint: 'Your form is parked — it kicks off as soon as you sign in.',
+      parkedStripHint: 'Your form is parked, it kicks off as soon as you sign in.',
     },
   },
 
   sessionAdvancements: {
     heading: 'Build advancements',
     subtitle:
-      'Build milestones with a link to the matching Cloudflare deployment — each entry is a build you can open.',
+      'Build milestones with a link to the matching Cloudflare deployment. Each entry is a build you can open.',
     loading: 'Loading…',
     empty: 'No advancements posted yet.',
     currentLabel: 'Current build',
     formEyebrow: 'Post an advancement',
     formLabel: 'Title',
-    formLabelPlaceholder: 'Rev 1 — first testable demo',
+    formLabelPlaceholder: 'Rev 1 · first testable demo',
     formBody: 'Description',
     formBodyPlaceholder: "What changed in this build, what's worth poking at.",
     formIframePath: 'Iframe path (optional)',
@@ -1609,7 +1609,7 @@ const EN: Copy = {
     formSubmit: 'Post',
     formSubmitting: 'Posting…',
     formStampHint: 'The Cloudflare URL and commit are added automatically on the next deploy.',
-    formError: 'Failed — try again.',
+    formError: 'Failed, try again.',
     save: 'Save',
     saving: 'Saving…',
     doneEditing: 'Done',
@@ -1656,7 +1656,7 @@ const EN: Copy = {
       empty: 'No vouches for this project yet.',
       ctaTitle: 'Did you touch this project?',
       ctaBody:
-        'If Marc helped on this specific project, say it in a few sentences — it’ll appear here.',
+        'If Marc helped on this specific project, say it in a few sentences, it’ll appear here.',
       ctaButton: 'Write a vouch →',
     },
   },
@@ -1665,7 +1665,7 @@ const EN: Copy = {
     eyebrow: 'projects',
     heading: 'Projects in flight',
     intro:
-      'Sessions I’m publishing to the public — each a living project with its latest build open for inspection.',
+      'Sessions I’m publishing to the public, each a living project with its latest build open for inspection.',
     loading: 'Loading…',
     empty: 'Nothing published yet. Check back soon.',
     error: 'Failed to load projects.',
@@ -1677,7 +1677,7 @@ const EN: Copy = {
     tierPrefix: 'Tier',
     placeholderEyebrow: 'your project here',
     placeholderHeading: 'A slot is waiting',
-    placeholderIntro: 'At any tier — a starting line.',
+    placeholderIntro: 'At any tier, a starting line.',
     placeholderT0Cta: 'Browse Tier 0 →',
     placeholderIntakeCta: 'Start the intake →',
   },
@@ -1688,7 +1688,7 @@ const EN: Copy = {
       'When you turn this on, this session appears on /projects with the title and tagline you set here.',
     enabledLabel: 'Publish as a project on /projects',
     titleLabel: 'Project title (optional)',
-    titlePlaceholder: 'Truck Notes — voice → invoice',
+    titlePlaceholder: 'Truck Notes · voice → invoice',
     taglineLabel: 'Short tagline (optional)',
     taglinePlaceholder: 'Truck voice notes → draft invoice by Sunday morning.',
     tierLabel: 'Tier',
@@ -1701,21 +1701,21 @@ const EN: Copy = {
     tierOption4: 'Tier 4 · quoted',
     save: 'Save',
     saving: 'Saving…',
-    saveError: 'Failed — try again.',
+    saveError: 'Failed, try again.',
     saved: 'Saved ✓',
     galleryLink: 'See the gallery →',
     previewHeading: 'Share-card preview',
     previewHint:
-      "Here's what Slack, iMessage, etc. will show when someone pastes this session's link. The preview reflects the *published* version — hit save to refresh it.",
+      "Here's what Slack, iMessage, etc. will show when someone pastes this session's link. The preview reflects the *published* version. Hit save to refresh it.",
     previewDisabledHint:
-      'Turn on the showcase and save — the preview will appear here once the session is published.',
+      'Turn on the showcase and save: the preview will appear here once the session is published.',
     previewOpenInTab: 'Open PNG',
   },
 
   adminShowcaseOverview: {
-    eyebrow: 'showcase — overview',
+    eyebrow: 'showcase · overview',
     title: 'Every showcase, at a glance',
-    sub: 'Brand-consistency check before cards go out into the world. Too-long titles, missing taglines, un-tiered sessions — all flagged here.',
+    sub: 'Brand-consistency check before cards go out into the world. Too-long titles, missing taglines, un-tiered sessions: all flagged here.',
     loading: 'Loading…',
     empty: "No showcased sessions yet. Turn on a session's showcase to see it appear here.",
     error: "Couldn't load the showcases.",
@@ -1733,7 +1733,7 @@ const EN: Copy = {
   },
 
   journey: {
-    pageTitle: 'The full journey — from idea to paid',
+    pageTitle: 'The full journey, from idea to paid',
     metaDescription:
       'The full journey, step by step: from your first visit to a shipped, paid project. 12 steps. You do half of them. Your total time: ~20 minutes.',
     backHome: '← Back home',
@@ -1766,7 +1766,7 @@ const EN: Copy = {
             duration: '30 s',
             where: 'public page',
             title: 'You land on the site',
-            body: 'No account needed. Read the vibe, the public prices, the projects in progress. If nothing matches, you walk away — no charge, no drama.',
+            body: 'No account needed. Read the vibe, the public prices, the projects in progress. If nothing matches, you walk away. No charge, no drama.',
           },
           {
             num: '02',
@@ -1774,7 +1774,7 @@ const EN: Copy = {
             duration: '5–10 min',
             where: 'portal',
             title: 'You describe your problem',
-            body: 'Guided form. Not a call. Auto-save — eat dinner, come back, your draft is right where you left it. You can even sketch a napkin if words fall short.',
+            body: 'Guided form. Not a call. Auto-save: eat dinner, come back, your draft is right where you left it. You can even sketch a napkin if words fall short.',
           },
           {
             num: '03',
@@ -1797,7 +1797,7 @@ const EN: Copy = {
             duration: '≤ 72h',
             where: 'async',
             title: 'I read what you wrote',
-            body: 'No AI between you and me. I read every form myself, in French or English — you write in your language, I reply in your language.',
+            body: 'No AI between you and me. I read every form myself, in French or English. You write in your language, I reply in your language.',
           },
           {
             num: '05',
@@ -1805,7 +1805,7 @@ const EN: Copy = {
             duration: 'async',
             where: 'session thread',
             title: 'I reply: yes, no, or "tell me more"',
-            body: 'Yes: a fixed-price quote in your portal. No: I redirect you to a free Tier 0 recipe, or to a dev who fits better. In between: I ask my questions.',
+            body: 'If yes, a fixed-price quote goes in your portal. If no, I redirect you to a free Tier 0 recipe, or to a dev who fits better. In between, I ask my questions.',
           },
         ],
       },
@@ -1828,7 +1828,7 @@ const EN: Copy = {
             duration: 'from day 2',
             where: 'portal',
             title: 'Testable demo, continuously',
-            body: 'I push every day. You click whenever you want to see where we are — no status meeting to wait for. There aren’t any.',
+            body: 'I push every day. You click whenever you want to see where we are. No status meeting to wait for. There aren’t any.',
           },
           {
             num: '08',
@@ -1850,7 +1850,7 @@ const EN: Copy = {
             actor: 'me',
             duration: 'at delivery',
             where: 'portal',
-            title: 'I ship — your project becomes a public page',
+            title: 'I ship, and your project becomes a public page',
             body: 'The build goes live. Option: redact your commercial data (client names, numbers) before publishing. You alone decide what’s public.',
           },
           {
@@ -1859,7 +1859,7 @@ const EN: Copy = {
             duration: '1 min',
             where: 'Stripe',
             title: 'You pay the balance',
-            body: 'Tier 2: the remaining $900. Tiers 3-4: the next installment. Official Stripe receipt — the one that shows up in your bookkeeping.',
+            body: 'Tier 2: the remaining $900. Tiers 3-4: the next installment. Official Stripe receipt: the one that shows up in your bookkeeping.',
           },
           {
             num: '11',
@@ -1875,7 +1875,7 @@ const EN: Copy = {
             duration: 'your call',
             where: 'My account page',
             title: 'Handoff or Custodian mode',
-            body: 'Take everything in your name (repo, domain, accounts) OR let me hold the keys — Watch ($120/yr) or Care ($400/yr, with 2h/yr of tweaks). Cancel anytime — auto-flip to "All yours".',
+            body: 'Take everything in your name (repo, domain, accounts) OR let me hold the keys: Watch ($120/yr) or Care ($400/yr, with 2h/yr of tweaks). Cancel anytime, with an auto-flip to "All yours".',
           },
         ],
       },
@@ -1903,12 +1903,12 @@ const EN: Copy = {
     submit: {
       pageTitle: 'Write a vouch',
       heading: 'Worked with me before? Say it in a few sentences.',
-      lead: "Short, honest, in your voice. I read before it ships — typos, length, tone. Your email stays private: it's only so I can reach back out if I need to tweak a word.",
+      lead: "Short, honest, in your voice. I read before it ships: typos, length, tone. Your email stays private: it's only so I can reach back out if I need to tweak a word.",
       forProjectPrefix: 'You’re vouching about the project ',
       forProjectLink: 'open the project',
-      forProjectSuffix: ' — it’ll appear on the project page once approved.',
+      forProjectSuffix: ', it’ll appear on the project page once approved.',
       privacy: 'Your name and your words will be public. Your email will never be displayed.',
-      successHeading: 'Got it — thanks.',
+      successHeading: 'Got it, thanks.',
       successBody:
         'I read in the next few days. If it’s good as-is, it ships without another step. If I want to tighten a word, I’ll email you.',
       submitAnother: 'Submit another vouch',
@@ -1926,13 +1926,13 @@ const EN: Copy = {
         bodyHint: '30 to 600 characters.',
         linkLabel: 'Link (optional)',
         linkPlaceholder: 'https://yoursite.com',
-        linkHint: 'Your site, LinkedIn, GitHub — shown next to your name.',
+        linkHint: 'Your site, LinkedIn, GitHub, shown next to your name.',
       },
       submitButton: 'Send',
       submitting: 'Sending…',
       errors: {
-        rateLimit: 'Too many recent submissions — try again in an hour.',
-        invalidName: 'Invalid name — 2 to 80 characters.',
+        rateLimit: 'Too many recent submissions, try again in an hour.',
+        invalidName: 'Invalid name: 2 to 80 characters.',
         invalidEmail: 'Invalid email.',
         invalidRelationship: 'Pick an option.',
         invalidBody: 'Your words must be 30 to 600 characters.',
