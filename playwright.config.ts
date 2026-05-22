@@ -55,14 +55,20 @@ export default defineConfig({
   projects: [
     {
       name: 'phone',
+      // hover.spec.ts is viewport-independent — it checks clip-path / viewport
+      // escapes on :hover, which don't change with width — so it runs on the
+      // `narrow` project only. Excluded here and on `wide` to keep CI lean.
+      testIgnore: /hover\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 } },
     },
     {
       name: 'narrow',
+      // The sole project that runs hover.spec.ts (see the `phone` note).
       use: { ...devices['Desktop Chrome'], viewport: { width: 1000, height: 900 } },
     },
     {
       name: 'wide',
+      testIgnore: /hover\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {

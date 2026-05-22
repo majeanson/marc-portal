@@ -7171,12 +7171,15 @@ button.intake__progress-step:disabled {
   padding: 40px 0 32px;
   margin-bottom: 28px;
   border-bottom: 1px solid var(--border-soft);
-  /* Clip the corner glow to the masthead's top/bottom/left edges but NOT its
+  /* Clip the corner glow to the masthead's top/bottom edges but NOT its
      right, so the ::after glow can bleed out to the real viewport corner.
      A plain overflow:hidden clipped all four sides and pinned the glow to the
      centred column edge — a green "corner" floating short of the actual
-     corner. inset() with a negative right value leaves the right side open. */
-  clip-path: inset(0 -100vw 0 0);
+     corner. inset() with a negative right value leaves the right side open.
+     The left inset is -12px, not 0: .page-mast__back sits flush at the left
+     edge and shifts 3px left on :hover (and its focus ring reaches ~8px out),
+     so a 0 left inset shaved the "←" arrow. -12px clears both with slack. */
+  clip-path: inset(0 -100vw 0 -12px);
 }
 .page-mast::after {
   /* Soft sage glow — atmosphere, not decoration. Echo of hero--editorial::after.
@@ -7218,9 +7221,9 @@ button.intake__progress-step:disabled {
   transform: translateX(-3px);
 }
 .page-mast__back:focus-visible {
-  /* Keep a visible focus ring for keyboard users — losing it breaks
-     a11y. Inset slightly so it doesn't get clipped by the page-mast
-     overflow: hidden. */
+  /* Keep a visible focus ring for keyboard users — losing it breaks a11y.
+     The offset ring reaches past the masthead's left edge; the -12px left
+     inset on .page-mast's clip-path (see above) leaves room for it. */
   outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 2px;
