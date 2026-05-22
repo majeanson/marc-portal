@@ -4,6 +4,7 @@ import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
 import { useLangSwitch } from '../lib/useLangSwitch'
 import { FeatureDot } from './FeatureDot'
+import { StudioSign } from './StudioSign'
 import { PAGE_FEATURE } from '../lib/features'
 
 // CF resolves `:account` to the user's actual account ID on login, so we
@@ -114,6 +115,7 @@ export function Footer({ lang }: { lang: Lang }) {
     <footer className="site-footer">
       <div className="site-footer__flourish" aria-hidden="true" />
       <div className="site-footer__inner">
+        <StudioSign lang={lang} />
         <p className="site-footer__line">{t.contact}</p>
         <p className="site-footer__line site-footer__pages">
           <span className="site-footer__pages-eyebrow">{t.legal}</span>

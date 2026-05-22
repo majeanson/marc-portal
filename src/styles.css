@@ -15538,3 +15538,51 @@ a.feature-dot:focus-visible {
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
 }
+
+/* ─── Studio sign ─────────────────────────────────────────────────────────
+   Hand-drawn coffee-cup placard in the footer — reads /api/capacity and
+   tells the visitor, plainly, whether the studio is taking work. Outlined
+   and lightly askew, like a card pinned to a board: deliberately not a
+   coloured status pill. */
+.studio-sign {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  margin: 0 auto 22px;
+  padding: 8px 16px 8px 11px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  transform: rotate(-1.5deg);
+  color: var(--text-soft);
+}
+.studio-sign--open {
+  color: var(--accent);
+}
+.studio-sign--waitlist {
+  color: var(--warm);
+}
+.studio-sign__cup {
+  display: block;
+  flex: none;
+}
+.studio-sign__steam {
+  opacity: 0.5;
+}
+.studio-sign__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.studio-sign__eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.studio-sign__status {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  color: currentColor;
+}
