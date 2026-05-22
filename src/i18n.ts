@@ -307,6 +307,53 @@ const FR = {
     replayDrawing: 'Tracé en cours…',
   },
 
+  media: {
+    voice: {
+      record: 'Enregistrer une note vocale',
+      recording: 'Enregistrement',
+      stop: 'Arrêter',
+      rerecord: 'Refaire',
+      cancel: 'Annuler',
+      retry: 'Réessayer',
+      working: 'Un instant…',
+      error:
+        "Le micro n'a pas répondu — vérifie la permission du navigateur, ou écris-le simplement.",
+    },
+    compose: {
+      voiceTrigger: '🎙 Note vocale',
+      sketchTrigger: '✎ Croquis',
+      voiceConsent:
+        'Utilise ton micro. Le clip est joint à ce message et transcrit pour rester cherchable.',
+      voiceAttach: 'Joindre la note vocale',
+      sketchAttach: 'Joindre le croquis',
+      sketchCancel: 'Annuler le croquis',
+      sketchHint: 'Dessine-le — une boîte, une flèche, un mot. Le croquis se joint à ton message.',
+      voiceChip: 'Note vocale',
+      sketchChip: 'Croquis',
+      processing: 'Ajout…',
+    },
+    thread: {
+      voiceLabel: 'Note vocale',
+      transcriptLabel: 'Transcription',
+      transcriptPending: 'Transcription indisponible.',
+      sketchLabel: 'Croquis',
+      sketchOpen: 'Ouvrir le croquis',
+      sketchClose: 'Masquer le croquis',
+    },
+    intake: {
+      voiceTeaser: 'Tu préfères le dire à voix haute ? Enregistre une note vocale →',
+      voiceReopen: 'Note vocale enregistrée — revoir →',
+      voiceHide: 'Masquer la note vocale',
+      voiceRemove: 'Retirer la note vocale',
+      voiceConsent:
+        'Utilise ton micro. Le clip est transcrit sur Cloudflare puis aussitôt supprimé — seul le texte ci-dessous est gardé avec ta demande.',
+      voiceUse: 'Transcrire',
+      title: 'Dis-moi le problème à voix haute',
+      transcriptLabel: 'Ce que j’ai entendu (corrige au besoin)',
+      transcriptPlaceholder: 'Tes mots transcrits apparaissent ici…',
+    },
+  },
+
   projectsFilter: {
     tierLabel: 'Niveau',
     statusLabel: 'État',
@@ -346,7 +393,7 @@ const FR = {
     items: [
       {
         q: 'Le prix annoncé, c’est vraiment ça?',
-        a: 'Oui. Le Niveau 0 est à 0 $ et sert à se voir si on est compatibles. Les niveaux 1 à 3 ont un prix forfaitaire avant de commencer — on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise. Le reçu officiel vient de Stripe (noreply@stripe.com) — c’est normal, c’est mon processeur de paiement.',
+        a: 'Oui. Le Niveau 0 est à 0 $ et sert à se voir si on est compatibles. Les niveaux 1 à 3 ont un prix forfaitaire avant de commencer — on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise. Le reçu officiel vient de Stripe — c’est normal, c’est mon processeur de paiement.',
       },
       {
         q: 'Et si ça prend plus de temps que prévu?',
@@ -1187,6 +1234,53 @@ const EN: Copy = {
     replayDrawing: 'Drawing…',
   },
 
+  media: {
+    voice: {
+      record: 'Record a voice note',
+      recording: 'Recording',
+      stop: 'Stop',
+      rerecord: 'Re-record',
+      cancel: 'Cancel',
+      retry: 'Try again',
+      working: 'One sec…',
+      error:
+        "Couldn't reach the microphone — check the browser permission, or just type it instead.",
+    },
+    compose: {
+      voiceTrigger: '🎙 Voice note',
+      sketchTrigger: '✎ Sketch',
+      voiceConsent:
+        'Uses your microphone. The clip is attached to this message and transcribed so it stays searchable.',
+      voiceAttach: 'Attach voice note',
+      sketchAttach: 'Attach sketch',
+      sketchCancel: 'Cancel sketch',
+      sketchHint: 'Draw it — a box, an arrow, a label. The sketch attaches to your message.',
+      voiceChip: 'Voice note',
+      sketchChip: 'Sketch',
+      processing: 'Adding…',
+    },
+    thread: {
+      voiceLabel: 'Voice note',
+      transcriptLabel: 'Transcript',
+      transcriptPending: 'Transcript unavailable.',
+      sketchLabel: 'Sketch',
+      sketchOpen: 'Open the sketch',
+      sketchClose: 'Hide the sketch',
+    },
+    intake: {
+      voiceTeaser: 'Rather say it out loud? Record a voice note →',
+      voiceReopen: 'Voice note recorded — review →',
+      voiceHide: 'Hide the voice note',
+      voiceRemove: 'Remove the voice note',
+      voiceConsent:
+        'Uses your microphone. The clip is transcribed on Cloudflare and immediately discarded — only the text below is kept with your intake.',
+      voiceUse: 'Transcribe it',
+      title: 'Say the problem out loud',
+      transcriptLabel: 'What I heard (edit if needed)',
+      transcriptPlaceholder: 'Your transcribed words appear here…',
+    },
+  },
+
   projectsFilter: {
     tierLabel: 'Tier',
     statusLabel: 'Status',
@@ -1226,7 +1320,7 @@ const EN: Copy = {
     items: [
       {
         q: 'Is the price really that price?',
-        a: "Yes. Tier 0 is $0 and exists so we can see if we're a fit. Tiers 1–3 are fixed-price quoted before we start — I won't go past the quote without a conversation first. No surprise invoice. The official receipt comes from Stripe (noreply@stripe.com) — that's normal, it's my payment processor.",
+        a: "Yes. Tier 0 is $0 and exists so we can see if we're a fit. Tiers 1–3 are fixed-price quoted before we start — I won't go past the quote without a conversation first. No surprise invoice. The official receipt comes from Stripe — that's normal, it's my payment processor.",
       },
       {
         q: 'What if it takes longer than expected?',
