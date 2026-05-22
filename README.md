@@ -16,7 +16,7 @@ Functions (api/*)      R2 (attachment blobs, optional)
 ## Quickstart
 
 ```bash
-nvm use                       # Node 22+ (.nvmrc)
+nvm use                       # Node 24+ (.nvmrc)
 npm install
 cp .dev.vars.example .dev.vars   # edit RESEND_API_KEY, SESSION_SECRET, ADMIN_EMAILS
 npm run db:migrate:local       # apply D1 migrations to the local SQLite

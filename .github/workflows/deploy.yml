@@ -37,7 +37,7 @@ jobs:
       # ships with schema-ahead expectations and the API 500s until someone
       # runs `npm run db:migrate:prod` by hand.
       - name: Apply D1 migrations
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -45,7 +45,7 @@ jobs:
 
       - id: deploy
         name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
