@@ -213,8 +213,8 @@ const PAGE_PATCHES = [
     id: 'page.meta',
     label: bi('Meta', 'Meta'),
     desc: bi(
-      'Manifeste de fonctionnalités LAC — généré depuis feat-*/feature.json.',
-      'LAC feature manifest — generated from feat-*/feature.json.',
+      'Le portail documenté par lui-même — chaque fonctionnalité, son problème, ses décisions.',
+      'The portal documented by itself — every feature, its problem, its decisions.',
     ),
     group: 'group.feat-meta',
   },

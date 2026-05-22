@@ -70,7 +70,7 @@ export type HomeFolioKey = keyof typeof HOME_FOLIOS
  *   02 projects  (the gallery)
  *   03 vouches   (testimonials)
  *   04 journey   (visitor's path explained)
- *   05 meta      (under the hood — LAC features)
+ *   05 meta      (under the hood — the portal's own features)
  *   06 handoff   (how it ends — buyer guide)
  *   07 handoffChecklist (companion to handoff — executable list)
  *   08 privacy   (Loi 25 visitor statement)

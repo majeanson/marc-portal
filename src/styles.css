@@ -4186,10 +4186,10 @@ button.intake__progress-step:focus-visible {
   opacity: 0.6;
 }
 
-/* Public LAC meta page — /meta and /en/meta. Editorial grid of the
-   portal's own feature.json projection. Each card mirrors a small
-   subset of the LAC schema: status, problem snippet, tags, decisions,
-   last-transition date with green/amber/red freshness pill. */
+/* Public meta page — /meta and /en/meta. Editorial grid of the
+   portal's own feature records. Each card shows status, problem
+   snippet, tags, decisions, and the last-transition date with a
+   green/amber/red freshness pill. */
 /* --- A2 scorecard: the portal grades itself, above the feature grid --- */
 .scorecard {
   margin: 30px 0 10px;
