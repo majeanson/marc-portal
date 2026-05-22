@@ -21,9 +21,15 @@ import { fileURLToPath } from 'node:url'
 // The site's font set, requested as VARIABLE fonts (weight ranges, not
 // discrete weights) so Google returns one file per family/subset covering
 // every weight, instead of one file per weight.
+//
+// Source Serif 4 is requested with the `wght` axis ONLY — NOT `opsz`. A
+// dual-axis (opsz 8..60 + wght) variable font ships ~3x the bytes (~128 KB
+// vs ~45 KB per Latin subset) because it carries an extra interpolation
+// dimension. The site never sets `font-optical-sizing`/`opsz` explicitly,
+// so the axis was pure weight on the wire for no visible gain.
 const CSS_URL =
   'https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400..800' +
-  '&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700' +
+  '&family=Source+Serif+4:ital,wght@0,400..700;1,400..700' +
   '&family=JetBrains+Mono:wght@400..600&display=swap'
 
 // A current-Chrome UA makes Google Fonts return woff2 (older UAs get ttf).
