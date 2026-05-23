@@ -3,17 +3,76 @@
 If prod breaks at 11pm and your brain is at 30%, these are the suspects in
 order. Check them top-down — most-likely first, cheapest-to-rule-out first.
 
+## How to read each section
+
+Every triage section is structured the same way so your eyes don't have to
+re-orient at 11pm:
+
+- **Symptoms:** what the visitor sees + what you see in logs/dashboards.
+- **What happens (system behavior):** the actual code path that fires, the
+  DB writes that land, and the side effects (emails sent, status flips).
+  Knowing the *intended* flow is half of triaging the *broken* flow.
+- **Email preview:** when the action sends mail, the literal subject and
+  the body skeleton. Useful for confirming "yes, this came from us" vs.
+  phish, and for understanding what the visitor/admin just received.
+- **Step-by-step (recovery):** numbered commands or clicks, in order. No
+  "fix the issue" — actual commands.
+
+The Email gallery at the bottom of this file lists every email the system
+can send, with subjects + body shapes, in one place for cross-reference.
+
 ## 1. Magic-link emails not arriving
 
 **Symptoms:** visitor clicks "send me a link", form clears, no email shows up.
 
-- First check: Resend dashboard for the free-tier ceiling (100/day) or a
-  sender-domain block.
-- Second check: `functions/_lib/email.ts:6` is hardcoded to
-  `onboarding@resend.dev` (Resend's shared domain — no SPF/DKIM, may be
-  greylisted by Gmail/Outlook).
-- Quick mitigation: tell the visitor to check spam.
-- Proper fix: verify a custom sender domain on Resend.
+### What happens (system behavior)
+
+1. Visitor submits the magic-link form → `POST /api/auth/request-link`.
+2. Handler validates the email (no rate-limit hit), mints a one-time token
+   (15 char base64url), stores it in D1 `magic_link_tokens` with a 30-min
+   TTL.
+3. `sendMagicLink()` POSTs to Resend with the rendered email + subject.
+4. UI flips to "Check your inbox" regardless of delivery success — the
+   handler intentionally returns 200 even if Resend errors, so a Resend
+   outage doesn't expose "this email exists" / "doesn't exist" to a
+   probing attacker.
+5. The DB row exists either way; the visitor can request another link
+   any time within the 30-min window.
+
+### Email preview (FR — EN is parallel)
+
+- **Subject:** `Ton lien de connexion` / `Your sign-in link`
+- **From:** `Marc <noreply@marcportal.com>`
+- **Body skeleton:**
+  > **Ton lien de connexion**
+  > Clique sur le bouton ci-dessous pour entrer dans ton espace. Aucun mot
+  > de passe — le lien fait toute la job.
+  >
+  > Le lien expire dans **30 minutes**. Si tu n'as rien demandé, ignore ce
+  > courriel et il disparaîtra de lui-même.
+  >
+  > [Se connecter →]    (terracotta-orange button)
+
+### Step-by-step (recovery)
+
+1. **Confirm the row landed.** Resend may be down; D1 isn't.
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote \
+     --command "SELECT created_at, used_at FROM magic_link_tokens WHERE email = 'VISITOR@EXAMPLE.COM' ORDER BY created_at DESC LIMIT 1"
+   ```
+   Row present + `used_at IS NULL` → handler ran, Resend or inbox is the issue.
+2. **Resend dashboard** → recent sends. If our send isn't logged, suspect
+   `RESEND_API_KEY` is unset/expired (`wrangler pages secret list --project-name marc-portal`).
+3. **Resend dashboard** → "Domains". `marcportal.com` must read "Verified".
+   If "Pending", DNS hasn't propagated; if "Failed", DKIM is mis-pasted.
+4. **Free-tier ceiling** (100/day): "Logs" tab. If exhausted, upgrade or
+   wait until midnight UTC.
+5. **Quick mitigation while diagnosing:** tell the visitor to check spam +
+   re-request. Each request mints a fresh row; the cap is on tokens
+   outstanding per email, not per day.
+6. **Last resort** (Marc only, dev): grab the token from D1 + paste
+   `/auth/callback?token=<token>&email=<email>` into the visitor's URL bar.
+   Burn the token immediately by deleting the row.
 
 ## 2. `/api/capacity` or `/api/sessions` returns 500
 
@@ -100,13 +159,58 @@ previous version.
 
 **Symptoms:** Marc didn't see new sessions; SLA timer (72h) overdue.
 
-- `/admin/inbox` shows the queue.
-- Daily digest cron should email Marc by ~8am if anything is older than
-  48h. If the cron stopped firing, hit the endpoint manually:
+### What happens (system behavior)
 
-  ```bash
-  curl -X POST -H "X-Digest-Token: $DIGEST_TOKEN" https://marcportal.com/api/admin/digest
-  ```
+- The daily digest cron (cron-job.org → `POST /api/admin/digest` with
+  `X-Digest-Token`) runs once per morning UTC.
+- The handler counts open work: untriaged sessions > 48h, unread visitor
+  messages, unresolved `admin_alerts` rows (Stripe failures that bypassed
+  email), and pending Tier-4 quotes.
+- If anything is non-zero, Marc gets one digest email summarizing the
+  queue with deep-links to `/admin/inbox/<sessionId>` for each item.
+- If everything is empty, the handler returns 204 — no email — to avoid
+  inbox noise.
+- A separate "stuck triage" detector inside the same handler counts items
+  > 48h since `created_at` AND still `status='triage'`; those get bolded
+  in the digest body as overdue.
+
+### Email preview
+
+- **Subject:** `[marc-portal] Digest matinal — N élément(s) à voir`
+- **From:** `Marc <noreply@marcportal.com>` (system tone, signed-off as
+  "marc-portal")
+- **Body skeleton (FR):**
+  > **Digest matinal**
+  > Trois choses ouvertes ce matin :
+  >
+  > - **2 sessions en triage** depuis plus de 48 h
+  >   → [Ouvrir l'inbox →](https://marcportal.com/admin/inbox)
+  > - **1 alerte Stripe non résolue** (sub renewal failed sub_xxx)
+  >   → [Ouvrir admin/alerts →](https://marcportal.com/admin)
+  > - **1 message visiteur non lu** (Jean Tremblay, sess_abc)
+  >   → [Ouvrir la session →](https://marcportal.com/admin/inbox/sess_abc)
+
+### Step-by-step (recovery)
+
+1. **Check the cron actually fired this morning.** cron-job.org dashboard →
+   the `marc-portal /api/admin/digest` job → "History". Last run should
+   be ~8am UTC today. Green ✓ = handler returned 2xx.
+2. **Run the digest manually if the cron skipped.** Same token + URL:
+   ```bash
+   curl -X POST -H "X-Digest-Token: $DIGEST_TOKEN" \
+     https://marcportal.com/api/admin/digest
+   ```
+   Response: `200 {sent: true}` (digest had content + email landed),
+   `204` (no content to send), or `401` (token mismatch — check
+   `wrangler pages secret list`).
+3. **If the email is sent but not arriving:** see section #1 (Resend).
+4. **Walk the inbox by hand.** `/admin/inbox` shows the queue with the
+   same age coloring the digest uses. Click into each `triage` over 48h
+   and either reject (with `decline_note`) or activate.
+5. **If the cron itself is broken** (cron-job.org account expired, free
+   tier exhausted): the digest job is one of two on the free plan
+   (other is `/api/health`). Re-create it per the "Synthetic monitor"
+   setup section above; the schedule should be daily ~8am UTC.
 
 ## Observability setup (one-time)
 
@@ -221,52 +325,316 @@ in D1 long after the visitor told you they paid.
 
 ### Path A — Checkout endpoint failing
 
-- Check `wrangler pages deployment tail`. The endpoint logs the Stripe
-  error message before throwing.
-- 503 "payments not configured" → `STRIPE_SECRET_KEY` is unset on the
-  Pages project. Set it:
-  ```bash
-  npx wrangler pages secret put STRIPE_SECRET_KEY --project-name marc-portal
-  ```
-- 503 "custodian watch price not configured" / "custodian care price not
-  configured" → the matching `STRIPE_CUSTODIAN_WATCH_PRICE_ID` /
-  `STRIPE_CUSTODIAN_CARE_PRICE_ID` is empty in `wrangler.toml [vars]`. Paste
-  the real `price_xxx` from Stripe Dashboard → Products, commit, redeploy.
+**What happens (system behavior):**
+
+- `POST /api/payments/checkout` → `currentEmail()` resolves the visitor →
+  `canAccessSession()` verifies they own this session (or are admin) →
+  `insertPending()` mints a `payments` row in `pending` status with a
+  freshly generated `pay_*` id and the computed leg amount → the handler
+  calls Stripe's `/v1/checkout/sessions` with our `Idempotency-Key:
+  checkout-<paymentId>` → on success, `stripe_checkout_session_id` is
+  attached to the row and the URL is returned. On Stripe error,
+  `markFailed()` flips the row to `status='failed'` with the error
+  message in `failure_reason`.
+- Visitor's browser then `window.location.assign(checkoutUrl)`.
+- Common failure shapes you'll see:
+  - **503 "payments not configured"** — `STRIPE_SECRET_KEY` unset.
+  - **503 "custodian {plan} price not configured"** — missing price ID
+    var.
+  - **400 "amountCadOverride out of range (100..100000 CAD)"** — admin
+    tried a Tier-4 override outside the safety bounds.
+  - **409 "build already fully paid"** — UI is stale (visitor refreshes;
+    the page was cached after the final webhook). Not actually broken.
+  - **409 "tier 4 not quoted yet"** — visitor on Tier 4 without
+    `tier4_amount_cents` set. Marc must quote first.
+
+**Step-by-step (recovery):**
+
+1. **Tail Functions logs** while reproducing — the handler logs the
+   Stripe error message verbatim before throwing.
+   ```bash
+   npx wrangler pages deployment tail --project-name marc-portal
+   ```
+2. **503 cluster:** set or rotate the missing secret.
+   ```bash
+   npx wrangler pages secret put STRIPE_SECRET_KEY --project-name marc-portal
+   # paste the sk_live_xxx (or sk_test_xxx) value, hit Enter
+   ```
+   For custodian price IDs, edit `wrangler.toml [vars]` —
+   `STRIPE_CUSTODIAN_WATCH_PRICE_ID` and `STRIPE_CUSTODIAN_CARE_PRICE_ID`
+   — paste the real `price_xxx` from Stripe Dashboard → Products,
+   commit, push. Plaintext lives in wrangler.toml, NOT the dashboard
+   (see project memory `cf_pages_wrangler_toml_managed_vars`).
+3. **400 / 409 cluster:** these are intentional contracts. If the visitor
+   has a real problem, fix the underlying data (admin sets `tier4_amount_cents`,
+   or admin marks the build complete via the legitimate flow), don't
+   widen the API.
+4. **If a `payments` row is stuck at `failed`:** check `failure_reason`
+   column — it has the Stripe error text. Common: card was declined
+   (Stripe rejects the Checkout session minting, rare); rate-limit
+   (transient — visitor can retry, mints a new row).
 
 ### Path B — Webhook not arriving
 
-- Stripe Dashboard → Developers → Webhooks → click the endpoint → "Recent
-  events" tab. Each event row shows attempt history + response.
-- 401 "signature mismatch" → `STRIPE_WEBHOOK_SECRET` doesn't match what
-  Stripe is signing with. Reset via Dashboard ("Roll secret") then
-  `npx wrangler pages secret put STRIPE_WEBHOOK_SECRET ...`.
-- 401 "webhook secret not configured" → as above, set the secret.
-- Webhook attempts visible but our handler returns 5xx → we caught a
-  bug; the handler is designed to log + 200 on every internal failure.
-  Check Sentry; the request context is captured.
+**What happens (system behavior):**
+
+- Stripe POSTs `/api/payments/webhook` with the event body + a
+  `Stripe-Signature` header (`t=<ts>,v1=<hex>`).
+- Our handler verifies the signature against `STRIPE_WEBHOOK_SECRET`. On
+  mismatch → 401 (Stripe will NOT retry signature failures, by design).
+- On valid signature + parseable body → `INSERT OR IGNORE INTO
+  webhook_events (event_id, ...)`. If `changes === 0`, this is a Stripe
+  retry of a known event — handler returns `200 {received:true,
+  duplicate:true}` and skips side effects (admin emails would re-fire).
+- Otherwise the event type drives the right handler:
+  - `checkout.session.completed` → `handleCheckoutCompleted` (flips
+    `payments.status='paid'`, attaches PI/sub/customer ids; on first
+    transition only, fires `sendInstallmentClearedPrompt` for build
+    legs that have a next installment).
+  - `invoice.paid` → `handleInvoicePaid` (attaches invoice id to the
+    initial row OR inserts a renewal row + bumps `custodian_status` to
+    `active`).
+  - `invoice.payment_failed` → `handleInvoiceFailed` (flips
+    `custodian_status='past_due'`, fires admin alert via Resend OR
+    `admin_alerts` row).
+  - `customer.subscription.deleted` → `handleSubscriptionDeleted`
+    (`custodian_status='switched_to_tout_a_toi'` per the Handoff page
+    promise, fires admin alert).
+  - `charge.refunded` → `handleChargeRefunded` (updates
+    `refunded_amount_cents`, flips `status='refunded'` when cumulative
+    refund ≥ amount; on FIRST refund only, fires `sendRefundNotice` to
+    the visitor).
+- 5xx is never returned — every internal failure is logged + 200ed so
+  Stripe doesn't enter retry backoff on a transient D1 blip.
+
+**Step-by-step (recovery):**
+
+1. **Stripe Dashboard → Developers → Webhooks** → click the endpoint URL
+   row → "Recent events" tab. Each event shows attempt history with
+   response code + body.
+2. **401 "signature mismatch":** the secret on our side doesn't match.
+   Dashboard → endpoint → "Click to reveal" → copy the `whsec_*` →
+   ```bash
+   npx wrangler pages secret put STRIPE_WEBHOOK_SECRET --project-name marc-portal
+   ```
+   No need to "Roll" the secret unless you suspect compromise; rolling
+   invalidates the old one immediately and you'd need to redeploy fast
+   to avoid every in-flight event 401ing.
+3. **401 "webhook secret not configured":** same fix — the secret is
+   simply unset on prod.
+4. **5xx (handler threw):** Sentry will have it with full request
+   context. Check the recent deploys; the handler is designed to absorb
+   D1 failures with log+200, so a 5xx is either a code bug or the
+   middleware caught the exception and rethrew via
+   `captureWorkerException`.
+5. **2xx but our DB didn't update:** the handler short-circuited on
+   `event_id` dedupe (duplicate Stripe retry), OR the event metadata is
+   malformed (no `client_reference_id`, no `payment_intent`). Inspect
+   the event body in the Dashboard.
+6. **After fixing:** Dashboard → the failed event row → "Resend". Our
+   dedupe is keyed on `event_id`, so this only takes effect if the
+   `webhook_events` row was never inserted (i.e. we 401ed before
+   recording).
 
 ### Path C — Payment row stuck in `pending`
 
-- Most likely: the visitor abandoned the Checkout page before paying.
-  The `payments` row stays `pending` forever (no auto-expiry today).
-  Safe to ignore; the visitor can click "Pay" again, mints a new row.
-- Alternatively: webhook delivery failed (see Path B). Stripe Dashboard
-  → "Resend" on the failed event after fixing the underlying issue.
+**What happens (system behavior):**
+
+- A `pending` row exists because `/api/payments/checkout` succeeded but
+  no `checkout.session.completed` event arrived for it. Two real causes:
+  1. **Visitor abandoned the Checkout page** — closed the tab before
+     paying. The Stripe Checkout session itself expires after 24h, but
+     our row has no auto-expiry (no cron prunes them today). Harmless:
+     the next time they click Pay, a fresh row is minted. The orphan
+     stays as historical noise.
+  2. **Webhook delivery failed** (Path B). Visitor *did* pay; we just
+     don't know yet.
+- `nextIndex` in the build-installment counter is derived from
+  `COUNT(* WHERE status='paid')`, NOT pending rows, so orphan pending
+  rows don't block the next leg's checkout from minting.
+
+**Step-by-step (recovery):**
+
+1. **Cross-reference with Stripe Dashboard.** Search by amount + date,
+   look for a Payment Intent with `client_reference_id` matching the
+   stuck `pay_*` id.
+2. **PI exists + paid:** webhook didn't arrive. Path B → "Resend" the
+   `checkout.session.completed` event. Our handler is idempotent — a
+   double-arrival via Resend is no harm.
+3. **PI doesn't exist:** visitor abandoned. No action needed; consider
+   leaving the row or running an occasional cleanup query:
+   ```sql
+   -- Marc-only, run interactively: shows pending rows older than 7 days
+   SELECT id, session_id, kind, amount_cents,
+          datetime(created_at, 'unixepoch') AS created
+     FROM payments
+    WHERE status = 'pending' AND created_at < unixepoch() - 7*86400;
+   ```
+   Decide case-by-case whether to delete or leave; deleting is safe
+   because `pay_*` ids are never reused and nothing links to them
+   externally.
 
 ### Path D — Visitor reports they paid but /me still shows "Pay now"
 
-- Stripe Dashboard → Payments → search by amount + date → find the charge.
-- Verify the charge has a `client_reference_id` matching a `pay_*` row
-  in our D1.
-- If yes, the webhook didn't arrive or didn't update our row. Use
-  Dashboard's "Resend" button on the relevant event.
-- If no (charge has no `client_reference_id`), the visitor paid via a
-  link generated outside our flow (manual Payment Link in dashboard?).
-  Manually update D1:
-  ```bash
-  npx wrangler d1 execute marc-portal-db --remote --command \
-    "INSERT INTO payments (id, session_id, kind, amount_cents, currency, status, stripe_charge_id, created_at, paid_at) VALUES ('pay_manual_<id>', '<session_id>', 'tier1', 30000, 'cad', 'paid', 'ch_xxx', strftime('%s','now'), strftime('%s','now'))"
-  ```
+**What happens (system behavior):**
+
+- The `/me` Pay button reads from `/api/me/payments/summary` which
+  counts `paid` rows for the visitor's sessions. Until our row flips,
+  the UI shows the button.
+- Webhook is the only path that flips `pending → paid`. So this state =
+  webhook never landed OR landed on the wrong row.
+
+**Step-by-step (recovery):**
+
+1. **Stripe Dashboard → Payments** → search by visitor's amount + date
+   → find the charge.
+2. **Verify it has `client_reference_id` matching a `pay_*` row** in
+   our D1:
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "SELECT id, session_id, status, created_at FROM payments WHERE id = 'pay_xxxxx'"
+   ```
+3. **`client_reference_id` matches but row is `pending`:** Webhook
+   never delivered (Path B). Stripe Dashboard → Events → find
+   `checkout.session.completed` for this charge → "Resend". Our handler
+   updates `status='paid'` + fires `sendInstallmentClearedPrompt` if
+   build/multi-leg.
+4. **No `client_reference_id`** (charge was created via a manual
+   Payment Link in the Dashboard, not via our /api/payments/checkout):
+   our flow can't reconcile it. Bookkeeping fix — insert manually:
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "INSERT INTO payments (id, session_id, kind, tier, installment_index, installment_of, amount_cents, currency, status, stripe_payment_intent_id, created_at, paid_at) VALUES ('pay_manual_$(date +%s)', '<sessionId>', 'build', 1, 1, 1, 75000, 'cad', 'paid', 'pi_xxx', unixepoch(), unixepoch())"
+   ```
+   Replace the literals (`<sessionId>`, `pi_xxx`, tier/amount) with the
+   real values from the Stripe charge. The visitor's `/me` flips to
+   Paid on next page load.
+
+## 10. Refund issued but visitor confused
+
+**Symptoms:** visitor emails to ask "did you actually refund me?" even
+though Stripe issued the refund.
+
+### What happens (system behavior)
+
+- Stripe POSTs `charge.refunded` with the parent `payment_intent` id and
+  the **cumulative** `amount_refunded` (NOT the delta of just this
+  refund — Stripe always sends the running total).
+- `handleChargeRefunded` looks up our payment row by
+  `stripe_payment_intent_id`. If not found (refund initiated on a charge
+  we never tracked, e.g. a manual Dashboard payment link), the handler
+  logs + 200s. No mutation.
+- Otherwise, it updates `refunded_amount_cents = amount_refunded`. When
+  cumulative ≥ `amount_cents`, also flips `status='refunded'` and
+  stamps `refunded_at`.
+- **First-refund-transition guard:** the handler pre-reads the row's
+  `refunded_amount_cents` BEFORE updating. If it was 0 and is now > 0,
+  this is the FIRST refund — fire `sendRefundNotice` to the visitor.
+  Partial-then-full sequences (two events) only send one email.
+- Stripe also emails its own receipt (billing-platform tone). Our email
+  is in Marc's voice + deep-links to `/me`.
+
+### Email preview
+
+- **Subject (full refund):** `Remboursement de 750,00 $ effectué` /
+  `Refund of $750 issued`
+- **Subject (partial):** `Remboursement partiel de 300,00 $` /
+  `Partial refund of $300`
+- **From:** `Marc <noreply@marcportal.com>`
+- **Body skeleton (FR, full refund):**
+  > **Ton remboursement est parti**
+  > J'ai émis un remboursement de **750,00 $** via Stripe. Selon ta
+  > banque, il apparaît sur ta carte entre 5 et 10 jours ouvrables.
+  >
+  > Le portail reflète déjà le changement — tu peux voir la nouvelle
+  > ligne sous « Mes paiements ».
+  >
+  > [Ouvrir Mes paiements →]
+- **Body skeleton (FR, partial $300 on $750):**
+  > **Remboursement partiel envoyé**
+  > J'ai émis un remboursement de **300,00 $** via Stripe. Selon ta
+  > banque, il apparaît sur ta carte entre 5 et 10 jours ouvrables.
+  >
+  > C'est un remboursement partiel : le solde de ce paiement (450,00 $)
+  > reste tel quel. Ta page Mes paiements montre les deux montants côte
+  > à côte.
+
+### Step-by-step
+
+1. **Confirm the row reflects the refund.**
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "SELECT id, status, amount_cents, refunded_amount_cents, refunded_at FROM payments WHERE stripe_payment_intent_id = 'pi_xxx'"
+   ```
+2. **If `refunded_amount_cents` is 0:** webhook didn't arrive. Stripe
+   Dashboard → Events → find `charge.refunded` → "Resend".
+3. **If the row updated but visitor didn't get our email:** Resend may
+   have failed (the handler logs + swallows). Check Resend dashboard
+   for a delivery to the visitor's address near the refund time.
+4. **If no Resend log:** worth running through Sentry (the catch around
+   `sendRefundNotice` logs errors via `console.error`).
+5. **Pro forma:** Stripe's own email always lands (different sender);
+   our follow-up is supplemental. Reassuring the visitor that the
+   Stripe receipt counts is fine.
+
+## 11. Custodian sub failed renewal / canceled
+
+**Symptoms:** visitor's `/me` says "Custodian past due" or "Switched to
+All yours", or you got an admin alert mentioning a subscription id.
+
+### What happens (system behavior)
+
+- **Renewal succeeded:** `invoice.paid` → handler tries to UPDATE the
+  initial row (where `stripe_invoice_id IS NULL`). If found, attach the
+  invoice id. If not (initial already linked → this is a renewal),
+  INSERT a fresh `pay_inv_<id>` row tied to the cached
+  `custodian_subscription_id` and bump `custodian_status` to `active`.
+- **Renewal failed:** `invoice.payment_failed` → flip
+  `sessions.custodian_status='past_due'`. Fire
+  `sendAdminAlert(maybeNotifyAdmin)`. If Resend fails, the alert lands
+  in `admin_alerts` table; the daily digest surfaces it tomorrow morning.
+- **Subscription canceled:** `customer.subscription.deleted` → flip
+  `sessions.custodian_status='switched_to_tout_a_toi'` (Handoff page
+  promise). Same admin alert path.
+
+### Email preview (admin alert)
+
+- **Subject:** `Alerte Stripe — quelque chose mérite ton attention`
+- **From:** `Marc <noreply@marcportal.com>`
+- **Body skeleton:**
+  > **Une alerte Stripe vient d'arriver**
+  > Custodian sub renewal failed (subscription sub_xxxxx)
+  >
+  > Si ce n'est pas livré et marqué non résolu, le digest quotidien va
+  > te le rappeler. Tu peux aussi marquer comme résolu via D1.
+  >
+  > [Ouvrir l'admin →]
+
+### Step-by-step (past_due)
+
+1. **Email the visitor in your own voice** — system did the technical
+   part, but a one-liner from Marc is the difference between an
+   awkward auto-flip and an actual conversation. The session row has
+   their email + `custodian_subscription_id` for context.
+2. **Wait for Stripe to retry** — Smart Retries handle most card
+   timeouts within 4 days. If the card actually died, the next
+   `invoice.payment_failed` will still 200 (idempotent past_due flip),
+   and eventually `customer.subscription.deleted` arrives.
+3. **Manually mark the alert resolved** once handled:
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "UPDATE admin_alerts SET resolved_at = unixepoch() WHERE id = 'alrt_xxx'"
+   ```
+   Otherwise the digest re-surfaces it daily.
+
+### Step-by-step (switched_to_tout_a_toi)
+
+1. **Transfer the assets** Marc was holding: repo collaborator removal,
+   DNS handover, account ownership swaps. The /handoff page has the
+   visitor-facing checklist; the operator-side checklist is in
+   `docs/handoff/CHECKLIST.md`.
+2. **Confirm the visitor's `/me` reflects the new state** before
+   resolving the admin alert.
 
 ## Payments setup (one-time) — Stripe
 
@@ -471,3 +839,61 @@ Update via Cloudflare DNS → `marcportal.com` → DNS → edit the existing
 If false positives appear (Marc's mail bouncing, Resend log showing
 DMARC failures from a legitimate `noreply@marcportal.com` send), back
 off to `p=none` and investigate before re-tightening.
+
+## Email gallery (everything the system can send)
+
+Cross-reference for "is this real or a phish?" and for "what was the
+visitor about to receive?". Every email below is rendered by
+`functions/_lib/email.ts` from the same cream-paper / sage-green /
+terracotta template. All come `from: Marc <noreply@marcportal.com>`.
+
+| # | Trigger | Function | Recipient | Subject (FR / EN) |
+|---|---|---|---|---|
+| 1 | Visitor requests sign-in link | `sendMagicLink` | visitor | `Ton lien de connexion` / `Your sign-in link` |
+| 2 | Visitor posts a message in a session | `sendVisitorMessageNotification` | Marc | `[marc-portal] Nouveau message — <session name>` / `[marc-portal] New message — <name>` |
+| 3 | Marc posts in a session | `sendMarcMessageNotification` | visitor | `Marc t'a répondu` / `Marc replied` |
+| 4 | Admin advances a session (`draft → active`, etc.) | `sendStatusChangeNotification` | visitor | `Ta session est maintenant <status>` / `Your session is now <status>` |
+| 5 | Visitor edits intake after admin engaged | `sendIntakeEditedNotification` | Marc | `[marc-portal] Intake édité — <session name>` |
+| 6 | Visitor withdraws session | `sendWithdrawalNotification` | Marc | `[marc-portal] Session retirée — <session name>` |
+| 7 | Build installment clears (and more legs remain) | `sendInstallmentClearedPrompt` | visitor | `Versement N/M reçu — prochain disponible` / `Installment N/M received — next one available` |
+| 8 | Admin assigns a tier (or Tier-4 quote lands) | `sendTierAssignedNotification` | visitor | varies by tier — see function |
+| 9 | Vouch submitted on a project | `sendNewVouchNotification` | Marc | `[marc-portal] Nouveau témoignage — <project>` |
+| 10 | Subscription failure / cancellation (admin alert) | `sendAdminAlert` | Marc | `Alerte Stripe — quelque chose mérite ton attention` |
+| 11 | Visitor confirms "Tout à toi" (opts out of Custodian) | `sendAllYoursAckNotification` | Marc | `Visiteur a confirmé « Tout à toi »` / `Visitor confirmed 'All yours'` |
+| 12 | First refund transition on a payment | `sendRefundNotice` | visitor | `Remboursement de <amount> effectué` / `Refund of <amount> issued` (or "Partial refund of <amount>") |
+| 13 | Daily digest with overdue triage / unresolved alerts | `(digest handler)` | Marc | `[marc-portal] Digest matinal — N élément(s) à voir` |
+
+### Common shape
+
+Every email uses the shared `renderEmail()` template:
+
+- Cream paper background, sage-green left rule, terracotta accent for
+  primary CTAs (login + payments — moments where the button IS the
+  email).
+- Single-column mobile-first. No images embedded; the wordmark is a
+  CSS gradient block that degrades to bold text in ancient clients.
+- Footer carries Marc's name + "depuis Montréal" / "from Montréal".
+- Dark mode handled via `prefers-color-scheme` — recipients on dark
+  clients see a cream-on-near-black variant of the same layout.
+
+### "Is this a phish?" checklist
+
+If you (or a visitor) get an email claiming to be from us and it looks
+off, the genuine markers are:
+
+- **From address:** `noreply@marcportal.com` — never a `+suffix`,
+  never `support@`, never `billing@`.
+- **DKIM passes** (most clients show a checkmark or "by marcportal.com").
+- **Body voice:** terse, written in first-person ("J'ai émis…",
+  "I issued…"), Québécois register in FR (`tu`, never `vous` outside
+  legal pages). A polished generic English or French ("Dear customer,
+  we are pleased to inform you…") is a forgery.
+- **Links:** every CTA points at `marcportal.com` (no shortener, no
+  bare IP, no lookalike domain). Stripe's own emails point at
+  `stripe.com`; ours never redirect through Stripe.
+- **No attachments.** We never attach files. Stripe sends receipts as
+  inline HTML, not PDFs.
+
+If something feels off, the deciding test: log into `/me` directly
+(type the URL yourself) and check whether the claimed action actually
+happened. The portal is always the source of truth.
