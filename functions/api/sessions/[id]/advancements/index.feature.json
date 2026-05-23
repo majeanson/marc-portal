@@ -6,7 +6,13 @@
   "domain": "marc-portal/iterative",
   "componentFile": "functions/api/sessions/[id]/advancements/index.ts",
   "problem": "An advancement is a single named build step — 'I shipped the napkin sketch', 'I added auth', 'I deployed v2 of the search'. Each advancement carries a label, body, optional iframe path (for the embedded build preview), and a flags array (allowedForPublic, milestone, etc.). The list endpoint scopes view: visitors see only public-flagged advancements, owner + admin see all. POST is admin-only — creates a draft advancement with build_url null; CI stamps the URL + commit sha on the next deploy via scripts/stamp-revisions.mjs.",
-  "tags": ["iterative", "build-history", "ci-stamped", "public-flag", "admin-write"],
+  "tags": [
+    "iterative",
+    "build-history",
+    "ci-stamped",
+    "public-flag",
+    "admin-write"
+  ],
   "analysis": "GET: canAccessSession() then scope-filter — visitor view shows only advancements with allowed_for_public flag set, owner/admin sees all. listAdvancementsForSession() (functions/_lib/advancements.ts) handles the projection. POST: admin-only (return 403 for non-admin). Body { label, body, date?, iframePath?, flags? }; all fields go through normalize helpers (normalizeLabel, normalizeBody, normalizeIframePath, parseFlags+stringifyFlags) so the stored data is canonical. build_url is null at insert; the deploy workflow (scripts/stamp-revisions.mjs) runs after each prod deploy and stamps build_url + commit_sha on any advancement that doesn't have one. So a new advancement is 'unstamped' between creation and the next deploy; the UI shows 'pending stamp' for that window.",
   "decisions": [
     {
@@ -68,7 +74,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/advancements."
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/advancements.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

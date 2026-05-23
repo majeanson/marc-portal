@@ -6,7 +6,12 @@
   "domain": "marc-portal/iterative",
   "componentFile": "functions/api/sessions/[id]/advancements/[advId].ts",
   "problem": "Per-advancement edit and remove operations. PATCH supports partial updates of label / body / date / iframePath / flags; the same normalize helpers from the index handler ensure stored values stay canonical. Admin-only writes (visitors don't edit Marc's records of what he built). There's also an admin override to clear or replace the CI-stamped build_url + commit_sha for the rare case where the stamp landed on the wrong revision (e.g. a hotfix re-stamped over the original).",
-  "tags": ["iterative", "admin-write", "partial-update", "ci-stamp-override"],
+  "tags": [
+    "iterative",
+    "admin-write",
+    "partial-update",
+    "ci-stamp-override"
+  ],
   "analysis": "PATCH: admin-only. loadAdvancement() + loadSession() to validate the advId belongs to the sessionId. Body fields are optional partials; each normalized via the helper if present, left unchanged if absent. The build_url + commit_sha admin override is rarely used (CI stamps are usually correct) but covers the hotfix scenario. DELETE: hard delete (no soft-delete on advancements). Cascades nothing (advancements have no children). Returns 200 { ok: true }.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/advancements/:advId."
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/advancements/:advId.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

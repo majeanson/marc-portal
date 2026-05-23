@@ -7,7 +7,13 @@
   "componentFile": "src/components/VibeFilter.tsx",
   "liveUrl": "/#vibe",
   "problem": "Most 'ideal client' filters are demographic — industry, company size, budget. This one is temperamental: it filters for cultural fit, not budget fit. A public 'we do / we don't' list lets a visitor self-qualify before investing any effort in the intake form, which saves both sides the goodwill cost of a triage rejection. Someone who reads the list and thinks 'yes, exactly' is the right client regardless of price; someone who thinks 'but my project is special, you'll see' is the wrong client regardless of how much they would pay. A cheap-but-pushy client is worse than a well-aligned one, because the wrong client is what breaks family-first.",
-  "tags": ["self-qualify", "cultural-fit", "we-do-we-dont", "goodwill", "reusable-pattern"],
+  "tags": [
+    "self-qualify",
+    "cultural-fit",
+    "we-do-we-dont",
+    "goodwill",
+    "reusable-pattern"
+  ],
   "analysis": "A two-column ledger on the homepage — what the practice does, and what it does not — placed before the pricing block so a visitor meets the cultural fit question before the price question. Each line is one concrete constraint drawn from how the practice actually works: no calls or meetings, async only, no urgent fixes, no scope changes mid-build, nothing real-time. The items are deliberately about temperament, not demographics. The same ledger appears again, in a lighter form, as an optional non-blocking checkbox at the start of the intake flow, so a visitor passes the self-qualification idea twice — once while browsing and once just before committing.",
   "decisions": [
     {
@@ -55,13 +61,21 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "fields_changed": [
+        "analysis",
+        "decisions",
+        "successCriteria"
+      ],
       "reason": "Initial fill from the brainstorming session — the vibe-filter self-qualification principle."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": ["implementation", "componentFile", "userGuide"],
+      "fields_changed": [
+        "implementation",
+        "componentFile",
+        "userGuide"
+      ],
       "reason": "Built as src/components/VibeFilter.tsx with the do / don't lists in the i18n dictionary."
     },
     {
@@ -75,7 +89,9 @@
         "knownLimitations",
         "userGuide"
       ],
-      "reason": "Code-first overhaul: co-located next to VibeFilter.tsx, added liveUrl, and documented the reused VibeGate component in the intake flow."
+      "reason": "Code-first overhaul: co-located next to VibeFilter.tsx, added liveUrl, and documented the reused VibeGate component in the intake flow.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

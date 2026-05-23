@@ -6,7 +6,13 @@
   "domain": "marc-portal/intake",
   "componentFile": "functions/api/intake-drafts.ts",
   "problem": "The intake form autosaves to localStorage every keystroke so a refresh doesn't lose work. But localStorage is per-device — a visitor typing on their phone, then switching to desktop for the magic-link sign-in, would lose everything. This endpoint is the cross-device fallback: every autosave also POSTs the draft to D1, keyed by the visitor's email; sign-in pulls from D1, restores the draft. The draft is purged on successful session creation.",
-  "tags": ["intake", "autosave", "cross-device", "auth-required", "rate-limit-friendly"],
+  "tags": [
+    "intake",
+    "autosave",
+    "cross-device",
+    "auth-required",
+    "rate-limit-friendly"
+  ],
   "analysis": "Three methods. GET returns the draft for the signed-in email (or null). POST upserts { payload } — the draft JSON the visitor's typed so far. DELETE drops the draft (called after a successful createSession). All three require sign-in: the auth cookie pins which email you can read/write — an attacker can't read another email's draft. Ungated POST would also be a write amplifier for the rate-limit table on /api/auth/request-link, so requiring auth is two-fold defense. Payload size cap at PAYLOAD_LIMIT_BYTES (a few KB; the intake form is text-heavy but not enormous). Draft is keyed by lower-cased email so 'X@Y.com' and 'x@y.com' share one draft (matches the magic-link table's casing).",
   "decisions": [
     {
@@ -62,7 +68,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/intake-drafts."
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/intake-drafts.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

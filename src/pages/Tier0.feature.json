@@ -7,7 +7,14 @@
   "componentFile": "src/pages/Tier0.tsx",
   "liveUrl": "/tier-0",
   "problem": "Some visitors have a real problem but no commercial budget — civic coordination, household logistics, a hobby project. A consultant facing one of these usually either takes the job and loses money or rejects it and burns goodwill. The self-service redirect is a third move: a free, curated library of small patterns that says, in effect, 'your problem is small enough that hiring me would cost more than it is worth — here is how people solve this one themselves, come back if it outgrows you.' The visitor leaves with something usable, the goodwill is intact, and the page quietly earns long-tail search traffic.",
-  "tags": ["self-service", "tier-0", "off-ramp", "goodwill", "free-value", "reusable-pattern"],
+  "tags": [
+    "self-service",
+    "tier-0",
+    "off-ramp",
+    "goodwill",
+    "free-value",
+    "reusable-pattern"
+  ],
   "analysis": "Tier 0 replaces the binary accept/reject triage outcome with a curated off-ramp. The page lists a set of small, recognisable everyday problems, each presented as three plain blocks — the problem, a recipe to solve it, and a link to a free no-code tool that fits. The patterns are hand-picked, not generated: the value is the match, not the volume. The page opens with the principle behind it (a fifty-dollar problem deserves a free solution) and closes with an invitation to come back through the intake form when a pattern outgrows the visitor. Educating a visitor out of needing the consultant is the correct move when hiring would cost more than the problem is worth.",
   "decisions": [
     {
@@ -56,13 +63,22 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "fields_changed": [
+        "analysis",
+        "decisions",
+        "successCriteria"
+      ],
       "reason": "Initial fill from the brainstorming session — the graceful Tier 0 off-ramp principle."
     },
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "fields_changed": [
+        "implementation",
+        "componentFile",
+        "userGuide",
+        "knownLimitations"
+      ],
       "reason": "Built as src/pages/Tier0.tsx plus a pattern library in src/lib/patterns.ts, with four curated patterns."
     },
     {
@@ -76,7 +92,9 @@
         "knownLimitations",
         "userGuide"
       ],
-      "reason": "Code-first overhaul: co-located next to Tier0.tsx, added liveUrl, and updated the pattern count and examples to match the grown library."
+      "reason": "Code-first overhaul: co-located next to Tier0.tsx, added liveUrl, and updated the pattern count and examples to match the grown library.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

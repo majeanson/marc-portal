@@ -103,7 +103,9 @@
         "knownLimitations",
         "userGuide"
       ],
-      "reason": "Code-first overhaul: co-located next to SessionPage.tsx, anchored the feature on a real componentFile, added liveUrl, and rewrote from the shipped runtime — dropping the stale limitations for file uploads, account deletion, and data export, which now all exist."
+      "reason": "Code-first overhaul: co-located next to SessionPage.tsx, anchored the feature on a real componentFile, added liveUrl, and rewrote from the shipped runtime — dropping the stale limitations for file uploads, account deletion, and data export, which now all exist.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

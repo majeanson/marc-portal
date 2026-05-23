@@ -6,7 +6,14 @@
   "domain": "marc-portal/engagement",
   "componentFile": "functions/api/sessions/[id]/attachments/index.ts",
   "problem": "Messages on a session can carry attachments — documents, voice notes (with auto-transcription), Excalidraw scenes. POST handles upload (one per request, multipart/form-data), deciding the kind from content type: file (streamed to R2), voice (buffered, magic-byte checked, transcribed via Workers AI, stored), sketch (buffered, parsed + shape-checked, stored). Attachments are uploaded BEFORE the message that references them; the messages POST then links them by id. GET lists unlinked uploads the current actor has made for this session — useful for resumed flows where the user navigated away mid-message.",
-  "tags": ["engagement", "r2", "workers-ai", "magic-byte", "two-phase-upload", "graceful-degrade"],
+  "tags": [
+    "engagement",
+    "r2",
+    "workers-ai",
+    "magic-byte",
+    "two-phase-upload",
+    "graceful-degrade"
+  ],
   "analysis": "POST: canAccessSession + parse multipart. Content type drives the branch — application/* → file kind, audio/* → voice, application/json with shape → sketch. Each branch validates: file streams to R2 (memory-thin to avoid bloating worker memory); voice buffers, magic-byte check via attachments _lib helper, optional Workers AI transcription (if env.AI binding present), store both bytes (R2) + transcript (D1 column); sketch buffers, parse JSON, shape-check Excalidraw scene structure, store as text in D1 (small, no R2 trip). All write an attachments row with message_id = NULL (pre-link state). Per-session storage quota enforced (MAX_ATTACHMENT_BYTES_PER_SESSION) — AUDIT P2.17 work. Per-attachment size limit too. GET: SELECT WHERE session_id = ? AND author = (currentEmail-derived) AND message_id IS NULL — only the actor's own unlinked uploads, so admin and visitor can't see each other's pre-message drafts.",
   "decisions": [
     {
@@ -75,7 +82,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/attachments."
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/attachments.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

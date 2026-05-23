@@ -7,7 +7,13 @@
   "componentFile": "src/components/Pricing.tsx",
   "liveUrl": "/#pricing",
   "problem": "'Cheap' with no number attached is just rhetoric — every visitor imagines a different price, and many imagine the wrong one. This feature shows actual prices: a free self-service tier, then three paid tiers with concrete dollar figures and a one- or two-line scope each. Each paid tier links to the real projects shipped at that price, so the pricing table and the project gallery anchor each other. It is the opposite of the usual consulting move of hiding price behind 'let's have a conversation' — and the whole pitch depends on the cheapness being real and visible, not negotiated.",
-  "tags": ["pricing", "public", "showcase-anchored", "expectation-anchoring", "reusable-pattern"],
+  "tags": [
+    "pricing",
+    "public",
+    "showcase-anchored",
+    "expectation-anchoring",
+    "reusable-pattern"
+  ],
   "analysis": "A four-tier pricing table where each card shows a tier name, a concrete price, a short scope, and a note about what happens after the work ships. Tier 0 is the free self-service off-ramp; the three paid tiers climb from a small fixed-price project to a larger custom-quoted one. One tier is marked as the anchor — the sweet-spot tier the practice expects most engagements to land in — and is highlighted so a visitor's eye settles there first. Every paid card links into the project gallery filtered to that tier, so a visitor can immediately see real examples at the price they are reading about. The table is a homepage section, placed after the self-qualification block so a visitor only reaches price once they have decided the practice is for them.",
   "decisions": [
     {
@@ -60,13 +66,21 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "fields_changed": [
+        "analysis",
+        "decisions",
+        "successCriteria"
+      ],
       "reason": "Initial fill from the brainstorming session — public pricing and showcase-as-tier-reference."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": ["implementation", "componentFile", "userGuide"],
+      "fields_changed": [
+        "implementation",
+        "componentFile",
+        "userGuide"
+      ],
       "reason": "Built as src/components/Pricing.tsx with copy in the i18n dictionary and a highlighted anchor tier."
     },
     {
@@ -80,7 +94,9 @@
         "knownLimitations",
         "userGuide"
       ],
-      "reason": "Code-first overhaul: co-located next to Pricing.tsx, added liveUrl, and dropped the stale limitations — the per-tier gallery links and the Tier 0 link both exist now."
+      "reason": "Code-first overhaul: co-located next to Pricing.tsx, added liveUrl, and dropped the stale limitations — the per-tier gallery links and the Tier 0 link both exist now.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

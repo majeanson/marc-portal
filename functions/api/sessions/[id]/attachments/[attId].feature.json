@@ -6,7 +6,13 @@
   "domain": "marc-portal/engagement",
   "componentFile": "functions/api/sessions/[id]/attachments/[attId].ts",
   "problem": "Per-attachment operations. GET streams the file content from R2 with the right content-type so the browser can render or download. DELETE removes the row + the R2 object — but is gated: the uploader can only delete WHILE the attachment is still unlinked (no message_id), admin can delete at any time. This means a visitor can recall a pre-message upload but can't go back and delete an attachment they already sent. Admin retains full control for moderation.",
-  "tags": ["engagement", "r2-stream", "soft-removal", "uploader-window", "admin-override"],
+  "tags": [
+    "engagement",
+    "r2-stream",
+    "soft-removal",
+    "uploader-window",
+    "admin-override"
+  ],
   "analysis": "GET: canAccessSession + loadAttachment. SELECT row, fetch R2 object via env.MEDIA.get(key). Return as Response with content-type from the row. 503 if env.MEDIA binding unset. 404 if attachment doesn't exist or doesn't belong to the session. DELETE: gated by (uploader AND message_id IS NULL) OR isAdmin. The uploader window protects against the 'I sent it, then thought better' case becoming a way to erase the recipient's record of what was shared. Admin override exists for moderation (an inappropriate file slipping through). DELETE flow: env.MEDIA.delete(key) (best-effort, log on failure), then DELETE FROM attachments WHERE ... — the row going is the source of truth, R2 orphans are GC'd by the digest cron.",
   "decisions": [
     {
@@ -62,7 +68,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/attachments/:attId."
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/attachments/:attId.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

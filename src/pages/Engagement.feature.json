@@ -68,13 +68,22 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "fields_changed": [
+        "analysis",
+        "decisions",
+        "successCriteria"
+      ],
       "reason": "Initial fill from the brainstorming session — the portal-as-canvas principle."
     },
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "fields_changed": [
+        "implementation",
+        "componentFile",
+        "userGuide",
+        "knownLimitations"
+      ],
       "reason": "Built as src/pages/Engagement.tsx plus a fixture in src/lib/engagements.ts."
     },
     {
@@ -89,7 +98,9 @@
         "knownLimitations",
         "userGuide"
       ],
-      "reason": "Code-first overhaul: co-located next to Engagement.tsx. Reframed this feature as the public demo of the canvas pattern and pointed the now-live two-way surface at the engagement-runtime feature instead of describing it as future work here."
+      "reason": "Code-first overhaul: co-located next to Engagement.tsx. Reframed this feature as the public demo of the canvas pattern and pointed the now-live two-way surface at the engagement-runtime feature instead of describing it as future work here.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

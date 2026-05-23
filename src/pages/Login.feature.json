@@ -7,7 +7,13 @@
   "componentFile": "src/pages/Login.tsx",
   "liveUrl": "/login",
   "problem": "Passwords are a security AND UX liability for a low-frequency consulting portal — a visitor signs in maybe once a month, forgets the password every time, and now there's a password-reset surface to maintain, a credentials DB to leak, and the visitor's day is ruined. Magic-link sign-in skips all of that: the visitor enters an email, gets a one-time link, clicks it, lands signed-in. The portal never stores a password hash; the email account IS the credential. Resend handles delivery; the token lives in D1 with an expiry (30 min) and a single-use flag.",
-  "tags": ["auth", "magic-link", "passwordless", "rate-limited", "resend"],
+  "tags": [
+    "auth",
+    "magic-link",
+    "passwordless",
+    "rate-limited",
+    "resend"
+  ],
   "analysis": "Single email field, single submit button. On submit, POST /api/auth/request-link with the email. Server validates format, looks up or creates a magic_link_tokens row with a 30-min expiry + single-use flag, and queues a Resend email containing the verification URL (/login/verify?token=...). The client doesn't see the token — it goes only to the email — so submission redirects to /login/sent which shows the 'check your email' state. If the user is already signed in (useAuth().email is set), Login.tsx short-circuits to a 'you're already signed in' panel with a 'go to /me' link instead of showing the form again. ?reason=token-... query params show specific error copy for the four magic-link verification failure modes (missing, unknown, used, expired) — those come from /api/auth/verify redirecting back here on rejection. The page is rate-limited at the API layer (per-IP, in functions/_lib/ratelimit.ts) so the form can't be used to flood somebody's inbox.",
   "implementation": "src/pages/Login.tsx — controlled input + form. submit() calls /api/auth/request-link via src/lib/api.ts (handles CSRF echo, JSON error parsing). On success → navigate('/login/sent?email=...'); on rate-limit → friendly 'try again in N seconds'; on validation error → inline error. useAuth() detects the already-signed-in case before render. ?reason param drives the error-copy lookup table. The page is feature-tinted as 'conversation' (PAGE_FEATURE['page.login']) — sign-in is the entry to the conversation feature. Server side: functions/api/auth/request-link.ts inserts the token, queues the email via Resend, and returns 200 even if the email isn't in the system (no enumeration). The corresponding /api/auth/verify.ts consumes the token, sets the mp_session cookie (HMAC-signed, see functions/_lib/auth.ts), and redirects to /me — or back to /login?reason=... on rejection.",
   "decisions": [
@@ -71,7 +77,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author — P2 auth-gated sweep, co-located doc for /login."
+      "reason": "Initial author — P2 auth-gated sweep, co-located doc for /login.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

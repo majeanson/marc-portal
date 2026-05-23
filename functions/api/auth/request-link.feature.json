@@ -6,7 +6,14 @@
   "domain": "marc-portal/auth",
   "componentFile": "functions/api/auth/request-link.ts",
   "problem": "The server side of the magic-link sign-in flow. Receives an email, issues a single-use random token, sends it via Resend in a URL, and returns 200 uniformly — including for unknown emails — so the endpoint can't be used to enumerate registered addresses. Token storage is hashed (SHA-256) so a DB snapshot or admin SELECT doesn't leak usable tokens.",
-  "tags": ["auth", "magic-link", "csrf-exempt", "rate-limited", "resend", "anti-enumeration"],
+  "tags": [
+    "auth",
+    "magic-link",
+    "csrf-exempt",
+    "rate-limited",
+    "resend",
+    "anti-enumeration"
+  ],
   "analysis": "Two rate limits in parallel: per-email (5 requests / hour) catches the targeted-flood case, per-IP (20 / hour) catches the rotating-email-same-IP attacker. Both hit before any D1 write, so a quota exhausted by an attacker doesn't pollute the magic_link_tokens table. Token generation: randomTokenB64url() produces a 24-byte URL-safe random string; sha256B64url() hashes it. Only the hash lives in D1; the plaintext goes ONCE in the email URL. TTL = 30 minutes. sendMagicLink() (functions/_lib/email.ts) calls Resend with the link URL; if Resend's API returns non-200 the function returns 200 anyway (no enumeration of which emails the system failed to deliver to). setLangIfAbsent writes mp_lang cookie if the request body included a lang preference. CSRF-exempt because the visitor doesn't yet have an mp_session — there's no cookie context to defend, so per-IP rate limit + uniform-200 are the threat model.",
   "decisions": [
     {
@@ -69,7 +76,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P2 critical-API sweep, co-located doc for the magic-link issuer."
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for the magic-link issuer.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

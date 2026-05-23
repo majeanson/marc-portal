@@ -7,7 +7,13 @@
   "componentFile": "src/pages/HandoffChecklist.tsx",
   "liveUrl": "/handoff/checklist",
   "problem": "/handoff explains WHAT a handoff is (two ownership modes — keys returned vs. custodian). /handoff/checklist is the companion procedural document — WHAT the buyer should expect on the day, in their own language, plus the buried technical details a future dev would need if the buyer ever migrates. The page exists because asking a Quebec tradesperson 'do you have a Cloudflare account?' requires preparation — they need to know what they're going to be asked, in plain words, ahead of time. Burying the technical details in a collapsed section keeps the page legible for the primary audience without losing the secondary audience.",
-  "tags": ["handoff", "operational", "two-audience", "buyer-facing", "loi-25-friendly"],
+  "tags": [
+    "handoff",
+    "operational",
+    "two-audience",
+    "buyer-facing",
+    "loi-25-friendly"
+  ],
   "analysis": "Two-audience structure layered top-to-bottom. Sections 1–4 are buyer-facing in plain Québécois — what gets handed over (the live URL + DNS, the GitHub repo invitation, the D1 + R2 + Pages account access in 1Password format, the credentials), what they need to do in the first week (test the live URL from a fresh device, change a price in Stripe if applicable), what dormancy looks like (a single 30-day email check-in, not a 90-day-with-3-emails escalation). Section 5 is a collapsed 'Détails techniques' that a developer would open if the client migrated — asset-by-asset commands, account-level instructions, the GPG-encrypted D1 dump procedure as an opt-in (default share is the 1Password file, encrypted dumps are for buyers with their own crypto setup). The procedure was simplified from an earlier 9-section version; the README at /handoff documents the upgrade path. Page is feature-tinted as 'keys' (PAGE_FEATURE['page.handoff-checklist']) — handoff is the keys-feature, and this is its operational artifact.",
   "implementation": "src/pages/HandoffChecklist.tsx — static content rendered from a top-of-file COPY constant keyed by Lang. Sections 1–4 render as standard h2 + paragraph + ul lists; section 5 uses a <details> element so the technical body is collapsed by default. PageMast + SectionEyebrow + FeatureFolioLink chrome consistent with the rest of the site; FeatureContinue at the bottom closes the keys-loop. No fetch, no third-party deps. The 'last simplified' date is implicit — significant changes to the procedure live as separate revisions in this feature.json. Companion page /handoff (src/pages/Handoff.tsx) explains the two ownership modes; the checklist is the procedural side, the handoff page is the conceptual side.",
   "decisions": [
@@ -70,7 +76,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author — P1 sweep, co-located doc for /handoff/checklist."
+      "reason": "Initial author — P1 sweep, co-located doc for /handoff/checklist.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

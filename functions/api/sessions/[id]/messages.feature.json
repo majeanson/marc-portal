@@ -82,7 +82,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/messages."
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/messages.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

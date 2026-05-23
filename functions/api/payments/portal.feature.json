@@ -6,7 +6,13 @@
   "domain": "marc-portal/payments",
   "componentFile": "functions/api/payments/portal.ts",
   "problem": "Custodian subscribers need a way to update their card, view invoices, and cancel without going through Marc. Stripe's hosted Customer Portal handles all of that — this endpoint mints a temporary URL the browser redirects to. Cancellation via the portal triggers customer.subscription.deleted → webhook flips custodian to 'switched_to_tout_a_toi' per the /handoff promise. No payment-method UI in this codebase; Stripe's portal IS the UI.",
-  "tags": ["payments", "stripe", "customer-portal", "self-serve", "graceful-degrade"],
+  "tags": [
+    "payments",
+    "stripe",
+    "customer-portal",
+    "self-serve",
+    "graceful-degrade"
+  ],
   "analysis": "POST { sessionId, lang? }. Auth: canAccessSession() (self or admin). Loads the session, finds its stripe_customer_id (set at the first subscription's checkout.session.completed). createBillingPortalSession() (functions/_lib/stripe.ts) calls Stripe's billingPortal.sessions.create with the customer + a return_url back to /me. Returns { url } so the SPA can redirect. STRIPE_SECRET_KEY guard returns 503 if unset (consistent with the rest of the payments family). 404 if the session has no stripe_customer_id (means no subscription was ever created — portal would be empty).",
   "decisions": [
     {
@@ -61,7 +67,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/payments/portal."
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/payments/portal.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

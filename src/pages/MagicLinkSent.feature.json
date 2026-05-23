@@ -7,7 +7,12 @@
   "componentFile": "src/pages/MagicLinkSent.tsx",
   "liveUrl": "/login/sent",
   "problem": "After /login submits the magic-link request, the visitor needs a clear destination that explains what just happened, what they should do, and what to do if the email doesn't arrive. A bare 'thank you' line leaves them hanging; a complex page invites confusion. /login/sent is the deliberate plain-text confirmation — one line that says 'we sent it to X, expires in 30 min', one line of reassurance ('you can always request another'), one fallback ('check spam or try a different email'). The email address comes via ?email= query param so the visitor sees their own input echoed back.",
-  "tags": ["auth", "magic-link", "post-submit-state", "graceful-degrade"],
+  "tags": [
+    "auth",
+    "magic-link",
+    "post-submit-state",
+    "graceful-degrade"
+  ],
   "analysis": "Single landing page after POST /api/auth/request-link succeeds. /login navigates here with ?email=<typed-value>; this page reads that param to render 'we sent a link to <email>'. If the param is missing (direct hit, reload, manual navigation), the copy falls back to a generic 'your link is on its way' — same information without the personalization that would otherwise render as 'we sent a link to .' (broken empty case). The page also offers a 'send another link' affordance that navigates back to /login. There's no auto-refresh, no polling for verification — clicking the link in the email takes the visitor to /api/auth/verify which redirects to /me on success. The 30-minute expiry is mentioned explicitly so the visitor doesn't sit on the page expecting magic.",
   "implementation": "src/pages/MagicLinkSent.tsx — single component reading useSearchParams() for the email. COPY[lang].intro is a function (email) => string that handles both the populated and empty cases gracefully. No fetch; the page is pure render after the query param read. Header + Footer chrome consistent with /login; feature-tinted as 'conversation' (PAGE_FEATURE['page.magic-link-sent']) — same as /login since they're two parts of the same flow. There's intentionally no FeatureContinue here — the visitor is in a flow that ends with the email click, not the backstage tour.",
   "decisions": [
@@ -63,7 +68,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author — P2 auth-gated sweep, co-located doc for /login/sent."
+      "reason": "Initial author — P2 auth-gated sweep, co-located doc for /login/sent.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

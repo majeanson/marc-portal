@@ -7,7 +7,13 @@
   "componentFile": "src/pages/Map.tsx",
   "liveUrl": "/carte",
   "problem": "A solo consulting portal accumulates surfaces fast — public marketing, auth-gated dashboard, admin operator hub, the showcase gallery, transparency pages. Without a map, a curious visitor doesn't know what's here, and a returning client can't orient. A traditional sitemap link list is a 200-entry text dump that nobody reads. /carte renders the same information as a graph the visitor can actually navigate — layered by intent (pages / data flow / journeys / admin), filterable by feature colour, with admin surfaces hidden from public viewers.",
-  "tags": ["showcase", "site-graph", "cytoscape", "boring-tech", "build-in-public"],
+  "tags": [
+    "showcase",
+    "site-graph",
+    "cytoscape",
+    "boring-tech",
+    "build-in-public"
+  ],
   "analysis": "Four layered views on the same MapData (defined in src/lib/map/data.ts): Pages (every reachable route + the home-section anchors), Data flow (which features read/write which D1 tables and R2 buckets), Journeys (visitor walk-throughs — intake-to-engagement, browsing-the-showcase, etc.), Admin (the operator surfaces). MapCanvas wraps Cytoscape.js — chosen because the layout is non-trivial (forces, edge routing) and the boring-tech mandate rules out a hand-rolled SVG renderer. Public viewers (signed-out OR admin-with-previewAsUser-active) see admin nodes filtered out via filterForViewer; admin viewers see everything. The visitor-preview flag is the same sessionStorage key the rest of the chrome uses (mp_preview_as_user), so toggling here matches toggling from the header — one preview state across the whole site. ?feature=X URL param filters the graph to one feature's surfaces; FeatureFolioLink components inside the legend hand off to it.",
   "implementation": "src/pages/Map.tsx + src/components/Map/{MapCanvas,MapLegend,FeatureIndex}.tsx. MAP_DATA is hand-curated in src/lib/map/data.ts; filterForViewer (src/lib/map/filter.ts) strips admin nodes for public viewers. MapCanvas wraps Cytoscape — node colours come from FEATURES[id].hue resolved to CSS custom properties; edge weights drive the force layout. Search-params drive two URL-addressable filters: ?layer={pages|dataflow|journeys|admin} and ?feature=X. useAuth() identifies whether the current viewer is admin; useSearchParams + a manual previewAsUser sessionStorage read combine to decide what to render. The page is 100% static after the prebuild script — no analytics, no third-party fonts (cytoscape is bundled, no remote loader). FeatureIndex on the right lists every PAGE_FEATURE entry grouped by feature, with bilingual labels from HOME_SECTION_LABEL / FAQ_LABEL / SESSION_TAB_LABEL / META_PAGE_LINK — the surface-to-feature maps in src/lib/features.ts. Map.test.ts in src/lib/map/ guards MAP_DATA's invariants (every node has a feature, every edge connects real nodes, paths match the route skeleton).",
   "decisions": [
@@ -71,7 +77,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author — P1 sweep, co-located doc for /carte."
+      "reason": "Initial author — P1 sweep, co-located doc for /carte.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

@@ -7,7 +7,13 @@
   "componentFile": "src/pages/Journey.tsx",
   "liveUrl": "/parcours",
   "problem": "The portal's pricing page shows the destination; /carte shows the geography; the home page shows the headline. None of those answer 'what actually happens between landing on the site and shipping a build?' /parcours is that page — twelve steps across four phases (Discover, Decide, Build, Ship) on a center-spine timeline. Each step is tagged with an actor (you / me / both) so the visitor sees at a glance that they carry half the steps, not all of them. It's the asynchronous-friendly equivalent of a 'how it works' deck, and it's what a busy prospect reads before deciding whether to send an intake.",
-  "tags": ["showcase", "walkthrough", "async-first", "two-sided", "timeline"],
+  "tags": [
+    "showcase",
+    "walkthrough",
+    "async-first",
+    "two-sided",
+    "timeline"
+  ],
   "analysis": "Twelve steps total: Discover (you land, you read pricing, you read vibe-filter, you read showcase) → Decide (you write intake, I triage, we agree) → Build (I build, you watch live, we exchange messages) → Ship (you keep the keys, you optionally share, you optionally vouch). Each step's copy lives in DICT[lang].journey — the i18n.ts dictionary, structured as an array of { phase, actor, title, body, anchor } so the timeline structure mirrors the data shape. Alternates left/right along a center spine on desktop (~960px+) for visual rhythm; on mobile, collapses to a single column with the same actor tags. Actor tags (you / me / both) are colour-coded — you=intake hue, me=ochre, both=blended — so a quick scan answers 'whose work is this step?'. The CTA at the bottom drops the visitor at /intake. Page renders entirely from the dictionary at compile time; no fetch.",
   "implementation": "src/pages/Journey.tsx — single component, ~300 lines, all copy delegated to DICT[lang].journey. PageMast carries the folio + back-home link; SectionEyebrow tags it; the twelve-step rendering loops over the dictionary array. CSS handles the alternating-left-right pattern via :nth-child(even) selectors on the spine; mobile breakpoint at 720px collapses to a single column. frPunct wraps NBSP-before-colon spans in French. The 'actor' tag is a small pill at the top of each step; colours come from CSS custom properties. FeatureContinue at the bottom points to /intake (feature.intake's primary page) — the page is feature-tinted as 'intake' since it serves the same funnel role as the intake form. No assets beyond CSS; no images, no third-party widgets.",
   "decisions": [
@@ -70,7 +76,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author — P1 sweep, co-located doc for /parcours."
+      "reason": "Initial author — P1 sweep, co-located doc for /parcours.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

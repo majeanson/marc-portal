@@ -6,7 +6,14 @@
   "domain": "marc-portal/infrastructure",
   "componentFile": "functions/_middleware.ts",
   "problem": "Every Functions request needs four cross-cutting things done before any handler runs: (1) resolve which tenant this Host serves, (2) gate state-changing /api/* requests against CSRF, (3) on the bare '/' request redirect to the visitor's preferred language, (4) rewrite OG tags in HTML responses so social-share scrapers (which don't run JS) see the right card per-page. Doing any of these per-handler creates four places to forget; centralizing them in _middleware.ts means a new handler inherits the four guards for free. The middleware is the single piece of code every request executes through.",
-  "tags": ["infrastructure", "tenant", "csrf", "i18n", "html-rewriter", "load-bearing"],
+  "tags": [
+    "infrastructure",
+    "tenant",
+    "csrf",
+    "i18n",
+    "html-rewriter",
+    "load-bearing"
+  ],
   "analysis": "Single onRequest function called by Cloudflare Pages for every /api/* and SSR path; static assets bypass it. Steps in order: (1) resolveTenant(Host) → ctx.data.tenant — on a 'no such table' error (migration 0002 not yet applied), the request flows through tenant-less so legacy handlers don't break (admin handlers that strictly need a tenant call requireTenant and 500 cleanly); on unknown Host returns a terse 404; on tenant.status='frozen' returns 503 with a 'paused' message. (2) For state-changing /api/* requests (POST/PUT/PATCH/DELETE), check verifyCsrf unless the path is in CSRF_EXEMPT_PATHS (logout, request-link, admin/digest, payments/webhook, vouches, intake/transcribe). On gate failure, 403 'CSRF mismatch'. (3) For bare '/' GET: read mp_lang cookie OR Accept-Language; if EN preferred, 302 to /en. (4) For HTML responses, use HTMLRewriter to swap OG image, append per-page hreflang link, and rewrite og:url to the absolute canonical. Sentry exception capture wraps everything; uncaught exceptions are reported then rethrown (observe-and-propagate pattern, NOT swallow).",
   "decisions": [
     {
@@ -69,7 +76,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P2 critical-API sweep, co-located doc for the edge middleware."
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for the edge middleware.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

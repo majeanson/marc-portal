@@ -7,7 +7,14 @@
   "componentFile": "src/pages/Home.tsx",
   "liveUrl": "/",
   "problem": "Every other feature in this portal is a reusable pattern — an intake form, a pricing table, a capacity gate — that could be lifted into another project. The app shell is the one piece that is not. It is the composition layer: the single place where those patterns are wired into a coherent site, where the routing tree lives, where the bilingual machinery is set up, and where the homepage decides which sections appear and in what order. Without a deliberate composition feature, this wiring would be scattered and nobody could point at 'the part that makes this Marc's portal and not a template.' This is that part.",
-  "tags": ["composition", "marc-specific", "homepage", "bilingual", "spa-routing", "non-reusable"],
+  "tags": [
+    "composition",
+    "marc-specific",
+    "homepage",
+    "bilingual",
+    "spa-routing",
+    "non-reusable"
+  ],
   "analysis": "src/pages/Home.tsx is the composition root: it imports each section component and renders them in a fixed order, so the homepage's narrative sequence lives in exactly one file. The shell is intentionally the only non-reusable feature in the portal — it is where Marc-specific copy, ordering, and visual identity collect, leaving every pattern it composes generic. Routing is a separate concern in src/router.tsx (react-router's createBrowserRouter), with a French canonical tree at / and a full English mirror under /en; a RootByTemplate wrapper sets the lang prop and the document language. All copy is one bilingual dictionary in src/i18n.ts keyed by 'fr' | 'en'. The site is a client-rendered single-page app: hot-path routes (home, intake, login) are bundled eagerly, cold-path routes are code-split.",
   "decisions": [
     {
@@ -60,13 +67,22 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": ["analysis", "decisions", "successCriteria"],
+      "fields_changed": [
+        "analysis",
+        "decisions",
+        "successCriteria"
+      ],
       "reason": "Initial fill from the brainstorming session — composition wires the reusable patterns into Marc's specific portal."
     },
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "fields_changed": [
+        "implementation",
+        "componentFile",
+        "userGuide",
+        "knownLimitations"
+      ],
       "reason": "Homepage built; composition root at src/pages/Home.tsx, copy in src/i18n.ts, routing in router.tsx."
     },
     {
@@ -81,7 +97,9 @@
         "knownLimitations",
         "userGuide"
       ],
-      "reason": "Code-first overhaul: co-located next to Home.tsx, rewrote the section list and routing description from the shipped code, added liveUrl, and pruned limitations that referred to routes and wiring that now exist."
+      "reason": "Code-first overhaul: co-located next to Home.tsx, rewrote the section list and routing description from the shipped code, added liveUrl, and pruned limitations that referred to routes and wiring that now exist.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []

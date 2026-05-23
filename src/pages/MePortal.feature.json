@@ -7,7 +7,13 @@
   "componentFile": "src/pages/MePortal.tsx",
   "liveUrl": "/me",
   "problem": "After magic-link sign-in, the client lands on /me — the single canonical place where their sessions, their data, and their account live. Without one canonical destination, a returning client has to remember 'where do I check my session?' across multiple URLs. /me consolidates: a tile of their sessions (with status + unread counts), a tile for starting a new intake, payment actions if a session is in pricing, language preference, optional display-name (first name), and the data-rights surface (download my data / delete my account). The page IS the client-side console; everything else (intake form, individual session views, /me/data) is reachable from it.",
-  "tags": ["dashboard", "auth-gated", "session-list", "data-rights", "tile-layout"],
+  "tags": [
+    "dashboard",
+    "auth-gated",
+    "session-list",
+    "data-rights",
+    "tile-layout"
+  ],
   "analysis": "Auth-gated via useAuth() — a signed-out visitor is redirected to /login. Once authenticated, the page loads the session list via listSessions() (functions/api/sessions/index.ts via src/lib/sessionsApi.ts), an array of SessionRow records: id, problem_type, status, created_at, last_message_at, has_unread (computed via src/lib/unread.ts against per-session last-seen markers in localStorage). Each session renders as a card linking to /session/:id; unread sessions show a dot. Below the list: tiles for new intake (links into /intake with a fresh PendingIntake set up via PENDING_INTAKE_KEY localStorage handoff), payment actions (if any session is in pricing — PaymentActions component renders Stripe Checkout button), language preference (LangPrefCard), display name (FirstNameCard). At the bottom: data-rights — a 'download my data' link to /me/data and a destructive 'delete my account' action that calls deleteMyAccount(), sets markJustErased() (sessionStorage flag), then navigates to /au-revoir for the post-erasure ritual. Bilingual at full parity. The 'console' eyebrow framing signals this is operational, not marketing.",
   "implementation": "src/pages/MePortal.tsx — controlled by useAuth() for sign-in state; redirects to /login if not authenticated. On mount, fetches sessions via listSessions(). Tile layout uses CSS grid with named areas. Each tile is a self-contained block reading its own state. createSession() handles the new-intake flow: it primes a PendingIntake in localStorage (PENDING_INTAKE_KEY) with type + account info, then navigates to /intake which picks up the pending state and renders the appropriate problem-type form. clearDraft() purges any leftover draft on intent change. The delete-my-account action calls deleteMyAccount() (DELETE /api/me, cascades to sessions/messages/attachments via D1 ON DELETE), sets the sessionStorage flag, navigates to /au-revoir. The unread system reads a per-session last-seen timestamp from localStorage and compares against the session's last_message_at; seedIfMissing() handles first-time seeding so a newly-listed session doesn't immediately show as unread. PaymentActions reads the session list and renders Stripe Checkout only for sessions in 'pricing' status. FirstNameCard + LangPrefCard each write back via PATCH /api/me/prefs.",
   "decisions": [
@@ -77,7 +83,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author — P2 auth-gated sweep, co-located doc for /me. Captures the recent markJustErased() handoff added in f3ef8f1."
+      "reason": "Initial author — P2 auth-gated sweep, co-located doc for /me. Captures the recent markJustErased() handoff added in f3ef8f1.",
+      "commit": "dcfea4b",
+      "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
     }
   ],
   "annotations": []
