@@ -7,13 +7,7 @@
   "componentFile": "src/pages/MyData.tsx",
   "liveUrl": "/me/data",
   "problem": "Loi 25's right-of-access obligates the practice to give the client a copy of everything held about them, in a portable form. The default interpretation — a machine-readable JSON download — satisfies the law but reads as dismissive. A client asking 'what do you have on me?' deserves an answer they can actually read. /me/data renders the same export the JSON download contains, but as a designed plain-language document — everything held about you, on one page, in clear words, printable. The JSON download still exists for portability; this page is the trust statement built on the same data.",
-  "tags": [
-    "transparency",
-    "loi-25",
-    "right-of-access",
-    "auth-gated",
-    "felt-version"
-  ],
+  "tags": ["transparency", "loi-25", "right-of-access", "auth-gated", "felt-version"],
   "analysis": "Auth-gated via useAuth(). On mount, calls exportMyData() (src/lib/export.ts) which hits /api/me with an Accept-bundle header and returns an ExportBundle: account info, every session's intake JSON (parsed via getSchemaForType), every message in chronological order, attachment metadata (filenames + sizes, not the blobs themselves — those are linked separately via attachment URLs). The page then renders this as a structured document with one section per session — eyebrow, IntakeSummary (the same component /admin/inbox uses, reused on the public side), message thread, attachment list. Above all that: an account section showing the email + display name + lang preference + the JSON download button. Sibling page /me/dossier is the comparator version ('vs. Meta'); /passage is the receipt version (cookies + localStorage + walked routes). Three angles on the same Loi 25 obligation, pitched at different curiosity levels.",
   "implementation": "src/pages/MyData.tsx — auth check via useAuth(); if signed-out, redirect to /login. exportMyData() fetches the bundle in one request. ExportBundle is rendered top-to-bottom: account info → per-session blocks (using IntakeSummary for the intake form half + a chronological message list). Each block carries its session id + status + dates. The 'download JSON' button calls downloadJson() which serializes the same bundle to a downloadable Blob — same data, machine-readable form. ParsedIntake type bridges the raw form values to the IntakeSummary component which knows how to render each problem-type's fields. formatDate is shared with the rest of the dashboard. The page is print-friendly (CSS @media print rules in styles.css drop chrome and reformat sections for paper).",
   "decisions": [

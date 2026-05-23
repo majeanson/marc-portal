@@ -7,13 +7,7 @@
   "componentFile": "src/pages/Vouches.tsx",
   "liveUrl": "/vouches",
   "problem": "A consulting site without testimonials is a structural liability — buyers assume there's nothing to show. But anonymous reviews on a self-hosted page also fail the trust test (anyone could write them). /vouches threads the needle: anyone can submit a vouch via the open /vouch form (no auth required), but Marc moderates every submission before it appears publicly. Approved vouches are rendered as cards on /vouches with the author's first name, relationship tag (client, peer, mentor, etc.), and body — but never the author's email. The wall is small by intent — a real practice has a handful, not hundreds.",
-  "tags": [
-    "showcase",
-    "social-proof",
-    "moderation",
-    "loi-25-friendly",
-    "anti-fake-reviews"
-  ],
+  "tags": ["showcase", "social-proof", "moderation", "loi-25-friendly", "anti-fake-reviews"],
   "analysis": "Reads GET /api/public/vouches (functions/api/public/vouches.ts) which queries the vouches D1 table filtered to status='approved' AND deleted_at IS NULL, projected through PublicVouchRow which strips author_email. The page renders the array as a flat card list — no infinite scroll, no pagination (the moderation throttle keeps the count bounded). Each card shows the author's display name (first name only, opt-in for full name), the relationship tag (client / past-employer / peer / mentor / friend), the body, and an optional link they provided (LinkedIn, project URL, etc.). The vouch submission flow is /vouch (a separate page); approved-vouch lifecycle: submitted (status='pending') → moderated via /admin/vouches → approved or deleted. The list is fetched on mount; an error state shows a quiet 'unavailable' message and a /vouch CTA so the visitor can still contribute. Vouches are scoped at the tenant level; tenant resolution happens in _middleware.ts before this handler runs.",
   "implementation": "src/pages/Vouches.tsx — single component. useEffect fetches GET /api/public/vouches on mount via listPublicVouches (src/lib/vouchesApi.ts). Renders a header + an array of <article class='vouch'> cards. Each card shows the relationship as a mono pill tag, the name (or 'Anonyme' if the submitter declined name display), the body, and the optional outbound link as a single 'voir leur site' affordance. Uses the standard PageMast + FeatureContinue chrome; feature-tinted as 'shipped' (PAGE_FEATURE['page.vouches']) — vouches are the social-proof leg of the shipped feature. Server-side projection (functions/_lib/vouches.ts → PublicVouchRow) drops author_email at the query level so it never reaches the wire; the client wouldn't be able to leak something it doesn't have. cssVars helper injects per-card relationship colours.",
   "decisions": [

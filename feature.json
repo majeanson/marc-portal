@@ -91,44 +91,31 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis",
-        "implementation",
-        "successCriteria",
-        "decisions"
-      ],
+      "fields_changed": ["analysis", "implementation", "successCriteria", "decisions"],
       "reason": "Initial fill from brainstorming session 2026-05-06 — captures bedrock (family-first), 3-year horizon, 1-active cap, async-only, AI as invisible infra, project selection by temporal metabolism. Synthesized from 40 insights across Five Whys / Persona Journey / Reverse Brainstorming techniques."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "implementation"
-      ],
+      "fields_changed": ["implementation"],
       "reason": "Stack locked: Vite 8 + React 19 + TS + react-router-dom 7, standalone in portal/. Design tokens copied (not imported) from @majeanson/lac-react per no-shared-code constraint. Bilingual via single i18n.ts dictionary."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "annotations"
-      ],
+      "fields_changed": ["annotations"],
       "reason": "Published the portal itself as the second public showcase (Insight #32 — Two-Showcase Strategy: SND for projectability, Self-Documenting Portal for authenticity / dev-cred). Renders feat-2026-001 in the same shape as a shipped engagement: tier, hours, the same lifecycle UI."
     },
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "lineage"
-      ],
+      "fields_changed": ["lineage"],
       "reason": "Progress checkpoint: 6 of 7 primitives + composition advanced from draft → active (intake-form, async-status-canvas now built, case-study-renderer, triage-queue, pricing, vibe-filter, app-shell). 1 primitive (self-service-redirect) is built but not yet advanced. SND demo content remains draft until the working voice→invoice MVP ships (target 2026-07-01). Full route map: /, /en, /intake, /tier-0, /demo/sunday-night-dread, /showcase/:slug, /engagement/:slug. Sitemap auto-generated with all showcases."
     },
     {
       "date": "2026-05-21",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis"
-      ],
+      "fields_changed": ["analysis"],
       "reason": "Code-first /meta overhaul: the portal's feature.json documents were rewritten from the shipped code and co-located next to it (src/.../<Component>.feature.json). The six marketplace-shaped feature documents plus platform-spine were removed. Ten keeper features remain — app-shell, structured-intake-form, async-status-canvas, case-study-renderer (public project gallery), handoff-ritual, self-service-redirect, tiered-public-pricing, triage-queue, vibe-filter, engagement-runtime — and the engagement runtime has shipped, so the once-static primitives now render against real visitor engagements.",
       "commit": "dcfea4b",
       "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"

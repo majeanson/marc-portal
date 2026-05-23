@@ -6,13 +6,7 @@
   "domain": "marc-portal/engagement",
   "componentFile": "functions/api/sessions/[id].ts",
   "problem": "Per-session lifecycle. GET reads (visitor sees their own, admin sees any). PATCH is the workhorse: admin-only status transitions (draft → triage → active → ...), visitor or admin intake_json edits with optimistic concurrency via ifUpdatedAt, custodian plan changes, tier assignment, withdrawals. Each transition triggers the right Resend notification (visitor → status email, admin → intake-edited email, etc). DELETE soft-deletes (sets deleted_at); FK cascades do NOT fire (soft delete preserves the row + its messages + advancements for admin trash recovery).",
-  "tags": [
-    "engagement",
-    "lifecycle",
-    "optimistic-concurrency",
-    "status-history",
-    "soft-delete"
-  ],
+  "tags": ["engagement", "lifecycle", "optimistic-concurrency", "status-history", "soft-delete"],
   "analysis": "GET: canAccessSession() (functions/_lib/sessions.ts) gates ownership; admin bypasses. PATCH is the most complex: body shape varies by what's being changed (status, intakeJson, tier, withdraw, allYoursAck, custodianPlan). Most fields are admin-only; intakeJson can be visitor-edited only when status is in editable phases (draft, triage). ifUpdatedAt is a millisecond timestamp the client sends back from its last GET; the UPDATE's WHERE compares against the DB's updated_at to detect a concurrent edit — mismatch returns 409 with the latest version. Status transitions write to status_history JSON column via appendStatusHistory() (helper in _lib/sessions.ts) so the lifecycle audit trail accumulates. Each transition queues the right notification email; emails are best-effort (failures logged, transition still commits). DELETE: soft-delete — set deleted_at + status='deleted-by-X', preserve row + descendants for trash recovery. Hard delete only via DELETE /api/me (full erasure flow).",
   "decisions": [
     {

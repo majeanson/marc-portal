@@ -7,13 +7,7 @@
   "componentFile": "src/pages/Atelier.tsx",
   "liveUrl": "/atelier",
   "problem": "A consultant claiming visual range and testing rigor in 2026 is making an unverifiable promise — everyone says it. Most portfolios show a curated five-screen highlight reel and call it done. /atelier inverts that: every visual baseline this project ships, across every viewport and theme, is rendered publicly. The gallery IS the proof — if a screen is in the e2e regression suite, it's in the atelier; if it isn't in either, it doesn't exist as a claim. Pair that with the portal's own design tokens displayed as an exhibit (feature glyphs, colour scale, type ramp) and a visitor can verify both 'they have a design system' and 'they actually keep it on rails' in one page.",
-  "tags": [
-    "showcase",
-    "design-system",
-    "visual-regression",
-    "testing-rigor",
-    "build-in-public"
-  ],
+  "tags": ["showcase", "design-system", "visual-regression", "testing-rigor", "build-in-public"],
   "analysis": "Two exhibits stacked. Exhibit A — visual language: the seven feature glyphs render as live <FeatureGlyph /> components (each a link into /carte filtered by that feature), the colour tokens display the actual CSS custom properties resolved at render time, the type scale shows the Source Serif 4 / JetBrains Mono ramp in use. This is the design system as a code-first artifact, not a Figma export. Exhibit B — the Atelier Gallery: every committed Playwright screenshot in e2e/__screenshots__/ becomes a clickable thumbnail. Click one and an inspector opens — switch viewport (phone / wide / etc.), step through related captures of the same route, jump to the live page. The gallery manifest is generated at prebuild by scripts/build-atelier-gallery.mjs from the PNG filenames + dimensions; full-resolution PNGs are also surfaced (clicking the thumb opens the full). The page is deliberately excluded from the screenshot suite itself (see e2e/routes.ts) — capturing /atelier would recurse the whole corpus into one image.",
   "implementation": "src/pages/Atelier.tsx — single component, no lazy children, ~600 lines. Reads src/data/atelier-gallery.json (generated at prebuild) for the gallery manifest; reads FEATURES + FEATURE_IDS from src/lib/features.ts for the glyph exhibit. The inspector is a controlled <dialog>-like overlay built from useState (open + selected slug); keyboard nav with arrow keys steps between captures of the same route. Thumbnails are 240px-wide PNGs in public/atelier/ (build artifact, not committed); the full PNG lives at the same path but with full.png. On first paint the gallery resolves from the static manifest — no fetch. Two layers of state: which viewport filter is active (phone / wide / dark / light) and which capture is being inspected. The page exits with a FeatureContinue pointing back into the meta loop.",
   "decisions": [

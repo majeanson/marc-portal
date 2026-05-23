@@ -6,12 +6,7 @@
   "domain": "marc-portal/auth",
   "componentFile": "functions/api/me/prefs.ts",
   "problem": "Two per-account preferences: lang ('fr' | 'en') and firstName (display name, used in greetings + signature lines). One endpoint, two methods. GET reads, PATCH writes. The lang preference is also the source of truth for the mp_lang cookie that drives the bare-'/' redirect in middleware — so a PATCH that changes lang also writes the cookie so the cookie-only middleware path stays in sync with the DB. Marc's own preference is what every admin-side notification email renders in.",
-  "tags": [
-    "auth",
-    "preferences",
-    "csrf-protected",
-    "cookie-sync"
-  ],
+  "tags": ["auth", "preferences", "csrf-protected", "cookie-sync"],
   "analysis": "GET handler: returns { lang, firstName } for the signed-in account, defaulting to { lang: 'fr', firstName: null } if no row exists. PATCH handler: requires CSRF (state-changing). Body may include lang and/or firstName; at least one must be present (otherwise badRequest). Lang validation: must be 'fr' or 'en'. firstName: trimmed, max length, may be null to clear. Writes to user_prefs table (UPSERT on email). Side effect on lang change: writes the mp_lang cookie via Set-Cookie so the next bare-'/' middleware redirect sees the new language without needing a DB read on the hot path. The cookie write is one-way (DB → cookie); a cookie change without DB write doesn't persist across browsers but is fine for the bare-'/' flow.",
   "decisions": [
     {

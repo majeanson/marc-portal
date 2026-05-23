@@ -6,14 +6,7 @@
   "domain": "marc-portal/payments",
   "componentFile": "functions/api/payments/webhook.ts",
   "problem": "Stripe is the source of truth for whether a charge succeeded — the browser-side success redirect after Checkout could be lost (the user closes the tab), so the DB must reconcile from the server-to-server webhook. Six event types matter: checkout.session.completed (mark paid, link Stripe ids), invoice.paid (subscription renewal — first invoice attaches to the original row, renewals insert new), invoice.payment_failed (mark sub past_due), customer.subscription.deleted (auto-switch custodian to 'tout_a_toi' per the /handoff promise), customer.subscription.updated (logged only — wait for terminal events), charge.refunded (track partial + full refunds; only flip to 'refunded' when fully refunded).",
-  "tags": [
-    "payments",
-    "stripe",
-    "webhook",
-    "csrf-exempt",
-    "idempotent",
-    "load-bearing"
-  ],
+  "tags": ["payments", "stripe", "webhook", "csrf-exempt", "idempotent", "load-bearing"],
   "analysis": "POST handler reading the RAW body (no JSON parse before signature verification). Stripe-Signature header is verified via HMAC-SHA-256 over the raw bytes using STRIPE_WEBHOOK_SECRET — if it fails, return 400 without touching D1. Idempotency: event.id is inserted into webhook_events on first arrival; a duplicate event.id (Stripe retry) short-circuits with 200 and no side effects. This prevents duplicate admin-notification emails on retry storms. Per event type, the handler runs the appropriate DB UPDATE + possibly sends a Resend notification to Marc. UPDATEs are themselves idempotent (UPDATE WHERE status != 'paid' etc.) so a slipped-past-idempotency-check duplicate doesn't double-write. Returns 200 on every internal failure path so Stripe doesn't retry into errors that are our problem to fix — Sentry catches and the admin sees it in /admin/digest. CSRF-exempt because the auth IS the signature; no cookie context to defend.",
   "decisions": [
     {

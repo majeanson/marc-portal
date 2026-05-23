@@ -6,13 +6,7 @@
   "domain": "marc-portal/auth",
   "componentFile": "functions/api/me.ts",
   "problem": "Two endpoints on one resource. GET /api/me is the SPA's identity oracle — the very first call on bootstrap, returns { email, isAdmin } for authenticated visitors and { email: null } for unauthenticated. Returning 200 in both cases (not 401) keeps the SPA's bootstrap simple. DELETE /api/me is the Loi 25 self-serve erasure — a signed-in visitor can hard-delete everything they own in one call: sessions (cascades to messages + attachments via FK), magic-link tokens for their email, R2 attachment blobs (best-effort), and finally their own row.",
-  "tags": [
-    "auth",
-    "identity",
-    "loi-25",
-    "erasure",
-    "csrf-protected"
-  ],
+  "tags": ["auth", "identity", "loi-25", "erasure", "csrf-protected"],
   "analysis": "GET handler: read mp_session via currentEmail(); if absent return 200 { email: null, isAdmin: false }. If present, also self-heal the mp_csrf cookie (sessions issued before the CSRF rollout had no mp_csrf — handler mints one if missing). Returns 200 { email, isAdmin } with isAdmin derived from env.ADMIN_EMAILS. DELETE handler: requires sign-in; gated by CSRF (middleware). Runs the erasure in order: (1) DELETE FROM magic_link_tokens WHERE email = ?; (2) SELECT all sessions owned by email, collect their attachment R2 keys; (3) DELETE R2 objects (best-effort — failures logged but don't block; the DB row going is the legal commitment); (4) DELETE FROM sessions WHERE email = ? — FK cascades drop messages, advancements, attachments rows, payments. The cookie is cleared on response so the visitor's next request shows them as signed-out. The visitor-side flow then navigates to /au-revoir (the ritual page) via the mp_just_erased sessionStorage flag set by the SPA before calling here.",
   "decisions": [
     {

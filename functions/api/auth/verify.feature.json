@@ -6,13 +6,7 @@
   "domain": "marc-portal/auth",
   "componentFile": "functions/api/auth/verify.ts",
   "problem": "The other half of the magic-link flow. The verification URL the user clicks lands here with ?token=<plaintext>; this handler hashes it, looks up the matching row in magic_link_tokens, validates expiry + single-use, sets the mp_session + mp_csrf cookies, then redirects into the SPA. Failure modes (missing / unknown / used / expired token) redirect back to /login with a ?reason=... so the SPA can render a friendly explainer.",
-  "tags": [
-    "auth",
-    "magic-link",
-    "single-use",
-    "cookie-issue",
-    "redirect"
-  ],
+  "tags": ["auth", "magic-link", "single-use", "cookie-issue", "redirect"],
   "analysis": "GET handler taking ?token. sha256B64url(token) → hash lookup against magic_link_tokens. Validation order: missing token → ?reason=missing-token; row not found → ?reason=unknown-token; row.used_at != null → ?reason=token-used; row.expires_at < now → ?reason=token-expired. On success: mark used_at, sign an mp_session cookie via signSessionCookie() (HMAC-SHA-256 over { email, exp }, see functions/_lib/auth.ts), mint a fresh CSRF token via newCsrfToken() and set both via Set-Cookie headers. Detects admin via isAdmin(env, email) (controlled by ADMIN_EMAILS env var); admin gets the same cookies, the admin gate is per-handler. Reads mp_lang preference (getLang from userPrefs.ts) and sets the cookie on the response too so the SPA inherits the user's saved language. 303 redirect to /me (or /en/me) based on lang. The 30-min TTL on the magic link is enforced here, not on the request side — a token issued just before TTL drift still works if used within window.",
   "decisions": [
     {

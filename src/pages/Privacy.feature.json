@@ -7,13 +7,7 @@
   "componentFile": "src/pages/Privacy.tsx",
   "liveUrl": "/confidentialite",
   "problem": "The footer claim 'Hébergé au Canada · Loi 25' is structurally dishonest without a published policy with a designated person to write to. /confidentialite is that page. Loi 25 (the Quebec adaptation of Canada's PIPEDA) mandates eight specific disclosures — designated person, data collected and purposes, consent + how to withdraw, right of access, right of rectification, right of erasure/portability, retention period, breach notification process. The page lays those out plainly because the practice is small (one human, one DB, transactional emails) and a 200-page boilerplate would itself be a lie. /pia is the companion page covering the two third-party processors (Sentry, Stripe) under Loi 25 art. 3.3.",
-  "tags": [
-    "legal",
-    "loi-25",
-    "quebec",
-    "transparency",
-    "compliance"
-  ],
+  "tags": ["legal", "loi-25", "quebec", "transparency", "compliance"],
   "analysis": "Eight numbered sections, each addressing one Loi 25 obligation. The sections are deliberately short — Marc is the designated person (one human, no DPO consultant intermediary), data collected is minimal (email + intake + messages + attachments), consent is given by submitting the intake form, retention is bounded (12 months post-engagement OR immediate on DELETE /api/me), and breach notification follows the 72-hour standard. Sections 6 and 11 link to /pia anchors for the two third-party processors. Section 8 (right of erasure) is paired with /me's delete action — the legal text and the operational surface are consistent. The page uses the same PageMast + SectionEyebrow + FeatureFolioLink chrome as other content surfaces, in the meta-page colour, with a folio-mark in the footer that links back to /carte. Updates to the policy bump the 'En vigueur' date at the top — copy is deliberately not generated, this is a hand-authored compliance artifact.",
   "implementation": "src/pages/Privacy.tsx — single component, all copy in a top-of-file COPY constant keyed by Lang. Each section is rendered from an array (h + p with HTML-allowed inline links). The page is meta-tinted via PAGE_FEATURE['page.privacy']; renders FeatureContinue at the bottom pointing to /pia (next in the META_PAGE_NEXT loop). No fetch, no third-party deps, no analytics. Anchor links inside the page (#section-6, #section-8) come directly from Pia.tsx and Footer.tsx — search for the anchor name to find every link in. The 'En vigueur' date is hardcoded; bumping it on policy changes is part of the manual review ritual.",
   "decisions": [

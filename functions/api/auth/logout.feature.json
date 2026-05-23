@@ -6,12 +6,7 @@
   "domain": "marc-portal/auth",
   "componentFile": "functions/api/auth/logout.ts",
   "problem": "The sign-out side of the auth flow. mp_session and mp_csrf cookies are cleared via Set-Cookie max-age=0; the response carries both clears + a JSON ok. Stateless because the cookie IS the session — there's no server-side session table to revoke. CSRF-exempt because a forced logout is a nuisance, not an account compromise, and gating it would create chicken-and-egg problems if the SPA's mp_csrf has drifted.",
-  "tags": [
-    "auth",
-    "cookie-clear",
-    "csrf-exempt",
-    "stateless"
-  ],
+  "tags": ["auth", "cookie-clear", "csrf-exempt", "stateless"],
   "analysis": "Single POST handler that writes Set-Cookie headers clearing mp_session and mp_csrf (max-age=0, same path/domain attributes as the original). Returns 200 { ok: true }. No D1 reads, no D1 writes — there's nothing to revoke server-side. The session is the cookie; clearing the cookie ends the session. CSRF is intentionally exempt — see the in-handler comment for why (forced logout is benign, gating it creates failure modes when CSRF cookie has drifted). Sentry doesn't wrap this handler specifically; the middleware does for any uncaught exceptions.",
   "decisions": [
     {

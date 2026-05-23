@@ -7,13 +7,7 @@
   "componentFile": "src/pages/Vouch.tsx",
   "liveUrl": "/vouch",
   "problem": "Asking past clients and peers for testimonials by email is high-friction and unreliable — the email gets buried, the testimonial gets dashed off without context, and the back-and-forth to publish takes a week. /vouch is an open form anyone can use without signing in: name, email, relationship, body, optional outbound link. The submission goes into the moderation queue (pre-moderation) so Marc reviews before anything appears publicly. The page exists to lower the friction to near zero — a peer who thought 'I should send Marc a recommendation' can do it in two minutes from any device.",
-  "tags": [
-    "showcase",
-    "open-submission",
-    "rate-limited",
-    "anti-spam",
-    "csrf-exempt"
-  ],
+  "tags": ["showcase", "open-submission", "rate-limited", "anti-spam", "csrf-exempt"],
   "analysis": "Open form — no auth required, no account creation. The visitor types name + email + relationship (from VOUCH_RELATIONSHIPS: client, past-employer, peer, mentor, friend) + body + optional outbound link, plus a name-display opt-in checkbox (default: first name only). Client-side validation mirrors the server's VOUCH_LIMITS so the visitor sees inline errors before submitting; the server re-validates on POST. On submit, fetches POST /api/vouches (CSRF-exempt because there's no cookie context for an anon submitter — see _middleware.ts's CSRF_EXEMPT_PATHS list). On success, the page swaps to a thank-you state. On 429 (rate-limited), it shows the rate-limit copy. On other 4xx, it maps the server's error string to a friendly localized message. Per-IP rate limit on POST /api/vouches keeps the moderation queue from being flooded; the spec is 5 submissions per IP per 24h, enforced in functions/_lib/ratelimit.ts.",
   "implementation": "src/pages/Vouch.tsx — controlled form with fields kept in local useState. Validation runs on blur and on submit via VOUCH_LIMITS thresholds (max body length, max link length, valid email regex). ApiError handling: 400 maps from { error: 'string' } to localized; 429 shows rate-limit copy; anything else falls to a generic error. POST /api/vouches inserts a row with status='pending'; moderators see it at /admin/vouches. The form includes a 'display name as' control (first only, full, anonymous). frPunct helper wraps French punctuation (NBSP-before-colon etc.) in a nowrap span since the build strips literal U+00A0. useSearchParams: a ?ref=engagement-slug query param pre-fills the body with a soft prompt ('about engagement X'), making it easier to link a vouch to a specific shipped engagement when sharing the URL from /engagement/:slug. Feature-tinted as 'shipped'.",
   "decisions": [

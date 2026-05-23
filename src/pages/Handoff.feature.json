@@ -7,13 +7,7 @@
   "componentFile": "src/pages/Handoff.tsx",
   "liveUrl": "/handoff",
   "problem": "The portal promises that at the end of any engagement the client owns everything — the code repository, the accounts, the domain. That promise inverts the usual agency lock-in model and self-selects clients who value autonomy, so it is load-bearing positioning. But a promise is only as good as its operational backing. A skeptical buyer — a notary, an accountant, a tradesperson — cannot verify a one-line promise before signing, and the promise said nothing about a buyer who would rather not hold the keys at all, or about what happens if the consultant becomes unreachable. This feature turns the promise into something inspectable: two named ownership modes, a public page that explains them, a public checklist with the exact transfer procedure, and a documented dormancy path the client can execute alone.",
-  "tags": [
-    "positioning",
-    "trust",
-    "no-lock-in",
-    "client-facing",
-    "operations"
-  ],
+  "tags": ["positioning", "trust", "no-lock-in", "client-facing", "operations"],
   "analysis": "The practice offers two ownership modes rather than one. The default, 'Tout à toi', means the client holds every key from day one. The optional 'Je m'en occupe' means the consultant stays custodian — handling the domain, certificates, and small upkeep — for an annual fee. The managed mode is only honest if it cannot become a new kind of lock-in, so two safeguards are built in: non-payment quietly reverts the client to 'Tout à toi' rather than cutting off service, and a documented dormancy procedure lets the client take ownership unilaterally if the consultant goes silent. The trust move is publishing the operational checklist — every transferable asset, with the exact steps — so a buyer can read the whole transfer procedure before signing rather than taking it on faith.",
   "implementation": "Two public pages: src/pages/Handoff.tsx explains the two modes, lists the transferable assets, walks the handoff steps, and covers the switching and dormancy policies; src/pages/HandoffChecklist.tsx is the operational checklist — a plain-language step summary plus a collapsible technical section with the exact commands per asset, including the dormancy procedure. Both are bilingual with local copy and are routed at /handoff and /handoff/checklist (and their /en mirrors). The pricing table surfaces a one-line pointer to /handoff under the managed-mode note, the footer carries a 'how it ends' link site-wide, and the About section adds a short ownership paragraph. The intake form carries an optional, non-blocking ownership-preference radio so a buyer with a clear preference can record it early; the choice is confirmed for real at handoff, not at intake. An offline mirror of the checklist is kept in the repository for clients who want a printable copy.",
   "decisions": [
@@ -98,22 +92,13 @@
     {
       "date": "2026-05-15",
       "author": "marc+claude",
-      "fields_changed": [
-        "implementation",
-        "decisions"
-      ],
+      "fields_changed": ["implementation", "decisions"],
       "reason": "Simplified the checklist for its real audience — a plain-language step summary plus a single collapsible technical section — and made the procedure mechanics less legalistic."
     },
     {
       "date": "2026-05-21",
       "author": "marc+claude",
-      "fields_changed": [
-        "problem",
-        "analysis",
-        "implementation",
-        "successCriteria",
-        "userGuide"
-      ],
+      "fields_changed": ["problem", "analysis", "implementation", "successCriteria", "userGuide"],
       "reason": "Code-first overhaul: co-located next to Handoff.tsx, added liveUrl, and tightened the prose so it describes the shipped pages without brittle file-and-line references.",
       "commit": "dcfea4b",
       "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"

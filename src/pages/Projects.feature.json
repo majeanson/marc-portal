@@ -68,22 +68,13 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis",
-        "decisions",
-        "successCriteria"
-      ],
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
       "reason": "Initial fill from the brainstorming session — the showcase-as-acquisition-infrastructure principle."
     },
     {
       "date": "2026-05-07",
       "author": "marc+claude",
-      "fields_changed": [
-        "implementation",
-        "componentFile",
-        "userGuide",
-        "knownLimitations"
-      ],
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
       "reason": "Built as a renderer that loaded feature.json files at build time."
     },
     {

@@ -7,13 +7,7 @@
   "componentFile": "functions/api/capacity.ts",
   "liveUrl": "/",
   "problem": "Without a hard limit on concurrent work, a side-practice consultant accepts every engagement that looks 'doable' and ends up with three clients at once eating evenings and weekends — and family-first, the value the whole practice is built to protect, quietly falsifies. This feature makes the load-bearing rule structural rather than aspirational: one active build plus one in triage, no more. The homepage shows the current state so a visitor knows immediately whether a slot is open, and the server refuses to create a new engagement past the cap. The public waitlist is not a flaw to hide — scarcity reads as seriousness. This is the single rule of the portal that does not bend.",
-  "tags": [
-    "capacity-cap",
-    "waitlist",
-    "load-bearing-rule",
-    "family-first",
-    "reusable-pattern"
-  ],
+  "tags": ["capacity-cap", "waitlist", "load-bearing-rule", "family-first", "reusable-pattern"],
   "analysis": "The cap is enforced where it cannot be wished away — in the server. The current load is not a number someone maintains by hand; it is counted directly from the engagement records, so it is always true and it decrements on its own when an engagement ships. A public endpoint reports whether the practice is at capacity, and the homepage hero turns that into a plain-language slot indicator. When a visitor submits an intake while at capacity, the server declines to create a new engagement and the visitor is routed to a waitlist acknowledgement instead. Crucially there is no override: no admin toggle raises the cap, because the rule that must not bend should not have a soft switch in the code.",
   "decisions": [
     {
@@ -67,22 +61,13 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "analysis",
-        "decisions",
-        "successCriteria"
-      ],
+      "fields_changed": ["analysis", "decisions", "successCriteria"],
       "reason": "Initial fill from the brainstorming session — the load-bearing capacity cap."
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": [
-        "implementation",
-        "componentFile",
-        "userGuide",
-        "knownLimitations"
-      ],
+      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
       "reason": "Built as a hand-edited capacity file read at build time, with a homepage counter component."
     },
     {

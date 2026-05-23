@@ -7,13 +7,7 @@
   "componentFile": "src/pages/Pia.tsx",
   "liveUrl": "/pia",
   "problem": "Loi 25 art. 3.3 requires a Privacy Impact Assessment (EFVP in French) before adopting any third-party processing of personal data. The portal uses two: Sentry (cross-border, US) for error monitoring and Stripe (Canadian entity) for payments. The Loi 25 article doesn't require these PIAs to be public, but keeping them at /pia — instead of 'available on request' — converts a compliance artifact into a transparency move that a buyer in due diligence can read without scheduling a call. The canonical markdown sources live at docs/loi-25-pia.md and docs/loi-25-pia-stripe.md; this page mirrors them faithfully.",
-  "tags": [
-    "legal",
-    "loi-25",
-    "third-party-processor",
-    "transparency",
-    "compliance"
-  ],
+  "tags": ["legal", "loi-25", "third-party-processor", "transparency", "compliance"],
   "analysis": "Two PIA records on one page, anchored. Each follows the Loi 25 art. 3.3 template: purpose of the transfer, data categories, recipient + their jurisdiction, retention period, mitigations applied, residual risk acceptance, and annual review schedule. Sentry PIA: error monitoring; the receiving entity is Functional Software Inc. (US); mitigations include the four-part bundle documented in the project's memory (PIA + privacy-page §6 + code minimization + operator checklist). Stripe PIA: payments; the receiving entity is Stripe Payments Canada Ltd. (Canadian processing entity, no cross-border transfer at the legal level even though the parent is US). Each PIA section has its own anchor (#sentry, #stripe) so /confidentialite §6 and §11 deep-link in. The page is bilingual but the technical PIA text is intentionally only in English — that's the language a juriste or the Commission d'accès à l'information would expect for a compliance artifact. The FR intro explains why and what the reader is about to see.",
   "implementation": "src/pages/Pia.tsx — single component. COPY constant carries the intro + the heading scaffolding in both languages; the PIA bodies themselves are rendered from a fixed structure (sections with h + p arrays) keyed by the two processors. Anchors are set explicitly (id='sentry', id='stripe') so deep links from /confidentialite work. PageMast + SectionEyebrow + FeatureFolioLink chrome consistent with Privacy.tsx; meta-tinted via PAGE_FEATURE['page.pia']. FeatureContinue at the bottom closes the meta loop (pia → map-page). The 'Dernière mise à jour' date is hardcoded; updates require editing the page AND the corresponding docs/loi-25-pia*.md source.",
   "decisions": [
