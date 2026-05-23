@@ -135,6 +135,24 @@ const OG_PLACEHOLDER =
  * `page.goto` so the first fetch is intercepted.
  */
 export async function installApiMocks(page: Page): Promise<void> {
+  // Pre-dismiss the EnglishNudge banner on the FR home. EnglishNudge renders
+  // whenever `navigator.language` starts with "en" and the dismissal flag is
+  // unset — Playwright's Chromium ships en-US by default, so the banner
+  // flickers on/off depending on whether React mounts before the screenshot
+  // settles. That race makes the FR home's full-page height non-deterministic
+  // (the banner is ~139px tall), and `maxDiffPixelRatio` cannot rescue a
+  // dimension mismatch. Forcing the dismissed flag fixes the screenshot
+  // baseline at "no banner" — the nudge's own behaviour is exercised
+  // separately in unit tests, so muting it here has no coverage cost.
+  await page.addInitScript(() => {
+    try {
+      window.localStorage.setItem('mp_en_nudge_dismissed', '1')
+    } catch {
+      // Private-browsing storage block — the nudge degrades to its
+      // not-dismissed branch, which is also a valid screenshot state.
+      // The fallback path on a real visitor's machine is identical.
+    }
+  })
   await page.route('**/api/public/projects', (route) => route.fulfill({ json: PROJECTS }))
   await page.route('**/api/public/vouches**', (route) => route.fulfill({ json: VOUCHES }))
   await page.route('**/api/capacity', (route) => route.fulfill({ json: CAPACITY }))
