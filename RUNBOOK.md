@@ -849,6 +849,59 @@ All yours", or you got an admin alert mentioning a subscription id.
 2. **Confirm the visitor's `/me` reflects the new state** before
    resolving the admin alert.
 
+## 12. e2e visual baselines diverge in CI
+
+**Symptoms:** `e2e.yml` is red on a PR with `Expected an image NxN px,
+received NxM px` failures in `screenshots.spec.ts` and/or
+`error-states.spec.ts`. The diff PNGs in the run's
+`playwright-report` artifact show pages shifted by tens-to-hundreds of
+pixels, not pixel-noise.
+
+### What happens (system behavior)
+
+- Baselines are committed PNGs under `e2e/__screenshots__/{viewport}/`,
+  rasterized on Windows. CI is Windows-pinned (see `e2e.yml`) precisely
+  so the gate doesn't trip on font anti-aliasing between OSes.
+- Any non-trivial UI commit (copy trim, pricing change, new section,
+  removed component) shifts the document height. `maxDiffPixelRatio`
+  absorbs sub-pixel drift but cannot rescue a dimension mismatch — a
+  390×2003 baseline against a 390×2132 actual fails outright.
+- A bulk regen workflow exists for exactly this reason. It runs the
+  whole screenshot suite with `--update-snapshots`, commits the
+  regenerated PNGs back to the PR, and rebases before pushing so the
+  lighthouse auto-commit doesn't race it.
+
+### Step-by-step (recovery)
+
+1. **First — eyeball the diff PNGs in the run artifact**
+   (`playwright-report.zip` → open the HTML report → click a failed
+   test → "diff" tab). The committed baseline IS the spec — if a
+   section is genuinely missing (not just shifted), regenerating
+   bakes the regression in. Confirm "this looks how I wanted" before
+   triggering the regen.
+2. **Trigger the regen on the PR branch:**
+   ```bash
+   gh workflow run e2e-snapshots.yml --ref <your-branch>
+   ```
+   Or via the Actions UI: "e2e snapshots" → "Run workflow" → pick the
+   branch. The workflow has a `concurrency` group with
+   `cancel-in-progress: false` so two concurrent runs can't collide
+   on the same binary PNG.
+3. **Wait for the run.** It takes ~25 min on the Windows runner. It
+   pushes a `chore(e2e): regenerate visual baselines …` commit to your
+   branch, after rebasing on `origin/<your-branch>` so any in-flight
+   lighthouse auto-commit on `main` doesn't blow it up.
+4. **Pull the regenerated commit locally** before continuing work on
+   the branch: `git pull --ff-only`. The PR will go green on the next
+   e2e run (which uses the PR head, so it picks up the new baselines).
+5. **Don't `playwright test --update-snapshots` locally.** Marc's
+   laptop is Windows but Chromium versions / font hinting drift; the
+   regen runner is the single source of truth.
+6. **Don't bypass the e2e gate by pushing direct to `main`.** That
+   silently ships the visual regression. Direct-to-`main` skips the
+   PR gate by design (cost), but use it only for hot-fixes the regen
+   workflow can't help with.
+
 ## Payments setup (one-time) — Stripe
 
 Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card
