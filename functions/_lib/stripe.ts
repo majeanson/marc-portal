@@ -14,6 +14,15 @@
 
 const STRIPE_API = 'https://api.stripe.com/v1'
 
+// Stripe-Version pin — keep behavior stable across API rollouts. Bump
+// intentionally with a code change, not silently. Last reviewed 2026-05-23
+// against the changelog; next review by 2027-05-23 or when we touch a
+// Stripe-shape thing (new event type, new line-item field). 2025-09-30.clover
+// made flexible billing mode the default for new subscriptions —
+// transparent for our annual fixed-price custodian use. One constant so
+// the pin can't drift between postCheckoutSession + createBillingPortalSession.
+const STRIPE_API_VERSION = '2026-04-22.dahlia'
+
 // A payment is one of three kinds. For 'build', the tier (1-4) and the
 // installment leg are carried in their own columns + Stripe metadata rather
 // than fused into this string — see 0022_pricing_v2.sql.
@@ -130,13 +139,7 @@ async function postCheckoutSession(
   const headers: Record<string, string> = {
     Authorization: `Bearer ${apiKey}`,
     'Content-Type': 'application/x-www-form-urlencoded',
-    // Stripe-Version pin — keep behavior stable across API rollouts. Bump
-    // intentionally with a code change, not silently. Last reviewed
-    // 2026-05-23 against changelog; next review by 2027-05-23 or when we
-    // touch a Stripe-shape thing (new event type, new line-item field).
-    // 2025-09-30.clover made flexible billing mode the default for new
-    // subscriptions — transparent for our annual fixed-price custodian use.
-    'Stripe-Version': '2026-04-22.dahlia',
+    'Stripe-Version': STRIPE_API_VERSION,
   }
   // Stripe Idempotency-Key: a repeated POST with the same key returns the
   // original response (Checkout session id + url) instead of creating a new
@@ -177,7 +180,7 @@ export async function createBillingPortalSession(opts: PortalOpts): Promise<{ ur
     headers: {
       Authorization: `Bearer ${opts.apiKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Stripe-Version': '2024-11-20.acacia',
+      'Stripe-Version': STRIPE_API_VERSION,
     },
     body: form.toString(),
   })

@@ -78,82 +78,244 @@ can send, with subjects + body shapes, in one place for cross-reference.
 
 **Symptoms:** homepage capacity counter stays empty; intake submit 500s.
 
-- First check: a migration didn't run on prod.
+### What happens (system behavior)
 
-  ```bash
-  npx wrangler d1 migrations apply marc-portal-db --remote
-  ```
+- `/api/capacity` is a hot-path read: every home-page load + the operator
+  hub call it. Its query is `SELECT COUNT(*) … FROM sessions WHERE status
+  IN ('active','triage')` — references columns from migrations 0001 +
+  0011 (`tier`) + 0019 (`deleted_at` post-snd-drop).
+- `/api/sessions` (POST = intake submit) writes to sessions + advancements
+  + intake_drafts, touching schema from migrations 0001, 0008, 0009.
+- D1 throws "no such table/column" when the schema is behind the code —
+  a fresh deploy that landed before its migration runs (manual partial
+  deploy, hotfix bypassing `deploy.yml`).
+- The middleware catches the exception via `captureWorkerException` and
+  rethrows to Sentry; visitor sees a generic 500 with no schema hint
+  (Loi 25: no leaking infra detail).
 
-- The capacity endpoint and the sessions endpoints are the two that fail
-  loudest if the schema is behind. Now that `deploy.yml` runs migrations
-  automatically before each deploy, this should be rare — but a manually-
-  triggered partial deploy or a hotfix can still skip them.
+### Step-by-step (recovery)
+
+1. **Tail logs** while reproducing — the D1 error text gives the missing
+   column/table directly:
+   ```bash
+   npx wrangler pages deployment tail --project-name marc-portal
+   ```
+2. **Check applied migrations on prod:**
+   ```bash
+   npx wrangler d1 migrations list marc-portal-db --remote
+   ```
+   Anything in the local `functions/db/migrations/` folder that isn't
+   applied prod-side is the suspect.
+3. **Apply missing migrations** (idempotent — wrangler no-ops already
+   applied ones):
+   ```bash
+   npx wrangler d1 migrations apply marc-portal-db --remote
+   ```
+4. **Refresh** the home page. `/api/capacity` should return `{active,
+   triage, capacity}` again within ~5 sec.
+5. **If migrations all show applied** but the error persists — likely a
+   `database_id` mismatch in wrangler.toml. Cross-check with
+   `wrangler d1 list --remote`; the id in `[[d1_databases]]` must match
+   the actual DB Cloudflare created.
 
 ## 3. Every request 404s on a custom domain
 
-**Symptoms:** the entire site responds 404 on the buyer's domain.
+**Symptoms:** the entire site responds 404 on the buyer's domain
+(`example.com` shows `Not found.` while `marcportal.com` works fine).
 
-- `functions/_middleware.ts` resolves `Host` to a tenant via
-  `tenant_domains`. An unregistered host returns a terse 404 by design (no
-  tenant info leaked).
-- Fix:
+### What happens (system behavior)
 
-  ```bash
-  npx wrangler d1 execute marc-portal-db --remote \
-    --command "INSERT INTO tenant_domains (tenant_id, domain, is_primary, added_at) VALUES ('t_marc', 'example.com', 0, unixepoch())"
-  ```
+- Every Functions request hits `functions/_middleware.ts:resolveTenant()`.
+  The middleware reads the `Host` header (lowercased), does a SELECT
+  against `tenant_domains` joined to `tenants`.
+- A match attaches `ctx.data.tenant` and runs the downstream handler.
+- No match → terse 404 with body `Not found.` (`text/plain`). Deliberate:
+  no tenant info leaked, no "did you mean…" hints. Looks like the
+  domain isn't a website rather than "you're at the wrong site".
+- Static assets (`/assets/*`, `/og-image.png`, etc.) DO serve from
+  Pages even with no tenant match, because they're handled by Pages
+  before the Functions middleware runs. Symptom = pure 404 on `/`, not
+  a broken-asset page.
 
-  `added_at` is NOT NULL with no default — must be supplied. `is_primary=1`
-  if this is the canonical surface; `0` if it's a secondary domain pointing
-  at the same tenant. See `functions/db/migrations/0002_tenants.sql` for the
-  full schema.
+### Step-by-step (recovery)
+
+1. **Confirm DNS is pointing at us.** `dig example.com CNAME` should
+   resolve to `<project>.pages.dev`. If not, the buyer's DNS isn't
+   wired up — that's their fix, not a runbook issue.
+2. **Confirm the domain is attached to the Pages project.** CF
+   Dashboard → Pages → marc-portal → Custom domains. Should list
+   `example.com` with a green checkmark. If missing/red, attach via
+   the dashboard or:
+   ```bash
+   npx wrangler pages project domain add --project-name marc-portal example.com
+   ```
+3. **Add the tenant_domains row** (the actual mapping the middleware
+   reads):
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "INSERT INTO tenant_domains (tenant_id, domain, is_primary, added_at) VALUES ('t_marc', 'example.com', 0, unixepoch())"
+   ```
+   Field notes:
+   - `tenant_id` — usually `'t_marc'` for the operator's own buyers.
+     Other tenants would be `'t_<slug>'`.
+   - `is_primary = 1` if this is the canonical surface for that
+     tenant; `0` if it's a secondary alias pointing at the same
+     tenant. Multiple `is_primary=1` rows per tenant is a data bug —
+     the SELECT picks one arbitrarily.
+   - `added_at` is NOT NULL with no default; `unixepoch()` works.
+4. **Verify:** `curl -I https://example.com/` should return 200 within
+   ~5 sec (the middleware's query cache is short).
+5. **If still 404 after the row exists:** confirm with the SELECT below
+   that the row landed (case sensitivity matters):
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "SELECT domain, tenant_id, is_primary FROM tenant_domains WHERE domain = 'example.com'"
+   ```
+6. **If `tenant.status='frozen'`:** the middleware returns 503 `This
+   app is currently paused.` instead of 404. Flip back with
+   `UPDATE tenants SET status='active' WHERE id='t_<id>'`.
 
 ## 4. Build fails in CI with `npm ci` lockfile error
 
-**Symptoms:** GitHub Actions logs show a `@emnapi/*` mismatch.
+**Symptoms:** GitHub Actions logs show `npm error code E_MISSING_PEER` or
+explicit `@emnapi/core` / `@emnapi/runtime` "not found" lines during the
+`npm ci` step of check.yml / e2e.yml / deploy.yml.
 
-- This is the Windows-vs-Linux optionalDeps thing — npm prunes the wrong
-  set of native binaries when the lockfile is generated on Windows.
-- **Should rarely reach CI now** — the `.githooks/pre-push` hook runs
-  `scripts/check-lockfile.mjs` and blocks the push when the entries are
-  missing. Hook auto-installs via the `prepare` lifecycle on `npm install`.
-- Fix (when caught by the gate, or when bypassed via `--no-verify`):
+### What happens (system behavior)
 
-  ```bash
-  node scripts/fix-lockfile.mjs       # auto-fetches origin/main
-  git add package-lock.json
-  git commit -m "chore: restore @emnapi lockfile entries"
-  git push
-  ```
+- The lockfile is generated on Windows (Marc's laptop). npm 11.x
+  optionalDependencies for `@emnapi/core` + `@emnapi/runtime` (used by
+  Workers ai bindings) get pruned because Windows isn't a target
+  platform for them.
+- CI runs Linux → `npm ci` expects those entries to be present →
+  install fails before any test or build runs.
+- **The pre-push hook prevents this most of the time.**
+  `.githooks/pre-push` invokes `scripts/check-lockfile.mjs` which scans
+  `package-lock.json` for the required entries and blocks the push if
+  any are missing. Hook auto-installs via the `prepare` lifecycle.
+- It only reaches CI when the hook is bypassed (`git push --no-verify`)
+  or skipped (clone without `npm install` ever running locally).
 
-  `npm install --include=optional --package-lock-only` does NOT work — npm
-  11.x ignores the flag for cross-platform optional native deps. The script
-  is the only path that actually adds the entries.
+### Step-by-step (recovery)
+
+1. **Run the fix script locally.** It auto-fetches `origin/main` first
+   to ensure your lockfile is based on the latest:
+   ```bash
+   node scripts/fix-lockfile.mjs
+   ```
+2. **Commit + push the regenerated lockfile:**
+   ```bash
+   git add package-lock.json
+   git commit -m "chore: restore @emnapi lockfile entries"
+   git push
+   ```
+3. **Don't try `npm install --include=optional --package-lock-only`** —
+   npm 11.x silently ignores the flag for cross-platform optional native
+   deps. The script is the only path that actually injects the entries.
+4. **If CI is mid-fail RIGHT NOW** and the script's fix is already on
+   `origin/main` (race: lighthouse auto-commit landed between push and
+   CI run), it's safe to re-run the failing workflow without changes.
+5. **Permanent prevention:** never push with `--no-verify` unless the
+   lockfile fix is already on origin. The hook's whole point is to
+   catch this before it costs CI minutes.
 
 ## 5. Deploy succeeded but pages serve old code
 
-**Symptoms:** the build URL shows the new deploy, but visitors still see the
-previous version.
+**Symptoms:** the build URL (e.g. `<sha>.marc-portal.pages.dev`) shows the
+new deploy, but visitors on `marcportal.com` still see the previous
+version. JS bundle filenames in DevTools network tab don't match the
+hashes in the new deploy.
 
-- Cloudflare Pages caches aggressively. `_headers` correctly sets
-  `Cache-Control: public, max-age=31536000, immutable` for `/assets/*`
-  (content-hashed — fine).
-- Check that `index.html` is not cached. If stale, purge cache from the CF
-  dashboard.
-- Roll back: CF Pages "Deployments" tab → "Rollback" on the prior good
-  deployment. (D1 schema is forward-only; old code against new schema is
-  usually fine.)
+### What happens (system behavior)
+
+- Cloudflare Pages serves assets from edge caches. `public/_headers` sets
+  `Cache-Control: public, max-age=31536000, immutable` for `/assets/*` —
+  intentional, because each asset filename is content-hashed by Vite so
+  the URL itself changes on every code change.
+- `index.html` should NOT be cached aggressively — it carries the
+  `<script>` tags pointing at the current asset hashes. Cached
+  `index.html` = the visitor's browser loads old script references and
+  the new bundle never reaches them.
+- Pages' default for HTML is short cache (few minutes), but `_headers`
+  rules + intermediate caches (the visitor's ISP, browser disk cache)
+  can extend that window.
+
+### Step-by-step (recovery)
+
+1. **Confirm the deploy actually swapped the production alias.** CF
+   Pages → marc-portal → Deployments — the top entry should be tagged
+   "Production". If "Preview", manually promote via the "..." menu.
+2. **Purge the cache** for the affected URLs only (not everything —
+   that incurs cold-cache cost across all visitors):
+   - CF dashboard → marc-portal → Caching → Purge Cache → "Custom Purge".
+   - Enter the URLs (e.g. `https://marcportal.com/`,
+     `https://marcportal.com/en`, `https://marcportal.com/index.html`).
+3. **Have the visitor hard-reload** (Ctrl+Shift+R on Win/Linux, Cmd+
+   Shift+R on Mac) — bypasses their browser disk cache.
+4. **If still stale** after purge + hard reload: check
+   `public/_headers` for an overly-broad cache rule on `*.html`. The
+   default should be no rule (Pages picks short-cache).
+5. **Rollback path** (if the new deploy is actually broken, not just
+   cached):
+   - CF Pages → Deployments tab → the prior good entry → "..." →
+     "Rollback to this deployment".
+   - Schema is forward-only (D1 migrations don't rollback), but old
+     code against new schema is usually fine — most of our migrations
+     are additive columns the old code ignores.
 
 ## 6. Cookie forgery suspected
 
-**Symptoms:** odd account-takeover reports; admin-only endpoint returning
-`200` to the wrong user.
+**Symptoms:** account-takeover reports from a visitor; an admin-only
+endpoint returning 200 to a non-admin email in logs; unexplained
+`mp_session` cookies in Sentry breadcrumbs that don't match any account.
 
-- Confirm `SESSION_SECRET` is set in CF Pages env and ≥ 32 chars. The boot
-  guard in `functions/_lib/auth.ts` throws if it isn't, but a partial
-  rollback or a deleted env var could trip it.
-- Rotating: change `SESSION_SECRET`, redeploy. Every active session gets
-  invalidated — visitors re-sign-in via magic link. Acceptable blast radius.
+### What happens (system behavior)
+
+- `functions/_lib/auth.ts:signSessionCookie` HMAC-SHA256-signs a JSON
+  payload `{e: email, x: expSeconds}` with `SESSION_SECRET`.
+- `verifySessionCookie` rejects any cookie whose HMAC doesn't match OR
+  whose `x` is in the past. Without a valid `SESSION_SECRET`, the
+  guard in `requireSessionSecret` throws
+  `SessionSecretMisconfiguredError` — handlers that try to verify a
+  cookie return 401, no forgery possible.
+- The 32-char minimum is the *floor*, not the recommended length. A
+  shorter secret = guessable HMAC = forgeable cookies. Production uses
+  64 hex chars (`openssl rand -hex 32`).
+- A compromised secret is the worst-case scenario: every existing
+  cookie is forgeable until rotated.
+
+### Step-by-step (recovery)
+
+1. **Confirm the secret is set + long enough:**
+   ```bash
+   npx wrangler pages secret list --project-name marc-portal
+   ```
+   Look for `SESSION_SECRET` in the output. The CLI doesn't reveal the
+   value (correct — it's a secret), but it lists whether it's present.
+2. **Treat the absence of `SESSION_SECRET` as production-down.** The
+   guard would throw on every auth-touching request; symptom is 500s
+   not 200s. So if the symptom is "wrong user got in", the secret
+   exists — focus on the value.
+3. **Rotate the secret immediately** if forgery is plausible:
+   ```bash
+   # Generate a fresh 64-char hex secret
+   openssl rand -hex 32 | tee /tmp/new-session-secret
+   # Push it to prod
+   cat /tmp/new-session-secret | npx wrangler pages secret put SESSION_SECRET --project-name marc-portal
+   # Wipe the local copy
+   rm /tmp/new-session-secret
+   ```
+4. **Blast radius:** every active session is immediately invalidated.
+   Visitors next request → 401 → SPA redirects to `/login` → magic-link
+   flow. ~5-min disruption for active visitors, no data lost.
+5. **Audit the incident:** Sentry for any `currentEmail()` returning a
+   surprising value, D1 `session_advancements` for unexpected
+   `actor_email` values. Document what you found at the bottom of this
+   file under "Incident log".
+6. **Don't reset to a shorter secret** to "test something". The boot
+   guard refuses anything under 32 chars and 500s every request. If you
+   need to flip into maintenance mode, do that via the tenants table
+   (`status='frozen'`), not by tampering with the secret.
 
 ## 7. Triage piling up
 
@@ -310,12 +472,63 @@ plan.
 
 ## 8. Health check failing
 
-**Symptoms:** `curl /api/health` returns 500.
+**Symptoms:** `curl https://marcportal.com/api/health` returns 500, OR
+the cron-job.org monitor fires its "marc-portal /api/health failing"
+email to Marc.
 
-- `db: 'fail'` means the D1 binding is unreachable. CF status page first.
-- If CF is fine, suspect a wrangler.toml binding mismatch — the
-  `database_id` may not match the actual database. Run `wrangler d1 list
-  --remote` to confirm.
+### What happens (system behavior)
+
+- `/api/health` runs a one-row probe (`SELECT 1 FROM sqlite_master
+  LIMIT 1`) against D1. Returns `200 {ok:true, db:'ok', ts}` on
+  success, `500 {ok:false, db:'fail', ts}` on D1 error.
+- The cron-job.org monitor fires every 5 min. "Treat as failed" is
+  configured to either HTTP ≥ 400 OR body missing `"ok":true`.
+- This means the monitor catches both "D1 is down" and "the response
+  body is malformed" (which would happen on a code regression to the
+  endpoint itself).
+
+### Monitor email preview
+
+- **Subject:** `Cronjob "marc-portal /api/health" failed`
+- **From:** `cron-job.org <reports@cron-job.org>`
+- **Body skeleton:**
+  > Hello,
+  >
+  > the cronjob "marc-portal /api/health" failed:
+  > URL: https://marcportal.com/api/health
+  > Time: <UTC timestamp>
+  > HTTP status: 500
+  > Response body: `{"ok":false,"db":"fail","ts":...}`
+  >
+  > Regards, your cron-job.org team
+
+### Step-by-step (recovery)
+
+1. **Check Cloudflare status first** — `https://www.cloudflarestatus.com/`.
+   Workers / D1 incidents propagate to our health endpoint within
+   seconds.
+2. **Manually probe the endpoint:**
+   ```bash
+   curl -s https://marcportal.com/api/health | jq
+   ```
+   - `db:'ok'` — false alarm from the monitor (network blip). No action.
+   - `db:'fail'` — D1 binding is unreachable.
+3. **If `db:'fail'`** and Cloudflare isn't in incident:
+   - Check `wrangler d1 list --remote` — confirm `marc-portal-db`
+     exists with the same `database_id` as in `wrangler.toml`'s
+     `[[d1_databases]]` block.
+   - Mismatch = the binding points at a database that doesn't exist.
+     Fix in `wrangler.toml`, commit, deploy.
+4. **Tail logs while probing** to see the raw D1 error text:
+   ```bash
+   npx wrangler pages deployment tail --project-name marc-portal
+   ```
+5. **If the response body is malformed** (not JSON, or missing the
+   `ok` field): a code regression. Roll back via section #5's rollback
+   path until a fix lands.
+6. **Mute the monitor** *only* if you're actively investigating —
+   leaving it muted longer than the investigation = the next outage is
+   silent.
 
 ## 9. Stripe — payment / webhook failures
 
