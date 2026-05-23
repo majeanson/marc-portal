@@ -67,11 +67,19 @@ export async function settle(page: Page): Promise<void> {
   // Phase 3 — wait for the document height to stop changing. Resolves once
   // it is unchanged for STABLE_FRAMES consecutive frames; bails after
   // DEADLINE_MS so a never-settling page can't hang the suite.
+  //
+  // STABLE_FRAMES + DEADLINE_MS were tuned up from 15/6000 after a recurring
+  // ±14-140px flake on the home page (project memory:
+  // `project_e2e_home_screenshot_flake.md`). Some late lazy reveals weren't
+  // converging inside 6s on a loaded CI runner, so the deadline was being
+  // hit instead of the stability gate, and the capture landed mid-layout.
+  // 60 frames at 60Hz ≈ 1s of held-steady, 15s deadline gives the home
+  // page's slowest section room to land.
   await page.evaluate(
     () =>
       new Promise<void>((resolve) => {
-        const STABLE_FRAMES = 15
-        const DEADLINE_MS = 6000
+        const STABLE_FRAMES = 60
+        const DEADLINE_MS = 15000
         const started = performance.now()
         let last = -1
         let stable = 0
