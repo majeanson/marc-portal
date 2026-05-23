@@ -7990,20 +7990,6 @@ button.intake__progress-step:disabled {
     0 1px 0 rgba(31, 29, 24, 0.04),
     0 8px 22px -10px rgba(44, 82, 57, 0.25);
 }
-.home .hero__cta::after {
-  content: '';
-  display: inline-block;
-  width: 0;
-  height: 1px;
-  background: currentColor;
-  transition: width 0.25s ease;
-  margin-left: 2px;
-  align-self: center;
-}
-.home .hero__cta:hover::after {
-  width: 14px;
-}
-
 /* ── HowItWorks — editorial steps ─────────────────────────────────────────── */
 .home .steps--editorial {
   list-style: none;
@@ -11658,15 +11644,21 @@ button.intake__progress-step:disabled {
   line-height: 1.55;
 }
 
-/* CrossFeatureLink — inline link to a page in a different feature cluster.
+/* CrossFeatureLink — link to a page in a different feature cluster.
    The wrapper carries data-feature so the leading dot + the anchor both
    adopt the destination feature's hue. Used in Pricing (→ /handoff) and
-   About (→ /handoff). */
+   About (→ /handoff). Always sits on its own line below the prose that
+   introduces it — the dot+arrow act as a small "exit" marker, not an
+   inline citation, so wrapping next to body text reads as a typo. */
 .cross-feature-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+}
+.cross-feature-link::before {
+  content: '\A';
+  white-space: pre;
 }
 .cross-feature-link__dot {
   vertical-align: 0.05em;

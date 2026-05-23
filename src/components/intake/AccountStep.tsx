@@ -29,6 +29,10 @@ export function AccountStep({
   const loginHref = lang === 'en' ? '/en/login' : '/login'
 
   if (signedInAs && !useOther) {
+    // Signed-in: the email already identifies the visitor and the name is
+    // optional + editable later in the summary step (IntakeSummary's
+    // EditableText). Asking again here is friction with no payoff — every
+    // submission already lands tied to the account.
     return (
       <div className="intake__step intake__step--signed-in">
         <SectionEyebrow lang={lang} feature="intake">
@@ -46,23 +50,11 @@ export function AccountStep({
 
         <p>{t.signedInAsBody}</p>
 
-        <label className="field">
-          <span className="field__label">{t.nameLabel}</span>
-          <input
-            type="text"
-            autoComplete="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t.namePlaceholder}
-            className="field__input"
-          />
-        </label>
-
         <div className="intake__signed-in-actions">
           <button
             type="button"
             className="hero__cta"
-            onClick={() => onContinue({ email: signedInAs, name: name || undefined })}
+            onClick={() => onContinue({ email: signedInAs, name: initial.name || undefined })}
           >
             {t.signedInAsCta}
           </button>

@@ -91,7 +91,7 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
     })
     const res = await onRequest(ctx)
     const body = await res.text()
-    expect(body).toContain('content="/og-image-en.png"')
+    expect(body).toContain('content="https://x.test/og-image-en.png"')
     expect(body).toContain('content="en_CA"')
   })
 
@@ -102,7 +102,7 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
     })
     const res = await onRequest(ctx)
     const body = await res.text()
-    expect(body).toContain('content="/og/share/abcdef1234"')
+    expect(body).toContain('content="https://x.test/og/share/abcdef1234"')
   })
 
   it('appends per-page hreflang link tags into <head>', async () => {

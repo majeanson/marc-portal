@@ -252,16 +252,19 @@ function rewriteOgTags(response: Response, url: URL): Response {
   // disambiguate cache entries by this field; without a per-route value every
   // share collides on the home URL.
   const ogUrl = `${url.origin}${path}`
+  // og:image MUST be absolute — iMessage/Discord/Slack/Facebook silently drop
+  // relative paths instead of resolving them against og:url.
+  const ogImageAbs = `${url.origin}${ogImage}`
 
   const rewriter = new HTMLRewriter()
     .on('meta[property="og:image"]', {
       element(el) {
-        el.setAttribute('content', ogImage)
+        el.setAttribute('content', ogImageAbs)
       },
     })
     .on('meta[name="twitter:image"]', {
       element(el) {
-        el.setAttribute('content', ogImage)
+        el.setAttribute('content', ogImageAbs)
       },
     })
     .on('meta[property="og:locale"]', {

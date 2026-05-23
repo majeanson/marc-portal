@@ -287,7 +287,7 @@ const FR = {
         name: 'Niveau 1',
         price: '750 $',
         scope:
-          'Un truc qui marche, hébergé et mis en ligne. Pas une démo que tu dois garder en vie toi-même. Un livrable précis : un formulaire, un script, une automatisation, une page. Sans compte, sans multi-utilisateur. Payé en un seul versement de 750 $ au démarrage.',
+          'Un truc qui marche, hébergé et mis en ligne. Pas une démo que tu dois garder en vie toi-même. Un livrable précis : un formulaire, un script, une automatisation, une page. Sans compte, sans multi-utilisateur. Payé en un seul versement au démarrage.',
         example: 'Ex. un formulaire web qui rentre direct dans ton chiffrier, sans rien retaper.',
         after: 'un seul paiement',
       },
@@ -305,7 +305,7 @@ const FR = {
         name: 'Niveau 3',
         price: '3 600 $',
         scope:
-          'Un outil qui dure. Vrai modèle de données, une connexion, plusieurs utilisateurs. Payé en 2 ou 3 versements, fixés avant qu’on commence : soit 1 800 $ + 1 800 $, soit trois versements plus petits étalés sur le projet.',
+          'Un outil qui dure. Vrai modèle de données, une connexion, plusieurs utilisateurs. Payé en 2 ou 3 versements, fixés avant qu’on commence.',
         example:
           'Ex. un outil de réservation et de suivi clients pour ton studio : trois employés se connectent, chacun voit sa journée.',
         after: '2 ou 3 paiements',
@@ -1301,7 +1301,7 @@ const EN: Copy = {
         name: 'Tier 1',
         price: '$750',
         scope:
-          'A working thing, hosted and handed over running. Not a demo you have to keep alive yourself. One clear deliverable: a form, a script, an automation, a one-pager. No login, no multi-user. Paid as a single $750 payment at the start.',
+          'A working thing, hosted and handed over running. Not a demo you have to keep alive yourself. One clear deliverable: a form, a script, an automation, a one-pager. No login, no multi-user. Paid as a single payment at the start.',
         example: 'e.g. a web form that drops straight into your spreadsheet, no retyping.',
         after: 'one payment',
       },
@@ -1318,7 +1318,7 @@ const EN: Copy = {
         name: 'Tier 3',
         price: '$3,600',
         scope:
-          'A tool that lasts. A real data model, a login, multiple users. Paid in 2 or 3 payments, fixed before we start: either $1,800 + $1,800, or three smaller payments spread across the build.',
+          'A tool that lasts. A real data model, a login, multiple users. Paid in 2 or 3 payments, fixed before we start.',
         example:
           'e.g. a booking and client-tracking tool for your studio: three staff log in, each sees their own day.',
         after: '2 or 3 payments',
