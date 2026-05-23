@@ -158,6 +158,12 @@ export const PAGE_FEATURE: Partial<Record<string, FeatureId>> = {
   'page.meta': 'meta',
   'page.atelier': 'meta',
   'page.map-page': 'meta',
+  // "Ton passage" arc — three meta-tinted pages that surface the visitor's
+  // own data trail. Receipt (per-visit), dossier (per-account contrast vs
+  // common SaaS), au-revoir (the erasure ritual after DELETE /api/me).
+  'page.passage': 'meta',
+  'page.dossier': 'meta',
+  'page.au-revoir': 'meta',
 }
 
 /** Parse a `group.feat-X` id and return its FeatureId, or null if the id
@@ -209,21 +215,29 @@ export const FEATURE_PRIMARY_PAGE: Record<ProductFeatureId, Bi> = {
 }
 
 /* -------------------------------------------------------------------------
- * Backstage (meta) page loop. The five `meta` pages aren't on the product
- * arc, but they shouldn't be dead ends either. They form their own small
- * loop — site map → under the hood → the workshop → privacy → PIA → back to
- * the map — so the page-outro "where next" pointer works for backstage
- * pages too.
+ * Backstage (meta) page loop. The meta pages aren't on the product arc, but
+ * they shouldn't be dead ends either. They form their own loop so the
+ * page-outro "where next" pointer works for backstage pages too.
+ *
+ * Order: site map → under the hood → the workshop → your visit (passage) →
+ * the ledger (dossier) → privacy → PIA → the goodbye (au-revoir) → back to
+ * the map. The "ton passage" trio is woven in between the explanatory
+ * backstage pages and the legal ones — passage is the felt receipt, dossier
+ * the comparator ledger, and au-revoir sits last as the erasure ritual that
+ * closes the loop.
  * ------------------------------------------------------------------------- */
 
-/** Next backstage page in the loop, keyed by page-node id. A single
- *  5-cycle over the meta pages; guarded in features.test.ts. */
+/** Next backstage page in the loop, keyed by page-node id. A single closed
+ *  cycle over every meta page; guarded in features.test.ts. */
 export const META_PAGE_NEXT: Record<string, string> = {
   'page.map-page': 'page.meta',
   'page.meta': 'page.atelier',
-  'page.atelier': 'page.privacy',
+  'page.atelier': 'page.passage',
+  'page.passage': 'page.dossier',
+  'page.dossier': 'page.privacy',
   'page.privacy': 'page.pia',
-  'page.pia': 'page.map-page',
+  'page.pia': 'page.au-revoir',
+  'page.au-revoir': 'page.map-page',
 }
 
 /** Route + short label for each backstage page — what the page-outro
@@ -242,6 +256,14 @@ export const META_PAGE_LINK: Record<string, { label: Bi; path: Bi }> = {
     label: { fr: 'L’atelier', en: 'The workshop' },
     path: { fr: '/atelier', en: '/en/atelier' },
   },
+  'page.passage': {
+    label: { fr: 'Ton passage', en: 'Your visit' },
+    path: { fr: '/passage', en: '/en/passage' },
+  },
+  'page.dossier': {
+    label: { fr: 'Le carnet', en: 'The ledger' },
+    path: { fr: '/me/dossier', en: '/en/me/dossier' },
+  },
   'page.privacy': {
     label: { fr: 'Vie privée', en: 'Privacy' },
     path: { fr: '/confidentialite', en: '/en/privacy' },
@@ -249,6 +271,10 @@ export const META_PAGE_LINK: Record<string, { label: Bi; path: Bi }> = {
   'page.pia': {
     label: { fr: 'Protection des données', en: 'Data protection' },
     path: { fr: '/pia', en: '/en/pia' },
+  },
+  'page.au-revoir': {
+    label: { fr: 'Au revoir', en: 'Goodbye' },
+    path: { fr: '/au-revoir', en: '/en/goodbye' },
   },
 }
 

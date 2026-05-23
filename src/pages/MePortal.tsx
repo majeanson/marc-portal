@@ -14,6 +14,7 @@ import {
   type SessionStatus,
 } from '../lib/sessionsApi'
 import { clearDraft, loadDraftWithTTL } from '../lib/draft'
+import { markJustErased } from '../lib/erasureFlag'
 import { PENDING_INTAKE_KEY, type PendingIntake } from './Intake'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDate, formatRelativeWindow } from '../lib/format'
@@ -293,9 +294,13 @@ export function MePortal({ lang }: { lang: Lang }) {
     setDeleteState('deleting')
     try {
       await deleteMyAccount()
-      // Cookie is cleared server-side; navigate home and force a reload so the
-      // auth context starts cold.
-      window.location.href = lang === 'fr' ? '/' : '/en'
+      // Cookie is cleared server-side. Drop the just-erased flag, then
+      // route to the /au-revoir ritual; that page reads the flag, plays
+      // the fade-to-paper animation, and clears the flag. A full-window
+      // navigation (not router push) makes sure the auth context starts
+      // cold on the closing page.
+      markJustErased()
+      window.location.href = lang === 'fr' ? '/au-revoir' : '/en/goodbye'
     } catch {
       setDeleteState('error')
     }

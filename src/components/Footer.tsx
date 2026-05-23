@@ -111,6 +111,8 @@ export function Footer({ lang }: { lang: Lang }) {
   const vouchesLabel = lang === 'fr' ? 'Témoignages' : 'Vouches'
   const mapHref = lang === 'fr' ? '/carte' : '/en/map'
   const mapLabel = lang === 'fr' ? 'Carte du site' : 'Site map'
+  const passageHref = lang === 'fr' ? '/passage' : '/en/passage'
+  const passageLabel = lang === 'fr' ? 'Ton passage' : 'Your visit'
   const intakeHref = lang === 'fr' ? '/intake' : '/en/intake'
   return (
     <footer className="site-footer">
@@ -159,6 +161,13 @@ export function Footer({ lang }: { lang: Lang }) {
           <span className="site-footer__page">
             <FeatureDot feature={PAGE_FEATURE['page.map-page']} lang={lang} />
             <a href={mapHref}>{mapLabel}</a>
+          </span>
+          {/* "Ton passage" — the felt counterpart to the privacy/PIA legal
+              copy. Always available; lets a visitor walk away with a paper
+              receipt of what their tab knew about the visit. */}
+          <span className="site-footer__page">
+            <FeatureDot feature={PAGE_FEATURE['page.passage']} lang={lang} />
+            <a href={passageHref}>{passageLabel}</a>
           </span>
         </p>
         <p className="site-footer__line site-footer__line--meta">

@@ -95,6 +95,8 @@ export const PAGE_FOLIOS = {
   pia: '09',
   map: '10',
   atelier: '11',
+  passage: '12',
+  dossier: '13',
 } as const
 
 export type PageFolioKey = keyof typeof PAGE_FOLIOS

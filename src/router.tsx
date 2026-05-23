@@ -3,14 +3,16 @@
 // the standard react-router setup pattern, and HMR isn't useful for the
 // router config anyway (it'd recreate the router and lose route state).
 /* eslint-disable react-refresh/only-export-components */
-import { Suspense, lazy, type ReactNode } from 'react'
+import { Suspense, lazy, useEffect, type ReactNode } from 'react'
 import {
   Navigate,
   Outlet,
   Route,
   createBrowserRouter,
   createRoutesFromElements,
+  useLocation,
 } from 'react-router-dom'
+import { trackVisit } from './lib/visitTracker'
 
 // Hot-path pages — keep eager so the home/intake/login critical path stays
 // fast and FCP-friendly.
@@ -66,6 +68,9 @@ const MyData = lazy(() => import('./pages/MyData').then((m) => ({ default: m.MyD
 const AdminVouches = lazy(() =>
   import('./pages/AdminVouches').then((m) => ({ default: m.AdminVouches })),
 )
+const Passage = lazy(() => import('./pages/Passage').then((m) => ({ default: m.Passage })))
+const Dossier = lazy(() => import('./pages/Dossier').then((m) => ({ default: m.Dossier })))
+const AuRevoir = lazy(() => import('./pages/AuRevoir').then((m) => ({ default: m.AuRevoir })))
 
 // Minimal skeleton shown while a lazy() chunk is in flight. Visually quiet,
 // avoids the "is this broken?" feel of an empty aria-busy main. Header is
@@ -89,7 +94,17 @@ function L({ children }: { children: ReactNode }) {
 // Root layout — hosts the lazy <Outlet/> under a single Suspense boundary.
 // Providers live above the <RouterProvider> (see main.tsx) so useAuth /
 // useTenant work in every route component.
+//
+// Also the single hook into the visit tracker: every SPA navigation lands
+// here, so logging the pathname here is enough to drive the /passage
+// receipt without a per-page useEffect. Hash-only and search-only changes
+// reuse the same path key, which is the right semantics (a receipt of
+// "pages walked through", not "URLs typed").
 function RootLayout() {
+  const loc = useLocation()
+  useEffect(() => {
+    trackVisit(loc.pathname)
+  }, [loc.pathname])
   return (
     <Suspense fallback={<RouteFallback />}>
       <Outlet />
@@ -289,6 +304,54 @@ export const router = createBrowserRouter(
         element={
           <L>
             <MyData lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/me/dossier"
+        element={
+          <L>
+            <Dossier lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/me/dossier"
+        element={
+          <L>
+            <Dossier lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/passage"
+        element={
+          <L>
+            <Passage lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/passage"
+        element={
+          <L>
+            <Passage lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/au-revoir"
+        element={
+          <L>
+            <AuRevoir lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/goodbye"
+        element={
+          <L>
+            <AuRevoir lang="en" />
           </L>
         }
       />

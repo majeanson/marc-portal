@@ -225,6 +225,48 @@
       "inAdminShell": false
     },
     {
+      "path": "/me/dossier",
+      "component": "Dossier",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/me/dossier",
+      "component": "Dossier",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/passage",
+      "component": "Passage",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/passage",
+      "component": "Passage",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/au-revoir",
+      "component": "AuRevoir",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/goodbye",
+      "component": "AuRevoir",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
       "path": "/session/:id",
       "component": "SessionPage",
       "lang": "fr",
@@ -453,6 +495,15 @@
       ],
       "adminOnly": true,
       "file": "functions/api/admin/digest.ts"
+    },
+    {
+      "id": "api.admin.test-emails",
+      "path": "/api/admin/test-emails",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": true,
+      "file": "functions/api/admin/test-emails.ts"
     },
     {
       "id": "api.admin.vouches",
