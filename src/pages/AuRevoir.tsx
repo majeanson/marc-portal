@@ -34,17 +34,35 @@ import { consumeJustErasedFlag } from '../lib/erasureFlag'
 import { clearVisits } from '../lib/visitTracker'
 
 /**
- * Resolve the just-erased branch once, during the initial render, via a
- * lazy useState initializer. This is the recommended escape hatch for
- * "read external state once at mount" without tripping the
- * react-hooks/set-state-in-effect rule (useEffect → setState would loop
- * the linter). The initializer also intentionally consumes (clears) the
- * flag, so a soft re-mount from React StrictMode doesn't replay the
- * ritual — the second pass reads `null` and falls into the direct-hit
- * branch, which is the safer of the two behaviours.
+ * Resolve the just-erased branch once per mount.
+ *
+ * React Concurrent Mode + StrictMode both re-invoke the useState lazy
+ * initializer multiple times during a single mount cycle. A side-
+ * effecting initializer that *consumes* sessionStorage would therefore
+ * read '1' on the first call and `null` on the second, settling on
+ * `false` every time. This was the original bug — the ritual silently
+ * never fired, in dev or prod.
+ *
+ * The fix: a module-level "claim slot" that caches the read result
+ * for the duration of one mount, so the SECOND initializer call
+ * returns the same value as the first instead of re-reading an empty
+ * sessionStorage. The slot is reset in useEffect cleanup so a fresh
+ * mount (navigate away and back) gets to claim again.
  */
-function initialErased(): boolean {
-  return consumeJustErasedFlag()
+let claimSlotInUse = false
+let claimSlotValue = false
+
+function claimErasureFlag(): boolean {
+  if (!claimSlotInUse) {
+    claimSlotInUse = true
+    claimSlotValue = consumeJustErasedFlag()
+  }
+  return claimSlotValue
+}
+
+function releaseClaimSlot(): void {
+  claimSlotInUse = false
+  claimSlotValue = false
 }
 
 const COPY = {
@@ -88,10 +106,12 @@ export function AuRevoir({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const homeHref = lang === 'fr' ? '/' : '/en'
 
-  // Lazy initializer reads + clears the flag once, during the very first
-  // render. No null/booting branch needed — we know which copy to render
-  // before we paint.
-  const [justErased] = useState<boolean>(initialErased)
+  // useState's lazy initializer is called multiple times by React in
+  // dev (StrictMode) AND prod (Concurrent Mode reveal). claimErasureFlag
+  // caches the first result so all subsequent calls return the same
+  // value within one mount. See the comment block above for the why.
+  const [justErased] = useState<boolean>(claimErasureFlag)
+  useEffect(() => releaseClaimSlot, [])
 
   useEffect(() => {
     document.title = t.pageTitle
