@@ -282,10 +282,13 @@ describe('home section ordering', () => {
 })
 
 /**
- * Backstage page loop. The four `meta` pages form their own closed cycle so
+ * Backstage page loop. The explanatory meta pages form a closed cycle so
  * the page-outro pointer (FeatureContinue) never dead-ends on a backstage
- * page. META_PAGE_NEXT must cover exactly the meta pages and META_PAGE_LINK
- * must give every one of them a bilingual label + route.
+ * page. Not every meta-tinted page is on the loop — pages with their own
+ * exits (the "ton passage" trio, auth-gated /me/ surfaces, terminal pages)
+ * opt out by simply not appearing in META_PAGE_NEXT. The invariants here
+ * are: every loop key is a real meta page, every loop key has a bilingual
+ * label + route, and the keys form one closed cycle.
  */
 describe('backstage page loop', () => {
   /** The meta page-ids, derived from PAGE_FEATURE — the source of truth. */
@@ -293,8 +296,11 @@ describe('backstage page loop', () => {
     .filter(([, f]) => f === 'meta')
     .map(([id]) => id)
 
-  it('META_PAGE_NEXT covers exactly the meta pages', () => {
-    expect(new Set(Object.keys(META_PAGE_NEXT))).toEqual(new Set(metaPages))
+  it('every META_PAGE_NEXT key is a real meta-feature page', () => {
+    const meta = new Set(metaPages)
+    for (const id of Object.keys(META_PAGE_NEXT)) {
+      expect(meta.has(id), `${id} is in META_PAGE_NEXT but not a meta page`).toBe(true)
+    }
   })
 
   it('META_PAGE_NEXT is one closed cycle through every meta page', () => {
@@ -315,8 +321,8 @@ describe('backstage page loop', () => {
     }
   })
 
-  it('every meta page has a bilingual META_PAGE_LINK label and route', () => {
-    for (const id of metaPages) {
+  it('every loop page has a bilingual META_PAGE_LINK label and route', () => {
+    for (const id of Object.keys(META_PAGE_NEXT)) {
       const link = META_PAGE_LINK[id]
       expect(link, `${id} missing from META_PAGE_LINK`).toBeDefined()
       expect(link?.label.fr && link?.label.en, `${id} link label missing fr/en`).toBeTruthy()
