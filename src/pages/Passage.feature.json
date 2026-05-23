@@ -78,7 +78,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author — co-located doc for the just-shipped ton-passage receipt page."
+      "reason": "Initial author — co-located doc for the just-shipped ton-passage receipt page.",
+      "commit": "dc260e8",
+      "buildUrl": "https://cbc204a0.marc-portal.pages.dev"
     }
   ],
   "annotations": []

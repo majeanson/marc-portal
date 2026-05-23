@@ -7,7 +7,14 @@
   "componentFile": "src/pages/AuRevoir.tsx",
   "liveUrl": "/au-revoir",
   "problem": "DELETE /api/me is a structurally honest action — the row goes, the attachments go, the magic-link tokens go — but it lands the visitor on /me a half-second later with the dashboard half-disappeared and no acknowledgement that anything happened. The act needs a closing frame: a quiet page that says 'it is done' and dissolves the categories of data that just left. /au-revoir is that closing frame. It runs only when arrived-at via the erasure flow; a direct visit shows a shorter 'you're already gone' branch instead so the URL isn't a dead end.",
-  "tags": ["transparency", "loi-25", "post-erasure", "reduced-motion", "ritual", "felt-version"],
+  "tags": [
+    "transparency",
+    "loi-25",
+    "post-erasure",
+    "reduced-motion",
+    "ritual",
+    "felt-version"
+  ],
   "analysis": "The page has two branches separated by a one-shot sessionStorage flag (mp_just_erased). The /me dashboard sets the flag immediately before navigating to /au-revoir after a successful DELETE; this page reads + clears the flag at mount. Branch A (flag present) renders six category labels (email, sessions, messages, attachments, drafts, preferences) that fade from ink to paper over ~3 seconds, staggered per item, then settles on a quiet 'c'est fait' / 'you are no longer in the ledger' line. Branch B (flag absent) renders the direct-visit copy ('your account is already gone, or you never had one') with a home link — no animation, no tokens. Reduced-motion users get Branch A's tokens rendered at zero opacity from frame zero so the title still stands alone; the emotional weight stays intact without the flicker. The ritual branch also clears the in-tab visit log via clearVisits() in a useEffect — a freshly-erased visitor shouldn't carry a /passage trail from before the deletion. No FeatureContinue: a 'keep browsing the backstage tour' pointer would defeat the entire framing of the page.",
   "implementation": "src/pages/AuRevoir.tsx — branch decided once per mount via consumeJustErasedFlag() in src/lib/erasureFlag.ts (which atomically reads + removes the sessionStorage entry). The naïve approach — useState(consumeJustErasedFlag) — is broken: React Concurrent Mode (prod) AND StrictMode (dev) both re-invoke the lazy initializer during the same mount cycle, so the first call consumes the flag and the second reads null, settling state on false every time. Fix: a module-level claim slot (claimSlotInUse + claimSlotValue) caches the first read so subsequent initializer calls within the same mount return the same value. useEffect cleanup resets the slot so a fresh mount (navigate-away-and-back) can claim again. The token animation is CSS-only — six <li> elements, each with --token-delay set inline (0s, 0.18s, 0.36s, ...) — keyframes in styles.css drive opacity from 1 to 0 over ~1.4s starting at the delay. Reduced-motion guard handled by the same CSS via @media (prefers-reduced-motion: reduce). The ritual branch additionally fires clearVisits() in a useEffect so sessionStorage's mp_visits is wiped — a /passage receipt opened after au-revoir should be empty, not 'here are the pages the now-deleted visitor walked.' Direct branch has a simple back-home link; no FeatureContinue, no related-aside, intentionally.",
   "decisions": [
@@ -76,7 +83,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author — co-located doc for the just-shipped /au-revoir erasure ritual."
+      "reason": "Initial author — co-located doc for the just-shipped /au-revoir erasure ritual.",
+      "commit": "dc260e8",
+      "buildUrl": "https://cbc204a0.marc-portal.pages.dev"
     }
   ],
   "annotations": []

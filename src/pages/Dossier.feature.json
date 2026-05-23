@@ -7,7 +7,14 @@
   "componentFile": "src/pages/Dossier.tsx",
   "liveUrl": "/me/dossier",
   "problem": "Saying 'I keep almost nothing about you' is a claim nobody has to believe. Saying it next to a real, sourced enumeration of what Meta/Facebook collects on the same axes makes the gap visible and verifiable. The page is auth-gated because it's framed as the visitor's own ledger — anonymous browsers see a sign-in invitation, not the comparator. Drawing the contrast against Meta's documented practices (citing Meta's own data policy, help centre, off-Facebook activity, and pixel pages) turns the receipt-version page (/passage) into a felt 'so what'.",
-  "tags": ["transparency", "loi-25", "auth-gated", "comparator", "anti-ai-tells", "felt-version"],
+  "tags": [
+    "transparency",
+    "loi-25",
+    "auth-gated",
+    "comparator",
+    "anti-ai-tells",
+    "felt-version"
+  ],
   "analysis": "Three transparency surfaces, each addressing a different question: /confidentialite (legal disclosure — 'what could you collect?'), /passage (receipt — 'what does THIS tab carry right now?'), /me/dossier (ledger — 'how does what you keep compare to a mainstream service?'). The ledger is the most opinionated of the three: it doesn't just enumerate what's kept, it juxtaposes that row-for-row against Meta's documented collection on the same category. Each row carries a public source URL (Meta data policy, help centre, off-Facebook activity, pixel docs) so the reader isn't asked to take Marc's word for the comparator side. The 'you are here' pointer on the collection axis is pinned at the leftmost notch — it's a state, not a slider. Keeping the comparator factually current is a recurring maintenance cost (~quarterly grep against the cited URLs); worth it because the moment the comparator goes stale, the page reads as a self-serving caricature.",
   "implementation": "src/pages/Dossier.tsx — auth-gated via useAuth(). Three render branches: loading (skeleton with aria-busy), unauthenticated (sign-in CTA pointing at /login), authenticated (the full ledger). Uses Header with variant='session' (dashboard chrome), PageMast for the folio + stamp, and a custom dossier-grid CSS layout that's row-major on desktop (category | mine | theirs) and column-stacked on mobile. ROWS is a hand-curated array of LedgerRow records — each row has bilingual category/mine/theirs strings and a single source URL+label pair. The collection-axis figure is a CSS-drawn horizontal scale with three notches and a fixed-position pointer; the 'you are here' arrow is an inline SVG path (no library). asOf date is hardcoded as a 'last reviewed' stamp; bumping it is part of the quarterly comparator-refresh ritual.",
   "decisions": [
@@ -71,7 +78,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author — co-located doc for the just-shipped /me/dossier auth-gated ledger."
+      "reason": "Initial author — co-located doc for the just-shipped /me/dossier auth-gated ledger.",
+      "commit": "dc260e8",
+      "buildUrl": "https://cbc204a0.marc-portal.pages.dev"
     }
   ],
   "annotations": []
