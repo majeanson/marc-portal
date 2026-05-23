@@ -63,7 +63,7 @@
       "reason": "Code-first verification — feature.json co-located at src/pages/Intake.feature.json. Re-checked the step flow, the server-side draft sync, and the magic-link submit path against the shipped code."
     }
   ],
-  "lastVerifiedDate": "2026-05-21",
+  "lastVerifiedDate": "2026-05-23",
   "revisions": [
     {
       "date": "2026-05-06",

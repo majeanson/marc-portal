@@ -55,7 +55,7 @@
       "reason": "Code-first verification — feature.json co-located at src/components/Pricing.feature.json. Confirmed the per-tier gallery links and the handoff note against the shipped component."
     }
   ],
-  "lastVerifiedDate": "2026-05-21",
+  "lastVerifiedDate": "2026-05-23",
   "revisions": [
     {
       "date": "2026-05-06",

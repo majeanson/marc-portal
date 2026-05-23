@@ -1,0 +1,78 @@
+{
+  "featureKey": "feat-2026-038",
+  "title": "Connexion — magic-link sign-in (no passwords)",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/auth",
+  "componentFile": "src/pages/Login.tsx",
+  "liveUrl": "/login",
+  "problem": "Passwords are a security AND UX liability for a low-frequency consulting portal — a visitor signs in maybe once a month, forgets the password every time, and now there's a password-reset surface to maintain, a credentials DB to leak, and the visitor's day is ruined. Magic-link sign-in skips all of that: the visitor enters an email, gets a one-time link, clicks it, lands signed-in. The portal never stores a password hash; the email account IS the credential. Resend handles delivery; the token lives in D1 with an expiry (30 min) and a single-use flag.",
+  "tags": ["auth", "magic-link", "passwordless", "rate-limited", "resend"],
+  "analysis": "Single email field, single submit button. On submit, POST /api/auth/request-link with the email. Server validates format, looks up or creates a magic_link_tokens row with a 30-min expiry + single-use flag, and queues a Resend email containing the verification URL (/login/verify?token=...). The client doesn't see the token — it goes only to the email — so submission redirects to /login/sent which shows the 'check your email' state. If the user is already signed in (useAuth().email is set), Login.tsx short-circuits to a 'you're already signed in' panel with a 'go to /me' link instead of showing the form again. ?reason=token-... query params show specific error copy for the four magic-link verification failure modes (missing, unknown, used, expired) — those come from /api/auth/verify redirecting back here on rejection. The page is rate-limited at the API layer (per-IP, in functions/_lib/ratelimit.ts) so the form can't be used to flood somebody's inbox.",
+  "implementation": "src/pages/Login.tsx — controlled input + form. submit() calls /api/auth/request-link via src/lib/api.ts (handles CSRF echo, JSON error parsing). On success → navigate('/login/sent?email=...'); on rate-limit → friendly 'try again in N seconds'; on validation error → inline error. useAuth() detects the already-signed-in case before render. ?reason param drives the error-copy lookup table. The page is feature-tinted as 'conversation' (PAGE_FEATURE['page.login']) — sign-in is the entry to the conversation feature. Server side: functions/api/auth/request-link.ts inserts the token, queues the email via Resend, and returns 200 even if the email isn't in the system (no enumeration). The corresponding /api/auth/verify.ts consumes the token, sets the mp_session cookie (HMAC-signed, see functions/_lib/auth.ts), and redirects to /me — or back to /login?reason=... on rejection.",
+  "decisions": [
+    {
+      "decision": "Magic-link instead of password",
+      "rationale": "The visitor's session is the email account anyway — owning the email means receiving the link. Adding a password layer doesn't add security (an attacker with email access bypasses it), only friction. For a portal where most visitors return once a month, the friction is high; for the consultant, eliminating the password DB removes a class of operational risk.",
+      "recommendation": "Don't add a 'set a password' option even as a power-user feature. The single-credential model (email + magic link) is structurally simpler; adding a second credential creates the same security analysis as before.",
+      "date": "2026-05-08"
+    },
+    {
+      "decision": "Always respond 200 on request-link, even for unknown emails",
+      "rationale": "If the API said '404, no such account' for unknown emails, the form becomes a public account-enumeration tool. Returning a uniform 200 + 'check your email' regardless means an attacker can't tell whether an email is registered. The cost is a slightly confusing UX for someone who mistyped their email (they'll wait for a link that never arrives) — RUNBOOK §Email covers the deliverability triage.",
+      "recommendation": "Keep the uniform response. If a future UX improvement is wanted, send a 'this email isn't registered' email TO the unknown address — that gives the real owner a clue without leaking the negative to an enumerator.",
+      "date": "2026-05-08"
+    },
+    {
+      "decision": "?reason= query params surface verify-failure modes back on /login",
+      "rationale": "When /api/auth/verify rejects a token (missing, unknown, used, expired), redirecting to a dedicated 'sorry your link didn't work' page is more clicks than necessary. Sending the visitor back to /login with ?reason=X and showing a tailored line above the form is one redirect closer to recovery. The four reason codes map to the four real failure modes; an unrecognized reason value falls back to 'request a new link.'",
+      "recommendation": "Don't add reason codes for new failure modes — instead, fix the underlying issue (e.g. a 'too many tokens for this email' would point at rate-limit tuning, not a new UI state).",
+      "date": "2026-05-08"
+    }
+  ],
+  "successCriteria": "- A visitor enters an email and receives a magic link within 60 seconds (delivery SLA, monitored via /admin/digest)\n- The link expires after 30 min and is single-use (D1 enforces both)\n- Repeated requests are per-IP rate-limited (functions/_lib/ratelimit.ts thresholds)\n- An already-signed-in visitor sees a short-circuit state with a /me link, not the form\n- ?reason=... query params show tailored error copy for the four verify failure modes\n- The form responds uniformly 200 even for unknown emails (no enumeration)\n- Page is bilingual at full parity",
+  "userGuide": "Open /login (or /en/login). Enter your email. A magic link is sent within ~60s; check your inbox (or spam folder — see RUNBOOK §Email if it's slow). Click the link to sign in; you'll land at /me. The link expires in 30 minutes and can only be used once — request another if needed. If you arrive here with ?reason=token-... it means an earlier link failed verification; the copy above the form explains why. To sign out: /me → 'sign out' → cookie cleared. There is no password; the email account is the credential.",
+  "knownLimitations": [
+    "Email deliverability depends on Resend + the recipient's spam policies — Marc's monitored DKIM/SPF/DMARC setup is correct, but transient delivery delays still happen; RUNBOOK §Email is the triage doc",
+    "Current Resend sender domain isn't yet customized to a marc-portal.com address (AUDIT P1.1 — DNS-blocked); senders may see a default Resend address in some clients",
+    "Rate limits are per-IP, not per-email — an attacker behind a proxy could request links for many emails; the cap on token count per email (server-enforced) limits the real damage",
+    "The mp_session cookie is signed (HMAC-SHA-256) but not encrypted; an attacker reading network traffic can read the email — TLS is the protection there",
+    "No 'remember this device' option; every session lives 7 days from issue, then re-magic-link"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-08",
+      "reason": "Sign-in flow shipped end-to-end: request-link → email → verify → mp_session cookie."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. The magic-link flow has been stable since launch; current open issue is AUDIT P1.1 (custom sender domain) which is DNS-blocked and tracked separately."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — P2 auth-gated sweep, co-located doc for /login."
+    }
+  ],
+  "annotations": []
+}

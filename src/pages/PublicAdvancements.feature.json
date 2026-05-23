@@ -1,0 +1,78 @@
+{
+  "featureKey": "feat-2026-035",
+  "title": "Share view — public advancements with time-travel scrubber",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/engagement",
+  "componentFile": "src/pages/PublicAdvancements.tsx",
+  "liveUrl": "/share/:id",
+  "problem": "A client wants to share a work-in-progress with a stakeholder (their accountant, a peer reviewer, their own client) without giving the recipient a portal account. /share/:id is the URL-as-capability — anyone holding it can see the advancements an admin has flagged allowedForPublic for that session. Nothing else about the session leaks. The session id is a 72-bit base64url token; guessing one is astronomically unlikely, so the URL is the access control. Pair with the time-travel scrubber (a play/pause + step-through interface) so the recipient can see how the build evolved over its arc, not just the current snapshot. This is how 'show, don't tell' becomes a deployable URL.",
+  "tags": ["showcase", "url-as-capability", "time-travel", "iframe-embed", "unauthenticated"],
+  "analysis": "Unauthenticated read-only view. Renders /api/public/sessions/:id/advancements (functions/api/public/sessions/[id]/advancements.ts) which queries D1 for advancements where session_id=:id AND allowed_for_public=1 AND session.deleted_at IS NULL. The session id is the capability — no other auth check beyond 'does the id exist and have public advancements'. Each advancement carries an iframe-embeddable build URL (the per-build preview deploy from a feature.json revision); the TimeTravelScrubber component (src/components/TimeTravelScrubber.tsx) takes the array and provides play/pause + arrow-key stepping + a ?step=N URL param so any scrub position is shareable. Vouches scoped to this session are loaded in parallel (one round-trip) so the recipient sees both the work and the social proof on the same page. When zero vouches exist for the session, the block falls back to a CTA-only block — that's the steady state for fresh projects, not a degraded view. Page is meta-tinted as 'iterative' (PAGE_FEATURE['page.public-advancements']) since it's the iterative builds feature surfaced publicly.",
+  "implementation": "src/pages/PublicAdvancements.tsx — wrapped with useParams to extract the session id. Two parallel fetches on mount: listPublicAdvancements (src/lib/advancementsApi.ts) and listPublicVouches scoped to the session. Both fetches handle 404 + 410 (session soft-deleted or no public advancements) with a graceful error state, NOT a 'session not found' page — that's deliberate UX, the recipient can't tell whether the session never existed or had its public flag cleared. The TimeTravelScrubber owns the iframe rendering — see its own feature.json for keyboard nav details. ShareModal is conditionally rendered when the user clicks 'share' on this page; copies the canonical URL to clipboard. Vouches block renders below the scrubber. Time formatting via formatDate; relationship tags via VouchRelationship enum. No tenant gate on the API handler — _middleware.ts resolves tenant by Host, the session row scopes to a tenant_id, so the same id under a different Host returns 404.",
+  "decisions": [
+    {
+      "decision": "URL-as-capability with 72-bit base64url ids, not separate share tokens",
+      "rationale": "A separate share-token table doubles the schema and the operational complexity (who issued the token, when, can it be revoked?). The session id itself is already a 72-bit secret — guessing one is ~10^-22 per attempt. The trade-off: there's no way to revoke a leaked URL short of soft-deleting the whole session. That's acceptable because the public projection only includes advancements explicitly flagged allowedForPublic; revoking access means clearing those flags in /admin/inbox/:id, which works without changing the URL.",
+      "recommendation": "If a future requirement demands per-recipient revocable links, add a share_tokens table without changing the existing /share/:id semantics. Don't try to make session ids revocable — they're load-bearing in too many other places.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "404 the recipient if no public advancements exist — don't differentiate 'no such session' from 'session has nothing public'",
+      "rationale": "Differentiating would leak the existence of sessions whose admin hasn't flagged anything public yet. A consistent 404 across both cases preserves zero-knowledge about session existence to anyone holding only an id. The admin who SHIPPED the session knows whether to expect content; the public reader doesn't need that signal.",
+      "recommendation": "Keep the 404 generic. The admin error path (their session shouldn't be 404'ing the public link) is caught in /admin/inbox/:id which shows the public-flag count.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "Embed builds via iframe; ShareModal exposes a 'open in new tab' option",
+      "rationale": "Iframe lets the recipient see the build in context (chrome, layout, surrounding scrubber affordances) without leaving the share page. But some builds (Stripe pages, third-party widgets, builds with strict X-Frame-Options) refuse to embed; the new-tab fallback handles those cases. The sandbox attributes on the iframe are tracked in AUDIT.md P1.9 (deferred — current set is permissive enough for self-hosted demos but too lax for untrusted third-party content; defense-in-depth already in place via session id scoping).",
+      "recommendation": "When AUDIT P1.9 lands, the iframe sandbox tightening affects this page too — keep the new-tab fallback so a strict sandbox doesn't break the share UX.",
+      "date": "2026-05-12"
+    }
+  ],
+  "successCriteria": "- A recipient with the URL sees only advancements flagged allowedForPublic for that session\n- Other session data (messages, intake form, attachments, internal advancements) never reaches this page\n- The scrubber works with keyboard (arrows + space) and supports ?step=N for sharing a specific moment\n- Vouches scoped to the session render in parallel with advancements (one round-trip)\n- 404 is consistent across 'session doesn't exist' and 'session has no public advancements' (zero-knowledge)\n- ShareModal copies a canonical URL to clipboard and offers a new-tab fallback\n- Page works for anon visitors with no cookies set",
+  "userGuide": "Open /share/:id (or /en/share/:id) with a real session id. The page shows the session's title + status, the time-travel scrubber over public advancements, and any vouches scoped to this session. Use arrow keys (← / →) to step through builds, Space to play/pause. Click 'share' to copy the canonical URL or open the current build in a new tab. To flag advancements public as an admin: /admin/inbox/:id, then toggle 'allowed for public' per advancement. There's no separate share-token table — the session id IS the access token; consider this when choosing whether to share the URL externally.",
+  "knownLimitations": [
+    "URL-as-capability means leaking the URL is unrevokable short of soft-deleting the whole session; partial revoke (this advancement only) works by clearing its allowed_for_public flag",
+    "Some iframe-hosted builds set X-Frame-Options=DENY and refuse to embed — the new-tab fallback handles them but the in-page scrubber appears broken on those builds until the recipient notices the open-in-new-tab affordance",
+    "iframe sandbox is permissive (AUDIT P1.9 deferred); a future tightening could break embeds for builds that depend on same-origin-ish behaviour. Self-hosted preview deploys are the safe baseline",
+    "Vouches scoped to the session require the vouch's body to manually reference the session — there's no session_id FK on vouches today; an enhancement could link them automatically",
+    "?step=N is 1-indexed for human readability ('Step 3 of 5'); a 0-indexed link from external code would be off-by-one"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-12",
+      "reason": "Page shipped with public-advancements API + time-travel scrubber + vouches block."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. URL-as-capability, 404-consistency, and iframe-with-fallback all stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — P1 sweep, co-located doc for /share/:id."
+    }
+  ],
+  "annotations": []
+}

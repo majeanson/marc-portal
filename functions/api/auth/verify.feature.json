@@ -1,0 +1,75 @@
+{
+  "featureKey": "feat-2026-044",
+  "title": "GET /api/auth/verify — consume a magic-link token, set session cookie",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/auth",
+  "componentFile": "functions/api/auth/verify.ts",
+  "problem": "The other half of the magic-link flow. The verification URL the user clicks lands here with ?token=<plaintext>; this handler hashes it, looks up the matching row in magic_link_tokens, validates expiry + single-use, sets the mp_session + mp_csrf cookies, then redirects into the SPA. Failure modes (missing / unknown / used / expired token) redirect back to /login with a ?reason=... so the SPA can render a friendly explainer.",
+  "tags": ["auth", "magic-link", "single-use", "cookie-issue", "redirect"],
+  "analysis": "GET handler taking ?token. sha256B64url(token) → hash lookup against magic_link_tokens. Validation order: missing token → ?reason=missing-token; row not found → ?reason=unknown-token; row.used_at != null → ?reason=token-used; row.expires_at < now → ?reason=token-expired. On success: mark used_at, sign an mp_session cookie via signSessionCookie() (HMAC-SHA-256 over { email, exp }, see functions/_lib/auth.ts), mint a fresh CSRF token via newCsrfToken() and set both via Set-Cookie headers. Detects admin via isAdmin(env, email) (controlled by ADMIN_EMAILS env var); admin gets the same cookies, the admin gate is per-handler. Reads mp_lang preference (getLang from userPrefs.ts) and sets the cookie on the response too so the SPA inherits the user's saved language. 303 redirect to /me (or /en/me) based on lang. The 30-min TTL on the magic link is enforced here, not on the request side — a token issued just before TTL drift still works if used within window.",
+  "decisions": [
+    {
+      "decision": "Redirect to /login?reason=... on failure modes, not a generic error page",
+      "rationale": "A user clicking an expired link gets a worse experience if they see a sorry-page than if they get a tailored message right above the form they need to use anyway. Four reason codes (missing / unknown / used / expired) map to the four real failure modes; the /login page (src/pages/Login.tsx) renders specific copy for each. Recovery is one form re-submit away.",
+      "recommendation": "Don't add new reason codes for new failure modes — if a new mode emerges, it usually points at a config or rate-limit issue that should be fixed at the source.",
+      "date": "2026-05-08"
+    },
+    {
+      "decision": "Set both mp_session AND mp_csrf cookies on verify",
+      "rationale": "mp_csrf is the double-submit token the SPA echoes as X-CSRF-Token on state-changing requests. Issuing it at sign-in means the SPA's first authenticated request already has it — no extra round trip to mint one later. Both cookies are sibling-scoped to the same path/domain; mp_session is HttpOnly (server-only), mp_csrf is NOT (the SPA reads it via document.cookie and echoes it).",
+      "recommendation": "Don't make mp_csrf HttpOnly — the SPA must read it to echo. The 'NOT HttpOnly by design' is documented in src/lib/api.ts. If a future security review flags this, point at the CLAUDE.md auth section explaining the double-submit pattern.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "303 redirect (not 302) on success",
+      "rationale": "303 'See Other' is the semantically correct redirect for a POST-PRG-pattern equivalent; even though this is GET, using 303 ensures the browser follows with a GET request to /me regardless of the original method semantics. 302 may be silently rewritten to a POST by older clients in edge cases. 303 is unambiguous.",
+      "recommendation": "Keep 303. Don't switch to 307 (which preserves the original method); that would re-POST the request body if the original wasn't a GET, which is not the intent here.",
+      "date": "2026-05-08"
+    }
+  ],
+  "successCriteria": "- A valid, unused, non-expired token consumes successfully and lands the user on /me signed in\n- Each of the four failure modes redirects to /login with the right ?reason code\n- Single-use: a verified token can't be replayed (used_at marks consumed)\n- mp_session is HttpOnly + signed; mp_csrf is set but readable to the SPA\n- Admin status is detected here (isAdmin via ADMIN_EMAILS env)\n- mp_lang cookie is written if a user pref exists\n- The 30-min TTL is enforced",
+  "implementation": "functions/api/auth/verify.ts — onRequestGet. Reads request.url.searchParams.get('token'). sha256B64url to hash. SELECT from magic_link_tokens WHERE token = ?. Validates the four conditions in order. UPDATE used_at on success. signSessionCookie() returns the Set-Cookie value; newCsrfToken() generates a fresh CSRF token, setCsrfCookieHeader formats it. setLangCookieHeader from prefs. Response uses 303 + Location header. Tests: functions/api/auth/verify.test.ts covers all four failure modes + happy path + admin detection.",
+  "userGuide": "Triggered when the user clicks the magic-link URL in their email — usually /api/auth/verify?token=<plaintext>. Returns a 303 to /me on success, /login?reason=... on failure. To test manually: get a token (DEV mode logs them in /admin/digest output, or read magic_link_tokens directly) and visit the URL. To check what reason codes are valid: the four are missing-token / unknown-token / token-used / token-expired, surfaced in src/pages/Login.tsx COPY.reasons. To force a session expiry: clear the mp_session cookie in your browser, or call /api/auth/logout.",
+  "knownLimitations": [
+    "Tokens are tied to email at issue time — a user can't 'transfer' a magic link to another email; new email = new link",
+    "The 30-min TTL is hardcoded both client-side ('expires in 30 minutes' copy on /login/sent) and server-side; changing it requires editing both places",
+    "Verify doesn't rate-limit — a brute-force attack against the hash space is impractical (2^192 token space) but a future tightening could add a per-IP cap on /api/auth/verify too if abuse emerges",
+    "Admin detection re-runs isAdmin every verify; that's a string-set lookup on ADMIN_EMAILS env var which is cheap. A future tenant-scoped admin model would need to plumb tenant into isAdmin"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-08",
+      "reason": "Endpoint shipped with all four failure-mode reason codes and cookie issuance."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Verification flow has been stable since launch."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/auth/verify."
+    }
+  ],
+  "annotations": []
+}

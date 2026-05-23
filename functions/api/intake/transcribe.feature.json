@@ -1,0 +1,83 @@
+{
+  "featureKey": "feat-2026-054",
+  "title": "POST /api/intake/transcribe — Whisper edge transcription, transcribe-and-discard",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/intake",
+  "componentFile": "functions/api/intake/transcribe.ts",
+  "problem": "The intake form lets a visitor record a short voice note instead of typing — useful for tradespeople more comfortable speaking than writing. The recording needs to be transcribed; doing it client-side would either require a heavy model bundle or third-party API. Cloudflare Workers AI ships a Whisper binding that runs at the edge — perfect fit. This endpoint accepts a multipart audio upload, transcribes via Workers AI, returns the text. The audio is immediately discarded — nothing is written to R2 or D1. The smallest possible Loi 25 footprint: no stored recording, no retention question.",
+  "tags": [
+    "intake",
+    "workers-ai",
+    "whisper",
+    "csrf-exempt",
+    "rate-limited",
+    "transcribe-and-discard"
+  ],
+  "analysis": "POST with multipart/form-data, audio file under field name 'file'. The handler is open (no auth) because the intake form is open. CSRF-exempt for the same reason as /api/vouches — anon visitor has no cookie context. Per-IP rate limit (functions/_lib/ratelimit.ts) caps abuse. Validation: content-type must be audio/*; file size capped at MAX_BYTES (a few MB; precise cap in handler). env.AI binding is the Workers AI gateway; if unset (graceful-degrade), returns 503. Whisper inference: env.AI.run('@cf/openai/whisper', { audio: bytes }) returns { text }. The bytes are released as soon as Whisper returns; nothing stored. Returns 200 { transcript: text } — the SPA folds the transcript into the intake form's body field. Future submissions of the intake form carry the transcript text; the audio bytes are gone forever.",
+  "decisions": [
+    {
+      "decision": "Transcribe and discard — no R2 write, no D1 write",
+      "rationale": "Storing the recording would create a retention question (how long? where? with what consent?) that the intake form's open-to-anon nature can't satisfy. Discarding immediately means the only persistent artifact is the transcript text the visitor sees and chooses to submit. Loi 25 footprint shrinks to zero for the audio half.",
+      "recommendation": "Don't add an R2 write 'just in case the transcription is wrong'. If a future feature wants 'play the original audio back', architect it differently (e.g. opt-in store after sign-up).",
+      "date": "2026-05-14"
+    },
+    {
+      "decision": "Open to anon (no auth), CSRF-exempt, IP-rate-limited",
+      "rationale": "The intake form must work for anon visitors — that's the funnel-entry surface. Requiring sign-in before transcription would break the funnel; the visitor hasn't decided to sign up yet. CSRF-exempt because there's no cookie to defend. IP rate limit is the abuse defense. Same threat model as /api/vouches and /api/auth/request-link.",
+      "recommendation": "Keep open. If abuse emerges, tighten the rate limit or add Cloudflare Turnstile to the intake form; don't gate behind auth.",
+      "date": "2026-05-14"
+    },
+    {
+      "decision": "503 with a clear message if env.AI binding unset",
+      "rationale": "Workers AI is optional in dev environments — a dev without it set should still see the rest of the intake form work; only the voice transcription is unavailable. 503 'transcription unavailable' is the truthful response; the SPA hides the voice-record button when this happens. Graceful-degrade pattern, consistent with the rest of the codebase.",
+      "recommendation": "When adding any new Workers AI-backed feature, follow the same env-check-then-503 pattern.",
+      "date": "2026-05-14"
+    }
+  ],
+  "successCriteria": "- An anon visitor can upload audio and receive a transcript without sign-in\n- Audio bytes are not persisted (R2, D1, or otherwise)\n- env.AI unset → 503 with a clear message; the rest of intake still works\n- Per-IP rate limit caps abuse\n- Non-audio content-type → 415\n- Oversized file → 413\n- Transcript is returned as plain JSON { transcript: string }\n- CSRF-exempt status is preserved in _middleware.ts CSRF_EXEMPT_PATHS",
+  "implementation": "functions/api/intake/transcribe.ts — onRequestPost. Reads request.formData() for the file. clientIp + rateLimitCheck. Content-type and size validation. env.AI.run('@cf/openai/whisper', { audio: bytes }) — bytes is a Uint8Array. Response body is the JSON { transcript }. No persistence calls anywhere. Tests: functions/api/intake/transcribe.test.ts covers happy path + rate limit + unsupported type.",
+  "userGuide": "Client → POST /api/intake/transcribe with multipart/form-data file. Response → { transcript }. The intake form's VoiceRecorder component records audio, sends here, displays the result in the body textarea — the visitor can edit before submitting. To inspect what models Whisper supports: Workers AI docs. To test locally without Workers AI: the handler returns 503; the UI hides the voice button. No mock is provided — running this endpoint requires a real Workers AI binding.",
+  "knownLimitations": [
+    "Whisper accuracy is mode-dependent — accented French, low-quality mics, background noise all degrade quality. The visitor can edit the transcript before submitting, mitigating this",
+    "No language hint passed to Whisper today — Whisper auto-detects but accuracy improves with explicit language code; a future enhancement could thread language from the form state",
+    "MAX_BYTES is per-request; chunked uploads (long recordings) would need a different shape. Current intake recordings are short (<60s), well within the cap",
+    "Rate limit is per-IP; a visitor doing many re-record attempts could hit it. Tunable via the limit constants",
+    "Workers AI billing is per-call; abuse via rate-limit bypass would cost. Per-IP cap is the defense"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-14",
+      "reason": "Endpoint shipped with Whisper transcription + transcribe-and-discard."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Pattern is stable; the no-storage Loi 25 posture continues to hold."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/intake/transcribe."
+    }
+  ],
+  "annotations": []
+}

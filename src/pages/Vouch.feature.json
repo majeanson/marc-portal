@@ -1,0 +1,78 @@
+{
+  "featureKey": "feat-2026-034",
+  "title": "Écrire un témoignage — open vouch submission form",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/showcase",
+  "componentFile": "src/pages/Vouch.tsx",
+  "liveUrl": "/vouch",
+  "problem": "Asking past clients and peers for testimonials by email is high-friction and unreliable — the email gets buried, the testimonial gets dashed off without context, and the back-and-forth to publish takes a week. /vouch is an open form anyone can use without signing in: name, email, relationship, body, optional outbound link. The submission goes into the moderation queue (pre-moderation) so Marc reviews before anything appears publicly. The page exists to lower the friction to near zero — a peer who thought 'I should send Marc a recommendation' can do it in two minutes from any device.",
+  "tags": ["showcase", "open-submission", "rate-limited", "anti-spam", "csrf-exempt"],
+  "analysis": "Open form — no auth required, no account creation. The visitor types name + email + relationship (from VOUCH_RELATIONSHIPS: client, past-employer, peer, mentor, friend) + body + optional outbound link, plus a name-display opt-in checkbox (default: first name only). Client-side validation mirrors the server's VOUCH_LIMITS so the visitor sees inline errors before submitting; the server re-validates on POST. On submit, fetches POST /api/vouches (CSRF-exempt because there's no cookie context for an anon submitter — see _middleware.ts's CSRF_EXEMPT_PATHS list). On success, the page swaps to a thank-you state. On 429 (rate-limited), it shows the rate-limit copy. On other 4xx, it maps the server's error string to a friendly localized message. Per-IP rate limit on POST /api/vouches keeps the moderation queue from being flooded; the spec is 5 submissions per IP per 24h, enforced in functions/_lib/ratelimit.ts.",
+  "implementation": "src/pages/Vouch.tsx — controlled form with fields kept in local useState. Validation runs on blur and on submit via VOUCH_LIMITS thresholds (max body length, max link length, valid email regex). ApiError handling: 400 maps from { error: 'string' } to localized; 429 shows rate-limit copy; anything else falls to a generic error. POST /api/vouches inserts a row with status='pending'; moderators see it at /admin/vouches. The form includes a 'display name as' control (first only, full, anonymous). frPunct helper wraps French punctuation (NBSP-before-colon etc.) in a nowrap span since the build strips literal U+00A0. useSearchParams: a ?ref=engagement-slug query param pre-fills the body with a soft prompt ('about engagement X'), making it easier to link a vouch to a specific shipped engagement when sharing the URL from /engagement/:slug. Feature-tinted as 'shipped'.",
+  "decisions": [
+    {
+      "decision": "Open form, no sign-in required",
+      "rationale": "A vouch from someone willing to log in is a vouch from someone who already has an account — that's the wrong audience. The people most useful to hear from (past clients, peers, mentors) don't have accounts on this portal. Forcing sign-in would filter them out and leave only the inner-circle audience. Open submission + pre-moderation is the structurally-honest compromise: low friction in, high quality out.",
+      "recommendation": "Don't gate /vouch behind anything that's not anti-spam. If volume forces a CAPTCHA, prefer hCaptcha (privacy-friendlier than reCAPTCHA) and document it in /pia.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "POST /api/vouches is CSRF-exempt and IP-rate-limited",
+      "rationale": "CSRF protection requires a cookie context to defend against. An anon submitter has no session, so CSRF double-submit can't work — the threat model the gate defends against (a logged-in user being tricked into POSTing) doesn't apply here. The replacement defense is a per-IP rate limit (5/24h) which doesn't depend on a cookie and prevents the realistic bad outcome (queue flood). The exemption is explicit in _middleware.ts's CSRF_EXEMPT_PATHS so it's not accidentally lost.",
+      "recommendation": "If the CSRF gate's exemption list ever grows past a handful of entries, audit it — every exempt path is a potential opening. /vouches and the other current exemptions all have a justification documented in CLAUDE.md.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "Default name display to first-name-only, opt-in to full or anonymous",
+      "rationale": "First name + relationship tag is enough signal; full name maximizes googleability of the voucher which they may not want. Defaulting to first-only respects Loi 25 minimization and the voucher's likely preference; opt-in upward (to full name) and downward (to anonymous) covers both ends. Anonymous still requires email so the moderator can verify the submitter is real, but the email never reaches the public wire.",
+      "recommendation": "Keep the default at first-only. If submission UX feedback ever suggests the default surprises submitters, surface the choice more clearly in the form rather than changing the default.",
+      "date": "2026-05-18"
+    }
+  ],
+  "successCriteria": "- An anon visitor can submit a vouch without signing in or creating an account\n- Server enforces VOUCH_LIMITS (validation re-runs even if client lies)\n- Per-IP rate limit caps submissions at 5/24h; a 429 response shows the rate-limit copy gracefully\n- Successful submission shows a thank-you state and clears the form\n- Errors are friendly and bilingual; the form preserves user input on error\n- ?ref=engagement-slug pre-fills the body with a soft prompt\n- Email never appears in the public projection of the vouch row",
+  "userGuide": "Open /vouch (or /en/vouch). Fill in your name, email, relationship to Marc (client, past employer, peer, mentor, or friend), the body of your vouch, and optionally a link to your site/LinkedIn. Choose how your name will display (first name only / full name / anonymous). Submit; Marc moderates before your vouch appears publicly at /vouches. Your email is never shown publicly. To link the vouch to a specific shipped engagement, add ?ref=<engagement-slug> to the URL — the body field will pre-fill with a prompt. Rate-limited at 5/24h per IP. If you hit the limit and need to send more, contact Marc directly.",
+  "knownLimitations": [
+    "No CAPTCHA — the rate limit + manual moderation is the anti-spam layer. If automated submissions ever leak past the rate limit, adding hCaptcha is the next escalation",
+    "Email is collected for moderator verification but isn't itself verified (no double opt-in) — a determined spammer could use throwaway emails, the moderation step catches the output regardless",
+    "?ref pre-fill is soft (just text in the body) — a future enhancement could link the vouch to the session_id of the referenced engagement, but the schema would need work",
+    "VOUCH_LIMITS is duplicated client-side and server-side; they could drift if updated in one place. The server enforces the truth, the client is UX",
+    "Per-IP rate limit reads X-Forwarded-For headers from Cloudflare; a misconfigured proxy upstream could mis-attribute requests — the production deploy is direct CF Pages, so this is theoretical"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-18",
+      "reason": "Open form + rate-limited POST + moderation pipeline all live; first real-world submissions flowed."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Behaviour is stable; CSRF-exemption is justified and documented."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — P1 sweep, co-located doc for /vouch."
+    }
+  ],
+  "annotations": []
+}

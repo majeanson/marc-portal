@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-053",
+  "title": "GET /api/payments — per-session payment summary",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/payments",
+  "componentFile": "functions/api/payments/index.ts",
+  "problem": "The /me dashboard and /session/:id both need a unified view of what's been paid, what's owed, what subscription state the session is in. Per-row Stripe queries would be slow and leak Stripe-specific concepts into the SPA. This endpoint returns a single summary per session: { rows (paid history), custodianStatus, stripeMode, build (next-unpaid-leg with amount), scoping (paid or unpaid status) } — all the math done server-side, the client just renders.",
+  "tags": ["payments", "summary", "server-side-math", "stripe-mode-badge"],
+  "analysis": "GET ?sessionId=X. Auth: canAccessSession(). loadSession() + a query against the payments table for this session's rows. buildInstallmentPlan() (functions/_lib/pricing.ts) computes the build leg + amount with scoping credit applied, OR signals 'Tier-4 quote pending' if the session is Tier 4 without an admin-set amount. stripeMode is derived from the secret key prefix ('sk_test_' → 'test', 'sk_live_' → 'live') and surfaces as a visible UI pill so visitors don't mistake test charges for real. custodianStatus is the session row's custodian_status column ('none' | 'active' | 'past_due' | 'canceled' | 'switched_to_tout_a_toi'). The whole payload is consistent with what the webhook writes; this endpoint is purely read-side.",
+  "decisions": [
+    {
+      "decision": "Server returns the next unpaid leg's amount; client never computes",
+      "rationale": "Same lesson as /api/payments/checkout: client-computed amounts are a security and consistency liability. The summary returns the canonical amount the client should render; checkout uses the same buildInstallmentPlan() to compute when minting. Single source of truth for pricing math.",
+      "recommendation": "Don't let the client compute 'days until renewal' or any other derived value here. If the UI needs it, surface it in this payload.",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Expose stripeMode so the UI can render a 'TEST MODE' pill",
+      "rationale": "In dev, the Stripe secret is sk_test_… — charges are fake. Without a visible 'TEST MODE' indicator, a developer doing manual QA could think they were on prod. A visible mode pill prevents that confusion. The mode is derived from the key prefix; if the prefix is unknown (e.g. partial key during setup), report 'unknown' and the UI hides the pill.",
+      "recommendation": "Keep the mode in the response. Don't compute it client-side from anything else — the key prefix is the truth.",
+      "date": "2026-05-15"
+    }
+  ],
+  "successCriteria": "- A signed-in visitor (or admin) gets a complete payment summary for any session they can access\n- buildInstallmentPlan computes the next leg + amount; Tier 4 returns 'quote pending'\n- stripeMode is derived from the secret key prefix\n- custodianStatus reflects the latest webhook state\n- The payload is suitable for direct render in /me's PaymentActions component\n- 404 for missing or unauthorized session",
+  "implementation": "functions/api/payments/index.ts — onRequestGet. Auth + canAccessSession; SELECT payments WHERE session_id = ? ORDER BY paid_at; loadSession for custodian_status; buildInstallmentPlan for build + scoping derived fields; stripeMode derived from env.STRIPE_SECRET_KEY prefix. Returns a structured JSON ready for client render. Tests: functions/api/payments/payments.test.ts.",
+  "userGuide": "GET /api/payments?sessionId=X. Auth required (visitor self or admin). Response is the full summary the SPA renders. To inspect Stripe events that produced these rows: cross-reference paymentId with Stripe Dashboard → Payments. To stress-test: create a session, simulate a paid leg (manually insert into payments row via the e2e harness), GET to confirm the summary reflects it.",
+  "knownLimitations": [
+    "No pagination on rows — a long-running custodian with many invoices accumulates rows. At current scale (custodian is annual, max 1 invoice/year per sub), not a concern",
+    "stripeMode = 'unknown' fallback may surface during initial deploys before STRIPE_SECRET_KEY is set; the UI hides the pill in that case",
+    "Currency is implied (CAD); a future multi-currency change would require schema work + this payload's structure to carry currency per row",
+    "The summary doesn't include refund history detail — only the rolled-up refunded_amount_cents on each row. Stripe Dashboard has the granular history"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-15",
+      "reason": "Endpoint shipped with the full summary structure used by /me's PaymentActions."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Summary shape is stable; server-side-math posture is consistent across the payments family."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/payments."
+    }
+  ],
+  "annotations": []
+}

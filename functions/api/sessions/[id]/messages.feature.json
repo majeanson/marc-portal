@@ -1,0 +1,89 @@
+{
+  "featureKey": "feat-2026-056",
+  "title": "GET + POST /api/sessions/:id/messages — chronological thread",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/engagement",
+  "componentFile": "functions/api/sessions/[id]/messages.ts",
+  "problem": "The single conversational channel between visitor and Marc for a session. GET returns the full thread in chronological order. POST appends a new message; the author is derived from the viewer's identity (admin → 'marc', visitor → 'visitor'), never sent by the client. Both parties get a Resend notification on the OTHER's message — visitor-posted triggers a Marc notification, Marc-posted triggers a visitor notification. This is the conversation feature operationalized.",
+  "tags": [
+    "engagement",
+    "thread",
+    "auth-required",
+    "notifications",
+    "rate-limited",
+    "attachment-aware"
+  ],
+  "analysis": "GET: canAccessSession() gates; SELECT messages WHERE session_id = ? ORDER BY created_at ASC. Each message's attachments are loaded in a parallel batch via listAttachmentsForMessages (functions/_lib/attachments.ts) — N+1 avoided by a single query joining messages → attachments by message_id. POST: validate body length, rate-limit check (per-IP and per-user to prevent flood), determine author from currentEmail() + isAdmin(), INSERT message with id from randomTokenB64url. If the message has any attachments pre-uploaded (the upload-then-link flow — see attachments index handler), link them by updating attachments.message_id. The right notification is queued: visitor → sendMarcMessageNotification; Marc → sendVisitorMessageNotification. Notification is best-effort — failure logs but doesn't roll back the message INSERT.",
+  "decisions": [
+    {
+      "decision": "Author is server-derived from cookie identity, never client-sent",
+      "rationale": "Letting the client send the author field would let a visitor post messages as 'marc'. Deriving server-side from the auth cookie is the only safe model. Admin sends as 'marc', visitor as 'visitor'; there are no other authors today.",
+      "recommendation": "If multi-admin support emerges (multiple humans on the practice side), thread the actual email into the author field, not a generic 'marc'. UI translations handle the display.",
+      "date": "2026-05-11"
+    },
+    {
+      "decision": "Attachments are uploaded BEFORE the message that links them",
+      "rationale": "The alternative is a multipart POST containing message + attachments in one shot. That fails for any non-trivial attachment size (large files would hold the request open for a long time, fail on intermittent connections). The pre-upload pattern lets each attachment stream to R2 independently; the message-send call is then small and fast, linking the already-uploaded attachments by their ids. Failed uploads can be retried without re-sending the message text.",
+      "recommendation": "Don't refactor to multipart message-with-attachments. The two-phase upload pattern is the right scale-friendly shape.",
+      "date": "2026-05-13"
+    },
+    {
+      "decision": "Notifications are best-effort, not transactional",
+      "rationale": "Same as the session PATCH handler: a Resend hiccup shouldn't block the message INSERT. The DB is the source of truth; the notification is a courtesy. Failures are logged + visible in /admin/digest. AUDIT P1.3 (Resend outbox) would harden this; deferred.",
+      "recommendation": "Keep best-effort. If a future critical notification needs guaranteed delivery, give it its own outbox.",
+      "date": "2026-05-13"
+    }
+  ],
+  "successCriteria": "- GET returns all messages for the session in chronological order, with their attachments\n- POST records the message with the correct server-derived author\n- Attachments pre-uploaded via the attachments POST get linked at message send\n- Rate limits prevent flood (per-user + per-IP)\n- Notification email is sent to the OTHER party on every new message\n- Notification failure doesn't roll back the DB write\n- Body length cap rejects oversized messages with 400",
+  "implementation": "functions/api/sessions/[id]/messages.ts — onRequestGet + onRequestPost. GET: SELECT + the attachment-batch join. POST: validate, rate-limit, INSERT, link attachments, queue notification. randomTokenB64url for message id. ATTACHMENT_COLUMNS and listAttachmentsForMessages are shared with the attachments handlers. Tests: functions/api/sessions/messages.test.ts covers author derivation, attachment linking, notification queuing.",
+  "userGuide": "Visitor: open /session/:id, type a message, hit send → POST here. Admin: same flow at /admin/inbox/:id. To attach: upload first via /api/sessions/:id/attachments, then send the message including attachment ids. Notifications respect the recipient's lang preference (Marc's stored in user_prefs; visitor's stored same). To inspect thread as admin: SELECT * FROM messages WHERE session_id = ?. To debug a missing notification: /admin/digest synthetic monitoring + the Resend dashboard.",
+  "knownLimitations": [
+    "Messages are immutable once posted — no edit, no delete. A typo stays. Acceptable for an audit-trail communication channel; if a real edit need emerges, it would need additive history (insert correction, don't mutate)",
+    "Notifications carry the message body in plain text — a long message creates a long email. No truncation today; acceptable since messages are short by social convention",
+    "Rate limits are tunable in functions/_lib/ratelimit.ts; current settings are conservative",
+    "If both visitor and Marc post within the same second, ORDER BY created_at could tie — secondary order by message id (which is monotonic-ish from randomToken) breaks ties; not perfectly chronological but indistinguishable in practice",
+    "Notifications don't currently include attachment thumbnails in the email — only a 'with N attachments' note"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-11",
+      "reason": "Endpoint shipped with the thread + author derivation + notification queuing."
+    },
+    {
+      "from": "active",
+      "to": "active",
+      "date": "2026-05-13",
+      "reason": "Attachment pre-upload + link flow added; messages can now carry rich attachments."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Thread, attachment linkage, and notification patterns all stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/messages."
+    }
+  ],
+  "annotations": []
+}

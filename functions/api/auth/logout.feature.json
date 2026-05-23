@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-045",
+  "title": "POST /api/auth/logout — clear the session cookie",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/auth",
+  "componentFile": "functions/api/auth/logout.ts",
+  "problem": "The sign-out side of the auth flow. mp_session and mp_csrf cookies are cleared via Set-Cookie max-age=0; the response carries both clears + a JSON ok. Stateless because the cookie IS the session — there's no server-side session table to revoke. CSRF-exempt because a forced logout is a nuisance, not an account compromise, and gating it would create chicken-and-egg problems if the SPA's mp_csrf has drifted.",
+  "tags": ["auth", "cookie-clear", "csrf-exempt", "stateless"],
+  "analysis": "Single POST handler that writes Set-Cookie headers clearing mp_session and mp_csrf (max-age=0, same path/domain attributes as the original). Returns 200 { ok: true }. No D1 reads, no D1 writes — there's nothing to revoke server-side. The session is the cookie; clearing the cookie ends the session. CSRF is intentionally exempt — see the in-handler comment for why (forced logout is benign, gating it creates failure modes when CSRF cookie has drifted). Sentry doesn't wrap this handler specifically; the middleware does for any uncaught exceptions.",
+  "decisions": [
+    {
+      "decision": "Stateless logout — no session-table revocation",
+      "rationale": "Server-side session tables exist for systems where you need 'log out everywhere' or 'revoke this device' as features. This portal's sessions are short-lived (7 days), low-stakes, and the user can already invalidate them by clearing browser cookies. Adding a session table for the sake of API symmetry would add a table to maintain, a revocation list to query on every authenticated request, and zero real-world security benefit at this scale.",
+      "recommendation": "Don't add a session table. If 'log out from all devices' ever becomes a real ask, the right answer is to rotate SESSION_SECRET (which invalidates all existing signed cookies in one operation, server-side, instantly).",
+      "date": "2026-05-08"
+    },
+    {
+      "decision": "CSRF-exempt — forced logout is allowed",
+      "rationale": "The CSRF gate exists to prevent a logged-in user from being tricked into making a state-changing request. Forced logout via cross-site POST is a nuisance (the user has to re-sign-in) but doesn't compromise their account. Gating /api/auth/logout would create a real failure mode: a user whose mp_csrf has drifted (cookie expired but mp_session valid) cannot sign out — they're stuck. The exemption is documented in _middleware.ts CSRF_EXEMPT_PATHS.",
+      "recommendation": "Keep the exemption. If a future review wants to gate it, the better fix is to surface 'your CSRF is stale, get a new one' as an explicit re-mint endpoint — not to require it for logout.",
+      "date": "2026-05-12"
+    }
+  ],
+  "successCriteria": "- A POST clears mp_session and mp_csrf via Set-Cookie max-age=0\n- Response is 200 { ok: true } with no body data leaks\n- No D1 reads or writes\n- CSRF-exempt status is preserved in CSRF_EXEMPT_PATHS\n- After this call, the next authenticated request to /api/me returns { email: null }",
+  "implementation": "functions/api/auth/logout.ts — onRequestPost. Two Set-Cookie headers via Headers.append (clearSessionCookieHeader + clearCsrfCookieHeader from functions/_lib/auth.ts), single JSON response. ~10 lines. Tests: covered by the auth integration tests in functions/api/me.test.ts (logout-then-GET flow).",
+  "userGuide": "Server-side endpoint. The SPA calls this via /me's 'sign out' link. Returns 200 { ok: true }; the cookies are cleared by the browser per the Set-Cookie headers. To trigger manually: curl -X POST http://localhost:8788/api/auth/logout -b 'mp_session=...; mp_csrf=...'. To force-sign-out a specific user without a request from them: rotate SESSION_SECRET via `wrangler secret put SESSION_SECRET` — invalidates every existing session in one operation.",
+  "knownLimitations": [
+    "No 'log out from all devices' — clearing the cookie only ends THIS browser's session; another device with a valid mp_session keeps working. Acceptable for this scale; SESSION_SECRET rotation is the nuclear option",
+    "Stateless means we have no record of 'when did this user last sign out' — useful for audit logs but absent today",
+    "If a session has been hijacked, clearing the cookie on the victim's browser doesn't invalidate the attacker's copy of the cookie — the attacker keeps their session until expiry. Mitigation: rotate SESSION_SECRET"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-08",
+      "reason": "Endpoint shipped with both cookie clears + 200 response."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Stateless model and CSRF exemption are stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/auth/logout."
+    }
+  ],
+  "annotations": []
+}

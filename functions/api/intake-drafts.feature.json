@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-055",
+  "title": "GET + POST + DELETE /api/intake-drafts — cross-device intake autosave",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/intake",
+  "componentFile": "functions/api/intake-drafts.ts",
+  "problem": "The intake form autosaves to localStorage every keystroke so a refresh doesn't lose work. But localStorage is per-device — a visitor typing on their phone, then switching to desktop for the magic-link sign-in, would lose everything. This endpoint is the cross-device fallback: every autosave also POSTs the draft to D1, keyed by the visitor's email; sign-in pulls from D1, restores the draft. The draft is purged on successful session creation.",
+  "tags": ["intake", "autosave", "cross-device", "auth-required", "rate-limit-friendly"],
+  "analysis": "Three methods. GET returns the draft for the signed-in email (or null). POST upserts { payload } — the draft JSON the visitor's typed so far. DELETE drops the draft (called after a successful createSession). All three require sign-in: the auth cookie pins which email you can read/write — an attacker can't read another email's draft. Ungated POST would also be a write amplifier for the rate-limit table on /api/auth/request-link, so requiring auth is two-fold defense. Payload size cap at PAYLOAD_LIMIT_BYTES (a few KB; the intake form is text-heavy but not enormous). Draft is keyed by lower-cased email so 'X@Y.com' and 'x@y.com' share one draft (matches the magic-link table's casing).",
+  "decisions": [
+    {
+      "decision": "Auth-required, even though intake itself is open-to-anon",
+      "rationale": "Anon writes would let any visitor write to any email's draft. That's both an abuse vector (overwrite legitimate drafts) and a write-amplifier on the rate-limit table. Requiring auth means a draft is only writable by the signed-in user. The trade-off: the cross-device benefit only kicks in AFTER the magic-link sign-in completes. Pre-signin, the visitor is on local-storage-only. That's the right model for the current flow: type intake on phone → magic-link to desktop email → sign in on desktop → pull from D1 to continue.",
+      "recommendation": "Don't add an anon write path. If a future flow needs anon-cross-device (unlikely), it'd need its own threat-modeled mechanism (e.g. one-time draft tokens).",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Email key is lower-cased; matches magic-link table casing",
+      "rationale": "Email casing inconsistency is a classic bug source — 'X@Y.com' magic-link sent, then 'x@y.com' lookup in a different table — silent miss. Normalizing to lower at the key level removes the class of bugs. Magic-link, drafts, prefs, sessions all consistently lower-case.",
+      "recommendation": "When adding any new email-keyed table, lower-case at the SQL boundary. AUDIT P2.1 is a future centralization that would put this in one helper.",
+      "date": "2026-05-15"
+    }
+  ],
+  "successCriteria": "- A signed-in visitor can GET / POST / DELETE their own draft\n- A signed-in visitor cannot read another email's draft (auth pins the email)\n- Payload size cap rejects oversized writes with 413\n- DELETE called after createSession() succeeds, so the draft doesn't linger\n- Drafts are keyed by lower-cased email for cross-table consistency",
+  "implementation": "functions/api/intake-drafts.ts — three onRequest handlers. currentEmail() gates each. GET: SELECT WHERE email = ?. POST: validate payload size, UPSERT WHERE email = ?. DELETE: DELETE WHERE email = ?. The intake_drafts table has (email, payload, created_at, updated_at) columns. Tests: covered by the intake-flow integration tests in functions/api/intake-drafts.test.ts.",
+  "userGuide": "Used by the intake form's debounced autosave. The SPA calls POST /api/intake-drafts on every meaningful change once the user is signed in; GET on mount to restore. To inspect drafts as admin: SELECT * FROM intake_drafts — only Marc has DB access, so this is operator-only. To force-clear a stuck draft: DELETE /api/intake-drafts while signed in as the user, or admin SQL.",
+  "knownLimitations": [
+    "Only one draft per email at a time — if the visitor wants to keep two intake-in-progress projects, the second overwrites the first. Acceptable since intake is intended as a single conversion event",
+    "No history of past drafts (e.g. 'recover this draft I had 3 days ago') — overwrite semantics. The /me dashboard has the session list, not draft history",
+    "Payload is opaque JSON; size cap is byte-level, not per-field. A malicious payload of legal size could be oversized in semantics; the form server-side validation catches it on createSession",
+    "Drafts auto-stale: there's no TTL today. A neglected draft sits forever. A future janitor cron could prune (e.g. >30 days untouched)"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-15",
+      "reason": "Endpoint shipped with the cross-device draft persistence; intake form integrated."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Auth-gating and email-casing patterns stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/intake-drafts."
+    }
+  ],
+  "annotations": []
+}

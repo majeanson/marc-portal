@@ -1,0 +1,76 @@
+{
+  "featureKey": "feat-2026-050",
+  "title": "POST /api/payments/checkout — mint a Stripe Checkout session",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/payments",
+  "componentFile": "functions/api/payments/checkout.ts",
+  "problem": "When the client clicks 'pay' on a session in pricing status, this endpoint mints a Stripe Checkout URL the browser redirects to. Stripe takes it from there (card form, 3DS, etc.) and pings /api/payments/webhook on completion. Three kinds: 'build' (next unpaid installment of the session's tier 1–4), 'scoping' ($250 scoping report, credited to leg 1), 'custodian' (annual subscription, Watch or Care plan). The server owns all pricing math — the client never sends an amount or a leg index, only the kind. That's the load-bearing property: any pricing change is one server-side update.",
+  "tags": ["payments", "stripe", "checkout", "server-side-pricing", "graceful-degrade"],
+  "analysis": "POST handler taking { sessionId, kind, custodianPlan?, lang?, amountCadOverride? }. Auth: canAccessSession() (visitor self or admin). Pricing: buildInstallmentPlan() (functions/_lib/pricing.ts) reads the session's tier and the paid rows, computes the next unpaid leg + its amount with scoping credit applied. For 'custodian' kind, it picks the right Stripe Price ID from STRIPE_CUSTODIAN_WATCH_PRICE / _CARE_PRICE env vars. For 'scoping', uses CUSTODIAN_CENTS (the canonical $250 in CAD cents). amountCadOverride is admin-only and bypasses the plan computation for one-off cases. Inserts a payments row with status='pending' before calling Stripe; returns { url, paymentId } so the client knows which payment row the eventual webhook will resolve. STRIPE_SECRET_KEY guard: if unset, returns 503 with a clear message (graceful-degrade pattern). Same shape for missing custodian Price IDs.",
+  "decisions": [
+    {
+      "decision": "Server owns pricing math; client sends only the kind",
+      "rationale": "A client-sent amount is a security and consistency liability — a malicious client could send $1 for a $5000 leg, or a buggy client could compute the leg index wrong and pay the wrong installment. The server reads the session's tier + paid rows, computes the next leg, and uses the canonical price. The client only signals intent ('I want to pay'); the math is server-only. AUDIT P1.7's same lesson applied here.",
+      "recommendation": "Don't accept client amounts. amountCadOverride exists as an admin escape for one-off cases (Tier 4 custom quotes) but is strictly admin-gated.",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Scoping credit applies to leg 1 automatically",
+      "rationale": "The $250 scoping report is a separate kind but its value is credited against the next build's leg 1. Without automatic crediting, the visitor would pay scoping then see their leg 1 unchanged — they'd need to remember to ask, or the admin would manually adjust. Crediting in buildInstallmentPlan removes this paper-shuffling completely; the math is consistent.",
+      "recommendation": "Keep the credit in buildInstallmentPlan() — that's the canonical pricing module. Don't split scoping into its own column on payments; the link is by session + kind.",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "503 with a clear message if STRIPE_SECRET_KEY missing, not a generic 500",
+      "rationale": "The Stripe binding is optional (graceful-degrade pattern across the codebase). If a dev environment doesn't have Stripe configured, the rest of the app works; only payments are unavailable. 503 'payments unavailable' is the truthful response shape — 500 would suggest a bug. Same pattern for missing custodian Price IDs (which would otherwise produce a confusing 'no such Price' from Stripe).",
+      "recommendation": "When adding any new Stripe dependency, follow the same pattern: env check at handler entry, 503 with a useful message if missing.",
+      "date": "2026-05-15"
+    }
+  ],
+  "successCriteria": "- A signed-in client (or admin) can mint a Checkout URL for build / scoping / custodian\n- Pricing comes from the server's buildInstallmentPlan; client cannot override (except admin via amountCadOverride)\n- Scoping payments credit leg 1 automatically\n- STRIPE_SECRET_KEY unset → 503 with a clear message\n- Stripe Checkout URL is returned + a paymentId for the eventual webhook to resolve\n- Tier 4 (custom-quote) sessions cannot mint a checkout without an admin amount override\n- Tests exercise the happy path + the unset-key path",
+  "implementation": "functions/api/payments/checkout.ts — POST handler. Auth + tenant gate via middleware; canAccessSession() per-session. createCheckoutSession() (functions/_lib/stripe.ts) calls Stripe with the line items or Price IDs. payments row inserted pending; payment_id stored as the link key. The e2e harness stubs Stripe via a sentinel API key ('E2E_STUB_API_KEY' check in stripe.ts) so the test suite runs without real Stripe credentials. Tests: functions/api/payments/checkout.test.ts covers the kinds + auth + 503.",
+  "userGuide": "Client → POST /api/payments/checkout with { sessionId, kind }. Response → { url, paymentId }; the SPA redirects browser to url. Stripe completes the form, the webhook (functions/api/payments/webhook.ts) updates the payments row to status='paid'. To test in DEV: set STRIPE_SECRET_KEY in .dev.vars to a test-mode key (sk_test_...) and run; or use the sentinel E2E_STUB_API_KEY for stubbed-Stripe tests. To inspect payment state: GET /api/payments?sessionId=X. To admin-override an amount (Tier 4): POST with amountCadOverride field and admin session.",
+  "knownLimitations": [
+    "Tier 4 always requires an admin amount override; visitors can't self-serve a Tier 4 checkout. By design — Tier 4 IS the custom-quote tier",
+    "If STRIPE_SECRET_KEY is set but the webhook secret is wrong, the checkout flow completes but the webhook can't verify the event signature. The webhook returns 200 (to prevent Stripe retry storms) but the payment row stays pending. RUNBOOK §Stripe covers this triage",
+    "Custodian Price IDs are env vars; if a Price ID changes in Stripe (e.g. price renamed), this handler will mint a checkout pointing at the stale ID until the env is updated",
+    "Scoping credit is applied at plan-computation time only; an admin manually creating a leg 1 payments row would not get the credit automatically",
+    "Stripe Checkout sessions expire 24h after creation; clicking a stale 'pay' link would 404 on Stripe's side. The SPA's PaymentActions re-mints on each click"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-15",
+      "reason": "Endpoint shipped with all three kinds (build / scoping / custodian) and the scoping-credit logic."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Server-side-pricing and graceful-degrade patterns stable; e2e harness stub is the canonical test path."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/payments/checkout."
+    }
+  ],
+  "annotations": []
+}

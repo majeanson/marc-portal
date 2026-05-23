@@ -1,0 +1,89 @@
+{
+  "featureKey": "feat-2026-061",
+  "title": "POST /api/vouches — anonymous vouch submission, IP- and email-rate-limited",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/showcase",
+  "componentFile": "functions/api/vouches.ts",
+  "problem": "Open submission endpoint paired with /vouch. Visitor types vouch + email; this endpoint inserts a row with status='pending' for Marc's moderation queue. No auth required (requiring a magic link first would kill the funnel for the people most likely to vouch — past clients, peers — who don't have accounts here). Email is captured for moderator verification but never appears in the public projection. Per-email + per-IP rate limits keep the moderation queue from being flooded; tight URL validation (http/https only) prevents javascript:/data: vectors.",
+  "tags": [
+    "showcase",
+    "open-submission",
+    "unauthenticated",
+    "csrf-exempt",
+    "moderation-queue",
+    "rate-limited"
+  ],
+  "analysis": "POST { name, email, relationship, body, link?, sessionId?, displayPref? }. CSRF-exempt (no cookie context for anon submitter; see _middleware.ts CSRF_EXEMPT_PATHS). Validation: VOUCH_LIMITS thresholds for body/name/link length, isPlausibleEmail for email format, relationship must be in VOUCH_RELATIONSHIPS enum, link if present must start with http:// or https:// (javascript:/data: rejected). If sessionId supplied, validate it matches an active session (typo-rejection — Marc shouldn't see ghost attributions). Rate limits: 3/hour per email, 5/hour per IP — both lower than session-creation rates because a vouch carries less value to the submitter and is a tempting spam vector. INSERT with status='pending'; moderators see it at /admin/vouches; approved rows surface at /vouches via the projection-stripped public endpoint.",
+  "decisions": [
+    {
+      "decision": "Open submission (no auth), CSRF-exempt — same rationale as /api/auth/request-link",
+      "rationale": "The audience most likely to vouch (past clients, peers, mentors) doesn't have portal accounts. Requiring sign-in would filter them out. CSRF is for cookie-context attacks; anon visitor has no cookie. Per-IP + per-email rate limits + manual moderation are the anti-spam layer.",
+      "recommendation": "If automated abuse ever overwhelms the rate limit, add hCaptcha (privacy-friendlier than reCAPTCHA, documentable in /pia). Don't move to authentication.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "Tighter rate limits than session-creation (3/h per email, 5/h per IP)",
+      "rationale": "A session is high-value to the submitter (they want help); a vouch is low-value to the submitter and high-value to a spammer (free message in Marc's queue). Tighter limits filter against the typical spam pattern (one IP, many fake emails, low per-email volume) and against the targeted-email-flood pattern.",
+      "recommendation": "If legitimate volume hits the limit, tune up — but track WHO hit the limit; legitimate users tend to be one or two, spammers tend to be many.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "URL field requires http(s); javascript:/data: rejected",
+      "rationale": "The link is rendered on /vouches as a real <a href> for the visitor to click. javascript:URL or data:URL would let a hostile submitter inject script when an unsuspecting visitor clicked. The protocol check at submission rejects these vectors before they reach the DB. The same protection also stops file:// URLs which could be confusing.",
+      "recommendation": "Keep the strict protocol check. If a future vouch wants to link to a mailto: target, evaluate explicitly; don't relax the rule by default.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "If sessionId supplied, must match a live session",
+      "rationale": "Some vouches reference a specific engagement ('Marc shipped X for me'). The submission form lets them attach a sessionId for the link. If the id is a typo, the vouch attributes to a non-existent session — confusing in /admin/vouches review and impossible to link from the engagement page. Validating at submission catches the typo class of mistakes.",
+      "recommendation": "If a vouch needs to reference a session that's been soft-deleted, the right answer is moderator-side resolution, not relaxing this check.",
+      "date": "2026-05-18"
+    }
+  ],
+  "successCriteria": "- An anon visitor can submit a vouch with no auth or CSRF\n- VOUCH_LIMITS thresholds enforce body/name/link length\n- Email format check rejects malformed addresses\n- Relationship enum check rejects unknown values\n- Link protocol check rejects javascript:/data:/file:\n- sessionId if present matches a live session, else 400\n- Per-email and per-IP rate limits cap abuse; over-limit → 429\n- Insert lands with status='pending'; moderator review required for public surfacing",
+  "implementation": "functions/api/vouches.ts — onRequestPost. Validation chain via VOUCH_LIMITS + isPlausibleEmail + relationship enum + URL protocol check. Rate limit checks for both axes. INSERT with id = randomTokenB64url and status='pending'. Returns 200 { ok: true } — vouch UI doesn't need to know the row id (moderator review handles followups). Tests: functions/_lib/vouches.test.ts (limits, projection) + integration in functions/api/vouches.test.ts.",
+  "userGuide": "Client → POST /api/vouches with { name, email, relationship, body, link?, sessionId?, displayPref? }. Response → 200 { ok: true }. Submitted vouch enters /admin/vouches queue; Marc approves to surface on /vouches. Field defaults: displayPref = 'first-name' (matches the public projection). To moderate as admin: /admin/vouches lists pending; approve/reject actions live there. To trigger rate-limit explicitly for testing: submit 4 vouches from the same email within an hour — the fourth gets 429.",
+  "knownLimitations": [
+    "No CAPTCHA — the rate limit + manual moderation is the anti-spam layer. If automated abuse leaks through, hCaptcha is the next escalation",
+    "Email isn't verified (no double opt-in) — a determined spammer could use throwaway emails. Moderation catches output",
+    "VOUCH_LIMITS duplicates client + server validation; if updated in one place the other could drift. Server is the source of truth",
+    "Rate limit IP is from Cloudflare's forwarded headers; misconfigured proxy upstream could mis-attribute requests. Production deploy is direct CF Pages, so theoretical",
+    "URL protocol check is exact-prefix; a future requirement for relative URLs would need a relaxation. None today"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-18",
+      "reason": "Endpoint shipped with all validation + rate limits + moderation pipeline."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Open submission + tight rate limits + URL protocol check all stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/vouches."
+    }
+  ],
+  "annotations": []
+}

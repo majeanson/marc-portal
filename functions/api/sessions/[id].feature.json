@@ -1,0 +1,76 @@
+{
+  "featureKey": "feat-2026-049",
+  "title": "GET + PATCH + DELETE /api/sessions/:id — session lifecycle",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/engagement",
+  "componentFile": "functions/api/sessions/[id].ts",
+  "problem": "Per-session lifecycle. GET reads (visitor sees their own, admin sees any). PATCH is the workhorse: admin-only status transitions (draft → triage → active → ...), visitor or admin intake_json edits with optimistic concurrency via ifUpdatedAt, custodian plan changes, tier assignment, withdrawals. Each transition triggers the right Resend notification (visitor → status email, admin → intake-edited email, etc). DELETE soft-deletes (sets deleted_at); FK cascades do NOT fire (soft delete preserves the row + its messages + advancements for admin trash recovery).",
+  "tags": ["engagement", "lifecycle", "optimistic-concurrency", "status-history", "soft-delete"],
+  "analysis": "GET: canAccessSession() (functions/_lib/sessions.ts) gates ownership; admin bypasses. PATCH is the most complex: body shape varies by what's being changed (status, intakeJson, tier, withdraw, allYoursAck, custodianPlan). Most fields are admin-only; intakeJson can be visitor-edited only when status is in editable phases (draft, triage). ifUpdatedAt is a millisecond timestamp the client sends back from its last GET; the UPDATE's WHERE compares against the DB's updated_at to detect a concurrent edit — mismatch returns 409 with the latest version. Status transitions write to status_history JSON column via appendStatusHistory() (helper in _lib/sessions.ts) so the lifecycle audit trail accumulates. Each transition queues the right notification email; emails are best-effort (failures logged, transition still commits). DELETE: soft-delete — set deleted_at + status='deleted-by-X', preserve row + descendants for trash recovery. Hard delete only via DELETE /api/me (full erasure flow).",
+  "decisions": [
+    {
+      "decision": "Optimistic concurrency via ifUpdatedAt, not a lock or last-write-wins",
+      "rationale": "Two parties (visitor + admin) can edit the same session via different routes. A pessimistic lock would require a session-edit-lock table + lease renewals. Last-write-wins silently discards one party's edit. Optimistic concurrency via ifUpdatedAt rejects the second writer with a 409 + the latest row, letting the UI prompt the user to merge. The client (src/lib/sessionsApi.ts) handles the 409 by re-fetching + offering a merge UI.",
+      "recommendation": "When adding a new mutable field on the session, plumb it through the same ifUpdatedAt path. Don't add a per-field 'last writer wins' for convenience — silent data loss is worse than a 'reload, please' prompt.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "Status transitions write to a status_history JSON column, not a separate table",
+      "rationale": "status_history is a read-mostly audit trail; writes only happen on transitions (which are rare). A JSON column on the session row avoids a JOIN on every GET and keeps the audit trail co-located with the parent. The trade-off is no SQL-level history querying (would require JSON1 extension); for the current use case (render the history on /admin/inbox/:id), in-app parsing is plenty fast.",
+      "recommendation": "If history queries become hot (e.g. 'show me all sessions that transitioned from triage to active in the last 7 days'), the JSON column can be migrated to a transitions table — but JSON1 SQLite functions would handle it first. AUDIT P2.3 deferred this.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "Email notifications are best-effort, not transactional with the DB write",
+      "rationale": "If Resend is down, blocking the status transition means the admin can't move sessions through the pipeline until email service is restored — too tight a coupling. Email is the notification, not the system of record. Failures are logged + appear in /admin/digest synthetic monitor; the DB transition is the source of truth.",
+      "recommendation": "Don't make emails transactional. If a critical notification ever needs guaranteed delivery (e.g. payment-related), use Stripe webhooks or a dedicated outbox queue, not the session-PATCH path.",
+      "date": "2026-05-13"
+    }
+  ],
+  "successCriteria": "- GET enforces ownership (visitor sees own, admin sees any); 404 for missing or unauthorized\n- PATCH supports all transition kinds with the right auth gates (admin-only for status, mixed for intakeJson)\n- ifUpdatedAt mismatch returns 409 with the current row\n- Status transitions append to status_history JSON; never overwrite\n- The right Resend notification is queued per transition kind\n- DELETE soft-deletes (sets deleted_at) and preserves the row for trash recovery\n- Email failures don't roll back the DB transition",
+  "implementation": "functions/api/sessions/[id].ts — three handlers. GET: loadSession + canAccessSession. PATCH: body shape switch — status (admin), intakeJson (mixed), tier (admin), withdraw (visitor), allYoursAck (visitor), custodianPlan (admin). Each branch validates inputs, runs the UPDATE with ifUpdatedAt in WHERE, appends to status_history when status changes, queues the right email. DELETE: UPDATE deleted_at = now. Helpers heavily lean on functions/_lib/sessions.ts: appendStatusHistory, canAccessSession, isValidStatus, loadSession, primaryAdminEmail. Tests in functions/_lib/sessions.test.ts (helpers) + functions/api/sessions/sessions.test.ts (handler).",
+  "userGuide": "Server-side endpoint; src/lib/sessionsApi.ts wraps it for the SPA. To transition a session as admin: PATCH /api/sessions/:id with { status: 'active', ifUpdatedAt }. To edit an intake as visitor: PATCH with { intakeJson, ifUpdatedAt } while status is in draft/triage. To withdraw as visitor: PATCH with { withdraw: true }. To soft-delete: DELETE /api/sessions/:id (self or admin). To recover a soft-deleted session: /admin/trash UI calls PATCH { restore: true }. To inspect status history: GET response includes status_history array.",
+  "knownLimitations": [
+    "Optimistic concurrency only covers fields included in the UPDATE; a future field added without threading ifUpdatedAt would be a silent gap",
+    "status_history is JSON in a single column; large histories (e.g. 50+ transitions) make the column large and the GET payload bigger. Not a concern at current scale",
+    "Soft-deleted sessions don't auto-purge; admin must manually trash-clear. A future janitor cron could TTL them (e.g. permanently delete after 90 days)",
+    "Email queue is best-effort with no retry — a one-time Resend hiccup means the notification is just lost. AUDIT P1.3 (Resend outbox) deferred",
+    "isAdmin is the only privilege gate; there's no per-resource ACL (e.g. 'admin X can view session Y but not Z'). The threat model is one Marc, one practice — multi-admin would require schema work"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-09",
+      "reason": "Endpoint shipped with the full transition matrix + optimistic concurrency."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Lifecycle, concurrency, and notification patterns all stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id."
+    }
+  ],
+  "annotations": []
+}

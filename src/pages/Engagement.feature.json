@@ -63,7 +63,7 @@
       "reason": "Code-first verification — feature.json co-located at src/pages/Engagement.feature.json. Confirmed the page still renders the fixture and clarified its relationship to the engagement-runtime feature."
     }
   ],
-  "lastVerifiedDate": "2026-05-21",
+  "lastVerifiedDate": "2026-05-23",
   "revisions": [
     {
       "date": "2026-05-06",

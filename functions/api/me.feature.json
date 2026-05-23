@@ -1,0 +1,81 @@
+{
+  "featureKey": "feat-2026-046",
+  "title": "GET + DELETE /api/me — current identity + Loi 25 self-serve erasure",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/auth",
+  "componentFile": "functions/api/me.ts",
+  "problem": "Two endpoints on one resource. GET /api/me is the SPA's identity oracle — the very first call on bootstrap, returns { email, isAdmin } for authenticated visitors and { email: null } for unauthenticated. Returning 200 in both cases (not 401) keeps the SPA's bootstrap simple. DELETE /api/me is the Loi 25 self-serve erasure — a signed-in visitor can hard-delete everything they own in one call: sessions (cascades to messages + attachments via FK), magic-link tokens for their email, R2 attachment blobs (best-effort), and finally their own row.",
+  "tags": ["auth", "identity", "loi-25", "erasure", "csrf-protected"],
+  "analysis": "GET handler: read mp_session via currentEmail(); if absent return 200 { email: null, isAdmin: false }. If present, also self-heal the mp_csrf cookie (sessions issued before the CSRF rollout had no mp_csrf — handler mints one if missing). Returns 200 { email, isAdmin } with isAdmin derived from env.ADMIN_EMAILS. DELETE handler: requires sign-in; gated by CSRF (middleware). Runs the erasure in order: (1) DELETE FROM magic_link_tokens WHERE email = ?; (2) SELECT all sessions owned by email, collect their attachment R2 keys; (3) DELETE R2 objects (best-effort — failures logged but don't block; the DB row going is the legal commitment); (4) DELETE FROM sessions WHERE email = ? — FK cascades drop messages, advancements, attachments rows, payments. The cookie is cleared on response so the visitor's next request shows them as signed-out. The visitor-side flow then navigates to /au-revoir (the ritual page) via the mp_just_erased sessionStorage flag set by the SPA before calling here.",
+  "decisions": [
+    {
+      "decision": "GET returns 200 { email: null } for unauthenticated, NOT 401",
+      "rationale": "The SPA bootstraps by calling /api/me before any UI renders. If unauthenticated returned 401, every signed-out visitor's first request would be an error — the SPA would either need to swallow the error or render an error state. 200 with null email is cleaner: one response shape covers both states, the SPA gets a JSON body either way, no error-handling branching needed for the very common signed-out case.",
+      "recommendation": "Don't switch to 401. If a future need requires distinguishing 'expired session' from 'never signed in', surface that in the JSON ({ email: null, reason: 'expired' }) rather than by status code.",
+      "date": "2026-05-09"
+    },
+    {
+      "decision": "Erasure cascades via FK; explicit R2 cleanup is best-effort",
+      "rationale": "D1's FK ON DELETE CASCADE handles sessions → messages, advancements, attachments rows, payments — one DELETE on sessions removes everything related. R2 (blob storage) is separate and doesn't auto-cascade, so attachments must be enumerated and deleted manually. R2 deletion is best-effort because: (a) the legal commitment is the DB row going (no more record we hold this), (b) an R2 failure shouldn't block the erasure from completing on the DB side, (c) a future garbage-collection sweep catches orphan R2 objects.",
+      "recommendation": "If R2 errors become common, add a retry layer rather than blocking the DB erasure. The orphan-attachment GC piggybacks the digest cron and catches stragglers in any case.",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Self-heal CSRF cookie inside GET /api/me",
+      "rationale": "The CSRF rollout (mp_csrf cookie) shipped after some users already had mp_session cookies. Those sessions had no mp_csrf and would fail every state-changing request silently. Self-healing in GET /api/me means the SPA's first bootstrap call mints the cookie for grandfathered sessions, no migration script, no user action required. Clean self-fix.",
+      "recommendation": "Keep the self-heal. It's a write inside a GET, which is normally a smell, but the write is purely additive (no existing data changes) and the alternative is a forced sign-out for every grandfathered user.",
+      "date": "2026-05-12"
+    }
+  ],
+  "successCriteria": "- GET returns 200 { email, isAdmin } for authenticated; 200 { email: null, isAdmin: false } for unauthenticated\n- mp_csrf cookie is minted on GET if absent (self-heal for pre-CSRF sessions)\n- DELETE requires sign-in (401 if missing) and CSRF (403 if missing)\n- DELETE cascades through sessions/messages/advancements/attachments via FK\n- R2 attachment blobs are deleted best-effort; failures don't block the DB delete\n- Response clears mp_session cookie so subsequent requests show signed-out\n- After DELETE, GET returns { email: null } for the same browser",
+  "implementation": "functions/api/me.ts — two handlers. GET: currentEmail() → ok({ email, isAdmin }) or ok({ email: null }). Self-heal: if email present but no mp_csrf cookie on request, append a Set-Cookie minting one. DELETE: enumerate sessions, collect attachment R2 keys, batch-delete R2 via env.MEDIA.delete(keys), single DELETE FROM sessions (FK cascades), DELETE FROM magic_link_tokens. Response includes clearSessionCookieHeader. Tests in functions/api/me.test.ts cover the cascade integrity + the no-leak property post-erasure.",
+  "userGuide": "GET /api/me is the SPA's identity oracle — called on every page load. The SPA reads the body via src/lib/authContext.ts → useAuth(). DELETE /api/me is the erasure trigger — called by /me's 'delete my account' action. To inspect what gets deleted: DELETE-from-test data, then SELECT * FROM sessions WHERE email = 'x' and confirm zero rows. To recover an erased account: there's no undo; this is the Loi 25 erasure promise, not a soft-delete. To force-erase as admin: there's no admin DELETE /api/me?email=X; admins use /admin/inbox + soft-delete (recoverable), and only Loi 25 visitors get hard-delete.",
+  "knownLimitations": [
+    "R2 cleanup is best-effort; orphan attachments accumulate if R2 fails for a session. The orphan-attachment GC sweep (piggybacked on the digest cron) catches them eventually",
+    "Erasure is per-email; if a visitor has multiple emails registered (technically possible with two magic-link flows), only the signed-in email's data is erased — the other emails remain. Mitigation: a visitor wanting full erasure can sign in with each email and erase, or contact Marc directly",
+    "DELETE clears the mp_session cookie via response header but not via active D1 server-side state — there's nothing to clear server-side because sessions are stateless cookies",
+    "GET self-heal does a write inside a GET (mp_csrf cookie mint when missing); this is normally a code smell but is purely additive and only fires for grandfathered sessions"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-09",
+      "reason": "GET /api/me shipped as the bootstrap identity oracle."
+    },
+    {
+      "from": "active",
+      "to": "active",
+      "date": "2026-05-15",
+      "reason": "DELETE /api/me added with the Loi 25 erasure flow: FK cascades + R2 best-effort cleanup."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Both endpoints stable; ton-passage arc's /au-revoir consumes this flow."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/me."
+    }
+  ],
+  "annotations": []
+}

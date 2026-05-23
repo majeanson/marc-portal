@@ -1,0 +1,77 @@
+{
+  "featureKey": "feat-2026-037",
+  "title": "Handoff checklist — operational procedure, two audiences",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/handoff",
+  "componentFile": "src/pages/HandoffChecklist.tsx",
+  "liveUrl": "/handoff/checklist",
+  "problem": "/handoff explains WHAT a handoff is (two ownership modes — keys returned vs. custodian). /handoff/checklist is the companion procedural document — WHAT the buyer should expect on the day, in their own language, plus the buried technical details a future dev would need if the buyer ever migrates. The page exists because asking a Quebec tradesperson 'do you have a Cloudflare account?' requires preparation — they need to know what they're going to be asked, in plain words, ahead of time. Burying the technical details in a collapsed section keeps the page legible for the primary audience without losing the secondary audience.",
+  "tags": ["handoff", "operational", "two-audience", "buyer-facing", "loi-25-friendly"],
+  "analysis": "Two-audience structure layered top-to-bottom. Sections 1–4 are buyer-facing in plain Québécois — what gets handed over (the live URL + DNS, the GitHub repo invitation, the D1 + R2 + Pages account access in 1Password format, the credentials), what they need to do in the first week (test the live URL from a fresh device, change a price in Stripe if applicable), what dormancy looks like (a single 30-day email check-in, not a 90-day-with-3-emails escalation). Section 5 is a collapsed 'Détails techniques' that a developer would open if the client migrated — asset-by-asset commands, account-level instructions, the GPG-encrypted D1 dump procedure as an opt-in (default share is the 1Password file, encrypted dumps are for buyers with their own crypto setup). The procedure was simplified from an earlier 9-section version; the README at /handoff documents the upgrade path. Page is feature-tinted as 'keys' (PAGE_FEATURE['page.handoff-checklist']) — handoff is the keys-feature, and this is its operational artifact.",
+  "implementation": "src/pages/HandoffChecklist.tsx — static content rendered from a top-of-file COPY constant keyed by Lang. Sections 1–4 render as standard h2 + paragraph + ul lists; section 5 uses a <details> element so the technical body is collapsed by default. PageMast + SectionEyebrow + FeatureFolioLink chrome consistent with the rest of the site; FeatureContinue at the bottom closes the keys-loop. No fetch, no third-party deps. The 'last simplified' date is implicit — significant changes to the procedure live as separate revisions in this feature.json. Companion page /handoff (src/pages/Handoff.tsx) explains the two ownership modes; the checklist is the procedural side, the handoff page is the conceptual side.",
+  "decisions": [
+    {
+      "decision": "Two-audience structure: buyer-friendly sections 1–4, technical section 5 collapsed",
+      "rationale": "A single audience document either bores the buyer with command-line instructions or leaves the future-dev guessing about account-level access. Splitting by audience and collapsing the technical side keeps the buyer page legible while the dev side stays one click away. The two audiences are real and distinct — the buyer reads this once before signing off; the future dev opens it months later when migrating.",
+      "recommendation": "If a third audience emerges (e.g. compliance / Loi 25 inspectors), add a section but consider whether a separate page is cleaner. Two collapsed sections on one page is fine; three is a hint the page should be split.",
+      "date": "2026-05-20"
+    },
+    {
+      "decision": "GPG-encrypted D1 dumps are opt-in, not the default share format",
+      "rationale": "Most buyers don't have a GPG setup and don't need one — the default share is a 1Password vault with credentials + the DB password, which works for 95% of buyer profiles. The encrypted dump is for the 5% who explicitly want it (security-conscious buyers, future devs taking over). Defaulting to encrypted would block every handoff on a 30-minute GPG onboarding for the buyer; opt-in handles the case without imposing the cost.",
+      "recommendation": "Keep the opt-in default. If a buyer requests the encrypted dump, walk them through gpg --import once; don't switch the default.",
+      "date": "2026-05-20"
+    },
+    {
+      "decision": "Dormancy threshold: 30 days × 1 email, not 90 days × 3 emails",
+      "rationale": "An earlier version followed the corporate-pattern 90/60/30 escalation but felt punitive for a small-practice handoff — the buyer isn't a SaaS subscriber missing payments, they're a one-off client who agreed to take the keys. A single 30-day check-in is cordial, signals 'I noticed you might want help', and exits cleanly if they don't reply. The 90-day version was creating an artificial relationship the practice doesn't want.",
+      "recommendation": "Stick with 30 × 1. If a buyer regularly hits the threshold without responding, take it as a signal the handoff was the right call — the relationship has ended, that's expected.",
+      "date": "2026-05-20"
+    }
+  ],
+  "successCriteria": "- A buyer reading sections 1–4 can prepare for the handoff day without opening section 5\n- A future dev opening section 5 finds the commands and account-level instructions needed to migrate\n- The procedure matches the actual handoff Marc performs (no drift between page and practice)\n- The dormancy line is consistent with /handoff's two-mode explanation\n- Page renders bilingual at full parity (FR canonical, EN mirror)\n- Page is reachable from /handoff with a 'voir la check-list' CTA",
+  "userGuide": "Open /handoff/checklist (or /en/handoff/checklist). Read sections 1–4 if you're the buyer preparing for handoff day — what you'll receive, what you should test, what to expect from Marc in the first 30 days. Open the 'Détails techniques' section if you're a future developer taking over the site — asset-by-asset commands, GitHub + Cloudflare + Stripe + Resend account-level instructions. To exercise the encrypted-dump option, ask Marc; it's opt-in and the default share is the 1Password vault. The companion page /handoff explains the two ownership modes (keys returned vs. custodian) — read it first if you don't know which mode applies to your engagement.",
+  "knownLimitations": [
+    "Section 5 (technical details) is hand-curated — adding a new asset (e.g. a new Cloudflare binding) requires editing both the buyer side ('and here's a new thing') and the technical side (the command list)",
+    "The 30-day dormancy threshold is hardcoded in the copy; if Marc ever changes practice (e.g. to 60 days for buyers in seasonal businesses), the page must be edited",
+    "The GPG dump procedure references a specific gpg version's command syntax; if the dev community migrates to a newer GPG with different defaults, the commands may need updating",
+    "The 1Password format reference assumes the buyer or future dev has a 1Password account; an OnePass-allergic buyer requires a one-off alternative (encrypted ZIP, hand-delivered USB), not documented here"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-20",
+      "reason": "Page shipped with the simplified 5-section structure; replaced an earlier 9-section version that had ageing-out detail."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Two-audience structure, opt-in GPG, and 30-day dormancy decisions are stable since the 2026-05-20 simplification."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — P1 sweep, co-located doc for /handoff/checklist."
+    }
+  ],
+  "annotations": []
+}

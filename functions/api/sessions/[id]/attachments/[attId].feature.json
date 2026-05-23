@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-060",
+  "title": "GET + DELETE /api/sessions/:id/attachments/:attId — stream and remove",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/engagement",
+  "componentFile": "functions/api/sessions/[id]/attachments/[attId].ts",
+  "problem": "Per-attachment operations. GET streams the file content from R2 with the right content-type so the browser can render or download. DELETE removes the row + the R2 object — but is gated: the uploader can only delete WHILE the attachment is still unlinked (no message_id), admin can delete at any time. This means a visitor can recall a pre-message upload but can't go back and delete an attachment they already sent. Admin retains full control for moderation.",
+  "tags": ["engagement", "r2-stream", "soft-removal", "uploader-window", "admin-override"],
+  "analysis": "GET: canAccessSession + loadAttachment. SELECT row, fetch R2 object via env.MEDIA.get(key). Return as Response with content-type from the row. 503 if env.MEDIA binding unset. 404 if attachment doesn't exist or doesn't belong to the session. DELETE: gated by (uploader AND message_id IS NULL) OR isAdmin. The uploader window protects against the 'I sent it, then thought better' case becoming a way to erase the recipient's record of what was shared. Admin override exists for moderation (an inappropriate file slipping through). DELETE flow: env.MEDIA.delete(key) (best-effort, log on failure), then DELETE FROM attachments WHERE ... — the row going is the source of truth, R2 orphans are GC'd by the digest cron.",
+  "decisions": [
+    {
+      "decision": "Uploader can DELETE only while message_id IS NULL",
+      "rationale": "Letting the uploader delete a linked attachment would let either party rewrite the conversation history ('I never sent that'). The pre-link window IS the recall opportunity — once the message is sent, the attachment is part of the audit trail. Admin override exists for moderation, not for either party to revise history.",
+      "recommendation": "Don't widen the uploader's window. If a 'mistakes happen' UX need is real, surface a 'mark as withdrawn' status that keeps the row but visually crosses it out — don't delete.",
+      "date": "2026-05-14"
+    },
+    {
+      "decision": "R2 deletion is best-effort; D1 row deletion is the source of truth",
+      "rationale": "Same pattern as the erasure DELETE on /api/me: R2 can fail transiently, blocking the D1 row would leave inconsistent state. Better to flip the D1 row off (so reads stop returning the attachment) and let the digest cron GC the orphan R2 blob.",
+      "recommendation": "If R2 reliability ever becomes a concern, add a retry layer to the R2 delete; don't block the D1 row.",
+      "date": "2026-05-14"
+    }
+  ],
+  "successCriteria": "- GET streams the file from R2 with the correct content-type\n- 503 when env.MEDIA unset\n- DELETE allowed for (uploader AND unlinked) OR admin\n- DELETE never removes a linked attachment for the uploader\n- R2 delete failures don't roll back the DB row removal\n- 404 for missing or unauthorized attachment",
+  "implementation": "functions/api/sessions/[id]/attachments/[attId].ts — onRequestGet + onRequestDelete. loadAttachment() validates attId × sessionId. GET fetches R2 + returns stream. DELETE checks the uploader-window predicate, then R2 delete (best-effort), then D1 row delete. ATTACHMENT_COLUMNS shared with the index handler. Tests: covered in functions/api/sessions/attachments.test.ts.",
+  "userGuide": "Client → GET /api/sessions/:id/attachments/:attId to view/download. DELETE allowed for uploader (only pre-link) or admin. To inspect orphan R2 blobs: list R2 bucket contents, cross-reference with D1 attachments table for keys that don't exist. The digest cron does this sweep automatically.",
+  "knownLimitations": [
+    "GET streams the file synchronously; very large attachments hold the worker open. Per-attachment size cap from the upload side keeps this bounded",
+    "No range requests — GETting a 10MB file always streams it whole. Acceptable since files are <10MB typically",
+    "DELETE doesn't notify the OTHER party (visitor doesn't know admin deleted their attachment); deliberate, deletes are operational not conversational",
+    "If R2 succeeds but D1 delete fails (network blip mid-handler), the attachment row exists pointing at a non-existent R2 key. Rare; UI handles gracefully (renders 'attachment unavailable')"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-14",
+      "reason": "Endpoint shipped with GET stream + DELETE-with-uploader-window."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Uploader-window and admin-override semantics stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/attachments/:attId."
+    }
+  ],
+  "annotations": []
+}

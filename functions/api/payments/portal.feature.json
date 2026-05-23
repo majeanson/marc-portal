@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-052",
+  "title": "POST /api/payments/portal — Stripe Customer Portal session",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/payments",
+  "componentFile": "functions/api/payments/portal.ts",
+  "problem": "Custodian subscribers need a way to update their card, view invoices, and cancel without going through Marc. Stripe's hosted Customer Portal handles all of that — this endpoint mints a temporary URL the browser redirects to. Cancellation via the portal triggers customer.subscription.deleted → webhook flips custodian to 'switched_to_tout_a_toi' per the /handoff promise. No payment-method UI in this codebase; Stripe's portal IS the UI.",
+  "tags": ["payments", "stripe", "customer-portal", "self-serve", "graceful-degrade"],
+  "analysis": "POST { sessionId, lang? }. Auth: canAccessSession() (self or admin). Loads the session, finds its stripe_customer_id (set at the first subscription's checkout.session.completed). createBillingPortalSession() (functions/_lib/stripe.ts) calls Stripe's billingPortal.sessions.create with the customer + a return_url back to /me. Returns { url } so the SPA can redirect. STRIPE_SECRET_KEY guard returns 503 if unset (consistent with the rest of the payments family). 404 if the session has no stripe_customer_id (means no subscription was ever created — portal would be empty).",
+  "decisions": [
+    {
+      "decision": "Use Stripe's hosted portal, don't build our own card/invoice UI",
+      "rationale": "Building a PCI-compliant card UI is months of work + an ongoing audit burden. Stripe's portal is hosted, audited, and free to use. The visitor sees Stripe's UI for ~30 seconds, then comes back to /me. The trade-off is a brief UX shift to Stripe's brand; acceptable for the visitor (they understand Stripe handles billing).",
+      "recommendation": "Don't build a custom card UI. If Stripe ever discontinues the portal (extremely unlikely), evaluate alternatives at that point.",
+      "date": "2026-05-16"
+    },
+    {
+      "decision": "404 when session has no stripe_customer_id, not an empty portal",
+      "rationale": "A session that never had a subscription has no customer in Stripe — Stripe would reject the create-portal-session API call with an unhelpful error. Returning 404 from our endpoint is a cleaner UX and matches the semantic ('no portal to open for this session'). The SPA can render 'no active subscription' instead of letting the user click into an error.",
+      "recommendation": "Keep the explicit 404. If a future flow creates a Stripe customer without a subscription (e.g. saving card on file), thread it through this gate too.",
+      "date": "2026-05-16"
+    }
+  ],
+  "successCriteria": "- A signed-in visitor (or admin) can mint a Customer Portal URL for any session they own with a custodian subscription\n- 404 when no stripe_customer_id (no subscription ever existed)\n- 503 when STRIPE_SECRET_KEY unset\n- The portal's return_url is /me so the visitor lands back on the dashboard\n- Cancellation in the portal triggers the webhook flow → custodian_status switches",
+  "implementation": "functions/api/payments/portal.ts — onRequestPost. Auth + canAccessSession; loadSession; createBillingPortalSession({ customer, return_url }). Returns { url }. Tests: covered in functions/api/payments/checkout.test.ts (shared payments test file) for the auth + 503 patterns.",
+  "userGuide": "Client → POST /api/payments/portal with { sessionId }. Response → { url }; redirect browser. Stripe portal handles card update / cancel / view invoices; on done, returns to /me. To inspect Stripe customer state: Stripe Dashboard → Customers → search by email. To force-cancel as admin: use Stripe Dashboard 'cancel subscription' on the customer's sub.",
+  "knownLimitations": [
+    "Portal session URLs are short-lived (60 min typical); clicking a stale URL fails on Stripe's side",
+    "Portal can't be themed to match marc-portal — it's Stripe's brand for the duration. Acceptable",
+    "No way to inline-cancel within this codebase; the portal is the only path. If the portal is ever unavailable (Stripe outage), the visitor has to email Marc to cancel"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-16",
+      "reason": "Endpoint shipped with portal session creation; integrates with the customer.subscription.deleted webhook flow."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Stripe portal pattern is stable; no plans to build a custom UI."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/payments/portal."
+    }
+  ],
+  "annotations": []
+}

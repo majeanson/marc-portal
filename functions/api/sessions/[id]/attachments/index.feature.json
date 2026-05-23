@@ -1,0 +1,82 @@
+{
+  "featureKey": "feat-2026-059",
+  "title": "GET + POST /api/sessions/:id/attachments — upload file/voice/sketch",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/engagement",
+  "componentFile": "functions/api/sessions/[id]/attachments/index.ts",
+  "problem": "Messages on a session can carry attachments — documents, voice notes (with auto-transcription), Excalidraw scenes. POST handles upload (one per request, multipart/form-data), deciding the kind from content type: file (streamed to R2), voice (buffered, magic-byte checked, transcribed via Workers AI, stored), sketch (buffered, parsed + shape-checked, stored). Attachments are uploaded BEFORE the message that references them; the messages POST then links them by id. GET lists unlinked uploads the current actor has made for this session — useful for resumed flows where the user navigated away mid-message.",
+  "tags": ["engagement", "r2", "workers-ai", "magic-byte", "two-phase-upload", "graceful-degrade"],
+  "analysis": "POST: canAccessSession + parse multipart. Content type drives the branch — application/* → file kind, audio/* → voice, application/json with shape → sketch. Each branch validates: file streams to R2 (memory-thin to avoid bloating worker memory); voice buffers, magic-byte check via attachments _lib helper, optional Workers AI transcription (if env.AI binding present), store both bytes (R2) + transcript (D1 column); sketch buffers, parse JSON, shape-check Excalidraw scene structure, store as text in D1 (small, no R2 trip). All write an attachments row with message_id = NULL (pre-link state). Per-session storage quota enforced (MAX_ATTACHMENT_BYTES_PER_SESSION) — AUDIT P2.17 work. Per-attachment size limit too. GET: SELECT WHERE session_id = ? AND author = (currentEmail-derived) AND message_id IS NULL — only the actor's own unlinked uploads, so admin and visitor can't see each other's pre-message drafts.",
+  "decisions": [
+    {
+      "decision": "Two-phase upload: attachments uploaded separately, then linked at message send",
+      "rationale": "Same lesson as the messages handler: multipart message+attachments fails on intermittent connections and large files. Separate uploads stream independently; retries don't lose message text. The message POST is small + fast once attachments are in place.",
+      "recommendation": "Don't go back to single-shot multipart. Two-phase is the right scale-friendly shape.",
+      "date": "2026-05-13"
+    },
+    {
+      "decision": "Magic-byte validation, not extension or content-type trust",
+      "rationale": "An attacker uploading a 'document.pdf' that's actually JS could embed unsafe content. Magic-byte sniffing (the first few bytes of every well-known file format) is the real-content check. Files that don't match a known magic-byte signature are rejected. Coupled with R2's role as inert blob storage (we never execute these files server-side), the attack surface is minimal.",
+      "recommendation": "When adding support for a new file type, add the magic-byte signature to the _lib/attachments helper. Don't grow the allow-list without it.",
+      "date": "2026-05-13"
+    },
+    {
+      "decision": "Voice transcription is opportunistic, not required",
+      "rationale": "Workers AI is an optional binding. If unset, voice attachments still upload + store — they just lack transcripts. The voice playback works fine; only the searchable text is missing. Graceful-degrade pattern. The transcript column can be backfilled later via a one-shot script if Workers AI becomes available.",
+      "recommendation": "If transcription is ever required (not optional), the right answer is to fail the upload, not silently store without transcript. Today opportunistic is correct.",
+      "date": "2026-05-14"
+    }
+  ],
+  "successCriteria": "- Each kind (file / voice / sketch) validates its own content shape before storing\n- Magic-byte sniffing rejects mislabeled files\n- Per-session storage quota enforced; over-quota → 413\n- R2 binding unset → 503 (graceful-degrade)\n- Voice attachments upload even when AI binding unset (transcript = null)\n- GET returns only the current actor's own unlinked uploads for this session\n- Each upload is one row in attachments with message_id = NULL until linked",
+  "implementation": "functions/api/sessions/[id]/attachments/index.ts — onRequestPost + onRequestGet. Branches on content type. R2 writes via env.MEDIA.put(key, body). Magic-byte + size cap helpers in functions/_lib/attachments.ts. Workers AI for voice via env.AI.run('@cf/openai/whisper'). Per-session storage tally via a sum query before insert. Tests: functions/_lib/attachments.test.ts covers magic-byte + size; integration tests in functions/api/sessions/attachments.test.ts.",
+  "userGuide": "Client → POST /api/sessions/:id/attachments with multipart file. Response → { id, kind, ... }. The SPA holds the id, includes it in the next message's POST. To attach a sketch: POST the Excalidraw scene JSON. To attach voice: POST audio/* file; the response includes the transcript (or null if AI unavailable). To list pre-message uploads on reload: GET /api/sessions/:id/attachments. To inspect storage usage: sum sizes WHERE session_id = ? in D1.",
+  "knownLimitations": [
+    "One attachment per POST — clients must call N times for N attachments. Acceptable; rarely > 3 per message in practice",
+    "R2 deletion is best-effort on the DELETE path (see [attId] handler); orphan blobs are GC'd by the digest cron",
+    "Magic-byte allow-list is hand-curated; a legitimate file type not on the list is rejected. Adding one is a code change",
+    "Workers AI inference is metered per call; abuse via voice spam would cost. Rate limit on the messages POST is the upstream defense",
+    "Sketch JSON shape-check is structural, not adversarial — a malformed-but-valid-shape sketch could store unexpected data. Sketches are inert (we don't execute the JSON), so the risk is bounded"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-13",
+      "reason": "Endpoint shipped with all three kinds; two-phase upload + magic-byte + size cap all in."
+    },
+    {
+      "from": "active",
+      "to": "active",
+      "date": "2026-05-17",
+      "reason": "Per-session storage quota added (AUDIT P2.17)."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Two-phase upload + magic-byte + quota patterns all stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/attachments."
+    }
+  ],
+  "annotations": []
+}

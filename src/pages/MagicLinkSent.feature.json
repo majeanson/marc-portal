@@ -1,0 +1,70 @@
+{
+  "featureKey": "feat-2026-039",
+  "title": "Vérifie ton courriel — magic-link sent confirmation",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/auth",
+  "componentFile": "src/pages/MagicLinkSent.tsx",
+  "liveUrl": "/login/sent",
+  "problem": "After /login submits the magic-link request, the visitor needs a clear destination that explains what just happened, what they should do, and what to do if the email doesn't arrive. A bare 'thank you' line leaves them hanging; a complex page invites confusion. /login/sent is the deliberate plain-text confirmation — one line that says 'we sent it to X, expires in 30 min', one line of reassurance ('you can always request another'), one fallback ('check spam or try a different email'). The email address comes via ?email= query param so the visitor sees their own input echoed back.",
+  "tags": ["auth", "magic-link", "post-submit-state", "graceful-degrade"],
+  "analysis": "Single landing page after POST /api/auth/request-link succeeds. /login navigates here with ?email=<typed-value>; this page reads that param to render 'we sent a link to <email>'. If the param is missing (direct hit, reload, manual navigation), the copy falls back to a generic 'your link is on its way' — same information without the personalization that would otherwise render as 'we sent a link to .' (broken empty case). The page also offers a 'send another link' affordance that navigates back to /login. There's no auto-refresh, no polling for verification — clicking the link in the email takes the visitor to /api/auth/verify which redirects to /me on success. The 30-minute expiry is mentioned explicitly so the visitor doesn't sit on the page expecting magic.",
+  "implementation": "src/pages/MagicLinkSent.tsx — single component reading useSearchParams() for the email. COPY[lang].intro is a function (email) => string that handles both the populated and empty cases gracefully. No fetch; the page is pure render after the query param read. Header + Footer chrome consistent with /login; feature-tinted as 'conversation' (PAGE_FEATURE['page.magic-link-sent']) — same as /login since they're two parts of the same flow. There's intentionally no FeatureContinue here — the visitor is in a flow that ends with the email click, not the backstage tour.",
+  "decisions": [
+    {
+      "decision": "Read email from query param, fall back gracefully when missing",
+      "rationale": "Reading from query param means /login can do a navigate(/login/sent?email=...) without coordinating state with this page. A direct hit (reload, bookmark, manual URL) loses the param — the fallback copy keeps the page readable as a generic 'your link was sent' rather than degenerating to 'we sent a link to .' Lossy state recovery via redo is the right pattern here; the empty case is rare and benign.",
+      "recommendation": "Don't store the email in sessionStorage to 'recover' it across reloads — that adds a small data footprint (email in browser state) for almost no UX gain. The fallback copy is enough.",
+      "date": "2026-05-08"
+    },
+    {
+      "decision": "No auto-refresh, no polling for verification status",
+      "rationale": "Polling would require the page to know whether the user clicked the link in their email, which would either require a server endpoint exposing token-verification status (leak) or polling the user's own /me endpoint (which would 401 until verified). Both add complexity for a flow that already works — the visitor clicks the link in the email and lands on /me directly, this page is irrelevant once they click.",
+      "recommendation": "Resist 'add a real-time refresh' UX requests. The flow is asynchronous by design; the email is the signal, not the page.",
+      "date": "2026-05-08"
+    }
+  ],
+  "successCriteria": "- A visitor arriving via /login submit sees 'we sent a link to <their-email>' with the 30-minute expiry mentioned\n- A direct hit (no email param) shows a graceful generic 'link sent' message — not a broken empty case\n- The 'send another' affordance navigates back to /login\n- No polling, no auto-refresh; the email click is the next event\n- Page is bilingual at full parity",
+  "userGuide": "You arrive at /login/sent after submitting your email on /login. The page tells you the magic link was sent (to the email you typed, when available), reminds you it expires in 30 minutes, and offers a 'send another link' shortcut back to /login if the email doesn't arrive. To complete sign-in: open your inbox (or spam folder), click the link in the magic-link email, you'll land at /me signed in. If you're stuck waiting too long, RUNBOOK §Email is the triage doc.",
+  "knownLimitations": [
+    "?email is plain text in the URL — not a security issue (it's an email the visitor just typed), but it's logged in browser history and could appear in shoulder-surfing scenarios",
+    "The 30-minute expiry copy is hardcoded; if the server-side TTL is ever changed (functions/_lib/auth.ts magic_link_tokens schema), this page must be edited to match",
+    "No analytics on this page; we don't know what fraction of visitors stall here vs. complete the magic-link click — manual instrumentation in /admin/digest only counts deliveries, not user-side completion"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-08",
+      "reason": "Page shipped as part of the magic-link flow; /login navigates here on submit, fallback copy handles direct-hit case."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Behaviour is minimal and stable; no plans to add polling or refresh."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — P2 auth-gated sweep, co-located doc for /login/sent."
+    }
+  ],
+  "annotations": []
+}

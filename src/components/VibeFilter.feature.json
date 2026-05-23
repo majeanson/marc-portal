@@ -50,7 +50,7 @@
       "reason": "Code-first verification — feature.json co-located at src/components/VibeFilter.feature.json. Confirmed the homepage ledger and the reused VibeGate against the shipped components."
     }
   ],
-  "lastVerifiedDate": "2026-05-21",
+  "lastVerifiedDate": "2026-05-23",
   "revisions": [
     {
       "date": "2026-05-06",

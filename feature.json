@@ -86,7 +86,7 @@
       "feat-2026-010"
     ]
   },
-  "lastVerifiedDate": "2026-05-07",
+  "lastVerifiedDate": "2026-05-23",
   "revisions": [
     {
       "date": "2026-05-06",
@@ -136,6 +136,12 @@
       "to": "active",
       "date": "2026-05-21",
       "reason": "Code-first verification — portal feature documents rewritten from the shipped code and co-located; marketplace-shaped features removed. See the 2026-05-21 revision."
+    },
+    {
+      "from": "active",
+      "to": "active",
+      "date": "2026-05-23",
+      "reason": "Verification sweep alongside the FEATURE-DOCS gap audit. Root analysis still accurate; ton-passage transparency arc (passage / dossier / au-revoir) shipped this session adds three meta-tinted pages without changing the architecture described here. Total documented feature.jsons now 47 (was 10 at the prior verification)."
     }
   ],
   "annotations": []

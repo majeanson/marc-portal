@@ -1,0 +1,77 @@
+{
+  "featureKey": "feat-2026-036",
+  "title": "Le parcours — twelve-step walkthrough from stranger to ship",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/showcase",
+  "componentFile": "src/pages/Journey.tsx",
+  "liveUrl": "/parcours",
+  "problem": "The portal's pricing page shows the destination; /carte shows the geography; the home page shows the headline. None of those answer 'what actually happens between landing on the site and shipping a build?' /parcours is that page — twelve steps across four phases (Discover, Decide, Build, Ship) on a center-spine timeline. Each step is tagged with an actor (you / me / both) so the visitor sees at a glance that they carry half the steps, not all of them. It's the asynchronous-friendly equivalent of a 'how it works' deck, and it's what a busy prospect reads before deciding whether to send an intake.",
+  "tags": ["showcase", "walkthrough", "async-first", "two-sided", "timeline"],
+  "analysis": "Twelve steps total: Discover (you land, you read pricing, you read vibe-filter, you read showcase) → Decide (you write intake, I triage, we agree) → Build (I build, you watch live, we exchange messages) → Ship (you keep the keys, you optionally share, you optionally vouch). Each step's copy lives in DICT[lang].journey — the i18n.ts dictionary, structured as an array of { phase, actor, title, body, anchor } so the timeline structure mirrors the data shape. Alternates left/right along a center spine on desktop (~960px+) for visual rhythm; on mobile, collapses to a single column with the same actor tags. Actor tags (you / me / both) are colour-coded — you=intake hue, me=ochre, both=blended — so a quick scan answers 'whose work is this step?'. The CTA at the bottom drops the visitor at /intake. Page renders entirely from the dictionary at compile time; no fetch.",
+  "implementation": "src/pages/Journey.tsx — single component, ~300 lines, all copy delegated to DICT[lang].journey. PageMast carries the folio + back-home link; SectionEyebrow tags it; the twelve-step rendering loops over the dictionary array. CSS handles the alternating-left-right pattern via :nth-child(even) selectors on the spine; mobile breakpoint at 720px collapses to a single column. frPunct wraps NBSP-before-colon spans in French. The 'actor' tag is a small pill at the top of each step; colours come from CSS custom properties. FeatureContinue at the bottom points to /intake (feature.intake's primary page) — the page is feature-tinted as 'intake' since it serves the same funnel role as the intake form. No assets beyond CSS; no images, no third-party widgets.",
+  "decisions": [
+    {
+      "decision": "Twelve steps, not three or twenty",
+      "rationale": "Three is the marketing-deck default ('Discover, Decide, Done') and tells the visitor nothing useful — every consultancy says that. Twenty is too long; the visitor stops reading at step seven. Twelve is the right granularity to make each step concrete (one verb, one actor, one paragraph) without dropping below the fold. The four-phase grouping (Discover / Decide / Build / Ship) provides the mental scaffold for navigating the twelve.",
+      "recommendation": "Resist both compressing to a 'short summary' (you lose the actor breakdown) and expanding to add sub-steps. Twelve is calibrated.",
+      "date": "2026-05-14"
+    },
+    {
+      "decision": "Actor tag per step (you / me / both), not just narrative copy",
+      "rationale": "A 'how it works' page that describes work as 'we do X' silently lumps the prospect's labour with the consultant's, and a busy prospect reads the page and exits thinking the workload is symmetric. Tagging each step's actor makes the asymmetry visible — most steps are 'me', the prospect's work is bounded and explicit. Same goal as the capacity-cap public counter: structural honesty about how much of the work is whose.",
+      "recommendation": "When editing copy, keep the actor tag tied to the verb in the title. 'I build, you watch' is two steps, not one — split if mixing actors in one card.",
+      "date": "2026-05-14"
+    },
+    {
+      "decision": "Center-spine timeline, not a numbered list",
+      "rationale": "A numbered list reads as instructions ('do this, then this'); a timeline reads as a story ('this happens, then this happens'). The latter matches the asynchronous-first framing — the visitor is reading what unfolds, not following commands. Visual rhythm (alternating left/right) also makes scanning faster than a wall of bullet points.",
+      "recommendation": "Don't 'modernize' to a vertical card list. The spine is doing visual work — scanability + story framing both come from it.",
+      "date": "2026-05-14"
+    }
+  ],
+  "successCriteria": "- A visitor reading /parcours can answer 'what's MY work in this engagement?' without scrolling back\n- The asymmetry (most work is Marc's) is structurally visible via actor tags, not buried in copy\n- The page is 100% static at build time — no fetch, no third-party assets\n- Mobile breakpoint collapses cleanly; the actor tags remain legible\n- FR and EN parity at the dictionary level (typeof FR enforced via i18n.ts)\n- The bottom CTA lands the visitor at /intake — the funnel-conversion point\n- Copy is Québécois-register on the FR side (per project memory project_avoid_ai_tells)",
+  "userGuide": "Open /parcours (or /en/journey). The page shows twelve steps grouped into four phases — Discover, Decide, Build, Ship — along a center spine. Each step's pill tag tells you whose work it is (you / me / both). Scroll through to see the full arc; the CTA at the bottom drops you at the intake form. To edit copy: src/i18n.ts → DICT.fr.journey / DICT.en.journey (arrays of step records). To restructure the phases: the four-phase grouping is encoded in the step records' phase field; changing the count requires editing the renderer in Journey.tsx as well.",
+  "knownLimitations": [
+    "Mobile layout (≤720px) collapses to a single column and drops the spine ornament — the alternating rhythm only exists on wider viewports",
+    "Twelve is hardcoded as the step count; an eleven-step or thirteen-step version would require minor renderer adjustments since the :nth-child rules assume even/odd parity",
+    "Actor tag colour tokens are defined in styles.css alongside the feature hues; a new actor (e.g. 'their team' for multi-stakeholder projects) would need a new colour token",
+    "The page does NOT link to specific feature.json docs per step — a step about 'build' doesn't reference the engagement-runtime feature.json explicitly. A future enhancement could add deep links, but the current copy stands on its own"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-14",
+      "reason": "Page shipped with the twelve-step center-spine layout; actor tags and bilingual copy verified."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Step count, layout, and actor-tag design all stable; the funnel role (intake CTA at bottom) is consistent with FEATURE_PRIMARY_PAGE['intake']."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — P1 sweep, co-located doc for /parcours."
+    }
+  ],
+  "annotations": []
+}

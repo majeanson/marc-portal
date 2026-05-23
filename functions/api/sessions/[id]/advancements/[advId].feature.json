@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-058",
+  "title": "PATCH + DELETE /api/sessions/:id/advancements/:advId — edit and remove",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/iterative",
+  "componentFile": "functions/api/sessions/[id]/advancements/[advId].ts",
+  "problem": "Per-advancement edit and remove operations. PATCH supports partial updates of label / body / date / iframePath / flags; the same normalize helpers from the index handler ensure stored values stay canonical. Admin-only writes (visitors don't edit Marc's records of what he built). There's also an admin override to clear or replace the CI-stamped build_url + commit_sha for the rare case where the stamp landed on the wrong revision (e.g. a hotfix re-stamped over the original).",
+  "tags": ["iterative", "admin-write", "partial-update", "ci-stamp-override"],
+  "analysis": "PATCH: admin-only. loadAdvancement() + loadSession() to validate the advId belongs to the sessionId. Body fields are optional partials; each normalized via the helper if present, left unchanged if absent. The build_url + commit_sha admin override is rarely used (CI stamps are usually correct) but covers the hotfix scenario. DELETE: hard delete (no soft-delete on advancements). Cascades nothing (advancements have no children). Returns 200 { ok: true }.",
+  "decisions": [
+    {
+      "decision": "Hard-delete advancements (no soft-delete)",
+      "rationale": "Sessions soft-delete because the admin trash UI needs to be able to recover them. Advancements are a per-build record; if you delete one you've decided the record shouldn't exist, and recovery from a 'I deleted it by accident' is one re-add away (no original work lost). Soft-delete would add a deleted_at column + filter on every read for ~zero benefit.",
+      "recommendation": "If a 'recover deleted advancements' UI is ever needed, the right answer is probably 'just re-add' rather than retrofitting soft-delete.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "Admin can override build_url + commit_sha; document the rare-use case",
+      "rationale": "CI stamping is usually correct, but edge cases (a hotfix re-stamped over the wrong advancement, a manual deploy that didn't trigger the stamp script) need a manual escape. The override is admin-only and tied to this specific endpoint to keep the surface small. UI affordance is hidden by default.",
+      "recommendation": "Don't surface the override in a 'edit advancement' UI by default. It's an operator-grade tool; admin grep the field name in /admin/inbox source if needed.",
+      "date": "2026-05-13"
+    }
+  ],
+  "successCriteria": "- PATCH allows partial updates of any combination of fields\n- All inputs pass through normalize helpers consistently with the index handler\n- DELETE removes the row hard, no orphans (advancements have no children)\n- Admin-only enforcement; visitors get 403\n- 404 when advId doesn't belong to sessionId\n- build_url override is available but explicit",
+  "implementation": "functions/api/sessions/[id]/advancements/[advId].ts — onRequestPatch + onRequestDelete. loadAdvancement validates advId × sessionId. PATCH applies partial updates with the normalize family. Tests: covered in functions/api/sessions/advancements.test.ts.",
+  "userGuide": "Admin only. Edit via /admin/inbox/:id's advancement-edit UI. To delete: DELETE /api/sessions/:id/advancements/:advId; no confirmation modal (admin is the authority). To re-stamp build_url manually: PATCH with { buildUrl, commitSha } — rare, only when CI got it wrong.",
+  "knownLimitations": [
+    "No edit history — a PATCH overwrites silently. If an audit trail of changes is ever needed, advancements would need a revisions sub-table",
+    "Hard-delete is irreversible; combined with no edit history, the only protection against accidental delete is operator caution",
+    "build_url override applies only to this advancement; no bulk-re-stamp for a whole commit's advancements. If a re-stamp is needed across many, run scripts/stamp-revisions.mjs manually"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-12",
+      "reason": "Endpoint shipped paired with the index handler; admin edit/delete affordances live in /admin/inbox."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Edit + delete patterns stable; override is rarely-used escape valve."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/advancements/:advId."
+    }
+  ],
+  "annotations": []
+}

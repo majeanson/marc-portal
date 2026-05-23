@@ -55,7 +55,7 @@
       "reason": "Code-first verification — feature.json co-located at src/pages/Home.feature.json and rewritten from the shipped code. Section list, routing model, and componentFile re-checked against Home.tsx and router.tsx."
     }
   ],
-  "lastVerifiedDate": "2026-05-21",
+  "lastVerifiedDate": "2026-05-23",
   "revisions": [
     {
       "date": "2026-05-06",

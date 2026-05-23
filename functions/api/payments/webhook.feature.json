@@ -1,0 +1,76 @@
+{
+  "featureKey": "feat-2026-051",
+  "title": "POST /api/payments/webhook — Stripe → us event handler",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/payments",
+  "componentFile": "functions/api/payments/webhook.ts",
+  "problem": "Stripe is the source of truth for whether a charge succeeded — the browser-side success redirect after Checkout could be lost (the user closes the tab), so the DB must reconcile from the server-to-server webhook. Six event types matter: checkout.session.completed (mark paid, link Stripe ids), invoice.paid (subscription renewal — first invoice attaches to the original row, renewals insert new), invoice.payment_failed (mark sub past_due), customer.subscription.deleted (auto-switch custodian to 'tout_a_toi' per the /handoff promise), customer.subscription.updated (logged only — wait for terminal events), charge.refunded (track partial + full refunds; only flip to 'refunded' when fully refunded).",
+  "tags": ["payments", "stripe", "webhook", "csrf-exempt", "idempotent", "load-bearing"],
+  "analysis": "POST handler reading the RAW body (no JSON parse before signature verification). Stripe-Signature header is verified via HMAC-SHA-256 over the raw bytes using STRIPE_WEBHOOK_SECRET — if it fails, return 400 without touching D1. Idempotency: event.id is inserted into webhook_events on first arrival; a duplicate event.id (Stripe retry) short-circuits with 200 and no side effects. This prevents duplicate admin-notification emails on retry storms. Per event type, the handler runs the appropriate DB UPDATE + possibly sends a Resend notification to Marc. UPDATEs are themselves idempotent (UPDATE WHERE status != 'paid' etc.) so a slipped-past-idempotency-check duplicate doesn't double-write. Returns 200 on every internal failure path so Stripe doesn't retry into errors that are our problem to fix — Sentry catches and the admin sees it in /admin/digest. CSRF-exempt because the auth IS the signature; no cookie context to defend.",
+  "decisions": [
+    {
+      "decision": "Verify the HMAC signature over the RAW body, not the parsed JSON",
+      "rationale": "Stripe's signature is computed over the exact bytes they sent. Parsing to JSON and re-stringifying would change the bytes (whitespace, key order) and break the signature. Reading raw via request.text() preserves the bytes for verification. After verification passes, the same string is parsed once for use.",
+      "recommendation": "Don't refactor to 'parse once, verify over the JSON.stringify'. The raw-bytes pattern is the only safe path; any framework that parses before signing must be sidestepped.",
+      "date": "2026-05-17"
+    },
+    {
+      "decision": "Always return 200 on internal failures, never echo errors back to Stripe",
+      "rationale": "Stripe retries non-200 responses aggressively. If a non-Stripe issue (D1 timeout, Resend hiccup) causes a 500, Stripe would retry — and the next retry might hit a different failure or duplicate the side effects. Returning 200 + logging the failure to Sentry breaks the retry loop; the engineer fixes the underlying issue and may need to re-run reconciliation. The trade-off is silent failure visibility, mitigated by /admin/digest synthetic monitoring.",
+      "recommendation": "Don't return 500 from this handler under any circumstances. The only legitimate non-200 is 400 on signature mismatch (which IS Stripe's problem to retry-into).",
+      "date": "2026-05-17"
+    },
+    {
+      "decision": "customer.subscription.deleted → custodian_status = 'switched_to_tout_a_toi'",
+      "rationale": "The /handoff page promises that a custodian subscription canceled (not renewed) auto-switches the session to 'tout-à-toi' mode — the visitor keeps the code but Marc stops monitoring. The webhook is where this promise becomes operational. Other terminal events (deleted, canceled-via-customer-portal) all flow through the same path. The wording 'tout_a_toi' is the internal enum; UI translates.",
+      "recommendation": "When adding a new custodian terminal event, route it to the same status. If a buyer ever wants different semantics (e.g. 'pause but don't switch'), introduce a new status; don't reuse this one.",
+      "date": "2026-05-17"
+    }
+  ],
+  "successCriteria": "- Stripe-Signature is verified against STRIPE_WEBHOOK_SECRET over the raw body; mismatch returns 400\n- Duplicate event.ids short-circuit at the top with 200 and zero side effects\n- All six event types route to their right DB UPDATE + notification\n- Internal failures (D1, Resend) are logged to Sentry, response is 200\n- DB UPDATEs are idempotent (WHERE clauses prevent double-flip)\n- customer.subscription.deleted flips custodian to 'switched_to_tout_a_toi' per /handoff\n- charge.refunded tracks partial refunds; flips status to 'refunded' only on full",
+  "implementation": "functions/api/payments/webhook.ts — onRequestPost. Reads request.text() for raw body. constructEvent() (functions/_lib/stripe.ts) verifies signature + parses. Switch on event.type to the right per-event handler. webhook_events table dedup via INSERT OR IGNORE. payments + sessions UPDATEs as needed; admin-notification email queued via sendAdminPaymentNotification family. CSRF-exempt in _middleware.ts CSRF_EXEMPT_PATHS. Tests: functions/api/payments/webhook.test.ts covers signature pass/fail, idempotency, all six event types. The e2e backend harness uses E2E_STUB_API_KEY sentinel — the harness forges webhooks with the server's own secret so end-to-end checkout → webhook → DB flows are tested without Stripe.",
+  "userGuide": "Stripe → us only. Configure the webhook in Stripe Dashboard → Webhooks: endpoint https://marcportal.com/api/payments/webhook, subscribe to checkout.session.completed + invoice.* + customer.subscription.* + charge.refunded. STRIPE_WEBHOOK_SECRET must be set via `wrangler secret put`. To test locally: stripe CLI listen + forward; or run the e2e backend harness which forges signed events. To inspect webhook history: Stripe Dashboard → Webhooks → recent deliveries. To replay a missed event: Stripe Dashboard 'send test webhook' button (uses the same secret).",
+  "knownLimitations": [
+    "The dedup window relies on webhook_events table; if that table is dropped + recreated, recent duplicates could replay. Don't drop the table casually",
+    "Always-200 on internal failures means a misconfigured DB or Resend silently fails until /admin/digest synthetic monitoring catches it — the digest is what makes this safe",
+    "Some webhook events not handled (charge.succeeded for one-shot payments — we use checkout.session.completed instead). If Stripe ever deprecates the events we DO subscribe to, the handler needs an update",
+    "STRIPE_WEBHOOK_SECRET rotation: rotate in Stripe Dashboard, then immediately via `wrangler secret put STRIPE_WEBHOOK_SECRET` — between those operations, signature verification will fail. RUNBOOK covers the recovery",
+    "Subscription renewals create NEW payments rows (one per invoice); a long-running custodian sub accumulates rows. By design — each invoice is its own paid event"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-17",
+      "reason": "Endpoint shipped with signature verification + all six event types + idempotency."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Webhook is load-bearing for payment reconciliation; behaviour stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/payments/webhook."
+    }
+  ],
+  "annotations": []
+}

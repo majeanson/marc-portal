@@ -1,0 +1,76 @@
+{
+  "featureKey": "feat-2026-043",
+  "title": "POST /api/auth/request-link — issue and email a magic-link token",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/auth",
+  "componentFile": "functions/api/auth/request-link.ts",
+  "problem": "The server side of the magic-link sign-in flow. Receives an email, issues a single-use random token, sends it via Resend in a URL, and returns 200 uniformly — including for unknown emails — so the endpoint can't be used to enumerate registered addresses. Token storage is hashed (SHA-256) so a DB snapshot or admin SELECT doesn't leak usable tokens.",
+  "tags": ["auth", "magic-link", "csrf-exempt", "rate-limited", "resend", "anti-enumeration"],
+  "analysis": "Two rate limits in parallel: per-email (5 requests / hour) catches the targeted-flood case, per-IP (20 / hour) catches the rotating-email-same-IP attacker. Both hit before any D1 write, so a quota exhausted by an attacker doesn't pollute the magic_link_tokens table. Token generation: randomTokenB64url() produces a 24-byte URL-safe random string; sha256B64url() hashes it. Only the hash lives in D1; the plaintext goes ONCE in the email URL. TTL = 30 minutes. sendMagicLink() (functions/_lib/email.ts) calls Resend with the link URL; if Resend's API returns non-200 the function returns 200 anyway (no enumeration of which emails the system failed to deliver to). setLangIfAbsent writes mp_lang cookie if the request body included a lang preference. CSRF-exempt because the visitor doesn't yet have an mp_session — there's no cookie context to defend, so per-IP rate limit + uniform-200 are the threat model.",
+  "decisions": [
+    {
+      "decision": "Store the SHA-256 hash of the token, not the plaintext",
+      "rationale": "A DB snapshot or careless admin SELECT shouldn't leak usable tokens. Hashing means even a full read of magic_link_tokens gives an attacker nothing actionable — the plaintext only exists in the email URL we sent. Verification flow hashes the URL token and looks up by hash. Cost: one extra SHA-256 per verify (negligible).",
+      "recommendation": "If a future need wants to display 'your active sign-in links' to a user (unlikely), the architecture stays: surface the hash + the email + expiry; never resurface the plaintext.",
+      "date": "2026-05-08"
+    },
+    {
+      "decision": "Two-axis rate limit: per-email AND per-IP, with stricter IP cap",
+      "rationale": "Per-email alone lets an attacker rotate emails from one IP and drain Resend's free tier (100/day). Per-IP alone lets a distributed attack from a botnet flood one inbox. Both running in parallel covers both directions. Per-IP is 4x the per-email cap (20 vs 5) because a household (one NAT IP, multiple humans) can legitimately request several links.",
+      "recommendation": "If Resend quota tightens or pricing changes, the IP cap is the right lever — start there before lowering the per-email limit which would also annoy legitimate users.",
+      "date": "2026-05-08"
+    },
+    {
+      "decision": "Uniform 200 response regardless of email validity or delivery success",
+      "rationale": "A 404 for unknown email is enumeration-as-a-service. A 503 for Resend hiccup is enumeration-as-an-error-channel. Returning 200 always means the response carries no signal about whether the email is registered or whether delivery worked — the user finds out by checking their inbox (or by RUNBOOK triage if they reach out). The cost: a user who mistyped their email waits for an email that never arrives.",
+      "recommendation": "Don't add a 'we couldn't reach that email' response code. If observability is needed, log the failure server-side and surface it in /admin/digest — don't leak it to the requester.",
+      "date": "2026-05-08"
+    }
+  ],
+  "successCriteria": "- Valid emails receive a magic link via Resend within ~60 seconds\n- Unknown / mistyped emails receive a uniform 200; no enumeration signal in the response\n- Token plaintext appears only in the email URL — D1 stores only the SHA-256 hash\n- Per-email and per-IP rate limits are both enforced; either trips returns 200 (still no enumeration)\n- TTL of 30 minutes is enforced; expired tokens cannot be consumed\n- If a lang preference is supplied in the body, mp_lang cookie is set before response\n- CSRF gate is correctly exempt (verified in functions/_middleware.test.ts)",
+  "implementation": "functions/api/auth/request-link.ts — POST handler. Reads JSON body { email, lang? }. isPlausibleEmail() checks format; rejection returns 200 (still no enumeration). rateLimitCheck() consults the rate_limits D1 table for both per-email and per-IP slots; rateLimitSweep() purges expired rows opportunistically. Token = randomTokenB64url(24); hash = sha256B64url(token); INSERT into magic_link_tokens with expires_at = now + 30 min. sendMagicLink() builds the verification URL (https://host/api/auth/verify?token=<plaintext>) and posts it to Resend's API. If Resend errors, log + 200. Tests: functions/api/auth/request-link.test.ts covers happy path, rate limit, lang cookie side effect.",
+  "userGuide": "Server-side endpoint; not called directly by humans. The /login form POSTs here with { email, lang? }. Returns 200 always. To trigger manually for testing: curl -X POST http://localhost:8788/api/auth/request-link -d '{\"email\":\"x@y.com\"}'. To see what the email looks like: src/lib/email.ts (the sendMagicLink template) or DEV mode logs the Resend payload. To bump rate limits: edit RATE_LIMIT_MAX and RATE_LIMIT_IP_MAX at the top of the handler. To force a token cleanup: GET /api/admin/digest (which sweeps as a side effect) or wait for the next digest cron.",
+  "knownLimitations": [
+    "Resend free tier is 100 emails/day; the per-IP rate limit (20/h) was tuned to keep this safe but a distributed attack from many IPs could still exhaust the quota. Mitigation would be Cloudflare Turnstile (CAPTCHA) on /login submit; not done today",
+    "If Resend is down, requests return 200 with no email sent — the user has no idea their link didn't arrive. The /admin/digest synthetic monitor catches this within a day; in the meantime, the visitor's confusion is real",
+    "Token plaintext is in the URL Resend sees during delivery — Resend's logs theoretically contain valid tokens. Mitigation is the short TTL (30 min) and Resend's SOC2 posture documented in the PIA at /pia",
+    "Per-email rate limit means a user who genuinely needs five+ links in an hour (e.g. forgot which inbox they used and is retrying) gets blocked. Telling them to wait an hour is acceptable; the alternative is an enumeration channel",
+    "isPlausibleEmail does syntactic validation only; addresses with valid syntax but no MX record will get a 'we sent it' response and silently never deliver"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-08",
+      "reason": "Endpoint shipped with token hashing + per-email + per-IP rate limits + Resend integration."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. The flow has been stable since launch; AUDIT P1.1 (custom sender domain) is the only outstanding work and tracked separately."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for the magic-link issuer."
+    }
+  ],
+  "annotations": []
+}

@@ -1,0 +1,78 @@
+{
+  "featureKey": "feat-2026-029",
+  "title": "La carte du site — layered atlas of every page and data flow",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/showcase",
+  "componentFile": "src/pages/Map.tsx",
+  "liveUrl": "/carte",
+  "problem": "A solo consulting portal accumulates surfaces fast — public marketing, auth-gated dashboard, admin operator hub, the showcase gallery, transparency pages. Without a map, a curious visitor doesn't know what's here, and a returning client can't orient. A traditional sitemap link list is a 200-entry text dump that nobody reads. /carte renders the same information as a graph the visitor can actually navigate — layered by intent (pages / data flow / journeys / admin), filterable by feature colour, with admin surfaces hidden from public viewers.",
+  "tags": ["showcase", "site-graph", "cytoscape", "boring-tech", "build-in-public"],
+  "analysis": "Four layered views on the same MapData (defined in src/lib/map/data.ts): Pages (every reachable route + the home-section anchors), Data flow (which features read/write which D1 tables and R2 buckets), Journeys (visitor walk-throughs — intake-to-engagement, browsing-the-showcase, etc.), Admin (the operator surfaces). MapCanvas wraps Cytoscape.js — chosen because the layout is non-trivial (forces, edge routing) and the boring-tech mandate rules out a hand-rolled SVG renderer. Public viewers (signed-out OR admin-with-previewAsUser-active) see admin nodes filtered out via filterForViewer; admin viewers see everything. The visitor-preview flag is the same sessionStorage key the rest of the chrome uses (mp_preview_as_user), so toggling here matches toggling from the header — one preview state across the whole site. ?feature=X URL param filters the graph to one feature's surfaces; FeatureFolioLink components inside the legend hand off to it.",
+  "implementation": "src/pages/Map.tsx + src/components/Map/{MapCanvas,MapLegend,FeatureIndex}.tsx. MAP_DATA is hand-curated in src/lib/map/data.ts; filterForViewer (src/lib/map/filter.ts) strips admin nodes for public viewers. MapCanvas wraps Cytoscape — node colours come from FEATURES[id].hue resolved to CSS custom properties; edge weights drive the force layout. Search-params drive two URL-addressable filters: ?layer={pages|dataflow|journeys|admin} and ?feature=X. useAuth() identifies whether the current viewer is admin; useSearchParams + a manual previewAsUser sessionStorage read combine to decide what to render. The page is 100% static after the prebuild script — no analytics, no third-party fonts (cytoscape is bundled, no remote loader). FeatureIndex on the right lists every PAGE_FEATURE entry grouped by feature, with bilingual labels from HOME_SECTION_LABEL / FAQ_LABEL / SESSION_TAB_LABEL / META_PAGE_LINK — the surface-to-feature maps in src/lib/features.ts. Map.test.ts in src/lib/map/ guards MAP_DATA's invariants (every node has a feature, every edge connects real nodes, paths match the route skeleton).",
+  "decisions": [
+    {
+      "decision": "Cytoscape.js for layout, not D3 or a hand-rolled SVG",
+      "rationale": "Force-directed layouts with edge routing are hard. D3 makes you build the layout pipeline; a hand-rolled SVG would mean writing collision detection and zoom/pan from scratch. Cytoscape ships both with a stable API and reasonable bundle size. The boring-tech mandate isn't 'no libraries' — it's 'no libraries you'll have to babysit' — and cytoscape has been on the same major version for years.",
+      "recommendation": "If a future requirement forces a layout cytoscape can't do (e.g. hand-authored spatial positions), reach for the cytoscape preset layout, not a rewrite.",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Filter admin nodes via the same previewAsUser flag the chrome uses",
+      "rationale": "Two sources of truth for 'should I see admin surfaces?' would silently diverge. Reusing mp_preview_as_user means a session-wide preview toggle in the header dims admin everywhere consistently — including on /carte. The flag is sessionStorage-scoped so it doesn't persist across tabs (a fresh admin tab sees admin surfaces).",
+      "recommendation": "Don't add a /carte-local preview toggle. If the header's preview controls grow (e.g. a 'preview as different role'), thread it through filterForViewer rather than duplicating the predicate.",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "MAP_DATA is hand-curated, not derived from the route table",
+      "rationale": "A derived map would only know what react-router knows — paths, components. It wouldn't know which surfaces belong to which feature, what the data-flow edges are, or what journey a visitor follows from intake to ship. The hand-curated MapData encodes intent; map.test.ts guards consistency with the auto-discoverable route skeleton so they can't silently drift apart.",
+      "recommendation": "When adding a new route, add a node to MAP_DATA in the same PR. The test will fail loudly if you forget. Adding a node without a feature assignment will also fail — every node needs a feature.",
+      "date": "2026-05-15"
+    }
+  ],
+  "successCriteria": "- A visitor opens /carte and can see every public surface of the site as a graph, coloured by feature, with admin nodes hidden\n- An admin viewer sees the full graph including admin surfaces\n- The visitor-preview toggle in the header dims admin nodes here too (one preview state across the site)\n- ?feature=X URL param filters the graph to one feature's surfaces; deep-linkable from anywhere on the site\n- Four layer toggles (Pages / Data flow / Journeys / Admin) work independently — the visitor can stack journeys on top of pages or view just data flow\n- The page makes zero runtime fetches (Loi 25 + no-analytics posture)\n- map.test.ts catches any drift between MAP_DATA and the route skeleton at PR time",
+  "userGuide": "Open /carte (or /en/map). The graph renders all public surfaces as nodes coloured by feature; edges show navigational or data-flow relationships. Toggle the four layer pills (Pages / Data flow / Journeys / Admin) to filter what's drawn; multiple layers can stack. Click a node to jump to that surface. The FeatureIndex on the right lists every surface grouped by feature with bilingual labels — useful for finding 'where does the pricing colour appear?' across the whole site. ?feature=X in the URL pre-filters; the header's FR/EN toggle swaps node labels. If you're signed in as admin, an extra Admin layer appears with operator-only surfaces; toggling 'visitor preview' in the header hides them here too.",
+  "knownLimitations": [
+    "Cytoscape's layout is force-directed, so node positions are NOT stable across page loads — a screenshot taken today won't pixel-match tomorrow's render; the e2e suite captures /carte but with a generous diff threshold for this reason",
+    "MAP_DATA is hand-curated — a route added without a corresponding node is invisible on the graph until someone notices, though map.test.ts catches the drift in CI",
+    "Cytoscape adds ~350KB to the lazy chunk; the map page is intentionally lazy-loaded so this never affects the home/intake/login critical path",
+    "The Data flow layer doesn't auto-derive edges from code analysis — it's curated. A new D1 table read/write requires a manual MapData edge or it won't show",
+    "Screen-reader navigation of a force-directed graph is limited; the FeatureIndex panel is the AT-friendly counterpart and lists everything the graph shows"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-15",
+      "reason": "Page shipped with MAP_DATA + Cytoscape canvas + four layer toggles. Public + admin viewers verified."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Filtering, layering, feature index, and preview-toggle behaviours all stable; map.test.ts continues to guard MAP_DATA invariants."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — P1 sweep, co-located doc for /carte."
+    }
+  ],
+  "annotations": []
+}

@@ -1,0 +1,75 @@
+{
+  "featureKey": "feat-2026-057",
+  "title": "GET + POST /api/sessions/:id/advancements — list and create build advancements",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/iterative",
+  "componentFile": "functions/api/sessions/[id]/advancements/index.ts",
+  "problem": "An advancement is a single named build step — 'I shipped the napkin sketch', 'I added auth', 'I deployed v2 of the search'. Each advancement carries a label, body, optional iframe path (for the embedded build preview), and a flags array (allowedForPublic, milestone, etc.). The list endpoint scopes view: visitors see only public-flagged advancements, owner + admin see all. POST is admin-only — creates a draft advancement with build_url null; CI stamps the URL + commit sha on the next deploy via scripts/stamp-revisions.mjs.",
+  "tags": ["iterative", "build-history", "ci-stamped", "public-flag", "admin-write"],
+  "analysis": "GET: canAccessSession() then scope-filter — visitor view shows only advancements with allowed_for_public flag set, owner/admin sees all. listAdvancementsForSession() (functions/_lib/advancements.ts) handles the projection. POST: admin-only (return 403 for non-admin). Body { label, body, date?, iframePath?, flags? }; all fields go through normalize helpers (normalizeLabel, normalizeBody, normalizeIframePath, parseFlags+stringifyFlags) so the stored data is canonical. build_url is null at insert; the deploy workflow (scripts/stamp-revisions.mjs) runs after each prod deploy and stamps build_url + commit_sha on any advancement that doesn't have one. So a new advancement is 'unstamped' between creation and the next deploy; the UI shows 'pending stamp' for that window.",
+  "decisions": [
+    {
+      "decision": "Visitors see only public-flagged advancements; admin/owner sees all",
+      "rationale": "Some advancements are work-in-progress notes Marc doesn't want the visitor to see yet (e.g. 'tried approach X, didn't work'). Defaulting to admin-only and explicitly flagging the publicly-visible ones gives Marc control over what the visitor reads. The owner (session creator) sees all to match what they'd see if they were Marc — they're the engagement's primary stakeholder.",
+      "recommendation": "When designing UI affordances for the flag, make it explicit (a checkbox 'show on /share/:id'); avoid implicit defaults that could leak.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "build_url stamped by CI, not set at write time",
+      "rationale": "The advancement is created BEFORE the deploy that builds it; the build URL doesn't exist yet. CI (deploy.yml) runs scripts/stamp-revisions.mjs which scans the commit's touched feature.jsons + the recent advancements, and stamps build_url + commit_sha. The visitor sees the URL once the deploy lands. This shape lets the admin author advancements in advance of a deploy without coordinating timing.",
+      "recommendation": "Don't manually set build_url unless you really know which commit it should map to. The stamp script handles it.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "Use normalize helpers (label, body, iframePath, flags) at the boundary",
+      "rationale": "Centralizing the normalization means the same input format produces the same stored value, no matter which path writes it (this handler, the [advId] PATCH handler, future bulk imports). Examples: iframePath is normalized to start with '/', flags are sorted before stringify, label is trimmed and length-capped.",
+      "recommendation": "When adding a new field, write the normalize helper next to the others in _lib/advancements.ts and use it consistently.",
+      "date": "2026-05-12"
+    }
+  ],
+  "successCriteria": "- GET returns visitor-visible advancements for visitors, all advancements for owner/admin\n- POST is admin-only; visitors get 403\n- New advancements land with build_url null; CI stamps them on next deploy\n- All inputs pass through normalize helpers\n- allowedForPublic flag controls visitor visibility\n- 404 for missing or unauthorized session",
+  "implementation": "functions/api/sessions/[id]/advancements/index.ts — onRequestGet + onRequestPost. Helpers: listAdvancementsForSession, newAdvancementId, normalize family, parseFlags / stringifyFlags. The advancements table has session_id, label, body, date, iframe_path, flags (TEXT JSON), build_url, commit_sha, created_at, updated_at columns.",
+  "userGuide": "Admin: /admin/inbox/:id has an 'add advancement' affordance that POSTs here. Visitor: /session/:id renders the visible advancement list via GET. Public via /share/:id: GET filters to allowedForPublic. To stamp manually (if CI missed): node scripts/stamp-revisions.mjs <commit> <build-url>. To flag an advancement public: edit via PATCH /api/sessions/:id/advancements/:advId (see [advId] handler doc).",
+  "knownLimitations": [
+    "Advancement creation is admin-only; visitors can't self-flag a milestone. By design — advancements are Marc's record of what's been built",
+    "build_url stamp window is between advancement creation and next deploy; if no deploy happens for a long time, advancements sit unstamped. The /admin/inbox UI shows 'pending stamp' for these",
+    "Flags is a JSON-as-text column; adding a new flag is purely additive (no schema change) but a future relational flags table would be cleaner. Not needed at current scale",
+    "No 'undo delete' for advancements — DELETE on the [advId] handler is hard. Soft-delete could be added if the workflow needs it"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-12",
+      "reason": "Endpoint shipped with the public-flag scope + CI stamping integration."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Stamp + flag + normalize patterns all stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/advancements."
+    }
+  ],
+  "annotations": []
+}

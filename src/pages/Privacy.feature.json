@@ -1,0 +1,77 @@
+{
+  "featureKey": "feat-2026-031",
+  "title": "Politique de confidentialité — Loi 25 disclosure",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/legal",
+  "componentFile": "src/pages/Privacy.tsx",
+  "liveUrl": "/confidentialite",
+  "problem": "The footer claim 'Hébergé au Canada · Loi 25' is structurally dishonest without a published policy with a designated person to write to. /confidentialite is that page. Loi 25 (the Quebec adaptation of Canada's PIPEDA) mandates eight specific disclosures — designated person, data collected and purposes, consent + how to withdraw, right of access, right of rectification, right of erasure/portability, retention period, breach notification process. The page lays those out plainly because the practice is small (one human, one DB, transactional emails) and a 200-page boilerplate would itself be a lie. /pia is the companion page covering the two third-party processors (Sentry, Stripe) under Loi 25 art. 3.3.",
+  "tags": ["legal", "loi-25", "quebec", "transparency", "compliance"],
+  "analysis": "Eight numbered sections, each addressing one Loi 25 obligation. The sections are deliberately short — Marc is the designated person (one human, no DPO consultant intermediary), data collected is minimal (email + intake + messages + attachments), consent is given by submitting the intake form, retention is bounded (12 months post-engagement OR immediate on DELETE /api/me), and breach notification follows the 72-hour standard. Sections 6 and 11 link to /pia anchors for the two third-party processors. Section 8 (right of erasure) is paired with /me's delete action — the legal text and the operational surface are consistent. The page uses the same PageMast + SectionEyebrow + FeatureFolioLink chrome as other content surfaces, in the meta-page colour, with a folio-mark in the footer that links back to /carte. Updates to the policy bump the 'En vigueur' date at the top — copy is deliberately not generated, this is a hand-authored compliance artifact.",
+  "implementation": "src/pages/Privacy.tsx — single component, all copy in a top-of-file COPY constant keyed by Lang. Each section is rendered from an array (h + p with HTML-allowed inline links). The page is meta-tinted via PAGE_FEATURE['page.privacy']; renders FeatureContinue at the bottom pointing to /pia (next in the META_PAGE_NEXT loop). No fetch, no third-party deps, no analytics. Anchor links inside the page (#section-6, #section-8) come directly from Pia.tsx and Footer.tsx — search for the anchor name to find every link in. The 'En vigueur' date is hardcoded; bumping it on policy changes is part of the manual review ritual.",
+  "decisions": [
+    {
+      "decision": "Marc is the designated person, no DPO consultant in the chain",
+      "rationale": "Loi 25 requires a named individual responsible for privacy. For a one-person solo practice, putting a separate DPO consultant in the chain adds latency to access requests and complicates the breach-notification flow. Marc IS the practice; making him the DPO is structurally honest and operationally simpler. The 30-day response window required by Loi 25 is achievable for a solo dev only if the chain is short.",
+      "recommendation": "If the practice ever takes on contractors who touch personal data, the role can remain Marc — contractors don't become DPOs automatically. Re-evaluate only if a buyer takes over the platform (then the buyer becomes the named person).",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Plain language, not boilerplate",
+      "rationale": "A 200-section policy on a one-human practice is itself a misrepresentation — it implies a corporate structure that doesn't exist. Loi 25 doesn't require length; it requires the eight disclosures. Writing them plainly (and in Québécois register for the FR side) is more truthful and easier to enforce internally.",
+      "recommendation": "When updating the policy, resist the urge to add 'just to be safe' boilerplate. If a new clause is needed, it's needed because something operationally changed. Document the operational change in a related feature.json too.",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Sentry and Stripe each get their own PIA at /pia rather than inline here",
+      "rationale": "Loi 25 art. 3.3 requires a PIA before adopting any third-party processor. /confidentialite §6 and §11 reference Sentry and Stripe respectively but the full PIA documents live at /pia. Reasons: keeps the policy short and readable, the PIA template (purpose, data, retention, mitigations, residual risk) doesn't naturally fit inside the policy's sectioned flow, and a buyer's legal team doing due diligence wants the PIAs together as one artifact.",
+      "recommendation": "When adding a new third-party processor (e.g. Resend for transactional email), author a PIA at /pia and reference it from the relevant /confidentialite section. Don't inline the PIA text.",
+      "date": "2026-05-16"
+    }
+  ],
+  "successCriteria": "- The page covers all eight Loi 25 obligations explicitly\n- The designated person (Marc) is named with a contact email\n- The right-of-erasure language matches /me's DELETE behaviour exactly (immediate, no 30-day retention)\n- /pia anchors are reachable from §6 (Sentry) and §11 (Stripe)\n- The page is bilingual with parity (FR canonical, EN mirror); register is Québécois on the FR side\n- The 'En vigueur' date is bumped on every policy change\n- A reader doing due diligence can answer 'what data do they collect, why, and how do I withdraw consent?' without leaving the page",
+  "userGuide": "Open /confidentialite (or /en/privacy). The page reads as a Loi 25 disclosure with eight numbered sections covering Marc's responsibilities, what's collected, consent + withdrawal, access + rectification + erasure rights, retention windows, and breach notification. §6 and §11 reference the third-party processors (Sentry, Stripe) and link to their full PIAs at /pia. To exercise right of access, rectification, or erasure: §7 explains the mechanics; for erasure specifically, /me has a one-click delete that triggers the immediate-no-30-day-grace policy this page describes. To update the policy: edit the COPY constant in Privacy.tsx, bump the 'En vigueur' date, and if the change touches third-party processors, mirror the change in /pia.",
+  "knownLimitations": [
+    "The 'En vigueur' date is hardcoded — there's no automation that forces it to be bumped when COPY changes; reviewing the date is part of the manual release ritual",
+    "Inline HTML in section paragraphs is rendered via dangerouslySetInnerHTML to support anchor links and mailto: — the content is hand-written so injection isn't a vector, but a future contributor should NOT generalize this to user-controlled data",
+    "The page lists the third-party processors explicitly; adding/removing a processor requires editing both /confidentialite and /pia — there's no shared source. A future refactor could lift the processor list to a manifest, but two-file edits are tractable at this scale",
+    "Bilingual parity is enforced by reading and editing both sides during a policy update — no compile-time check ties FR and EN sections to each other"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-15",
+      "reason": "Page shipped covering all eight Loi 25 obligations with Marc named as designated person; first version in production."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Policy text has been updated twice since launch (Sentry PIA addition 2026-05-16, Stripe PIA reference 2026-05-17); the page structure and decisions are stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — P1 sweep, co-located doc for /confidentialite."
+    }
+  ],
+  "annotations": []
+}

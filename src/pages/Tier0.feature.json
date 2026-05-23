@@ -51,7 +51,7 @@
       "reason": "Code-first verification — feature.json co-located at src/pages/Tier0.feature.json. The pattern library has grown to roughly a dozen entries; re-checked against patterns.ts."
     }
   ],
-  "lastVerifiedDate": "2026-05-21",
+  "lastVerifiedDate": "2026-05-23",
   "revisions": [
     {
       "date": "2026-05-06",

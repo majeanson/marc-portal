@@ -1,0 +1,78 @@
+{
+  "featureKey": "feat-2026-033",
+  "title": "Témoignages — public vouches wall, post-moderation",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/showcase",
+  "componentFile": "src/pages/Vouches.tsx",
+  "liveUrl": "/vouches",
+  "problem": "A consulting site without testimonials is a structural liability — buyers assume there's nothing to show. But anonymous reviews on a self-hosted page also fail the trust test (anyone could write them). /vouches threads the needle: anyone can submit a vouch via the open /vouch form (no auth required), but Marc moderates every submission before it appears publicly. Approved vouches are rendered as cards on /vouches with the author's first name, relationship tag (client, peer, mentor, etc.), and body — but never the author's email. The wall is small by intent — a real practice has a handful, not hundreds.",
+  "tags": ["showcase", "social-proof", "moderation", "loi-25-friendly", "anti-fake-reviews"],
+  "analysis": "Reads GET /api/public/vouches (functions/api/public/vouches.ts) which queries the vouches D1 table filtered to status='approved' AND deleted_at IS NULL, projected through PublicVouchRow which strips author_email. The page renders the array as a flat card list — no infinite scroll, no pagination (the moderation throttle keeps the count bounded). Each card shows the author's display name (first name only, opt-in for full name), the relationship tag (client / past-employer / peer / mentor / friend), the body, and an optional link they provided (LinkedIn, project URL, etc.). The vouch submission flow is /vouch (a separate page); approved-vouch lifecycle: submitted (status='pending') → moderated via /admin/vouches → approved or deleted. The list is fetched on mount; an error state shows a quiet 'unavailable' message and a /vouch CTA so the visitor can still contribute. Vouches are scoped at the tenant level; tenant resolution happens in _middleware.ts before this handler runs.",
+  "implementation": "src/pages/Vouches.tsx — single component. useEffect fetches GET /api/public/vouches on mount via listPublicVouches (src/lib/vouchesApi.ts). Renders a header + an array of <article class='vouch'> cards. Each card shows the relationship as a mono pill tag, the name (or 'Anonyme' if the submitter declined name display), the body, and the optional outbound link as a single 'voir leur site' affordance. Uses the standard PageMast + FeatureContinue chrome; feature-tinted as 'shipped' (PAGE_FEATURE['page.vouches']) — vouches are the social-proof leg of the shipped feature. Server-side projection (functions/_lib/vouches.ts → PublicVouchRow) drops author_email at the query level so it never reaches the wire; the client wouldn't be able to leak something it doesn't have. cssVars helper injects per-card relationship colours.",
+  "decisions": [
+    {
+      "decision": "Pre-moderation (admin approves before public), not post-moderation (public-then-takedown)",
+      "rationale": "Post-moderation means a moment exists where a malicious or AI-generated vouch is publicly visible — and that moment is also when SEO and screenshot caches catch it. Pre-moderation costs Marc time (it's a manual review per submission) but eliminates the bad-vouch-in-the-wild scenario entirely. At the practice's scale, manual review is tractable; if volume ever forced post-moderation, an automation step (e.g. require email verification + manual approve only for borderline cases) would be safer than 'public until removed'.",
+      "recommendation": "Keep pre-moderation. If volume grows, automate the obvious-spam filter, but don't flip the default to public-by-default.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "Strip author_email at the SQL projection, not in the handler",
+      "rationale": "Defense in depth: a future handler refactor that accidentally returns the full row should still not leak email because the projection PublicVouchRow in functions/_lib/vouches.ts doesn't include the column. Doing it at the projection means the client-bound type literally doesn't have the field; TypeScript catches anyone reaching for it.",
+      "recommendation": "When adding a new field that should be public, add it to PublicVouchRow explicitly. When adding a private field (e.g. moderator notes), add it to the schema but NOT to PublicVouchRow.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "Display first name only by default, full name opt-in",
+      "rationale": "A vouch's signal is the substance + the relationship tag, not the surname. Letting submitters opt into full name keeps the page friendly for vouchers who'd rather not be googleable by their endorsement. Quebec's Loi 25 also leans toward data minimization — collecting full name when first name suffices wouldn't pass a PIA review.",
+      "recommendation": "If a vouch comes in from a public figure who specifically WANTS the full name displayed, the submission form already supports an opt-in; don't hand-edit the DB row, route them through the form.",
+      "date": "2026-05-18"
+    }
+  ],
+  "successCriteria": "- Only approved + not-deleted vouches appear on /vouches\n- author_email never reaches the wire (projection-level strip)\n- The page renders gracefully even when zero vouches are approved (CTA to /vouch)\n- A submitter who declined name display shows as 'Anonyme'; opt-in to full name works\n- Relationship tags display consistently with their colour tokens\n- /vouches loads on mount with a single fetch — no waterfall, no pagination\n- The wall reads as small-and-real, not gamed",
+  "userGuide": "Open /vouches (or /en/vouches). The page shows every approved vouch the portal currently displays — cards with name, relationship tag, body, optional outbound link. To submit a vouch yourself, follow the 'écrire un témoignage' CTA to /vouch — the submission is moderated before it appears. To moderate vouches as admin: /admin/vouches lists pending submissions with approve/reject actions. The public projection (what /vouches actually shows) is defined by PublicVouchRow in functions/_lib/vouches.ts; modifying that type changes what reaches the client.",
+  "knownLimitations": [
+    "No pagination — if the moderation queue ever lets ~50+ vouches through, the page becomes a long scroll. The throttle is intentional and the count is bounded; revisit if/when scale changes",
+    "The relationship tag colour tokens are hardcoded in the cssVars helper; a new relationship category requires a new colour token",
+    "Vouches do NOT auto-link to the specific engagement they reference — the body sometimes does so manually. A future enhancement could link by session_id, but it'd require schema work and may not be worth the cost",
+    "An approved vouch can be edited after publication (via admin), but the edit isn't versioned — the audit log captures who edited, not what changed",
+    "GET /api/public/vouches is unauthenticated; tenant resolution comes from _middleware.ts. A malformed Host that resolves to no tenant returns 404 (not an empty list) so the page renders the error state cleanly"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-18",
+      "reason": "Page shipped with the public vouches list backed by GET /api/public/vouches; moderation flow live via /admin/vouches."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Projection strip, pre-moderation, and opt-in name display all stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — P1 sweep, co-located doc for /vouches."
+    }
+  ],
+  "annotations": []
+}

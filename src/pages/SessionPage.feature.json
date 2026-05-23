@@ -75,7 +75,7 @@
       "reason": "Code-first verification — feature.json co-located at src/pages/SessionPage.feature.json. The runtime has shipped: magic-link auth, the sessions and messages tables, the admin inbox, attachments, and the privacy-law data pages are all live."
     }
   ],
-  "lastVerifiedDate": "2026-05-21",
+  "lastVerifiedDate": "2026-05-23",
   "revisions": [
     {
       "date": "2026-05-07",

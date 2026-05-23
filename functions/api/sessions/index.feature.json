@@ -1,0 +1,81 @@
+{
+  "featureKey": "feat-2026-048",
+  "title": "GET + POST /api/sessions — list and create sessions",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/engagement",
+  "componentFile": "functions/api/sessions/index.ts",
+  "problem": "The collection endpoint for sessions. GET lists the visitor's own sessions (admin sees all + optional ?deleted=true for the trash view). POST creates a new session from an intake submission — body carries the intake_json blob and the problem type; status defaults to 'draft'. Both endpoints uphold the load-bearing capacity cap (1 active + 1 in triage); POST refuses with 409 when adding a new draft would push triage past 1. The cap check is atomic-via-subselect in the INSERT, not a read-then-write, so two concurrent POSTs can't both win past the cap.",
+  "tags": ["engagement", "capacity-cap", "atomic-guard", "visitor-or-admin", "rate-limited"],
+  "analysis": "GET handler: currentEmail() gates; isAdmin distinguishes scope. Visitor view: SELECT WHERE email = ? AND deleted_at IS NULL. Admin view: optionally include deleted (?deleted=true → SELECT WHERE deleted_at IS NOT NULL). The columns SELECT'd are the SessionRow projection in functions/_lib/sessions.ts. POST handler: currentEmail() gates; rate-limit checks (per-email + per-IP) prevent flood. The cap check happens IN the INSERT statement: ... WHERE (SELECT COUNT(*) FROM sessions WHERE status='triage' AND deleted_at IS NULL) < 1. result.meta.changes === 0 means the WHERE failed (at cap) → return 409 conflict. Atomic guard documented in AUDIT P1.7 — replaces an earlier read-then-write that two concurrent POSTs could both pass. POST body validated for intake_json shape (size cap 1MB per AUDIT P3.5, problem_type enum).",
+  "decisions": [
+    {
+      "decision": "Capacity cap enforced in the INSERT's WHERE, not as a separate SELECT",
+      "rationale": "A read-then-write capacity check (SELECT count → if ok → INSERT) is racy: two concurrent requests both see count=0, both INSERT, capacity becomes 2. Folding the count check into the INSERT's WHERE subquery means the DB does the count + insert atomically; the second request's INSERT affects 0 rows and we return 409. This is the AUDIT P1.7 fix; the prior version had the race documented in commit history.",
+      "recommendation": "When adding any 'check then mutate' pattern, look for the same atomic-WHERE solution. read-then-write across a request boundary is the smell.",
+      "date": "2026-05-13"
+    },
+    {
+      "decision": "GET visitor view filters by email; admin view sees all",
+      "rationale": "A visitor seeing other visitors' sessions would be a data leak. Filtering by the cookie's email at the SQL level (not in app code) means even a buggy admin-only check elsewhere can't accidentally expose cross-visitor data. isAdmin determines whether the filter is applied; this is the only privilege boundary in the handler.",
+      "recommendation": "If a future 'shared session' feature emerges (multiple emails owning one session), thread it through canAccessSession() in _lib/sessions.ts — keep this handler's filter simple.",
+      "date": "2026-05-09"
+    },
+    {
+      "decision": "?deleted=true is admin-only AND requires explicit opt-in",
+      "rationale": "Soft-deleted sessions are visible to admin via the trash UI for recovery. Two safety properties: (a) visitors NEVER see deleted=true rows even if they pass the query param — the admin check is required; (b) admins see live rows by default, must opt in to see deleted ones. The opt-in prevents an admin accidentally treating a deleted row as live in routine work.",
+      "recommendation": "Don't make ?deleted=true the default for admins. The opt-in is the safety property; defaulting would silently change what admin tools display.",
+      "date": "2026-05-09"
+    }
+  ],
+  "successCriteria": "- GET as visitor returns ONLY their own non-deleted sessions\n- GET as admin returns all non-deleted sessions; ?deleted=true returns only the trash\n- POST refuses with 409 when triage is at cap (1 row); the refusal is atomic against concurrent POSTs\n- POST rejects intake_json bodies larger than 1MB (P3.5)\n- New sessions land status='draft'; status transitions happen via PATCH /api/sessions/:id\n- Per-email + per-IP rate limits protect POST",
+  "implementation": "functions/api/sessions/index.ts — onRequestGet + onRequestPost. GET: prepare different SELECT statements for visitor vs. admin; SessionRow type projects columns. POST: validate intake_json + problem_type, rate-limit check, atomic INSERT with capacity guard via WHERE subselect. countActiveAndTriage and isTriageAtCap helpers live in functions/_lib/sessions.ts. randomTokenB64url for the session id (72-bit, base64url). Tests: functions/_lib/sessions.test.ts unit-tests the cap helpers; integration tests in functions/api/sessions/sessions.test.ts cover the race.",
+  "userGuide": "GET: src/lib/sessionsApi.ts → listSessions(); /me dashboard renders the result. POST: same lib → createSession(intake), triggered after intake form submission. To inspect cap state: SELECT COUNT(*) FROM sessions WHERE status IN ('active','triage') AND deleted_at IS NULL. To inspect the trash as admin: /admin/trash UI or GET /api/sessions?deleted=true. To stress-test the race: two concurrent curl POSTs; both should see HTTP 409 if pre-existing triage is at cap, exactly one should succeed if starting empty.",
+  "knownLimitations": [
+    "The 1MB intake_json cap (P3.5) is per-payload; an attacker could submit many medium payloads to fill DB. Rate limit caps that; the napkin PNG → R2 work (P1.8 deferred) would lower per-payload size further",
+    "Capacity cap is hardcoded to 1 triage + 1 active — both numbers live in functions/_lib/sessions.ts as constants. Changing them would also require updating /api/capacity (the public read-side) and the home counter copy",
+    "POST returns 409 without explaining WHY (cap reached); the client maps the code to a friendly 'I'm at capacity' message. Adding a structured error body would be defensible but creates a vector for testing the cap from outside (probing the response)",
+    "Soft-delete (?deleted=true) is admin-only; a visitor wanting to see their own deleted history can't — Loi 25 right-of-access is satisfied by their data being gone, not by surfacing tombstones"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-09",
+      "reason": "Endpoint shipped with capacity cap + visitor/admin scope."
+    },
+    {
+      "from": "active",
+      "to": "active",
+      "date": "2026-05-13",
+      "reason": "Atomic capacity guard (AUDIT P1.7) replaced the racy read-then-write check."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Capacity cap, scope filter, and atomic guard all stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions collection."
+    }
+  ],
+  "annotations": []
+}

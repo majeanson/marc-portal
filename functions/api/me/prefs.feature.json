@@ -1,0 +1,75 @@
+{
+  "featureKey": "feat-2026-047",
+  "title": "GET + PATCH /api/me/prefs — per-account language and display name",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/auth",
+  "componentFile": "functions/api/me/prefs.ts",
+  "problem": "Two per-account preferences: lang ('fr' | 'en') and firstName (display name, used in greetings + signature lines). One endpoint, two methods. GET reads, PATCH writes. The lang preference is also the source of truth for the mp_lang cookie that drives the bare-'/' redirect in middleware — so a PATCH that changes lang also writes the cookie so the cookie-only middleware path stays in sync with the DB. Marc's own preference is what every admin-side notification email renders in.",
+  "tags": ["auth", "preferences", "csrf-protected", "cookie-sync"],
+  "analysis": "GET handler: returns { lang, firstName } for the signed-in account, defaulting to { lang: 'fr', firstName: null } if no row exists. PATCH handler: requires CSRF (state-changing). Body may include lang and/or firstName; at least one must be present (otherwise badRequest). Lang validation: must be 'fr' or 'en'. firstName: trimmed, max length, may be null to clear. Writes to user_prefs table (UPSERT on email). Side effect on lang change: writes the mp_lang cookie via Set-Cookie so the next bare-'/' middleware redirect sees the new language without needing a DB read on the hot path. The cookie write is one-way (DB → cookie); a cookie change without DB write doesn't persist across browsers but is fine for the bare-'/' flow.",
+  "decisions": [
+    {
+      "decision": "GET defaults gracefully if no row exists",
+      "rationale": "A freshly-magic-linked user hasn't written any prefs yet — their user_prefs row doesn't exist. GET could either return 404 or default to { lang: 'fr', firstName: null }. Defaulting is friendlier: the SPA gets a usable JSON body it can render; 404 would require special-case handling. The defaults match the bare-'/' middleware's default behavior (FR canonical).",
+      "recommendation": "Keep defaulting in GET. If a user_prefs row is needed for some other feature (e.g. seed it at sign-up), do it at request-link time, not at the GET prefs side.",
+      "date": "2026-05-10"
+    },
+    {
+      "decision": "PATCH writes both DB and cookie on lang change",
+      "rationale": "The middleware's bare-'/' redirect reads only the mp_lang cookie (no D1 hit on the hot path). If PATCH wrote only the DB, the cookie would drift — the user changes their pref to EN but the next time they hit bare '/' they're redirected to '/' (FR) until cookies expire. Writing both keeps the two sources of truth in sync at PATCH time. The cookie is duplicate data but it's a tiny payload (a few bytes) so the cost is negligible.",
+      "recommendation": "Keep the dual write. If a future feature reads lang from somewhere else (e.g. an HTTP header), thread that source the same way — every authoritative pref source should be updated by PATCH /api/me/prefs.",
+      "date": "2026-05-10"
+    },
+    {
+      "decision": "One endpoint, two methods (not /api/me/lang + /api/me/name)",
+      "rationale": "Two prefs today, more later. Splitting per-pref means N endpoints to add + maintain. Unified prefs endpoint handles whatever shape the body has; client can update one or both in a single request. The shape is simple (one field per pref) so collision/ambiguity isn't a concern.",
+      "recommendation": "When adding a new pref (e.g. timezone, notification opt-out), extend the PATCH body shape. Don't add /api/me/<pref>. Document the new field in this feature.json's analysis.",
+      "date": "2026-05-10"
+    }
+  ],
+  "successCriteria": "- GET returns { lang, firstName } for the signed-in account; defaults if no row\n- PATCH requires CSRF (verified via middleware)\n- PATCH validates lang as 'fr' | 'en'; rejects others with 400\n- PATCH allows firstName to be null (clearing the display name)\n- A successful PATCH that changes lang also sets the mp_lang cookie\n- The next bare-'/' redirect via middleware uses the new language without a DB hit\n- Marc's prefs change is reflected in admin notification emails on next send",
+  "implementation": "functions/api/me/prefs.ts — onRequestGet + onRequestPatch. currentEmail() gates both. GET: SELECT FROM user_prefs WHERE email = ?; default if absent. PATCH: requireCsrf, parse JSON body, validate, UPSERT, conditional setLangCookieHeader. Returns the updated { lang, firstName } so the SPA's local state can update without re-fetching. Tests in functions/api/me-prefs.test.ts cover both happy and validation-failure paths.",
+  "userGuide": "Used by the /me dashboard's LangPrefCard and FirstNameCard components — the SPA writes through src/lib/api.ts wrap. To change lang manually: curl -X PATCH http://localhost:8788/api/me/prefs -H 'X-CSRF-Token: ...' -b 'mp_session=...; mp_csrf=...' -d '{\"lang\":\"en\"}'. The X-CSRF-Token header must match the mp_csrf cookie value (double-submit). To check Marc's pref (which drives admin emails): GET /api/me/prefs while signed in as the admin email.",
+  "knownLimitations": [
+    "Cookie write is one-way DB → cookie; a manual cookie edit doesn't persist. The DB is authoritative for cross-device consistency",
+    "Validation is minimal (lang enum, firstName length); no profanity filter on firstName or anti-spoofing checks — the display name is shown in dashboards and emails, so a hostile user could pick a misleading name but the impact is limited to their own surfaces",
+    "PATCH writes BOTH fields even when only one is supplied (UPSERT semantics); the unchanged field retains its prior value. Semantically a partial update, but implemented as a full-row UPSERT for simplicity",
+    "No batching across multiple rapid PATCHes — if the UI debounces poorly, multiple writes can hit in succession. Acceptable at this scale; D1 handles it fine"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-10",
+      "reason": "Endpoint shipped with both GET and PATCH; lang + firstName supported."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Pref endpoints are stable; cookie-sync side effect remains essential to the middleware's hot path."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/me/prefs."
+    }
+  ],
+  "annotations": []
+}

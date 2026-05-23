@@ -1,0 +1,77 @@
+{
+  "featureKey": "feat-2026-028",
+  "title": "L'atelier — the portal's design system as a public exhibit",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/showcase",
+  "componentFile": "src/pages/Atelier.tsx",
+  "liveUrl": "/atelier",
+  "problem": "A consultant claiming visual range and testing rigor in 2026 is making an unverifiable promise — everyone says it. Most portfolios show a curated five-screen highlight reel and call it done. /atelier inverts that: every visual baseline this project ships, across every viewport and theme, is rendered publicly. The gallery IS the proof — if a screen is in the e2e regression suite, it's in the atelier; if it isn't in either, it doesn't exist as a claim. Pair that with the portal's own design tokens displayed as an exhibit (feature glyphs, colour scale, type ramp) and a visitor can verify both 'they have a design system' and 'they actually keep it on rails' in one page.",
+  "tags": ["showcase", "design-system", "visual-regression", "testing-rigor", "build-in-public"],
+  "analysis": "Two exhibits stacked. Exhibit A — visual language: the seven feature glyphs render as live <FeatureGlyph /> components (each a link into /carte filtered by that feature), the colour tokens display the actual CSS custom properties resolved at render time, the type scale shows the Source Serif 4 / JetBrains Mono ramp in use. This is the design system as a code-first artifact, not a Figma export. Exhibit B — the Atelier Gallery: every committed Playwright screenshot in e2e/__screenshots__/ becomes a clickable thumbnail. Click one and an inspector opens — switch viewport (phone / wide / etc.), step through related captures of the same route, jump to the live page. The gallery manifest is generated at prebuild by scripts/build-atelier-gallery.mjs from the PNG filenames + dimensions; full-resolution PNGs are also surfaced (clicking the thumb opens the full). The page is deliberately excluded from the screenshot suite itself (see e2e/routes.ts) — capturing /atelier would recurse the whole corpus into one image.",
+  "implementation": "src/pages/Atelier.tsx — single component, no lazy children, ~600 lines. Reads src/data/atelier-gallery.json (generated at prebuild) for the gallery manifest; reads FEATURES + FEATURE_IDS from src/lib/features.ts for the glyph exhibit. The inspector is a controlled <dialog>-like overlay built from useState (open + selected slug); keyboard nav with arrow keys steps between captures of the same route. Thumbnails are 240px-wide PNGs in public/atelier/ (build artifact, not committed); the full PNG lives at the same path but with full.png. On first paint the gallery resolves from the static manifest — no fetch. Two layers of state: which viewport filter is active (phone / wide / dark / light) and which capture is being inspected. The page exits with a FeatureContinue pointing back into the meta loop.",
+  "decisions": [
+    {
+      "decision": "The gallery IS the e2e baselines, not a curated subset",
+      "rationale": "If the atelier showed cherry-picked screens, the implicit claim ('we visually-regress every screen') would be unprovable — the visitor would have to take the consultant's word. By rendering every committed baseline, the page becomes its own verification: any visual regression the team has actually caught is on display. A cherry-pick would be a marketing artifact; this is structurally honest.",
+      "recommendation": "Don't add curation filters or 'featured' tags. If a baseline is too ugly to ship, fix the baseline, don't hide it from the gallery.",
+      "date": "2026-05-21"
+    },
+    {
+      "decision": "Generate the manifest at prebuild, never fetch at runtime",
+      "rationale": "Loi 25 + the boring-tech mandate: no runtime API call means no server log of who browsed the atelier, no 503 path to handle, no third-party CDN to negotiate. The manifest is a static JSON written by scripts/build-atelier-gallery.mjs from disk inspection of e2e/__screenshots__/. A fresh clone needs to run a build (or the script directly) before public/atelier/ thumbnails exist; the README points at this.",
+      "recommendation": "If a thumbnail rendering optimization is ever needed (e.g. WebP), do it in build-atelier-gallery.mjs — keep the runtime a static manifest read.",
+      "date": "2026-05-21"
+    },
+    {
+      "decision": "Exclude /atelier from the e2e screenshot suite",
+      "rationale": "Capturing /atelier would screenshot a page that itself displays every other screenshot, creating a recursive corpus where regenerating one baseline cascades into hundreds of pixel-diff failures. The page is checked manually for visual regressions instead. e2e/routes.ts has the exclusion comment so a future contributor doesn't re-add it.",
+      "recommendation": "Keep the exclusion. If a separate 'atelier integrity' test is needed (e.g. 'every PNG in __screenshots__/ has a manifest entry'), write it as a Vitest unit against the manifest JSON, not a Playwright run against the live page.",
+      "date": "2026-05-21"
+    }
+  ],
+  "successCriteria": "- Every committed PNG in e2e/__screenshots__/ has a thumbnail + inspector entry in the gallery\n- The seven feature glyphs render with live colours resolved from CSS custom properties (not hardcoded values)\n- The inspector supports keyboard navigation (arrow keys to step) and viewport filters\n- /atelier itself is NOT captured by the e2e suite (preserves the recursion guard)\n- The page renders zero runtime fetches — gallery manifest + tokens both come from static sources\n- A visitor can land on /atelier and verify, in one page, the portal's visual range and the testing rigor that backs it",
+  "userGuide": "Open /atelier (or /en/atelier). Two sections: the design system exhibit (glyphs, colours, type) and the gallery. Click any glyph to filter the /carte atlas to that feature. In the gallery, click a thumbnail to open the inspector — use arrow keys to step through related captures of the same route, click the viewport pills to filter (phone, wide, dark, light), click 'live page' in the inspector to jump to the rendered version. The bottom FeatureContinue link completes the backstage tour. To regenerate the gallery manifest after adding/changing a screenshot baseline: `node scripts/build-atelier-gallery.mjs`. To regenerate the thumbnails in public/atelier: run a full build.",
+  "knownLimitations": [
+    "Gallery thumbnails live in public/atelier/ which is gitignored — a fresh clone shows a broken-image gallery until `npm run build` (or just build-atelier-gallery.mjs) runs",
+    "The viewport filter only knows the viewports declared in playwright.config.ts; a new viewport in the suite requires updating the filter list",
+    "/atelier is excluded from the screenshot suite, so a visual regression on this page itself wouldn't be caught by the gate — it's checked manually before a release",
+    "The inspector's 'live page' link assumes the route is publicly reachable; an auth-gated baseline (admin surfaces, signed-in /me) shows a sign-in page when followed by an anon visitor"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-21",
+      "reason": "Page shipped with the atelier-gallery prebuild script; gallery manifest + inspector both live."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located; recursion exclusion, no-fetch design, and gallery-as-proof framing all stable since 2026-05-21."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — co-located doc for /atelier as part of the FEATURE-DOCS P1 sweep."
+    }
+  ],
+  "annotations": []
+}

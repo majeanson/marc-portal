@@ -25,88 +25,88 @@
 
 ## Coverage at a glance
 
+> Updated 2026-05-23 after the P1 + P2 sweep — all visitor-facing pages
+> and critical API handlers documented. Lighter P3 + P4 surfaces (admin,
+> OG endpoints, chrome components) are now the remaining gap.
+
 | Surface     | Total | Documented | Gap |
 | ----------- | ----: | ---------: | --: |
-| `src/pages` |    33 |          7 |  26 |
+| `src/pages` |    33 |         24 |   9 |
 | `src/components` |  47 |       2 |  45 |
-| `functions/api` |  32 |       1 |  31 |
-| `functions/_middleware.ts` | 1 | 0 | 1 |
+| `functions/api` |  32 |        21 |  11 |
+| `functions/_middleware.ts` | 1 | 1 | 0 |
 | `functions/og`  |   4 |          0 |   4 |
-| **Total**   |   117 |         10 | 107 |
+| **Total**   |   117 |         48 |  69 |
 
 The root `feature.json` (the "Marc-Portal" mega-feature) is healthy and
-active. This audit is about the co-located docs that sit next to the
-code they describe.
+active; verified 2026-05-23. The 47 co-located feature.jsons + the root
+all surface at `/meta` via `build-lac-meta.mjs`.
 
 ---
 
 ## P1 — Just-shipped, undocumented (acute)
 
-These shipped this session (commits `f3ef8f1` → `05d57eb`) and have zero
-documentation. They will be authored tonight.
+Shipped this session in `f3ef8f1` → `05d57eb`; co-located docs written
+during the same evening sweep.
 
-- 🟡 **src/pages/Passage.tsx** — `/passage` + `/en/passage`, the
+- ✅ **src/pages/Passage.tsx** — `/passage` + `/en/passage`, the
   café-receipt rendering of the current visit's cookies, localStorage,
-  and walked routes. Felt version of Privacy.
-- 🟡 **src/pages/Dossier.tsx** — `/me/dossier` + `/en/me/dossier`,
-  auth-gated. Side-by-side ledger of what the portal keeps vs. what
-  Meta collects, with public-source citations.
-- 🟡 **src/pages/AuRevoir.tsx** — `/au-revoir` + `/en/goodbye`,
-  the post-erasure ritual page. Two branches (just-erased vs. direct
-  visit); reduced-motion aware.
+  and walked routes.
+- ✅ **src/pages/Dossier.tsx** — `/me/dossier` + `/en/me/dossier`,
+  auth-gated ledger vs. Meta with public-source citations.
+- ✅ **src/pages/AuRevoir.tsx** — `/au-revoir` + `/en/goodbye`, the
+  post-erasure ritual. Two branches, reduced-motion aware.
 
 ## P1 — Public marketing + transparency surfaces
 
-- ⬜ **src/pages/Atelier.tsx** — the workshop walkthrough.
-- ⬜ **src/pages/Map.tsx** — `/carte` + `/en/map`. Cytoscape graph of
-  every page + feature; filters by `?feature=X`.
-- ⬜ **src/pages/Meta.tsx** — `/meta`. Renders the LAC corpus
-  (this audit's mirror lives there).
-- ⬜ **src/pages/Privacy.tsx** — Loi 25 legal disclosure.
-- ⬜ **src/pages/Pia.tsx** — Privacy Impact Assessment.
-- ⬜ **src/pages/Vouches.tsx** — public testimonials wall.
-- ⬜ **src/pages/Vouch.tsx** — single-vouch detail page.
-- ⬜ **src/pages/PublicAdvancements.tsx** — `/share/:id`. Per-build
-  share page with the time-travel scrubber.
-- ⬜ **src/pages/Journey.tsx** — `/parcours` + `/en/journey`, the
-  step-by-step "how the practice works" walkthrough.
-- ⬜ **src/pages/HandoffChecklist.tsx** — `/handoff/checklist`.
+All shipped 2026-05-23.
+
+- ✅ **src/pages/Atelier.tsx** — the workshop walkthrough.
+- ✅ **src/pages/Map.tsx** — `/carte` + `/en/map`.
+- ✅ **src/pages/Meta.tsx** — `/meta`. The portal's `/meta` page; reads
+  the LAC corpus this audit lives alongside.
+- ✅ **src/pages/Privacy.tsx** — Loi 25 legal disclosure.
+- ✅ **src/pages/Pia.tsx** — Privacy Impact Assessment.
+- ✅ **src/pages/Vouches.tsx** — public testimonials wall.
+- ✅ **src/pages/Vouch.tsx** — single-vouch detail page.
+- ✅ **src/pages/PublicAdvancements.tsx** — `/share/:id`.
+- ✅ **src/pages/Journey.tsx** — `/parcours` + `/en/journey`.
+- ✅ **src/pages/HandoffChecklist.tsx** — `/handoff/checklist`.
 
 ## P2 — Auth-gated visitor surfaces
 
-- ⬜ **src/pages/Login.tsx** — magic-link request form.
-- ⬜ **src/pages/MagicLinkSent.tsx** — post-submit confirmation.
-- ⬜ **src/pages/MePortal.tsx** — signed-in client dashboard.
-- ⬜ **src/pages/MyData.tsx** — Loi 25 right-of-access view.
+All shipped 2026-05-23.
+
+- ✅ **src/pages/Login.tsx** — magic-link request form.
+- ✅ **src/pages/MagicLinkSent.tsx** — post-submit confirmation.
+- ✅ **src/pages/MePortal.tsx** — signed-in client dashboard.
+- ✅ **src/pages/MyData.tsx** — Loi 25 right-of-access view.
 
 ## P2 — Critical API handlers (state-changing, security-sensitive)
 
-- ⬜ **functions/_middleware.ts** — tenant resolution, CSRF gate,
-  bilingual redirect, OG-tag rewrite. Load-bearing infrastructure;
-  documented behaviour matters for the next maintainer.
-- ⬜ **functions/api/auth/request-link.ts** — magic-link issuer.
-- ⬜ **functions/api/auth/verify.ts** — magic-link consumer.
-- ⬜ **functions/api/auth/logout.ts**
-- ⬜ **functions/api/sessions/index.ts** — POST creates new sessions;
-  carries the capacity-cap race fix (AUDIT P1.7).
-- ⬜ **functions/api/sessions/[id].ts** — session lifecycle PATCH;
-  atomic capacity guard lives here.
-- ⬜ **functions/api/me.ts** — GET + DELETE; the DELETE is the
-  erasure ritual's backend half.
-- ⬜ **functions/api/me/prefs.ts**
-- ⬜ **functions/api/payments/checkout.ts** — Stripe Checkout creator.
-- ⬜ **functions/api/payments/webhook.ts** — Stripe webhook handler.
-- ⬜ **functions/api/payments/portal.ts** — Stripe billing portal.
-- ⬜ **functions/api/payments/index.ts**
-- ⬜ **functions/api/intake/transcribe.ts** — Workers AI Whisper
-  proxy; documented graceful-degrade pattern when AI binding unset.
-- ⬜ **functions/api/intake-drafts.ts**
-- ⬜ **functions/api/sessions/[id]/messages.ts**
-- ⬜ **functions/api/sessions/[id]/advancements/index.ts**
-- ⬜ **functions/api/sessions/[id]/advancements/[advId].ts**
-- ⬜ **functions/api/sessions/[id]/attachments/index.ts**
-- ⬜ **functions/api/sessions/[id]/attachments/[attId].ts**
-- ⬜ **functions/api/vouches.ts** — anon vouch submission (rate-limited).
+All shipped 2026-05-23.
+
+- ✅ **functions/_middleware.ts** — tenant resolution, CSRF gate,
+  bilingual redirect, OG-tag rewrite.
+- ✅ **functions/api/auth/request-link.ts** — magic-link issuer.
+- ✅ **functions/api/auth/verify.ts** — magic-link consumer.
+- ✅ **functions/api/auth/logout.ts**
+- ✅ **functions/api/sessions/index.ts** — capacity-cap race fix (P1.7).
+- ✅ **functions/api/sessions/[id].ts** — lifecycle PATCH + atomic guard.
+- ✅ **functions/api/me.ts** — GET + DELETE.
+- ✅ **functions/api/me/prefs.ts**
+- ✅ **functions/api/payments/checkout.ts**
+- ✅ **functions/api/payments/webhook.ts**
+- ✅ **functions/api/payments/portal.ts**
+- ✅ **functions/api/payments/index.ts**
+- ✅ **functions/api/intake/transcribe.ts**
+- ✅ **functions/api/intake-drafts.ts**
+- ✅ **functions/api/sessions/[id]/messages.ts**
+- ✅ **functions/api/sessions/[id]/advancements/index.ts**
+- ✅ **functions/api/sessions/[id]/advancements/[advId].ts**
+- ✅ **functions/api/sessions/[id]/attachments/index.ts**
+- ✅ **functions/api/sessions/[id]/attachments/[attId].ts**
+- ✅ **functions/api/vouches.ts** — anon vouch submission.
 
 ## P3 — Public read-only API + utilities
 
@@ -165,24 +165,25 @@ ScrollProgress, SectionEyebrow, SectionRail, SessionAdvancements,
 SessionShowcase, SessionSubHeader, SessionWhatsNext, ShareModal,
 ShareSite, SiteSearch, StudioSign, ThemeToggle.
 
-## Audit of the 10 existing feature.json files
+## Audit of the existing feature.json files
 
-Read each for staleness — file paths still exist, decisions still
-describe today's reality, knownLimitations not contradicted by recent
-commits.
+All bumped to `lastVerifiedDate: 2026-05-23` on 2026-05-23. Spot-check
+of `componentFile` paths confirmed every reference resolves; no
+detected drift in decisions or knownLimitations for the originals.
 
-- ⬜ feature.json (root, the mega-feature) — `lastVerifiedDate` line
-  to spot-check; root doc tends to drift fastest.
-- ⬜ src/pages/Home.feature.json
-- ⬜ src/pages/Intake.feature.json
-- ⬜ src/pages/Engagement.feature.json — verified 2026-05-21.
-- ⬜ src/pages/Projects.feature.json
-- ⬜ src/pages/Handoff.feature.json
-- ⬜ src/pages/SessionPage.feature.json
-- ⬜ src/pages/Tier0.feature.json
-- ⬜ src/components/Pricing.feature.json
-- ⬜ src/components/VibeFilter.feature.json
-- ⬜ functions/api/capacity.feature.json
+- ✅ feature.json (root, the mega-feature) — verified; added a
+  statusHistory entry noting the FEATURE-DOCS gap audit + the
+  ton-passage transparency arc shipped this session.
+- ✅ src/pages/Home.feature.json
+- ✅ src/pages/Intake.feature.json
+- ✅ src/pages/Engagement.feature.json
+- ✅ src/pages/Projects.feature.json
+- ✅ src/pages/Handoff.feature.json
+- ✅ src/pages/SessionPage.feature.json
+- ✅ src/pages/Tier0.feature.json
+- ✅ src/components/Pricing.feature.json
+- ✅ src/components/VibeFilter.feature.json
+- ✅ functions/api/capacity.feature.json
 
 ## Error / not-real-features (skip)
 

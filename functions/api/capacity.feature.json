@@ -56,7 +56,7 @@
       "reason": "Code-first verification — feature.json co-located at functions/api/capacity.feature.json. Capacity is now derived live from engagement records via the server; the earlier hand-edited JSON file is gone."
     }
   ],
-  "lastVerifiedDate": "2026-05-21",
+  "lastVerifiedDate": "2026-05-23",
   "revisions": [
     {
       "date": "2026-05-06",
