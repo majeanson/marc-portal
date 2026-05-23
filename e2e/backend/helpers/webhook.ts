@@ -72,22 +72,51 @@ export function makeCheckoutCompletedEvent(args: CheckoutCompletedEvent): Record
   }
 }
 
+interface DeliverOpts {
+  /** Sign the body with a different secret than the server expects. Used to
+   *  drive the 401 signature-mismatch path in negative-space specs. */
+  secretOverride?: string
+  /** Send a malformed Stripe-Signature header (or omit it via empty string).
+   *  Catches header-parse defenses without needing a real HMAC. */
+  signatureOverride?: string
+  /** Override the timestamp baked into the signature. Use a value > 5 min
+   *  off `now` to drive the replay-window rejection. */
+  timestampOverride?: number
+}
+
 /**
  * POST the synthetic event to the running server's webhook endpoint with a
  * valid Stripe-Signature header. Returns the fetch Response so specs can
  * assert on status if needed (the handler returns 200 on every recoverable
  * failure — anything else is signature mismatch or test bug).
+ *
+ * `opts` lets negative-space specs drive the signature-rejection paths
+ * without each one re-implementing the HMAC.
  */
-export async function deliverWebhook(event: Record<string, unknown>): Promise<Response> {
+export async function deliverWebhook(
+  event: Record<string, unknown>,
+  opts: DeliverOpts = {},
+): Promise<Response> {
   const rawBody = JSON.stringify(event)
-  const ts = Math.floor(Date.now() / 1000)
-  const signature = sign(rawBody, ts)
+  const ts = opts.timestampOverride ?? Math.floor(Date.now() / 1000)
+  let signature: string
+  if (opts.signatureOverride != null) {
+    signature = opts.signatureOverride
+  } else if (opts.secretOverride != null) {
+    const sigHex = createHmac('sha256', opts.secretOverride).update(`${ts}.${rawBody}`).digest('hex')
+    signature = `t=${ts},v1=${sigHex}`
+  } else {
+    signature = sign(rawBody, ts)
+  }
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  // Empty string => explicitly omit the header (sig === null on server, drives
+  // verifyWebhookSignature's early-return rather than parse failure).
+  if (signature !== '') headers['Stripe-Signature'] = signature
   return await fetch(`${E2E_BASE_URL}/api/payments/webhook`, {
     method: 'POST',
-    headers: {
-      'Stripe-Signature': signature,
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: rawBody,
   })
 }

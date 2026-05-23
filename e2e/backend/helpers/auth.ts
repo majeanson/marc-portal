@@ -18,11 +18,15 @@ function b64url(buf: Buffer | Uint8Array): string {
   return Buffer.from(buf).toString('base64url')
 }
 
-function signSessionCookieValue(email: string): string {
-  const payload = JSON.stringify({
-    e: email.toLowerCase(),
-    x: Math.floor(Date.now() / 1000) + MAX_AGE_SECONDS,
-  })
+/**
+ * Produce a valid HMAC-signed session cookie value. Exported for raw-fetch
+ * specs that want to override the expiry (forging an already-expired cookie
+ * to drive the auth.ts expiry check) or otherwise side-step
+ * BrowserContext.addCookies.
+ */
+export function signSessionCookieValue(email: string, expSecondsOverride?: number): string {
+  const exp = expSecondsOverride ?? Math.floor(Date.now() / 1000) + MAX_AGE_SECONDS
+  const payload = JSON.stringify({ e: email.toLowerCase(), x: exp })
   const sig = createHmac('sha256', SECRET).update(payload).digest()
   return `${b64url(Buffer.from(payload, 'utf8'))}.${b64url(sig)}`
 }
@@ -64,6 +68,52 @@ export async function signInAs(context: BrowserContext, email: string): Promise<
       sameSite: 'Lax',
     },
   ])
+}
+
+interface ForgeOpts {
+  /** Override the cookie expiry (unix seconds). Use a past value to drive
+   *  the expired-cookie 401 path; omit for a fresh 30-day cookie. */
+  expSeconds?: number
+  /** Replace the X-CSRF-Token header value with something other than the
+   *  mp_csrf cookie value. Use to drive the CSRF-mismatch 403 path. */
+  csrfHeaderOverride?: string
+  /** Omit both the mp_csrf cookie and the X-CSRF-Token header entirely.
+   *  Drives the missing-CSRF 403 path. The mp_session cookie still rides
+   *  along — the goal is to fail at the CSRF gate, not the auth gate. */
+  omitCsrf?: boolean
+}
+
+interface ForgedHeaders {
+  Cookie: string
+  'X-CSRF-Token'?: string
+  'Content-Type': string
+}
+
+/**
+ * Build a header bag for raw fetch tests. Returns the Cookie + CSRF header a
+ * signed-in visitor would carry, plus a JSON content-type for POST bodies. The
+ * BrowserContext.addCookies path (`signInAs`) stays the canonical helper for
+ * tests that actually drive the SPA; this is the lower-level escape hatch for
+ * tests that only assert on /api/* response shapes.
+ */
+export function forgeAuthHeaders(email: string, opts: ForgeOpts = {}): ForgedHeaders {
+  const sessionValue = signSessionCookieValue(email, opts.expSeconds)
+  const cookies: string[] = [`mp_session=${sessionValue}`]
+  const headers: ForgedHeaders = {
+    Cookie: '',
+    'Content-Type': 'application/json',
+  }
+  if (!opts.omitCsrf) {
+    const csrfValue = newCsrfTokenValue()
+    cookies.push(`mp_csrf=${csrfValue}`)
+    headers['X-CSRF-Token'] = opts.csrfHeaderOverride ?? csrfValue
+  } else if (opts.csrfHeaderOverride) {
+    // Explicit override even when the cookie is omitted (e.g. attacker sends
+    // a guessed header value with no cookie to mirror).
+    headers['X-CSRF-Token'] = opts.csrfHeaderOverride
+  }
+  headers.Cookie = cookies.join('; ')
+  return headers
 }
 
 // Re-export for specs that want to drive port-aware URLs without importing
