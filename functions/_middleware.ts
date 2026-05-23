@@ -77,33 +77,20 @@ function parseLangCookie(request: Request): 'fr' | 'en' | null {
   return null
 }
 
-function preferredLangFromHeader(request: Request): 'fr' | 'en' | null {
-  const al = request.headers.get('Accept-Language') ?? ''
-  // Walk language tags in order; first FR/EN match wins. We don't honor
-  // q-weights — the simple greedy walk is correct 99% of the time and
-  // cheaper than parsing the full RFC 4647.
-  for (const raw of al.split(',')) {
-    const tag = raw.split(';')[0]!.trim().toLowerCase()
-    if (tag.startsWith('en')) return 'en'
-    if (tag.startsWith('fr')) return 'fr'
-  }
-  return null
-}
-
 export const onRequest: PagesFunction<Env> = async (ctx) => {
   const url = new URL(ctx.request.url)
   const host = url.host.toLowerCase()
 
   // First-visit locale redirect. Only fires on the bare root (`/`) so we
-  // don't surprise users who deep-link into an FR page. Honors the explicit
-  // cookie if set; otherwise checks Accept-Language. EN preference → 302 to
-  // `/en`. FR (or no preference) stays. Idempotent — `/en` is exempt because
-  // the URL already encodes the choice.
+  // don't surprise users who deep-link into an FR page. FR is the default
+  // landing — the Québec-first pitch is the whole point, and an EN-browser
+  // visitor still gets a one-time nudge banner (src/components/EnglishNudge)
+  // pointing at /en. The only thing that redirects away from FR is an
+  // explicit prior choice via the language switcher (mp_lang=en cookie).
+  // Accept-Language is intentionally NOT consulted here.
   if (url.pathname === '/' && ctx.request.method === 'GET') {
     const cookieLang = parseLangCookie(ctx.request)
-    const headerLang = preferredLangFromHeader(ctx.request)
-    const pick = cookieLang ?? headerLang
-    if (pick === 'en') {
+    if (cookieLang === 'en') {
       return new Response(null, {
         status: 302,
         headers: { Location: `/en${url.search}${url.hash}` },
@@ -225,6 +212,32 @@ function rewriteOgTags(response: Response, url: URL): Response {
   let ogImage = isEn ? '/og-image-en.png' : '/og-image.png'
   const ogLocale = isEn ? 'en_CA' : 'fr_CA'
 
+  // Per-language OG/Twitter text. index.html ships the FR strings as the
+  // baked-in defaults (crawlers that miss the rewrite still get coherent
+  // FR copy); for /en/* we swap to the EN equivalents so the social card
+  // text matches the page language. Without this, an EN page would unfurl
+  // with an English image but a French title/description — the exact
+  // mismatch the FR-first contract is supposed to prevent.
+  const ogText = isEn
+    ? {
+        title: 'Marc — Québécois dev, async, everyday problems',
+        description:
+          'Evenings and weekends, I help people fix everyday problems with small software. Async, testable demos, no calls.',
+        twTitle: 'Marc — Québécois dev, async',
+        twDescription:
+          'Evenings and weekends, I help people fix everyday problems with small software.',
+        imageAlt: 'marc.portal — Québécois dev. Day job. I help at night.',
+      }
+    : {
+        title: 'Marc — dev québécois, async, problèmes du quotidien',
+        description:
+          "Soir et fin de semaine, j'aide les gens à régler des problèmes du quotidien avec des petits logiciels. Async, démos testables, pas de calls.",
+        twTitle: 'Marc — dev québécois, async',
+        twDescription:
+          "Soir et fin de semaine, j'aide les gens à régler des problèmes du quotidien avec des petits logiciels.",
+        imageAlt: 'marc.portal — Dev québécois. Job de jour. Le soir, j’aide.',
+      }
+
   if (shareMatch) {
     const sessionId = shareMatch[1]
     // Point at the dynamic per-project OG endpoint. The function below
@@ -265,6 +278,36 @@ function rewriteOgTags(response: Response, url: URL): Response {
     .on('meta[name="twitter:image"]', {
       element(el) {
         el.setAttribute('content', ogImageAbs)
+      },
+    })
+    .on('meta[property="og:image:alt"]', {
+      element(el) {
+        el.setAttribute('content', ogText.imageAlt)
+      },
+    })
+    .on('meta[name="twitter:image:alt"]', {
+      element(el) {
+        el.setAttribute('content', ogText.imageAlt)
+      },
+    })
+    .on('meta[property="og:title"]', {
+      element(el) {
+        el.setAttribute('content', ogText.title)
+      },
+    })
+    .on('meta[property="og:description"]', {
+      element(el) {
+        el.setAttribute('content', ogText.description)
+      },
+    })
+    .on('meta[name="twitter:title"]', {
+      element(el) {
+        el.setAttribute('content', ogText.twTitle)
+      },
+    })
+    .on('meta[name="twitter:description"]', {
+      element(el) {
+        el.setAttribute('content', ogText.twDescription)
       },
     })
     .on('meta[property="og:locale"]', {

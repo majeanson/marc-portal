@@ -55,6 +55,12 @@ function htmlIndex(): string {
     '<!doctype html><html><head>',
     '<meta property="og:image" content="/og-image.png">',
     '<meta name="twitter:image" content="/og-image.png">',
+    '<meta property="og:image:alt" content="alt-fr">',
+    '<meta name="twitter:image:alt" content="alt-fr">',
+    '<meta property="og:title" content="title-fr">',
+    '<meta property="og:description" content="desc-fr">',
+    '<meta name="twitter:title" content="tw-title-fr">',
+    '<meta name="twitter:description" content="tw-desc-fr">',
     '<meta property="og:locale" content="fr_CA">',
     '<meta property="og:url" content="https://x.test/">',
     '</head><body></body></html>',
@@ -117,6 +123,33 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
     expect(body).toContain('rel="alternate" hreflang="x-default" href="/projects"')
   })
 
+  it('rewrites og:title / og:description / twitter:* to EN on /en paths', async () => {
+    const ctx = makeCtx({
+      url: 'https://x.test/en/projects',
+      next: async () => new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
+    })
+    const res = await onRequest(ctx)
+    const body = await res.text()
+    // EN strings — verify the FR baseline got swapped out and didn't leak.
+    expect(body).toContain('Québécois dev, async')
+    expect(body).toContain('Evenings and weekends')
+    expect(body).not.toContain('title-fr')
+    expect(body).not.toContain('desc-fr')
+    expect(body).not.toContain('dev québécois, async, problèmes')
+  })
+
+  it('keeps FR og:title / og:description on bare FR paths', async () => {
+    const ctx = makeCtx({
+      url: 'https://x.test/projects',
+      next: async () => new Response(htmlIndex(), { headers: { 'content-type': 'text/html' } }),
+    })
+    const res = await onRequest(ctx)
+    const body = await res.text()
+    expect(body).toContain('dev québécois, async, problèmes')
+    expect(body).toContain('Soir et fin de semaine')
+    expect(body).not.toContain('Québécois dev, async')
+  })
+
   it('rewrites og:url to the absolute current page URL', async () => {
     const ctx = makeCtx({
       url: 'https://x.test/projects',
@@ -147,36 +180,56 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
 })
 
 describe('middleware locale redirect', () => {
-  it('redirects / → /en when Accept-Language prefers EN', async () => {
+  it('keeps / on FR even when Accept-Language prefers EN (FR is the default)', async () => {
     const ctx = makeCtx({
       url: 'https://x.test/',
       headers: { 'Accept-Language': 'en-US,en;q=0.9,fr;q=0.5' },
-      next: async () => new Response('should not be reached'),
-    })
-    const res = await onRequest(ctx)
-    expect(res.status).toBe(302)
-    expect(res.headers.get('location')).toBe('/en')
-  })
-
-  it('keeps / on FR Accept-Language', async () => {
-    const ctx = makeCtx({
-      url: 'https://x.test/',
-      headers: { 'Accept-Language': 'fr-CA,fr;q=0.9' },
       // Plain-text body — bypasses the HTMLRewriter content-type check, so
       // the test runs in environments where HTMLRewriter isn't available.
       next: async () => new Response('home', { headers: { 'content-type': 'text/plain' } }),
     })
     const res = await onRequest(ctx)
+    // Accept-Language is intentionally not consulted — the EnglishNudge
+    // component handles the EN-browser case client-side instead.
+    expect(res.status).toBe(200)
+  })
+
+  // Cookie is a forbidden header in fetch Request init (some happy-dom
+  // builds strip it). For redirect tests that depend on mp_lang, build the
+  // context with a hand-stubbed request that returns the cookie value.
+  function ctxWithCookie(path: string, cookies: string, nextBody = 'home') {
+    return {
+      request: {
+        method: 'GET',
+        url: `https://x.test${path}`,
+        headers: {
+          get(name: string) {
+            const n = name.toLowerCase()
+            if (n === 'cookie') return cookies
+            return null
+          },
+        },
+      } as unknown as Request,
+      env: makeMockEnv(),
+      data: {},
+      next: async () => new Response(nextBody, { headers: { 'content-type': 'text/plain' } }),
+      params: {},
+    } as unknown as Parameters<typeof onRequest>[0]
+  }
+
+  it('redirects / → /en when mp_lang=en cookie is set (explicit prior choice)', async () => {
+    const res = await onRequest(ctxWithCookie('/', 'mp_lang=en'))
+    expect(res.status).toBe(302)
+    expect(res.headers.get('location')).toBe('/en')
+  })
+
+  it('keeps / on FR when mp_lang=fr cookie is set', async () => {
+    const res = await onRequest(ctxWithCookie('/', 'mp_lang=fr'))
     expect(res.status).toBe(200)
   })
 
   it('does not redirect non-root paths (only / is gated)', async () => {
-    const ctx = makeCtx({
-      url: 'https://x.test/projects',
-      headers: { 'Accept-Language': 'en-US' },
-      next: async () => new Response('home', { headers: { 'content-type': 'text/plain' } }),
-    })
-    const res = await onRequest(ctx)
+    const res = await onRequest(ctxWithCookie('/projects', 'mp_lang=en'))
     expect(res.status).toBe(200)
   })
 })

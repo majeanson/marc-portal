@@ -20,6 +20,7 @@ import { computeSla, formatDate, formatRelativeWindow } from '../lib/format'
 import { isUnread, seedIfMissing } from '../lib/unread'
 import { PaymentActions } from '../components/PaymentActions'
 import { LangPrefCard } from '../components/LangPrefCard'
+import { FirstNameCard } from '../components/FirstNameCard'
 
 const COPY = {
   fr: {
@@ -570,6 +571,7 @@ export function MePortal({ lang }: { lang: Lang }) {
 
         <section className="me-portal__account-section">
           <h2 className="me-portal__section-title mono">{t.sectionAccountTitle}</h2>
+          <FirstNameCard lang={lang} />
           <LangPrefCard lang={lang} />
           <div className="me-portal__account-actions">
             <button

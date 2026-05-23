@@ -22,6 +22,7 @@ import { FAQ } from '../components/FAQ'
 import { Testimonials } from '../components/Testimonials'
 import { NapperonDoodles } from '../components/NapperonDoodles'
 import { BringAnything } from '../components/BringAnything'
+import { EnglishNudge } from '../components/EnglishNudge'
 
 export function Home({ lang }: { lang: Lang }) {
   const t = DICT[lang]
@@ -59,6 +60,7 @@ export function Home({ lang }: { lang: Lang }) {
     <div className="app">
       <ScrollProgress lang={lang} />
       <Header lang={lang} />
+      <EnglishNudge lang={lang} />
       <SectionRail lang={lang} />
       <main id="main-content" className="home">
         {/* 0 — Napperon doodles: hand-drawn margin glyphs (coffee ring, red-pen

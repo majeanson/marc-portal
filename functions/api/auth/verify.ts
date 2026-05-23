@@ -9,12 +9,14 @@
 import {
   newCsrfToken,
   setCsrfCookieHeader,
+  setLangCookieHeader,
   setSessionCookieHeader,
   signSessionCookie,
 } from '../../_lib/auth'
 import { sha256B64url } from '../../_lib/bytes'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
+import { getLang } from '../../_lib/userPrefs'
 
 interface TokenRow {
   token: string
@@ -67,7 +69,18 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   const sessionCookie = await signSessionCookie(env.SESSION_SECRET, row.email)
   const csrf = newCsrfToken()
-  const cookies = [setSessionCookieHeader(sessionCookie), setCsrfCookieHeader(csrf)]
+
+  // Sync the visitor's stored language preference into the mp_lang cookie
+  // so the next bare-`/` visit (cookie cleared, new device, incognito)
+  // lands in their saved language. Without this, an "en" user with a
+  // fresh browser hits FR by default. getLang falls back to 'fr' on any
+  // error, so this never blocks the sign-in flow.
+  const savedLang = await getLang(env.DB, row.email)
+  const cookies = [
+    setSessionCookieHeader(sessionCookie),
+    setCsrfCookieHeader(csrf),
+    setLangCookieHeader(savedLang),
+  ]
 
   const dest = isAdmin(env, row.email) ? `${langPrefix}/admin/inbox` : `${langPrefix}/me`
   return redirect(dest, cookies)

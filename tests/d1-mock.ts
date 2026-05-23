@@ -122,6 +122,7 @@ interface VouchRowMock {
 interface UserPrefRowMock {
   email: string
   lang: string
+  first_name: string | null
   updated_at: number
 }
 
@@ -620,10 +621,11 @@ class MockPreparedStatement {
       return rows.map((v) => ({ ...v }))
     }
 
-    // SELECT lang FROM user_prefs WHERE email = ?
+    // SELECT lang, first_name FROM user_prefs WHERE email = ? (or just lang)
     if (sql.includes('FROM user_prefs WHERE email = ?')) {
       const row = this.db.user_prefs.get((a[0] as string).toLowerCase())
-      return row ? [{ lang: row.lang }] : []
+      if (!row) return []
+      return [{ lang: row.lang, first_name: row.first_name }]
     }
 
     // Fallback: SELECT intake_json FROM sessions WHERE email = ? AND deleted_at IS NULL
@@ -1144,13 +1146,40 @@ class MockPreparedStatement {
       return v ? 1 : 0
     }
 
-    // INSERT INTO user_prefs (email, lang, updated_at) VALUES (?, ?, ?)
+    // setLang upsert:
+    //   INSERT INTO user_prefs (email, lang, updated_at) VALUES (?, ?, ?)
     //   ON CONFLICT(email) DO UPDATE SET lang = excluded.lang, updated_at = excluded.updated_at
-    if (sql.startsWith('INSERT INTO user_prefs') && sql.includes('ON CONFLICT(email)')) {
+    if (
+      sql.startsWith('INSERT INTO user_prefs') &&
+      sql.includes('ON CONFLICT(email)') &&
+      sql.includes('SET lang = excluded.lang')
+    ) {
       const email = (a[0] as string).toLowerCase()
+      const prev = this.db.user_prefs.get(email)
       this.db.user_prefs.set(email, {
         email,
         lang: a[1] as string,
+        first_name: prev?.first_name ?? null,
+        updated_at: a[2] as number,
+      })
+      return 1
+    }
+
+    // setFirstName upsert:
+    //   INSERT INTO user_prefs (email, lang, first_name, updated_at)
+    //   VALUES (?, 'fr', ?, ?)
+    //   ON CONFLICT(email) DO UPDATE SET first_name = excluded.first_name, updated_at = excluded.updated_at
+    if (
+      sql.startsWith('INSERT INTO user_prefs') &&
+      sql.includes('ON CONFLICT(email)') &&
+      sql.includes('first_name = excluded.first_name')
+    ) {
+      const email = (a[0] as string).toLowerCase()
+      const prev = this.db.user_prefs.get(email)
+      this.db.user_prefs.set(email, {
+        email,
+        lang: prev?.lang ?? 'fr',
+        first_name: (a[1] as string | null) ?? null,
         updated_at: a[2] as number,
       })
       return 1
@@ -1163,6 +1192,7 @@ class MockPreparedStatement {
       this.db.user_prefs.set(email, {
         email,
         lang: a[1] as string,
+        first_name: null,
         updated_at: a[2] as number,
       })
       return 1

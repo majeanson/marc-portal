@@ -1,0 +1,11 @@
+-- Add first_name to user_prefs. Nullable: existing rows (Marc + anyone
+-- already seeded by request-link's first-touch INSERT) don't have one yet
+-- and shouldn't be force-blocked from signing in. The /me FirstNameCard
+-- surfaces an "optional" hint when empty; bilingual notification emails
+-- already work without it (greeting falls back to "Bonjour" / "Hi").
+--
+-- No length cap at the schema layer — D1/SQLite doesn't enforce TEXT
+-- lengths; PATCH /api/me/prefs trims + rejects > 80 chars at the
+-- handler. Schema-level constraints would block the natural fix-path of
+-- "I typed too much, let me edit" with an opaque 500.
+ALTER TABLE user_prefs ADD COLUMN first_name TEXT;

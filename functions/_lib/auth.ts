@@ -149,6 +149,30 @@ export function clearCsrfCookieHeader(): string {
   return [`${CSRF_COOKIE_NAME}=`, 'Path=/', 'Secure', 'SameSite=Lax', 'Max-Age=0'].join('; ')
 }
 
+/**
+ * Cookie header for the visitor's chosen language. NOT HttpOnly — the
+ * SPA writes the same cookie client-side via useLangSwitch (header
+ * lang toggle), so both halves must read/write the same shape. Read by
+ * the bare-`/` redirect in functions/_middleware.ts to honor the
+ * visitor's preference on future cold hits.
+ *
+ * Lifetime: 1 year. The cookie is a UX preference, not a security
+ * token — long lifetime = fewer surprise re-redirects on a shared
+ * device that has been quiet for a while.
+ */
+const LANG_COOKIE_NAME = 'mp_lang'
+const LANG_COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60
+
+export function setLangCookieHeader(lang: 'fr' | 'en'): string {
+  return [
+    `${LANG_COOKIE_NAME}=${lang}`,
+    'Path=/',
+    'Secure',
+    'SameSite=Lax',
+    `Max-Age=${LANG_COOKIE_MAX_AGE_SECONDS}`,
+  ].join('; ')
+}
+
 function readCsrfCookie(request: Request): string | null {
   const header = request.headers.get('Cookie')
   if (!header) return null
