@@ -7,6 +7,10 @@ dist
 .dev.vars
 .wrangler
 .wrangler-e2e
+# Created by e2e/backend/setup.mjs while the e2e harness swaps in
+# wrangler.e2e.toml. Restored by teardown.mjs. If you see it lying around,
+# a prior run was interrupted — the next setup will self-heal.
+wrangler.toml.bak
 *.tsbuildinfo
 prompt.log.jsonl
 .claude

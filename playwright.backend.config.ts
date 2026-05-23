@@ -42,6 +42,7 @@ export default defineConfig({
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
+  globalTeardown: './e2e/backend/teardown.mjs',
   use: {
     baseURL: E2E_BASE_URL,
     trace: 'on-first-retry',
@@ -51,7 +52,11 @@ export default defineConfig({
   webServer: {
     // Two-phase: rebuild the SPA so dist/ is current, then boot wrangler
     // against the persist dir setup.mjs already populated with applied
-    // migrations.
+    // migrations. wrangler.toml itself was swapped in by setup.mjs to a
+    // variant that omits the [ai] binding (which would otherwise force
+    // pages dev to start a remote proxy session and hard-fail without
+    // valid CF auth). Teardown restores the prod config.
+    // See e2e/backend/wrangler.e2e.toml for the full rationale.
     command: `npm run build && npx wrangler pages dev dist --persist-to=${E2E_PERSIST_DIR} --port=${E2E_PORT} --log-level=warn ${bindingFlags}`,
     url: E2E_BASE_URL,
     // wrangler pages dev cold-boots Miniflare on first request — be generous.

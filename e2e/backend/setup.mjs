@@ -9,12 +9,59 @@
 // schema. Running this synchronously first guarantees the DB has tables
 // before wrangler boots.
 
-import { rmSync } from 'node:fs'
+import { rmSync, copyFileSync, renameSync, existsSync } from 'node:fs'
+import { platform } from 'node:os'
 import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
 
 const PERSIST_DIR = '.wrangler-e2e'
 const DB_NAME = 'marc-portal-db'
+const WRANGLER_TOML = 'wrangler.toml'
+const WRANGLER_TOML_BAK = 'wrangler.toml.bak'
+const WRANGLER_TOML_E2E = 'e2e/backend/wrangler.e2e.toml'
+
+// Swap in the e2e-only wrangler config. The prod config declares the [ai]
+// (Workers AI) binding, which has no local Miniflare emulator — wrangler 4.x
+// pages dev hard-fails the boot trying to start a remote proxy session for
+// it whenever the OAuth token is missing or expired. The e2e variant omits
+// that binding so the harness boots cleanly with no CF auth required.
+//
+// `wrangler pages dev` rejects --config and forces `./wrangler.toml`, so the
+// only way to use a different config is to swap the file in place. Teardown
+// (playwright globalTeardown) restores it. If a prior run was interrupted
+// before teardown ran, `wrangler.toml.bak` survives — we detect that here
+// and restore first to keep the prod config from being silently lost.
+function swapInE2EWranglerToml() {
+  if (existsSync(WRANGLER_TOML_BAK)) {
+    // Prior run was interrupted before teardown. Restore prod config, then
+    // proceed with a fresh swap. If wrangler.toml currently holds the e2e
+    // variant (from that interrupted run), the rename overwrites it.
+    console.log('e2e:backend:setup → recovering wrangler.toml from prior interrupted run')
+    renameSync(WRANGLER_TOML_BAK, WRANGLER_TOML)
+  }
+  if (!existsSync(WRANGLER_TOML_E2E)) {
+    console.error(`e2e:backend:setup → missing ${WRANGLER_TOML_E2E}`)
+    process.exit(1)
+  }
+  renameSync(WRANGLER_TOML, WRANGLER_TOML_BAK)
+  copyFileSync(WRANGLER_TOML_E2E, WRANGLER_TOML)
+  console.log(`e2e:backend:setup → swapped wrangler.toml ← ${WRANGLER_TOML_E2E} (backup: ${WRANGLER_TOML_BAK})`)
+}
+
+// Kill any lingering workerd from a previous run BEFORE wiping the persist
+// dir. wrangler pages dev spawns workerd child processes that hold open file
+// handles inside .wrangler-e2e/v3/cache/; on Windows those handles cause
+// `rmSync` to trip EBUSY even with retries because the orphan workerd never
+// releases them. Killing first is the only reliable fix.
+function killLingeringWorkerd() {
+  if (platform() === 'win32') {
+    spawnSync('taskkill', ['/F', '/IM', 'workerd.exe', '/T'], { stdio: 'ignore', shell: true })
+  } else {
+    spawnSync('pkill', ['-f', 'workerd'], { stdio: 'ignore' })
+  }
+}
+killLingeringWorkerd()
+swapInE2EWranglerToml()
 
 const persistPath = resolve(PERSIST_DIR)
 console.log(`e2e:backend:setup → wiping ${PERSIST_DIR}/`)

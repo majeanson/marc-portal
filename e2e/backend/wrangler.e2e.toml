@@ -1,0 +1,49 @@
+# wrangler config for the backend e2e harness.
+#
+# Mirrors the production wrangler.toml with one deliberate omission: the
+# [ai] (Workers AI) binding. Workers AI has no local Miniflare emulator, so
+# wrangler 4.x's `pages dev` tries to start a "remote proxy session" against
+# the live Cloudflare runtime to back the binding. That requires a valid
+# wrangler OAuth token; when the token is missing or expired, wrangler 4.x
+# fails the entire `pages dev` boot with "Failed to start the remote proxy
+# session" — taking the e2e suite down with it.
+#
+# Pages Function handlers that touch `env.AI` already check `if (!env.AI)`
+# and degrade (functions/api/intake/transcribe.ts returns 503;
+# functions/_lib/transcribe.ts returns null). So omitting the binding here
+# preserves the production code paths under test — only the transcription
+# side-effect goes quiet, which the current Tier 1/2 specs don't exercise.
+#
+# How this gets used: `wrangler pages dev` rejects --config and forces
+# ./wrangler.toml. So e2e/backend/setup.mjs swaps this file in place
+# (renaming the prod wrangler.toml to wrangler.toml.bak) before booting
+# wrangler, and e2e/backend/teardown.mjs restores it after. If a run is
+# interrupted before teardown, setup.mjs self-heals on the next run.
+#
+# Everything else is intentionally identical to the prod wrangler.toml so
+# the e2e environment behaves like production. If wrangler.toml gains a new
+# local-emulated binding (D1, R2, KV, DO), mirror it here too. If it gains
+# a remote-only binding (AI, Vectorize, Workers Logs), leave it out — and
+# add an env.X guard to the handler if one doesn't already exist.
+
+name = "marc-portal"
+compatibility_date = "2026-01-15"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "marc-portal-db"
+database_id = "d8c8de13-7971-451e-836d-cf4165bd7104"
+migrations_dir = "functions/db/migrations"
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "marc-portal-media"
+preview_bucket_name = "marc-portal-media"
+
+# [ai] intentionally omitted — see header comment.
+
+[vars]
+STRIPE_CUSTODIAN_WATCH_PRICE_ID = "price_1TZzrhGnRBlK2p4G3pPXSyP3"
+STRIPE_CUSTODIAN_CARE_PRICE_ID = "price_1TZzrtGnRBlK2p4GfZx3BgeK"
