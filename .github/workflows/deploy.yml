@@ -43,13 +43,28 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: d1 migrations apply marc-portal-db --remote
 
+      # Cloudflare's deployments API rejects commit messages containing some
+      # multi-byte UTF-8 chars (we hit it on a body with U+2192 right-arrows)
+      # with "Invalid commit message, it must be a valid UTF-8 string. [code:
+      # 8000111]" — a misleading error, since the bytes ARE valid UTF-8;
+      # their parser just doesn't accept the full range. Pre-fold the subject
+      # to ASCII so the deploy never trips on copy choices. Body is dropped
+      # too — the CF dashboard only surfaces the subject anyway.
+      - id: commit-msg
+        name: Compute deploy-safe commit message
+        shell: bash
+        run: |
+          subject=$(git log -1 --format=%s)
+          safe=$(printf '%s' "$subject" | iconv -f utf-8 -t ascii//TRANSLIT 2>/dev/null || printf '%s' "$subject" | tr -cd '\11\12\15\40-\176')
+          echo "safe=$safe" >> "$GITHUB_OUTPUT"
+
       - id: deploy
         name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=marc-portal
+          command: pages deploy dist --project-name=marc-portal --commit-message="${{ steps.commit-msg.outputs.safe }}"
 
       # Auto-stamp the latest revision in each feature.json touched by this
       # commit with the deployment URL we just got. The bot pushes the stamping
