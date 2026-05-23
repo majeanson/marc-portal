@@ -6,6 +6,7 @@ dist
 .env.local
 .dev.vars
 .wrangler
+.wrangler-e2e
 *.tsbuildinfo
 prompt.log.jsonl
 .claude

@@ -45,9 +45,25 @@ interface OneTimeOpts {
   meta: Record<string, string>
 }
 
+// Magic API key recognised by the e2e harness. When the runtime is configured
+// with this value (via .dev.vars.e2e), the checkout endpoint short-circuits
+// Stripe entirely and returns a deterministic stub URL the harness then
+// intercepts. Production never sees this value — sk_test_e2e_stub is not a
+// valid Stripe key shape, so it cannot accidentally leak past the test
+// fixtures into a live deployment.
+const E2E_STUB_API_KEY = 'sk_test_e2e_stub'
+
+function makeStubCheckoutResult(paymentId: string): CheckoutSessionResult {
+  return {
+    id: `cs_test_e2e_${paymentId}`,
+    url: `https://e2e-stub.local/checkout/${paymentId}`,
+  }
+}
+
 export async function createOneTimeCheckoutSession(
   opts: OneTimeOpts,
 ): Promise<CheckoutSessionResult> {
+  if (opts.apiKey === E2E_STUB_API_KEY) return makeStubCheckoutResult(opts.paymentId)
   const form = new URLSearchParams()
   form.set('mode', 'payment')
   // Stripe Checkout supports `fr-CA` but NOT `en-CA` — generic `en` is the
@@ -88,6 +104,7 @@ interface SubOpts {
 export async function createSubscriptionCheckoutSession(
   opts: SubOpts,
 ): Promise<CheckoutSessionResult> {
+  if (opts.apiKey === E2E_STUB_API_KEY) return makeStubCheckoutResult(opts.paymentId)
   const form = new URLSearchParams()
   form.set('mode', 'subscription')
   form.set('locale', opts.lang === 'fr' ? 'fr-CA' : 'en')

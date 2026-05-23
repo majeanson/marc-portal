@@ -1,0 +1,43 @@
+name: e2e-backend
+
+# Backend e2e gate — the only suite that exercises Pages Functions end-to-
+# end. `npm run e2e:backend` provisions an ephemeral D1 SQLite (under
+# .wrangler-e2e/) with every migration applied, boots `wrangler pages dev`
+# against it, and runs the Tier 1 happy-path spec that closes the
+# checkout → webhook → DB → /me loop.
+#
+# Stripe is short-circuited by a sentinel STRIPE_SECRET_KEY value (see
+# functions/_lib/stripe.ts → E2E_STUB_API_KEY) so no Stripe creds are
+# required in CI and no test charge ever shows up in a real dashboard.
+#
+# Runs on ubuntu-latest because nothing in this suite captures screenshots
+# — it's all DB + HTTP assertions, no font-rendering sensitivity. PRs only
+# (same cadence as the screenshot e2e); skipped on direct pushes to main.
+
+on:
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e:backend
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-backend-report
+          path: playwright-report/
+          retention-days: 14

@@ -27,6 +27,8 @@
     "e2e": "playwright test",
     "e2e:update": "playwright test --update-snapshots",
     "e2e:report": "playwright show-report",
+    "e2e:backend:setup": "node e2e/backend/setup.mjs",
+    "e2e:backend": "npm run e2e:backend:setup && playwright test --config=playwright.backend.config.ts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run lac-lint && npm run test:run",
     "db:migrate:local": "wrangler d1 migrations apply marc-portal-db --local",
     "db:migrate:prod": "wrangler d1 migrations apply marc-portal-db --remote"
