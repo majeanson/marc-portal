@@ -13061,9 +13061,15 @@ button.intake__progress-step:disabled {
   /* Drop-shadow on dark ink reads inverted — soften it. */
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
 }
-/* Scroll-driven sail: the boat tracks the visible portion of the path,
-   leaning slightly with each phase like it's catching wind. Falls back to
-   a static position at the top under engines without scroll-timeline. */
+/* Scroll-driven sail: the boat drifts visibly down the viewport as the
+   visitor reads the ports. The end keyframe overshoots the path's bottom
+   on purpose — a 1:1 track (top: 24px → calc(100% - 84px), the original)
+   moves the boat inside the path at the same rate the path scrolls up
+   the viewport, so the two cancel and the boat sits at the same screen y
+   the whole way. The 12vh overshoot makes the boat outpace the path just
+   enough to give a visible downward drift (~6vh net on-screen motion)
+   without sailing off the bottom edge mid-journey. Falls back to the
+   static `top: 32px` under engines without scroll-timeline. */
 @supports (animation-timeline: view()) {
   .journey__boat {
     animation: journey-boat-sail linear both;
@@ -13072,7 +13078,7 @@ button.intake__progress-step:disabled {
   }
   @keyframes journey-boat-sail {
     0% {
-      top: 24px;
+      top: 4vh;
       transform: translateX(-50%) rotate(-3deg);
     }
     25% {
@@ -13085,7 +13091,7 @@ button.intake__progress-step:disabled {
       transform: translateX(-50%) rotate(2deg);
     }
     100% {
-      top: calc(100% - 84px);
+      top: calc(100% + 12vh);
       transform: translateX(-50%) rotate(-1deg);
     }
   }
