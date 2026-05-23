@@ -131,8 +131,12 @@ async function postCheckoutSession(
     Authorization: `Bearer ${apiKey}`,
     'Content-Type': 'application/x-www-form-urlencoded',
     // Stripe-Version pin — keep behavior stable across API rollouts. Bump
-    // intentionally with a code change, not silently.
-    'Stripe-Version': '2024-11-20.acacia',
+    // intentionally with a code change, not silently. Last reviewed
+    // 2026-05-23 against changelog; next review by 2027-05-23 or when we
+    // touch a Stripe-shape thing (new event type, new line-item field).
+    // 2025-09-30.clover made flexible billing mode the default for new
+    // subscriptions — transparent for our annual fixed-price custodian use.
+    'Stripe-Version': '2026-04-22.dahlia',
   }
   // Stripe Idempotency-Key: a repeated POST with the same key returns the
   // original response (Checkout session id + url) instead of creating a new

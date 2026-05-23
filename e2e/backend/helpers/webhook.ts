@@ -72,6 +72,127 @@ export function makeCheckoutCompletedEvent(args: CheckoutCompletedEvent): Record
   }
 }
 
+interface InvoicePaidEvent {
+  /** Stripe invoice id (we use it as the dedupe key on the payments row). */
+  invoiceId: string
+  subscriptionId: string
+  customerId?: string
+  amountPaid: number
+  /** Override the event id (default: `evt_inv_paid_<invoiceId>_<ts>`). */
+  eventId?: string
+}
+
+/**
+ * Stripe `invoice.paid`. Handler reads obj.id (invoice id),
+ * obj.subscription, obj.customer, obj.amount_paid. Used for both the FIRST
+ * invoice of a sub (attaches the invoice_id to the row minted at checkout)
+ * and renewals (inserts a fresh row tied to the cached sub_id).
+ */
+export function makeInvoicePaidEvent(args: InvoicePaidEvent): Record<string, unknown> {
+  return {
+    id: args.eventId ?? `evt_inv_paid_${args.invoiceId}_${Date.now()}`,
+    type: 'invoice.paid',
+    data: {
+      object: {
+        id: args.invoiceId,
+        object: 'invoice',
+        subscription: args.subscriptionId,
+        customer: args.customerId ?? `cus_test_e2e_${args.subscriptionId}`,
+        amount_paid: args.amountPaid,
+        status: 'paid',
+      },
+    },
+  }
+}
+
+interface InvoicePaymentFailedEvent {
+  invoiceId: string
+  subscriptionId: string
+  customerId?: string
+  eventId?: string
+}
+
+/**
+ * Stripe `invoice.payment_failed`. Handler reads obj.subscription only —
+ * the rest is for parity with what Stripe actually sends.
+ */
+export function makeInvoicePaymentFailedEvent(
+  args: InvoicePaymentFailedEvent,
+): Record<string, unknown> {
+  return {
+    id: args.eventId ?? `evt_inv_fail_${args.invoiceId}_${Date.now()}`,
+    type: 'invoice.payment_failed',
+    data: {
+      object: {
+        id: args.invoiceId,
+        object: 'invoice',
+        subscription: args.subscriptionId,
+        customer: args.customerId ?? `cus_test_e2e_${args.subscriptionId}`,
+        status: 'open',
+      },
+    },
+  }
+}
+
+interface SubscriptionDeletedEvent {
+  subscriptionId: string
+  customerId?: string
+  eventId?: string
+}
+
+/**
+ * Stripe `customer.subscription.deleted`. Handler reads obj.id (the sub id)
+ * to find the session via custodian_subscription_id. The /handoff page's
+ * "auto-switch on non-renewal" promise rides on this event.
+ */
+export function makeSubscriptionDeletedEvent(
+  args: SubscriptionDeletedEvent,
+): Record<string, unknown> {
+  return {
+    id: args.eventId ?? `evt_sub_del_${args.subscriptionId}_${Date.now()}`,
+    type: 'customer.subscription.deleted',
+    data: {
+      object: {
+        id: args.subscriptionId,
+        object: 'subscription',
+        customer: args.customerId ?? `cus_test_e2e_${args.subscriptionId}`,
+        status: 'canceled',
+      },
+    },
+  }
+}
+
+interface ChargeRefundedEvent {
+  /** The payment_intent id our payments row carries (set on checkout
+   *  completion). Handler matches by stripe_payment_intent_id, NOT charge id. */
+  paymentIntentId: string | null
+  /** Total refunded so far on this charge (cumulative, not per-event). */
+  amountRefunded: number
+  /** Charge id (only used by Stripe routing; we don't read it). */
+  chargeId?: string
+  eventId?: string
+}
+
+/**
+ * Stripe `charge.refunded`. Handler reads obj.payment_intent + obj.amount_refunded;
+ * uses them to look up the payments row + decide full-vs-partial.
+ */
+export function makeChargeRefundedEvent(args: ChargeRefundedEvent): Record<string, unknown> {
+  const chargeId = args.chargeId ?? `ch_test_e2e_${args.paymentIntentId ?? 'unknown'}`
+  return {
+    id: args.eventId ?? `evt_ref_${chargeId}_${Date.now()}`,
+    type: 'charge.refunded',
+    data: {
+      object: {
+        id: chargeId,
+        object: 'charge',
+        payment_intent: args.paymentIntentId,
+        amount_refunded: args.amountRefunded,
+      },
+    },
+  }
+}
+
 interface DeliverOpts {
   /** Sign the body with a different secret than the server expects. Used to
    *  drive the 401 signature-mismatch path in negative-space specs. */

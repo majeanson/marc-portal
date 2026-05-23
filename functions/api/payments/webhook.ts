@@ -29,7 +29,11 @@
 // should NOT be retried.
 
 import { randomTokenB64url } from '../../_lib/bytes'
-import { sendAdminAlert, sendInstallmentClearedPrompt } from '../../_lib/email'
+import {
+  sendAdminAlert,
+  sendInstallmentClearedPrompt,
+  sendRefundNotice,
+} from '../../_lib/email'
 import type { Env } from '../../_lib/env'
 import { ok, unauthorized } from '../../_lib/json'
 import { primaryAdminEmail } from '../../_lib/sessions'
@@ -102,7 +106,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         console.log(`stripe webhook: subscription.updated ${event.data.object.id}`)
         break
       case 'charge.refunded':
-        await handleChargeRefunded(env, event.data.object)
+        await handleChargeRefunded(env, request, event.data.object)
         break
       default:
         // Many event types fire by default (Stripe sends ~30 enabled events
@@ -327,7 +331,7 @@ async function handleSubscriptionDeleted(
   )
 }
 
-async function handleChargeRefunded(env: Env, obj: StripeObject): Promise<void> {
+async function handleChargeRefunded(env: Env, request: Request, obj: StripeObject): Promise<void> {
   // Stripe sends a `charge.refunded` event with the CHARGE id as obj.id and
   // the parent payment_intent as obj.payment_intent. We don't populate
   // stripe_charge_id on our payment rows (checkout.completed gives us
@@ -342,11 +346,21 @@ async function handleChargeRefunded(env: Env, obj: StripeObject): Promise<void> 
   const now = Math.floor(Date.now() / 1000)
 
   // Find the payment row + its amount_cents so we can decide partial vs full.
+  // Pre-read refunded_amount_cents + session_id too so we can (a) gate the
+  // visitor notification to the FIRST transition out of 0 — otherwise a
+  // partial-then-full sequence would email twice — and (b) resolve the
+  // session for the link/email-lookup.
   const row = await env.DB.prepare(
-    `SELECT id, amount_cents FROM payments WHERE stripe_payment_intent_id = ? LIMIT 1`,
+    `SELECT id, amount_cents, refunded_amount_cents, session_id
+       FROM payments WHERE stripe_payment_intent_id = ? LIMIT 1`,
   )
     .bind(paymentIntentId)
-    .first<{ id: string; amount_cents: number }>()
+    .first<{
+      id: string
+      amount_cents: number
+      refunded_amount_cents: number
+      session_id: string
+    }>()
   if (!row) {
     // Not finding a row is OK: refunds initiated from the Stripe Dashboard on
     // out-of-band charges shouldn't break the webhook. The Dashboard remains
@@ -356,6 +370,7 @@ async function handleChargeRefunded(env: Env, obj: StripeObject): Promise<void> 
   }
 
   const isFullyRefunded = amountRefunded >= row.amount_cents
+  const isFirstRefund = (row.refunded_amount_cents ?? 0) === 0 && amountRefunded > 0
   // Record the refunded amount unconditionally; flip status only on full
   // refund. UI surfaces refunded_amount_cents as a separate field so a
   // partial refund is visible.
@@ -368,6 +383,37 @@ async function handleChargeRefunded(env: Env, obj: StripeObject): Promise<void> 
   )
     .bind(amountRefunded, isFullyRefunded ? 1 : 0, isFullyRefunded ? 1 : 0, now, row.id)
     .run()
+
+  // Notify the visitor on FIRST transition only. Stripe's own receipt is
+  // billing-platform tone; this one is in Marc's voice + deep-links to /me
+  // where the refunded row is already visible. Skipped on partial-then-full
+  // sequences and when Resend isn't configured.
+  if (isFirstRefund && env.RESEND_API_KEY) {
+    const visitor = await env.DB.prepare(
+      `SELECT email FROM sessions WHERE id = ? AND deleted_at IS NULL`,
+    )
+      .bind(row.session_id)
+      .first<{ email: string }>()
+    if (visitor?.email) {
+      try {
+        const lang = await getLang(env.DB, visitor.email)
+        const origin = new URL(request.url).origin
+        await sendRefundNotice(
+          env.RESEND_API_KEY,
+          visitor.email,
+          amountRefunded,
+          row.amount_cents,
+          origin,
+          lang,
+        )
+      } catch (err) {
+        // Notification failure is non-fatal — the DB has already absorbed
+        // the refund. Logged so we can investigate, but the webhook still
+        // returns 200 so Stripe doesn't retry.
+        console.error('refund notice send failed', err)
+      }
+    }
+  }
 }
 
 /**

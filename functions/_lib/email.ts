@@ -865,6 +865,64 @@ export async function sendAllYoursAckNotification(
 }
 
 // =============================================================================
+// Refund notice — sent to the visitor when charge.refunded lands. Stripe
+// already emails its own receipt; this one tells them in Marc's voice
+// (not a billing-platform tone) and links them back to /me so the new
+// status is visible immediately. Fires only on FIRST refund transition —
+// the webhook handler gates on isFirstRefund so partial-then-full doesn't
+// double-send.
+// =============================================================================
+
+export async function sendRefundNotice(
+  apiKey: string,
+  visitorEmail: string,
+  refundedCents: number,
+  totalCents: number,
+  origin: string,
+  lang: Lang,
+): Promise<boolean> {
+  const meUrl = `${origin}${lang === 'en' ? '/en' : ''}/me`
+  const refundedFormatted = formatCadCents(refundedCents, lang)
+  const isFull = refundedCents >= totalCents
+  const subject =
+    lang === 'fr'
+      ? isFull
+        ? `Remboursement de ${refundedFormatted} effectué`
+        : `Remboursement partiel de ${refundedFormatted}`
+      : isFull
+        ? `Refund of ${refundedFormatted} issued`
+        : `Partial refund of ${refundedFormatted}`
+  const headline =
+    lang === 'fr'
+      ? isFull
+        ? 'Ton remboursement est parti'
+        : 'Remboursement partiel envoyé'
+      : isFull
+        ? 'Your refund is on its way'
+        : 'Partial refund sent'
+  const p1 =
+    lang === 'fr'
+      ? `J’ai émis un remboursement de <strong>${refundedFormatted}</strong> via Stripe. Selon ta banque, il apparaît sur ta carte entre 5 et 10 jours ouvrables.`
+      : `I issued a refund of <strong>${refundedFormatted}</strong> via Stripe. Depending on your bank, it shows up on your card in 5–10 business days.`
+  const p2 = isFull
+    ? lang === 'fr'
+      ? 'Le portail reflète déjà le changement — tu peux voir la nouvelle ligne sous « Mes paiements ».'
+      : 'The portal already reflects the change — you can see the updated row under "My payments".'
+    : lang === 'fr'
+      ? `C’est un remboursement partiel : le solde de ce paiement (${formatCadCents(totalCents - refundedCents, lang)}) reste tel quel. Ta page Mes paiements montre les deux montants côte à côte.`
+      : `It's a partial refund — the remaining balance (${formatCadCents(totalCents - refundedCents, lang)}) stays as paid. Your My-payments page shows both side by side.`
+  const { html, text } = renderEmail(visitorEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'paiement · remboursement' : 'payment · refund',
+    headline,
+    paragraphs: [p1, p2],
+    cta: { href: meUrl, label: lang === 'fr' ? 'Ouvrir Mes paiements' : 'Open My payments' },
+    altLink: meUrl,
+  })
+  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+}
+
+// =============================================================================
 // Helpers
 // =============================================================================
 

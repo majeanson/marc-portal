@@ -2,6 +2,15 @@
 // tier ladder. Mirrors the public copy in src/i18n.ts (pricing.tiers); when
 // the public prices change, change them here too. Visitors never send an
 // amount — the checkout endpoint computes every figure from these constants.
+//
+// Tax: Marc operates as a Quebec sole proprietor under the GST/QST small-
+// supplier threshold ($30,000 CAD / 12-month rolling window). No tax is
+// collected at checkout; Stripe line items are the final amount the visitor
+// is charged. When annualized revenue from this portal crosses the
+// threshold, Marc must register and start collecting GST 5% + QST 9.975%
+// — that's a code change here (Stripe automatic_tax flag or fixed-tax line
+// items) plus a Stripe Dashboard registration, NOT just a flip-the-switch.
+// Track revenue elsewhere (admin MRR + payments table sum) to know when.
 
 /** The $250 scoping report — credited to a build's first installment. */
 export const SCOPING_CENTS = 25_000

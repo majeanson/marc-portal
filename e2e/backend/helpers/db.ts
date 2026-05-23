@@ -72,6 +72,16 @@ interface SeedSessionOpts {
   /** Tier 3 only: installment split '50-50' (2 legs) or '40-40-20' (3 legs).
    *  NULL defaults to '50-50' on the server side. */
   tier3Split?: '50-50' | '40-40-20' | null
+  /** Soft-delete marker (unix seconds). Set to drive the deleted_at-aware
+   *  404 path in checkout.ts. */
+  deletedAt?: number | null
+  /** Cached custodian subscription id — set this when the spec needs the
+   *  webhook handlers (renewal, deletion) to find this row via
+   *  custodian_subscription_id. */
+  custodianSubscriptionId?: string | null
+  /** Custodian state. Default 'none'; specs that test renewal/cancel
+   *  override to 'active' so transitions are observable. */
+  custodianStatus?: 'none' | 'active' | 'past_due' | 'canceled' | 'switched_to_tout_a_toi' | null
 }
 
 /**
@@ -103,6 +113,18 @@ export function seedSession(opts: SeedSessionOpts): void {
   if (opts.tier3Split != null) {
     cols.push('tier3_split')
     vals.push(opts.tier3Split)
+  }
+  if (opts.deletedAt != null) {
+    cols.push('deleted_at')
+    vals.push(opts.deletedAt)
+  }
+  if (opts.custodianSubscriptionId != null) {
+    cols.push('custodian_subscription_id')
+    vals.push(opts.custodianSubscriptionId)
+  }
+  if (opts.custodianStatus != null) {
+    cols.push('custodian_status')
+    vals.push(opts.custodianStatus)
   }
   const db = openD1()
   try {
@@ -200,22 +222,29 @@ export interface PaymentRow {
   status: string
   amount_cents: number
   paid_at: number | null
+  refunded_at: number | null
+  refunded_amount_cents: number
   installment_index: number | null
   installment_of: number | null
+  custodian_plan: string | null
   stripe_checkout_session_id: string | null
   stripe_payment_intent_id: string | null
+  stripe_subscription_id: string | null
+  stripe_invoice_id: string | null
+  stripe_customer_id: string | null
 }
+
+const PAYMENT_COLS = `id, session_id, kind, status, amount_cents, paid_at,
+                refunded_at, refunded_amount_cents,
+                installment_index, installment_of, custodian_plan,
+                stripe_checkout_session_id, stripe_payment_intent_id,
+                stripe_subscription_id, stripe_invoice_id, stripe_customer_id`
 
 export function readPayment(paymentId: string): PaymentRow | undefined {
   const db = openD1()
   try {
     return db
-      .prepare(
-        `SELECT id, session_id, kind, status, amount_cents, paid_at,
-                installment_index, installment_of,
-                stripe_checkout_session_id, stripe_payment_intent_id
-           FROM payments WHERE id = ?`,
-      )
+      .prepare(`SELECT ${PAYMENT_COLS} FROM payments WHERE id = ?`)
       .get(paymentId) as PaymentRow | undefined
   } finally {
     db.close()
@@ -223,13 +252,92 @@ export function readPayment(paymentId: string): PaymentRow | undefined {
 }
 
 /**
+ * Look up the payments row by Stripe PaymentIntent id. Used by the refund
+ * spec to confirm charge.refunded landed on the right row (the handler does
+ * the same lookup; this mirrors it).
+ */
+export function readPaymentByIntentId(paymentIntentId: string): PaymentRow | undefined {
+  const db = openD1()
+  try {
+    return db
+      .prepare(`SELECT ${PAYMENT_COLS} FROM payments WHERE stripe_payment_intent_id = ? LIMIT 1`)
+      .get(paymentIntentId) as PaymentRow | undefined
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Find the payments row Stripe attached to a given invoice id. Used by the
+ * custodian-lifecycle spec to distinguish the initial-invoice row (attached
+ * to the existing checkout row) from a renewal row (a freshly inserted row
+ * keyed on the renewal invoice).
+ */
+export function readPaymentByInvoiceId(invoiceId: string): PaymentRow | undefined {
+  const db = openD1()
+  try {
+    return db
+      .prepare(`SELECT ${PAYMENT_COLS} FROM payments WHERE stripe_invoice_id = ? LIMIT 1`)
+      .get(invoiceId) as PaymentRow | undefined
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Read a single session row. Used by custodian + handoff specs to confirm
+ * status transitions land in D1 (active → past_due → switched_to_tout_a_toi).
+ */
+export interface SessionStateRow {
+  id: string
+  custodian_status: string | null
+  custodian_plan: string | null
+  custodian_subscription_id: string | null
+}
+export function readSessionState(sessionId: string): SessionStateRow | undefined {
+  const db = openD1()
+  try {
+    return db
+      .prepare(
+        `SELECT id, custodian_status, custodian_plan, custodian_subscription_id
+           FROM sessions WHERE id = ?`,
+      )
+      .get(sessionId) as SessionStateRow | undefined
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Count admin_alerts rows whose body matches a substring. The admin_alerts
+ * fallback spec uses this to confirm a Resend failure surfaced a row.
+ */
+export function countAdminAlertsContaining(bodySubstr: string): number {
+  const db = openD1()
+  try {
+    const row = db
+      .prepare(`SELECT COUNT(*) AS c FROM admin_alerts WHERE body LIKE ?`)
+      .get(`%${bodySubstr}%`) as { c: number } | undefined
+    return row?.c ?? 0
+  } finally {
+    db.close()
+  }
+}
+
+/**
  * Best-effort wipe between tests — keeps the schema, drops the data. Useful
- * when a spec runs multiple sub-cases on the same db file.
+ * when a spec runs multiple sub-cases on the same db file. admin_alerts is
+ * scoped per-test now that the fallback spec lands rows there.
  */
 export function clearTestRows(): void {
   const db = openD1()
   try {
-    db.exec('DELETE FROM payments; DELETE FROM webhook_events; DELETE FROM sessions;')
+    db.exec(
+      `DELETE FROM payments;
+       DELETE FROM webhook_events;
+       DELETE FROM admin_alerts;
+       DELETE FROM sessions;`,
+    )
   } finally {
     db.close()
   }

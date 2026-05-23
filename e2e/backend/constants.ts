@@ -22,6 +22,13 @@ export const E2E_BINDINGS = {
   // Resend stub key. Unset would degrade email side-effects to no-ops; the
   // stub is here so the code paths that gate on `env.RESEND_API_KEY` run.
   RESEND_API_KEY: 're_e2e_stub',
+  // Stripe Price IDs for the custodian plans. Stub values — the e2e Stripe
+  // path short-circuits in functions/_lib/stripe.ts via the sentinel apiKey
+  // before the price IDs are dereferenced, so any non-empty string works.
+  // Without these, checkout.ts returns 503 'custodian ... price not
+  // configured' on the gate at L124.
+  STRIPE_CUSTODIAN_WATCH_PRICE_ID: 'price_test_e2e_watch_stub',
+  STRIPE_CUSTODIAN_CARE_PRICE_ID: 'price_test_e2e_care_stub',
 } as const
 
 export const E2E_PORT = 8788
