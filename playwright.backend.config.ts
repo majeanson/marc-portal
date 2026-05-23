@@ -41,7 +41,9 @@ export default defineConfig({
   workers: 1,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
-  reporter: isCI ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
+  reporter: isCI
+    ? [['github'], ['html', { open: 'never' }]]
+    : [['list'], ['html', { open: 'never' }]],
   globalTeardown: './e2e/backend/teardown.mjs',
   use: {
     baseURL: E2E_BASE_URL,

@@ -224,7 +224,9 @@ export async function deliverWebhook(
   if (opts.signatureOverride != null) {
     signature = opts.signatureOverride
   } else if (opts.secretOverride != null) {
-    const sigHex = createHmac('sha256', opts.secretOverride).update(`${ts}.${rawBody}`).digest('hex')
+    const sigHex = createHmac('sha256', opts.secretOverride)
+      .update(`${ts}.${rawBody}`)
+      .digest('hex')
     signature = `t=${ts},v1=${sigHex}`
   } else {
     signature = sign(rawBody, ts)

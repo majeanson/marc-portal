@@ -29,11 +29,7 @@
 // should NOT be retried.
 
 import { randomTokenB64url } from '../../_lib/bytes'
-import {
-  sendAdminAlert,
-  sendInstallmentClearedPrompt,
-  sendRefundNotice,
-} from '../../_lib/email'
+import { sendAdminAlert, sendInstallmentClearedPrompt, sendRefundNotice } from '../../_lib/email'
 import type { Env } from '../../_lib/env'
 import { ok, unauthorized } from '../../_lib/json'
 import { primaryAdminEmail } from '../../_lib/sessions'

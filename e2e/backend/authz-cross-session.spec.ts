@@ -26,7 +26,7 @@ async function postCheckout(headers: Record<string, string>, body: object): Prom
 test.describe('authz: cross-session + soft-deleted', () => {
   test.beforeEach(() => clearTestRows())
 
-  test('visitor A cannot mint a checkout for visitor B\'s session → 403', async () => {
+  test("visitor A cannot mint a checkout for visitor B's session → 403", async () => {
     const sessionA = `sess_e2e_${randomBytes(6).toString('hex')}`
     const sessionB = `sess_e2e_${randomBytes(6).toString('hex')}`
     seedSession({ id: sessionA, email: 'a@e2e.test', tier: 1 })
@@ -37,7 +37,7 @@ test.describe('authz: cross-session + soft-deleted', () => {
     expect(res.status).toBe(403)
   })
 
-  test('admin can mint a checkout for any visitor\'s session → 200', async () => {
+  test("admin can mint a checkout for any visitor's session → 200", async () => {
     const sessionB = `sess_e2e_${randomBytes(6).toString('hex')}`
     seedSession({ id: sessionB, email: 'b@e2e.test', tier: 1 })
 

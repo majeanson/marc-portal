@@ -45,7 +45,9 @@ function swapInE2EWranglerToml() {
   }
   renameSync(WRANGLER_TOML, WRANGLER_TOML_BAK)
   copyFileSync(WRANGLER_TOML_E2E, WRANGLER_TOML)
-  console.log(`e2e:backend:setup → swapped wrangler.toml ← ${WRANGLER_TOML_E2E} (backup: ${WRANGLER_TOML_BAK})`)
+  console.log(
+    `e2e:backend:setup → swapped wrangler.toml ← ${WRANGLER_TOML_E2E} (backup: ${WRANGLER_TOML_BAK})`,
+  )
 }
 
 // Kill any lingering workerd from a previous run BEFORE wiping the persist

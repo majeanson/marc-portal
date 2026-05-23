@@ -19,10 +19,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { DICT } from '../i18n'
-import {
-  CUSTODIAN_CENTS,
-  TIER_TOTAL_CENTS,
-} from '../../functions/_lib/pricing'
+import { CUSTODIAN_CENTS, TIER_TOTAL_CENTS } from '../../functions/_lib/pricing'
 
 const LANGUAGES = ['fr', 'en'] as const
 
@@ -49,14 +46,11 @@ describe('pricing constants ↔ i18n display parity', () => {
         }
       })
 
-      it.each([1, 2, 3] as const)(
-        'Tier %i displayed price === TIER_TOTAL_CENTS[%i]',
-        (tier) => {
-          const t = tiers[tier]!
-          const dollars = priceStringToDollars(t.price)
-          expect(dollars * 100).toBe(TIER_TOTAL_CENTS[tier])
-        },
-      )
+      it.each([1, 2, 3] as const)('Tier %i displayed price === TIER_TOTAL_CENTS[%i]', (tier) => {
+        const t = tiers[tier]!
+        const dollars = priceStringToDollars(t.price)
+        expect(dollars * 100).toBe(TIER_TOTAL_CENTS[tier])
+      })
 
       it('Tier 4 displayed price contains a starting anchor (no constant to assert)', () => {
         const t = tiers[4]!

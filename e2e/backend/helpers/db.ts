@@ -95,7 +95,16 @@ export function seedSession(opts: SeedSessionOpts): void {
   // (tier4_amount_cents, tier3_split) only appear when the caller asks —
   // keeps the SQL stable for the common Tier-1 case and avoids surfacing
   // those columns to specs that don't care.
-  const cols = ['id', 'email', 'intake_json', 'status', 'tier', 'showcase_title', 'created_at', 'updated_at']
+  const cols = [
+    'id',
+    'email',
+    'intake_json',
+    'status',
+    'tier',
+    'showcase_title',
+    'created_at',
+    'updated_at',
+  ]
   const vals: unknown[] = [
     opts.id,
     opts.email.toLowerCase(),
@@ -243,9 +252,9 @@ const PAYMENT_COLS = `id, session_id, kind, status, amount_cents, paid_at,
 export function readPayment(paymentId: string): PaymentRow | undefined {
   const db = openD1()
   try {
-    return db
-      .prepare(`SELECT ${PAYMENT_COLS} FROM payments WHERE id = ?`)
-      .get(paymentId) as PaymentRow | undefined
+    return db.prepare(`SELECT ${PAYMENT_COLS} FROM payments WHERE id = ?`).get(paymentId) as
+      | PaymentRow
+      | undefined
   } finally {
     db.close()
   }

@@ -72,7 +72,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const visitorPreview =
     lang === 'fr'
       ? 'Salut Marc, je veux savoir si ton service peut m’aider avec un site WordPress qui rame.'
-      : "Hi Marc, wondering if your service can help with a slow WordPress site."
+      : 'Hi Marc, wondering if your service can help with a slow WordPress site.'
   const marcPreview =
     lang === 'fr'
       ? 'Je peux regarder ça demain matin. On commence par le hosting.'
@@ -118,15 +118,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     {
       kind: 'withdrawal-admin',
       run: () =>
-        sendWithdrawalNotification(
-          apiKey,
-          email,
-          sampleVisitor,
-          sessionId,
-          origin,
-          lang,
-          'admin',
-        ),
+        sendWithdrawalNotification(apiKey, email, sampleVisitor, sessionId, origin, lang, 'admin'),
     },
     {
       kind: 'withdrawal-visitor',
@@ -170,8 +162,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     },
     {
       kind: 'all-yours-ack',
-      run: () =>
-        sendAllYoursAckNotification(apiKey, email, sampleVisitor, sessionId, origin, lang),
+      run: () => sendAllYoursAckNotification(apiKey, email, sampleVisitor, sessionId, origin, lang),
     },
     {
       kind: 'refund-notice',

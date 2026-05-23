@@ -29,7 +29,7 @@ const COPY = {
   fr: {
     heading: 'Outils',
     title: 'Tester toutes les notifications courriel',
-    desc: "Envoie un exemple de chaque type de courriel à ton inbox — exactement comme un visiteur les recevrait. Données synthétiques, aucune session réelle touchée.",
+    desc: 'Envoie un exemple de chaque type de courriel à ton inbox — exactement comme un visiteur les recevrait. Données synthétiques, aucune session réelle touchée.',
     langLabel: 'Langue du lot',
     fr: 'FR',
     en: 'EN',
