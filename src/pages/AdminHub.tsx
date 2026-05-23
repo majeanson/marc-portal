@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { LangPrefCard } from '../components/LangPrefCard'
+import { EmailTestCard } from '../components/EmailTestCard'
 import { buildAdminSections, type AdminTile } from '../lib/admin/hubSections'
 import { ProposalSheet } from '../components/intake/ProposalSheet'
 import type { Account } from '../components/intake/AccountStep'
@@ -76,6 +77,8 @@ export function AdminHub({ lang }: { lang: Lang }) {
       ))}
 
       <ProposalProof lang={lang} />
+
+      <EmailTestCard lang={lang} />
 
       <LangPrefCard lang={lang} />
     </article>
