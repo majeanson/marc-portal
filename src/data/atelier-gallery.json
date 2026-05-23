@@ -40,6 +40,24 @@
   ],
   "shots": [
     {
+      "slug": "au-revoir",
+      "viewport": "phone",
+      "route": "/au-revoir",
+      "component": "AuRevoir",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "AuRevoir",
+        "en": "AuRevoir"
+      },
+      "thumb": "/atelier/thumbs/phone/au-revoir.webp",
+      "full": "/atelier/full/phone/au-revoir.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1119,
+      "cropped": true
+    },
+    {
       "slug": "me-data",
       "viewport": "phone",
       "route": "/me/data",
@@ -54,7 +72,43 @@
       "full": "/atelier/full/phone/me-data.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1235,
+      "fullH": 1261,
+      "cropped": true
+    },
+    {
+      "slug": "me-dossier",
+      "viewport": "phone",
+      "route": "/me/dossier",
+      "component": "Dossier",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Dossier",
+        "en": "Dossier"
+      },
+      "thumb": "/atelier/thumbs/phone/me-dossier.webp",
+      "full": "/atelier/full/phone/me-dossier.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1261,
+      "cropped": true
+    },
+    {
+      "slug": "passage",
+      "viewport": "phone",
+      "route": "/passage",
+      "component": "Passage",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Passage",
+        "en": "Passage"
+      },
+      "thumb": "/atelier/thumbs/phone/passage.webp",
+      "full": "/atelier/full/phone/passage.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 2318,
       "cropped": true
     },
     {
@@ -72,7 +126,25 @@
       "full": "/atelier/full/phone/root.png",
       "thumbW": 510,
       "thumbH": 816,
-      "fullH": 16025,
+      "fullH": 16050,
+      "cropped": true
+    },
+    {
+      "slug": "en-goodbye",
+      "viewport": "phone",
+      "route": "/en/goodbye",
+      "component": "AuRevoir",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "AuRevoir",
+        "en": "AuRevoir"
+      },
+      "thumb": "/atelier/thumbs/phone/en-goodbye.webp",
+      "full": "/atelier/full/phone/en-goodbye.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1068,
       "cropped": true
     },
     {
@@ -91,6 +163,42 @@
       "thumbW": 390,
       "thumbH": 624,
       "fullH": 1210,
+      "cropped": true
+    },
+    {
+      "slug": "en-me-dossier",
+      "viewport": "phone",
+      "route": "/en/me/dossier",
+      "component": "Dossier",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Dossier",
+        "en": "Dossier"
+      },
+      "thumb": "/atelier/thumbs/phone/en-me-dossier.webp",
+      "full": "/atelier/full/phone/en-me-dossier.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 1210,
+      "cropped": true
+    },
+    {
+      "slug": "en-passage",
+      "viewport": "phone",
+      "route": "/en/passage",
+      "component": "Passage",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Passage",
+        "en": "Passage"
+      },
+      "thumb": "/atelier/thumbs/phone/en-passage.webp",
+      "full": "/atelier/full/phone/en-passage.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 2148,
       "cropped": true
     },
     {
@@ -126,7 +234,7 @@
       "full": "/atelier/full/phone/tier-0.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6780,
+      "fullH": 6805,
       "cropped": true
     },
     {
@@ -162,7 +270,7 @@
       "full": "/atelier/full/phone/intake.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 2195,
+      "fullH": 2220,
       "cropped": true
     },
     {
@@ -198,7 +306,7 @@
       "full": "/atelier/full/phone/parcours.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 5997,
+      "fullH": 6022,
       "cropped": true
     },
     {
@@ -234,7 +342,7 @@
       "full": "/atelier/full/phone/projects.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 4111,
+      "fullH": 4136,
       "cropped": true
     },
     {
@@ -252,7 +360,7 @@
       "full": "/atelier/full/phone/projects-empty.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 2116,
+      "fullH": 2141,
       "cropped": true
     },
     {
@@ -270,7 +378,7 @@
       "full": "/atelier/full/phone/projects-error.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 2132,
+      "fullH": 2157,
       "cropped": true
     },
     {
@@ -306,7 +414,7 @@
       "full": "/atelier/full/phone/vouches.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1968,
+      "fullH": 1993,
       "cropped": true
     },
     {
@@ -324,7 +432,7 @@
       "full": "/atelier/full/phone/vouches-empty.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1392,
+      "fullH": 1418,
       "cropped": true
     },
     {
@@ -342,7 +450,7 @@
       "full": "/atelier/full/phone/vouches-error.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1468,
+      "fullH": 1493,
       "cropped": true
     },
     {
@@ -378,7 +486,7 @@
       "full": "/atelier/full/phone/vouch.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1977,
+      "fullH": 2002,
       "cropped": true
     },
     {
@@ -414,7 +522,7 @@
       "full": "/atelier/full/phone/handoff.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6046,
+      "fullH": 6071,
       "cropped": true
     },
     {
@@ -450,7 +558,7 @@
       "full": "/atelier/full/phone/handoff-checklist.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 3860,
+      "fullH": 3885,
       "cropped": true
     },
     {
@@ -486,7 +594,7 @@
       "full": "/atelier/full/phone/login.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1235,
+      "fullH": 1261,
       "cropped": true
     },
     {
@@ -522,7 +630,7 @@
       "full": "/atelier/full/phone/login-sent.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1280,
+      "fullH": 1305,
       "cropped": true
     },
     {
@@ -558,7 +666,7 @@
       "full": "/atelier/full/phone/me.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1235,
+      "fullH": 1261,
       "cropped": true
     },
     {
@@ -594,7 +702,7 @@
       "full": "/atelier/full/phone/meta.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6610,
+      "fullH": 6635,
       "cropped": true
     },
     {
@@ -630,7 +738,7 @@
       "full": "/atelier/full/phone/carte.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1979,
+      "fullH": 2004,
       "cropped": true
     },
     {
@@ -666,7 +774,7 @@
       "full": "/atelier/full/phone/confidentialite.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6492,
+      "fullH": 6517,
       "cropped": true
     },
     {
@@ -702,7 +810,7 @@
       "full": "/atelier/full/phone/pia.png",
       "thumbW": 532,
       "thumbH": 851,
-      "fullH": 14422,
+      "fullH": 14447,
       "cropped": true
     },
     {
@@ -724,6 +832,24 @@
       "cropped": true
     },
     {
+      "slug": "au-revoir",
+      "viewport": "narrow",
+      "route": "/au-revoir",
+      "component": "AuRevoir",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "AuRevoir",
+        "en": "AuRevoir"
+      },
+      "thumb": "/atelier/thumbs/narrow/au-revoir.webp",
+      "full": "/atelier/full/narrow/au-revoir.png",
+      "thumbW": 600,
+      "thumbH": 611,
+      "fullH": 1019,
+      "cropped": false
+    },
+    {
       "slug": "me-data",
       "viewport": "narrow",
       "route": "/me/data",
@@ -740,6 +866,42 @@
       "thumbH": 710,
       "fullH": 1183,
       "cropped": false
+    },
+    {
+      "slug": "me-dossier",
+      "viewport": "narrow",
+      "route": "/me/dossier",
+      "component": "Dossier",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Dossier",
+        "en": "Dossier"
+      },
+      "thumb": "/atelier/thumbs/narrow/me-dossier.webp",
+      "full": "/atelier/full/narrow/me-dossier.png",
+      "thumbW": 600,
+      "thumbH": 710,
+      "fullH": 1183,
+      "cropped": false
+    },
+    {
+      "slug": "passage",
+      "viewport": "narrow",
+      "route": "/passage",
+      "component": "Passage",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Passage",
+        "en": "Passage"
+      },
+      "thumb": "/atelier/thumbs/narrow/passage.webp",
+      "full": "/atelier/full/narrow/passage.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 1846,
+      "cropped": true
     },
     {
       "slug": "root",
@@ -760,6 +922,24 @@
       "cropped": true
     },
     {
+      "slug": "en-goodbye",
+      "viewport": "narrow",
+      "route": "/en/goodbye",
+      "component": "AuRevoir",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "AuRevoir",
+        "en": "AuRevoir"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-goodbye.webp",
+      "full": "/atelier/full/narrow/en-goodbye.png",
+      "thumbW": 600,
+      "thumbH": 611,
+      "fullH": 1019,
+      "cropped": false
+    },
+    {
       "slug": "en-me-data",
       "viewport": "narrow",
       "route": "/en/me/data",
@@ -776,6 +956,42 @@
       "thumbH": 710,
       "fullH": 1183,
       "cropped": false
+    },
+    {
+      "slug": "en-me-dossier",
+      "viewport": "narrow",
+      "route": "/en/me/dossier",
+      "component": "Dossier",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Dossier",
+        "en": "Dossier"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-me-dossier.webp",
+      "full": "/atelier/full/narrow/en-me-dossier.png",
+      "thumbW": 600,
+      "thumbH": 710,
+      "fullH": 1183,
+      "cropped": false
+    },
+    {
+      "slug": "en-passage",
+      "viewport": "narrow",
+      "route": "/en/passage",
+      "component": "Passage",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Passage",
+        "en": "Passage"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-passage.webp",
+      "full": "/atelier/full/narrow/en-passage.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 1846,
+      "cropped": true
     },
     {
       "slug": "en",
@@ -1408,6 +1624,24 @@
       "cropped": true
     },
     {
+      "slug": "au-revoir",
+      "viewport": "wide",
+      "route": "/au-revoir",
+      "component": "AuRevoir",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "AuRevoir",
+        "en": "AuRevoir"
+      },
+      "thumb": "/atelier/thumbs/wide/au-revoir.webp",
+      "full": "/atelier/full/wide/au-revoir.png",
+      "thumbW": 600,
+      "thumbH": 401,
+      "fullH": 963,
+      "cropped": false
+    },
+    {
       "slug": "me-data",
       "viewport": "wide",
       "route": "/me/data",
@@ -1423,6 +1657,42 @@
       "thumbW": 600,
       "thumbH": 468,
       "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "me-dossier",
+      "viewport": "wide",
+      "route": "/me/dossier",
+      "component": "Dossier",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Dossier",
+        "en": "Dossier"
+      },
+      "thumb": "/atelier/thumbs/wide/me-dossier.webp",
+      "full": "/atelier/full/wide/me-dossier.png",
+      "thumbW": 600,
+      "thumbH": 468,
+      "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "passage",
+      "viewport": "wide",
+      "route": "/passage",
+      "component": "Passage",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Passage",
+        "en": "Passage"
+      },
+      "thumb": "/atelier/thumbs/wide/passage.webp",
+      "full": "/atelier/full/wide/passage.png",
+      "thumbW": 600,
+      "thumbH": 744,
+      "fullH": 1786,
       "cropped": false
     },
     {
@@ -1444,6 +1714,24 @@
       "cropped": true
     },
     {
+      "slug": "en-goodbye",
+      "viewport": "wide",
+      "route": "/en/goodbye",
+      "component": "AuRevoir",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "AuRevoir",
+        "en": "AuRevoir"
+      },
+      "thumb": "/atelier/thumbs/wide/en-goodbye.webp",
+      "full": "/atelier/full/wide/en-goodbye.png",
+      "thumbW": 600,
+      "thumbH": 401,
+      "fullH": 963,
+      "cropped": false
+    },
+    {
       "slug": "en-me-data",
       "viewport": "wide",
       "route": "/en/me/data",
@@ -1459,6 +1747,42 @@
       "thumbW": 600,
       "thumbH": 468,
       "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "en-me-dossier",
+      "viewport": "wide",
+      "route": "/en/me/dossier",
+      "component": "Dossier",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Dossier",
+        "en": "Dossier"
+      },
+      "thumb": "/atelier/thumbs/wide/en-me-dossier.webp",
+      "full": "/atelier/full/wide/en-me-dossier.png",
+      "thumbW": 600,
+      "thumbH": 468,
+      "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "en-passage",
+      "viewport": "wide",
+      "route": "/en/passage",
+      "component": "Passage",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Passage",
+        "en": "Passage"
+      },
+      "thumb": "/atelier/thumbs/wide/en-passage.webp",
+      "full": "/atelier/full/wide/en-passage.png",
+      "thumbW": 600,
+      "thumbH": 744,
+      "fullH": 1786,
       "cropped": false
     },
     {
@@ -2092,6 +2416,24 @@
       "cropped": true
     },
     {
+      "slug": "au-revoir",
+      "viewport": "dark",
+      "route": "/au-revoir",
+      "component": "AuRevoir",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "AuRevoir",
+        "en": "AuRevoir"
+      },
+      "thumb": "/atelier/thumbs/dark/au-revoir.webp",
+      "full": "/atelier/full/dark/au-revoir.png",
+      "thumbW": 600,
+      "thumbH": 401,
+      "fullH": 963,
+      "cropped": false
+    },
+    {
       "slug": "me-data",
       "viewport": "dark",
       "route": "/me/data",
@@ -2107,6 +2449,42 @@
       "thumbW": 600,
       "thumbH": 468,
       "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "me-dossier",
+      "viewport": "dark",
+      "route": "/me/dossier",
+      "component": "Dossier",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Dossier",
+        "en": "Dossier"
+      },
+      "thumb": "/atelier/thumbs/dark/me-dossier.webp",
+      "full": "/atelier/full/dark/me-dossier.png",
+      "thumbW": 600,
+      "thumbH": 468,
+      "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "passage",
+      "viewport": "dark",
+      "route": "/passage",
+      "component": "Passage",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Passage",
+        "en": "Passage"
+      },
+      "thumb": "/atelier/thumbs/dark/passage.webp",
+      "full": "/atelier/full/dark/passage.png",
+      "thumbW": 600,
+      "thumbH": 744,
+      "fullH": 1786,
       "cropped": false
     },
     {
@@ -2128,6 +2506,24 @@
       "cropped": true
     },
     {
+      "slug": "en-goodbye",
+      "viewport": "dark",
+      "route": "/en/goodbye",
+      "component": "AuRevoir",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "AuRevoir",
+        "en": "AuRevoir"
+      },
+      "thumb": "/atelier/thumbs/dark/en-goodbye.webp",
+      "full": "/atelier/full/dark/en-goodbye.png",
+      "thumbW": 600,
+      "thumbH": 401,
+      "fullH": 963,
+      "cropped": false
+    },
+    {
       "slug": "en-me-data",
       "viewport": "dark",
       "route": "/en/me/data",
@@ -2143,6 +2539,42 @@
       "thumbW": 600,
       "thumbH": 468,
       "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "en-me-dossier",
+      "viewport": "dark",
+      "route": "/en/me/dossier",
+      "component": "Dossier",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Dossier",
+        "en": "Dossier"
+      },
+      "thumb": "/atelier/thumbs/dark/en-me-dossier.webp",
+      "full": "/atelier/full/dark/en-me-dossier.png",
+      "thumbW": 600,
+      "thumbH": 468,
+      "fullH": 1123,
+      "cropped": false
+    },
+    {
+      "slug": "en-passage",
+      "viewport": "dark",
+      "route": "/en/passage",
+      "component": "Passage",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Passage",
+        "en": "Passage"
+      },
+      "thumb": "/atelier/thumbs/dark/en-passage.webp",
+      "full": "/atelier/full/dark/en-passage.png",
+      "thumbW": 600,
+      "thumbH": 744,
+      "fullH": 1786,
       "cropped": false
     },
     {
@@ -2704,5 +3136,5 @@
       "cropped": true
     }
   ],
-  "count": 148
+  "count": 172
 }
