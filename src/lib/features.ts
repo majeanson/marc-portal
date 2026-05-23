@@ -228,7 +228,7 @@ export const FEATURE_PRIMARY_PAGE: Record<ProductFeatureId, Bi> = {
  * ------------------------------------------------------------------------- */
 
 /** Next backstage page in the loop, keyed by page-node id. A single closed
- *  cycle over every meta page; guarded in features.test.ts. */
+ *  8-cycle over every meta page; guarded in features.test.ts. */
 export const META_PAGE_NEXT: Record<string, string> = {
   'page.map-page': 'page.meta',
   'page.meta': 'page.atelier',
