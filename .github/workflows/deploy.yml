@@ -90,7 +90,15 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add feature.json '*.feature.json'
           git commit -m "chore(lac): stamp revisions for ${GITHUB_SHA::7} [skip ci]"
-          git push
+          # The lighthouse workflow auto-commits lighthouse-history.json back to
+          # this same branch after every deploy. If a prior deploy's lighthouse
+          # commit lands between our fetch (in actions/checkout) and our push,
+          # the bare push is rejected as non-fast-forward. Rebase our stamp
+          # commit onto the remote tip first — lighthouse touches a disjoint
+          # file (src/data/lighthouse-history.json) so it never conflicts with
+          # our feature.json stamps. Same pattern as e2e-snapshots.yml.
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
 
       # Auto-stamp un-stamped session_advancements rows with the same deploy
       # URL. Mirrors the feature.json pipeline above but writes to D1 instead
