@@ -1,0 +1,85 @@
+{
+  "featureKey": "feat-2026-025",
+  "title": "Ton passage — café receipt of the current visit",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/transparency",
+  "componentFile": "src/pages/Passage.tsx",
+  "liveUrl": "/passage",
+  "problem": "A Loi 25 privacy policy and a PIA tell a visitor what data the site MIGHT keep about them in general. They don't tell the visitor what their own tab is carrying right now. The legal documents are correct but abstract; an honest practice should also offer a concrete reading the visitor can verify themselves. /passage is the felt-version of /confidentialite — same truth, different register — rendered as a café receipt the visitor can print and keep.",
+  "tags": [
+    "transparency",
+    "loi-25",
+    "browser-only",
+    "felt-version",
+    "anti-ai-tells",
+    "self-verifying"
+  ],
+  "analysis": "Two registers for the same data: /confidentialite is the legal disclosure (what the practice could collect under what conditions), /passage is the receipt (what THIS tab carries right at this moment). The legal page proves intent; the receipt proves practice. A visitor reading both sees that the legal page isn't an aspirational stub — the receipt confirms cookies, localStorage, and the walked-pages log are exactly what the policy says they are. Café-bill aesthetic is the load-bearing choice: a receipt is a familiar artifact that frames data exposure as a small, mundane, totalled-at-the-bottom thing rather than a privacy crisis. Total: $0.00. The print button hands the receipt off to the browser's print dialog so the visitor can keep a physical copy — that's the receipt metaphor pulled all the way through, and a quiet anti-AI-tell move (an AI-generated transparency page would render a dashboard, not a thermal-printer receipt).",
+  "implementation": "src/pages/Passage.tsx — render-once snapshot, browser-only. Cookies read via document.cookie (filtered to mp_* prefix). localStorage read via window.localStorage.key()/getItem (filtered to mp_* prefix); values are SUMMARIZED, never dumped — long JSON drafts show as '~N caractères (JSON)' so the receipt stays readable. Walked-pages log comes from src/lib/visitTracker.ts (sessionStorage-backed, populated by RootLayout's useEffect on every navigation). Wall-clock date formatted via Intl.DateTimeFormat (America/Toronto, h23). Cookies carry a short human description (mp_session, mp_csrf, mp_lang, mp_en_nudge_dismissed) so the visitor isn't reading raw cookie names; an unrecognised mp_* cookie falls through to a generic 'portal-internal' note. No fetch, no POST, no analytics ping — the helpers READ from document/window only. The print button calls window.print(). A related-aside below the receipt links out to /me/dossier (the ledger), /confidentialite (legal), /pia (PIA).",
+  "decisions": [
+    {
+      "decision": "Browser-only reads — nothing leaves the page",
+      "rationale": "The whole point is for the visitor to verify their own tab; routing through a server would defeat the felt-version framing AND introduce a server log of who read their receipt. document.cookie + window.localStorage + sessionStorage give a complete picture without a network call.",
+      "recommendation": "Never add a server roundtrip here. If a future field requires server data (e.g. 'sessions on this account'), make it a separate signed-in surface and link to it from the related-aside — don't sneak it into the receipt.",
+      "date": "2026-05-23"
+    },
+    {
+      "decision": "Café-receipt aesthetic, not a dashboard",
+      "rationale": "A privacy dashboard reads as ChatGPT output — gradient cards, status pills, big numbers. A thermal-printer receipt reads as a small business owing you nothing. The aesthetic IS the message: data exposure framed as mundane, totalled, paid. The same content rendered as a dashboard would undermine the practice's anti-AI-tells stance documented in CLAUDE.md.",
+      "recommendation": "Keep the mono font, the rule-divided blocks, the 'Total: 0,00 $' line, and the print button. If a designer tempts you toward 'modernizing' the look, the felt version disappears.",
+      "date": "2026-05-23"
+    },
+    {
+      "decision": "Anon visitors get a sparser receipt, not a degraded one",
+      "rationale": "A logged-out tab has no mp_session cookie, no /me draft in localStorage, no walked-pages from past sessions. Showing 'aucun cookie servi' for that visitor is honest — it's not a less-good version of the receipt, it's the correct receipt for a visitor that gave us nothing.",
+      "recommendation": "Don't conditionally render a 'sign in to see your real receipt' nudge. The empty receipt IS the win — proves the site doesn't quietly load state behind the visitor's back.",
+      "date": "2026-05-23"
+    }
+  ],
+  "successCriteria": "- A visitor opens /passage and reads, in plain words, what cookies + localStorage their tab is carrying right now\n- The page makes zero network calls beyond the SPA's normal data fetches (which the receipt itself lists)\n- A logged-out visitor sees an empty-but-honest receipt with the same affective frame as the populated one\n- Print produces a readable physical receipt (single column, mono font, no decorative chrome)\n- The aesthetic distinguishes it from /confidentialite at a glance — café receipt, not legal disclosure\n- The related-aside lands a curious visitor on the deeper docs (/me/dossier, /confidentialite, /pia) without trapping them on /passage",
+  "userGuide": "Open /passage (or /en/passage). The receipt is a single chronological snapshot of: which mp_* cookies your browser holds for this site, which mp_* localStorage entries the site has parked, which routes you've walked through in this tab (with dwell time), which API endpoints the SPA called on load, and a static note about third-party processors. Click 'Imprimer le reçu' to send to the browser's print dialog. Closing the tab discards the visit log automatically — sessionStorage clears on tab close. Nothing on this page POSTs anywhere; everything is read from your own browser via document.cookie, window.localStorage, and sessionStorage.",
+  "knownLimitations": [
+    "The receipt is a render-time snapshot — navigating away and back gets a fresh snapshot, not a persisted history",
+    "Cookies are filtered to mp_* prefix; the page does NOT show third-party or generic cookies (there shouldn't be any, but the filter would hide them if they appeared)",
+    "Cookie descriptions are hard-coded; a new mp_* cookie added to the codebase will show as 'portal-internal' until a description row is added to COPY.cookieDescriptions",
+    "sessionStorage in private/incognito modes may be unavailable — the walked-pages block shows an honest empty state in that case",
+    "The receipt's 'Demandes en cuisine (API)' block is static prose, not a live log — accurate to the SPA's actual fetches but not auto-derived; a new public route added to the boot path requires editing the apisBody string"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-23",
+      "reason": "Page shipped in f3ef8f1 alongside src/lib/visitTracker.ts. /passage and /en/passage render the receipt for FR/EN visitors; rendered, prerendered, and e2e-screenshotted at baselines/passage.png + baselines/en-passage.png."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located post-ship. All required fields present; behavior confirmed in dev + e2e baselines regenerated on a298255."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — co-located doc for the just-shipped ton-passage receipt page."
+    }
+  ],
+  "annotations": []
+}

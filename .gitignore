@@ -27,3 +27,4 @@ public/atelier
 # Local scratch — preview server log + throwaway screenshot scripts/output.
 *.log
 shot*
+.walk-screenshots

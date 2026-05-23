@@ -1,0 +1,78 @@
+{
+  "featureKey": "feat-2026-026",
+  "title": "Le carnet — what I hold vs. what Meta collects",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/transparency",
+  "componentFile": "src/pages/Dossier.tsx",
+  "liveUrl": "/me/dossier",
+  "problem": "Saying 'I keep almost nothing about you' is a claim nobody has to believe. Saying it next to a real, sourced enumeration of what Meta/Facebook collects on the same axes makes the gap visible and verifiable. The page is auth-gated because it's framed as the visitor's own ledger — anonymous browsers see a sign-in invitation, not the comparator. Drawing the contrast against Meta's documented practices (citing Meta's own data policy, help centre, off-Facebook activity, and pixel pages) turns the receipt-version page (/passage) into a felt 'so what'.",
+  "tags": ["transparency", "loi-25", "auth-gated", "comparator", "anti-ai-tells", "felt-version"],
+  "analysis": "Three transparency surfaces, each addressing a different question: /confidentialite (legal disclosure — 'what could you collect?'), /passage (receipt — 'what does THIS tab carry right now?'), /me/dossier (ledger — 'how does what you keep compare to a mainstream service?'). The ledger is the most opinionated of the three: it doesn't just enumerate what's kept, it juxtaposes that row-for-row against Meta's documented collection on the same category. Each row carries a public source URL (Meta data policy, help centre, off-Facebook activity, pixel docs) so the reader isn't asked to take Marc's word for the comparator side. The 'you are here' pointer on the collection axis is pinned at the leftmost notch — it's a state, not a slider. Keeping the comparator factually current is a recurring maintenance cost (~quarterly grep against the cited URLs); worth it because the moment the comparator goes stale, the page reads as a self-serving caricature.",
+  "implementation": "src/pages/Dossier.tsx — auth-gated via useAuth(). Three render branches: loading (skeleton with aria-busy), unauthenticated (sign-in CTA pointing at /login), authenticated (the full ledger). Uses Header with variant='session' (dashboard chrome), PageMast for the folio + stamp, and a custom dossier-grid CSS layout that's row-major on desktop (category | mine | theirs) and column-stacked on mobile. ROWS is a hand-curated array of LedgerRow records — each row has bilingual category/mine/theirs strings and a single source URL+label pair. The collection-axis figure is a CSS-drawn horizontal scale with three notches and a fixed-position pointer; the 'you are here' arrow is an inline SVG path (no library). asOf date is hardcoded as a 'last reviewed' stamp; bumping it is part of the quarterly comparator-refresh ritual.",
+  "decisions": [
+    {
+      "decision": "Auth-gated, with a quiet sign-in panel for anon visitors",
+      "rationale": "Framing the page as 'your ledger' requires an account; without one, the contrast is hypothetical and the 'you are here' pointer has nowhere to anchor. The anon branch shows a one-paragraph hook with the eyebrow tag and a sign-in CTA — enough to convey what's behind the wall without leaking the full ledger to crawlers.",
+      "recommendation": "Don't let the anon branch grow — it's a teaser, not a lite version. If the comparator content needs to be SEO-discoverable, fork a public marketing variant; don't merge it into this page.",
+      "date": "2026-05-23"
+    },
+    {
+      "decision": "Cite Meta's own public docs, not third-party privacy reports",
+      "rationale": "A row that says 'Meta collects X' has to be defensible at face value. Sourcing from Meta's own data policy, help centre, off-Facebook activity page, and pixel docs means the comparator can't be argued away as activist framing. The source URLs sit inline at the end of each 'theirs' cell so the reader can verify in one click.",
+      "recommendation": "When refreshing the comparator, only update a row if you can find the new wording in a Meta-owned URL. Third-party investigative reports (FTC filings, news articles) are useful context but don't make it into the ledger.",
+      "date": "2026-05-23"
+    },
+    {
+      "decision": "The 'you are here' pointer is a state, not a slider",
+      "rationale": "An interactive slider implies the visitor could move it — they can't. The portal collects what it collects; that's not configurable. A fixed pointer at the leftmost notch reads as a claim of fact, which is the right register. Hover/keyboard interaction would also pull the page toward dashboard-feel and away from the felt-version aesthetic.",
+      "recommendation": "Resist any 'gamification' suggestion that would turn the axis into a configurator (e.g. 'show me what it'd look like if I opted into X'). The page makes a point; configurability dilutes it.",
+      "date": "2026-05-23"
+    }
+  ],
+  "successCriteria": "- A signed-in visitor sees the full ledger with sourced comparator rows side by side\n- An anon visitor sees a one-paragraph hook + sign-in CTA, no comparator content\n- Every comparator row carries at least one Meta-owned source URL the visitor can click through\n- The 'as of' date is bumped after each comparator refresh; a stale date is a tell that the page needs a review\n- The page is reachable from /passage's related-aside, from /me, and from /me/data — but not from the public site navigation\n- Visual register matches /passage and /confidentialite, not /admin (dashboard chrome would defeat the felt-version framing)",
+  "userGuide": "Open /me/dossier (or /en/me/dossier) — requires sign-in. The page renders a three-column grid: category, what THIS portal keeps about you in that category, what Meta/Facebook collects on the same axis. Each comparator cell ends with a clickable source URL. Above the grid sits a collection axis with a 'you are here' arrow pinned at 'minimal' — the position is fixed, not draggable. The 'Comparateur révisé' stamp at the bottom is the last-refreshed date for the Meta side; if it's drifted by more than a quarter, re-check each source URL against current Meta docs and bump the date. The related-aside links to /me/data (per-row Loi 25 access view), /passage (current-visit receipt), and /confidentialite (legal disclosure).",
+  "knownLimitations": [
+    "Comparator data ages — Meta's policies change without notice, so a row can become stale between quarterly refreshes; the asOf date is the only signal that a refresh is overdue",
+    "The collection axis is illustrative, not calibrated — 'minimal' vs. 'uncomfortable' is a qualitative read, not a measurable scale",
+    "Source URLs sometimes get re-routed by Meta to broader index pages over time; a 404 on a cited URL means refresh, not 'Meta retracted'",
+    "The page deliberately does NOT compare against every social platform (Google, TikTok, X) — adding more comparators dilutes the focused contrast and multiplies the refresh burden; if a buyer ever needs a generic 'minimal vs. mainstream' comparator, fork the pattern rather than expanding this page",
+    "Auth-gating means the ledger isn't visible to search engines or to a visitor weighing whether to sign up — that's the trade-off the framing demands; the public sibling /passage carries the lighter version"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-23",
+      "reason": "Page shipped in f3ef8f1. /me/dossier and /en/me/dossier render the auth-gated ledger; e2e baselines committed on a298255 (me-dossier.png, en-me-dossier.png)."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located post-ship. Ledger rendered, comparator sourced against Meta's own docs, asOf stamp present. Required fields complete."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — co-located doc for the just-shipped /me/dossier auth-gated ledger."
+    }
+  ],
+  "annotations": []
+}

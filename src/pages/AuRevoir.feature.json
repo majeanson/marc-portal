@@ -1,0 +1,83 @@
+{
+  "featureKey": "feat-2026-027",
+  "title": "Au revoir — the post-erasure ritual",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/transparency",
+  "componentFile": "src/pages/AuRevoir.tsx",
+  "liveUrl": "/au-revoir",
+  "problem": "DELETE /api/me is a structurally honest action — the row goes, the attachments go, the magic-link tokens go — but it lands the visitor on /me a half-second later with the dashboard half-disappeared and no acknowledgement that anything happened. The act needs a closing frame: a quiet page that says 'it is done' and dissolves the categories of data that just left. /au-revoir is that closing frame. It runs only when arrived-at via the erasure flow; a direct visit shows a shorter 'you're already gone' branch instead so the URL isn't a dead end.",
+  "tags": ["transparency", "loi-25", "post-erasure", "reduced-motion", "ritual", "felt-version"],
+  "analysis": "The page has two branches separated by a one-shot sessionStorage flag (mp_just_erased). The /me dashboard sets the flag immediately before navigating to /au-revoir after a successful DELETE; this page reads + clears the flag at mount. Branch A (flag present) renders six category labels (email, sessions, messages, attachments, drafts, preferences) that fade from ink to paper over ~3 seconds, staggered per item, then settles on a quiet 'c'est fait' / 'you are no longer in the ledger' line. Branch B (flag absent) renders the direct-visit copy ('your account is already gone, or you never had one') with a home link — no animation, no tokens. Reduced-motion users get Branch A's tokens rendered at zero opacity from frame zero so the title still stands alone; the emotional weight stays intact without the flicker. The ritual branch also clears the in-tab visit log via clearVisits() in a useEffect — a freshly-erased visitor shouldn't carry a /passage trail from before the deletion. No FeatureContinue: a 'keep browsing the backstage tour' pointer would defeat the entire framing of the page.",
+  "implementation": "src/pages/AuRevoir.tsx — branch decided once per mount via consumeJustErasedFlag() in src/lib/erasureFlag.ts (which atomically reads + removes the sessionStorage entry). The naïve approach — useState(consumeJustErasedFlag) — is broken: React Concurrent Mode (prod) AND StrictMode (dev) both re-invoke the lazy initializer during the same mount cycle, so the first call consumes the flag and the second reads null, settling state on false every time. Fix: a module-level claim slot (claimSlotInUse + claimSlotValue) caches the first read so subsequent initializer calls within the same mount return the same value. useEffect cleanup resets the slot so a fresh mount (navigate-away-and-back) can claim again. The token animation is CSS-only — six <li> elements, each with --token-delay set inline (0s, 0.18s, 0.36s, ...) — keyframes in styles.css drive opacity from 1 to 0 over ~1.4s starting at the delay. Reduced-motion guard handled by the same CSS via @media (prefers-reduced-motion: reduce). The ritual branch additionally fires clearVisits() in a useEffect so sessionStorage's mp_visits is wiped — a /passage receipt opened after au-revoir should be empty, not 'here are the pages the now-deleted visitor walked.' Direct branch has a simple back-home link; no FeatureContinue, no related-aside, intentionally.",
+  "decisions": [
+    {
+      "decision": "Two branches gated by a one-shot sessionStorage flag, not a URL param",
+      "rationale": "A URL param (?just=erased) would be tampering-prone — anyone could craft the ritual URL and play the animation for no real reason. sessionStorage is set server-coordinated by /me's onDelete handler IMMEDIATELY before the navigate; the flag is consumed on first render and never re-set without another real deletion. Tab-close clears the flag automatically.",
+      "recommendation": "If a future flow needs to land the visitor on /au-revoir for a non-deletion reason (e.g. logout), introduce a separate flag — don't re-use mp_just_erased. The ritual frame is reserved for actual erasure.",
+      "date": "2026-05-23"
+    },
+    {
+      "decision": "Cache the first claim of the erasure flag in a module-level slot",
+      "rationale": "React's lazy useState initializer can be invoked multiple times during a single mount cycle — Concurrent Mode in prod, StrictMode in dev. A side-effecting initializer that *consumes* sessionStorage would read '1' on the first call and null on the second, silently defaulting to the direct branch and skipping the ritual in BOTH environments. The module-level claimSlotInUse / claimSlotValue pair caches the first read so all subsequent invocations within the same mount return the same value. useEffect cleanup resets the slot for the next mount so a navigate-away-and-back still gets a fresh claim against (now-empty) sessionStorage.",
+      "recommendation": "Don't move the consume call back into a lazy useState initializer thinking 'the initializer only runs once' — that assumption is false in React 18+. If you need a similar 'read external state once at mount' pattern elsewhere, copy this claim-slot scaffold or use a useEffect-then-setState (with an accepted single-frame flash to the default branch).",
+      "date": "2026-05-23"
+    },
+    {
+      "decision": "Reduced-motion users skip the animation but keep the page",
+      "rationale": "The token-fade is the affective payload of the page; honoring prefers-reduced-motion means rendering the labels at zero opacity from the start, so the title and body line still anchor the moment. Some users would experience the staggered fade as nauseating — silencing the animation while preserving the framing is the right trade. Hiding the labels entirely would feel like an incomplete page; rendering them invisibly keeps the layout's emotional weight.",
+      "recommendation": "Keep the CSS rule that opacity-zeros the tokens at zero delay for reduced-motion. Don't replace it with a 'reduced-motion alternative animation' — the point is no animation, not a different one.",
+      "date": "2026-05-23"
+    },
+    {
+      "decision": "No 'keep browsing' pointer on either branch",
+      "rationale": "FeatureContinue or a related-aside would convert the page into a tour stop, defeating its terminal framing. The only link is 'back to home' — minimal, available for the visitor who chooses to keep using the site, but never suggesting they should. This is also why /au-revoir does NOT appear in META_PAGE_NEXT (see src/lib/features.ts comment).",
+      "recommendation": "Resist the pull to add a 'next steps' block here. The page is a goodbye; goodbyes don't include cross-sells.",
+      "date": "2026-05-23"
+    }
+  ],
+  "successCriteria": "- A visitor arriving via successful DELETE /api/me sees the token-fade ritual + 'c'est fait' line\n- A direct-URL visitor sees the 'your account is already gone' branch with a home link, no animation\n- prefers-reduced-motion users see the ritual branch with tokens at zero opacity from frame zero\n- React StrictMode's double-mount does NOT replay the ritual — flag is consumed on first read\n- The /passage walked-pages log is cleared after the ritual fires (no stale trail from before erasure)\n- The page is reachable at /au-revoir + /en/goodbye; no public site link points at it (only the /me dashboard's post-DELETE navigation)",
+  "userGuide": "This page renders automatically after a successful 'erase my data' action on /me — you won't normally land here yourself. The ritual branch shows six categories of data fading from ink to paper, then a quiet acknowledgement. Closing the tab afterward is the expected behaviour; nothing on the page expects continued interaction. If you reach /au-revoir directly (e.g. bookmarked, shared link), the page shows the shorter 'you're already gone' branch with a single home link. To play the ritual branch in dev for visual review: sessionStorage.setItem('mp_just_erased', '1') then navigate to /au-revoir.",
+  "knownLimitations": [
+    "sessionStorage in private/incognito modes may be unavailable — in that case the flag can't be set and the ritual branch never fires, even after a real deletion; the direct branch is the safer fallback so visitors aren't trapped on a broken animation",
+    "The token list is hardcoded (six categories) — the actual row count of what just got deleted is unknown by design (querying the DB for a now-deleted user is impossible), so the labels are honest in shape but not in count",
+    "The reduced-motion CSS path keeps the labels in the DOM at zero opacity — screen readers may still announce them; aria-hidden='true' on the <ol> mitigates but doesn't eliminate this in every AT/browser combo",
+    "If a future migration adds a new data category (e.g. voice transcripts), the six token labels here will silently understate what was erased until someone bumps the list"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-23",
+      "reason": "Page shipped in f3ef8f1 with src/lib/erasureFlag.ts. /au-revoir and /en/goodbye render the two branches; e2e baselines committed on a298255 (au-revoir.png, en-goodbye.png — direct branch, since sessionStorage isn't pre-set in e2e)."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located post-ship. Branch behaviour, reduced-motion handling, and the no-cross-sell decision all documented. Required fields complete."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author — co-located doc for the just-shipped /au-revoir erasure ritual."
+    }
+  ],
+  "annotations": []
+}
