@@ -46,6 +46,11 @@ const CSRF_EXEMPT_PATHS: ReadonlySet<string> = new Set([
   // this is exempt and abuse is bounded by a per-IP rate limit instead. The
   // audio is transcribed and discarded; nothing is stored.
   '/api/intake/transcribe',
+  // Resend → us. Auth is the Svix-style signature over the raw body
+  // (svix-id + svix-timestamp + svix-signature headers). No visitor cookie
+  // to forge; the secret is shared between Resend Dashboard and our
+  // RESEND_WEBHOOK_SECRET env var. Same shape as the Stripe webhook above.
+  '/api/webhooks/resend',
 ])
 
 const SAFE_METHODS: ReadonlySet<string> = new Set(['GET', 'HEAD', 'OPTIONS'])

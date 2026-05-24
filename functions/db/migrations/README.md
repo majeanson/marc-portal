@@ -39,6 +39,7 @@ npm run db:migrate:prod
 | `0024_user_prefs_first_name.sql` | Add `first_name` (nullable) to `user_prefs`           |
 | `0025_community_discount.sql`    | Add `community_discount` (INTEGER bool) to `sessions` |
 | `0026_email_outbox.sql`          | AUDIT P1.3: send-failure outbox for durable notices   |
+| `0027_email_events.sql`          | AUDIT P1.2: bounce/complaint events from Resend       |
 
 ## After applying 0002
 

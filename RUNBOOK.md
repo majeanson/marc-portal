@@ -1128,6 +1128,98 @@ backing off is correct behavior — we don't want a digest that takes 30
 minutes to process a stuck queue. A manual reset (step 3) is the escape
 hatch; in practice this should fire rarely.
 
+## 16. Resend domain + bounce webhook activation (P1.1 + P1.2)
+
+This is a **one-time** procedure, gated on DNS access to marcportal.com.
+Once activated, every send via `noreply@marcportal.com` stops 403-ing,
+Gmail/Outlook reputation stops being shared with every other Resend
+customer using `onboarding@resend.dev`, and bounce/complaint events flow
+into the `email_events` table.
+
+### Step 1 — Add the domain on Resend
+
+1. Resend Dashboard → **Domains** → **Add Domain** → `marcportal.com`.
+2. Resend lists 4 DNS records. Copy them somewhere temporary — they'll
+   look like:
+
+   ```
+   TXT   resend._domainkey   p=MIGfMA…QIDAQAB
+   MX    send                feedback-smtp.us-east-1.amazonses.com   (priority 10)
+   TXT   send                v=spf1 include:amazonses.com ~all
+   TXT   _dmarc              v=DMARC1; p=none;
+   ```
+
+   The `send` subdomain pattern is deliberate — Resend uses it for the
+   feedback (bounce) loop. This is why the SPF + MX records here do NOT
+   collide with the CF Email Routing records at the apex domain.
+
+### Step 2 — Add the records to Cloudflare DNS
+
+CF Dashboard → marcportal.com → **DNS** → **Add record**, one per row
+from step 1. Leave Proxy disabled (DNS-only) for all four — these are
+authentication records, not traffic.
+
+### Step 3 — Wait for verification (~2–10 minutes)
+
+Resend Dashboard → Domains → marcportal.com flips from `pending` to
+`verified` when all 4 records resolve. If still pending after 10 minutes,
+recheck the record values (DKIM keys are case-sensitive; a missing space
+in the TXT body breaks DMARC).
+
+Until verified, you can deploy with a temporary fallback:
+
+```ts
+// functions/_lib/email.ts
+const RESEND_FROM = 'Marc Portal <onboarding@resend.dev>'
+```
+
+…then revert to `'Marc <noreply@marcportal.com>'` after verify. The
+fallback degrades deliverability (shared reputation) but doesn't 403.
+
+### Step 4 — Wire up the bounce/complaint webhook (P1.2)
+
+1. Resend Dashboard → **Webhooks** → **Add Endpoint**.
+2. URL: `https://marcportal.com/api/webhooks/resend`.
+3. Events to subscribe: at minimum `email.bounced`, `email.complained`,
+   `email.delivered`. `email.delivery_delayed` is useful for triage but
+   noisy; subscribe only if you want it. Skip `email.sent` (we already
+   log every successful send from our side).
+4. Copy the signing secret (begins with `whsec_…`). Then locally:
+
+   ```bash
+   echo "whsec_…" | npx wrangler secret put RESEND_WEBHOOK_SECRET
+   ```
+
+   This deploys the secret to Pages without rebuilding.
+
+### Step 5 — Verify with a test event
+
+Resend Dashboard → Webhooks → endpoint → **Send Test Event**. Then:
+
+```bash
+npx wrangler d1 execute marc-portal-db --remote --command \
+  "SELECT id, to_email, type, subtype, received_at FROM email_events
+   ORDER BY received_at DESC LIMIT 5"
+```
+
+You should see one row from the test event within ~5 seconds. If
+nothing arrives:
+
+- Cloudflare Pages logs (`wrangler pages deployment tail`) — look for
+  `resend webhook: …`. Signature mismatch logs as `401`; misconfig logs
+  as `503 webhook secret not configured`.
+- The Resend Dashboard's webhook log — the event will be marked
+  "delivered" with our 200, or with our error code if rejected.
+
+### Why this lands in two parts
+
+P1.1 (domain) and P1.2 (webhook) are split because they fail
+independently — a verified domain still works without the webhook
+hooked up, and the webhook handler tolerates an unset secret (503) so
+the code can ship now without breaking anything. The code paths are
+audited and tested; the activation is a single sitting whenever DNS
+access is available.
+
 ## Payments setup (one-time) — Stripe
 
 Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card

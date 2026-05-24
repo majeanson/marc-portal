@@ -133,6 +133,15 @@ interface UserPrefRowMock {
   updated_at: number
 }
 
+interface EmailEventRowMock {
+  id: string
+  to_email: string
+  type: string
+  subtype: string | null
+  payload: string
+  received_at: number
+}
+
 interface EmailOutboxRowMock {
   id: string
   to_email: string
@@ -159,6 +168,7 @@ export class D1Mock {
   vouches = new Map<string, VouchRowMock>()
   user_prefs = new Map<string, UserPrefRowMock>()
   email_outbox = new Map<string, EmailOutboxRowMock>()
+  email_events = new Map<string, EmailEventRowMock>()
 
   prepare(sql: string): MockPreparedStatement {
     return new MockPreparedStatement(this, sql, [])
@@ -1337,6 +1347,20 @@ class MockPreparedStatement {
         r.last_error = a[1] as string
       }
       return r ? 1 : 0
+    }
+
+    // INSERT INTO email_events (id, to_email, type, subtype, payload, received_at)
+    if (sql.startsWith('INSERT INTO email_events')) {
+      const id = a[0] as string
+      this.db.email_events.set(id, {
+        id,
+        to_email: a[1] as string,
+        type: a[2] as string,
+        subtype: (a[3] as string | null) ?? null,
+        payload: a[4] as string,
+        received_at: a[5] as number,
+      })
+      return 1
     }
 
     // INSERT OR IGNORE INTO user_prefs (email, lang, updated_at) VALUES (?, ?, ?)

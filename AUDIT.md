@@ -18,11 +18,28 @@
 ## P1 — High impact, do first
 
 ### Email / deliverability
-- ⚠ **P1.1** — Custom Resend sender domain (DNS-blocked). Currently sending
-  from `onboarding@resend.dev` — fine while it works, but Gmail/Outlook
-  reputation is shared. Highest-leverage item once DNS access is available.
-- ⚠ **P1.2** — Resend bounce/complaint webhooks (depends on P1.1). Without a
-  verified domain there's no useful bounce signal.
+- ⚠ **P1.1** — Custom Resend sender domain. Code is ready: the `RESEND_FROM`
+  constant in `functions/_lib/email.ts` is already `noreply@marcportal.com`
+  with the 4-record DNS set documented in the file's header comment.
+  Currently DNS-blocked at the operator level — the records have not been
+  added to Cloudflare DNS yet, so every send via this FROM 403s with
+  "domain not verified". Activation steps in RUNBOOK §16 (one-time DNS +
+  Resend Dashboard verify; ~10 minutes including propagation wait).
+- ⚠ **P1.2** — Resend bounce/complaint webhook handler shipped at
+  `POST /api/webhooks/resend`. Code-only landing: signature verification
+  (Svix-style HMAC-SHA-256, `whsec_` prefix accepted), idempotency via the
+  shared `webhook_events` table, persists every bounce/complaint/delivered/
+  delayed/opened/clicked event into a new `email_events` table (migration
+  0027) with a `subtype` column for "hard vs soft" bounce filtering.
+  Informational `email.sent` events drop through without a row. Endpoint
+  returns 503 while `RESEND_WEBHOOK_SECRET` is unset, so a stray request
+  in the meantime is a non-event. 15 tests cover the verifier (good sig,
+  tampered body, wrong secret, stale timestamp, missing headers, rotated
+  multi-sig header) and the handler (unconfigured 503, bad-sig 401,
+  ingestable 200, duplicate idempotency, informational ignore).
+  Activation depends on P1.1 — no events flow until the domain is
+  verified. RUNBOOK §16 carries the full DNS + dashboard + secret
+  activation procedure as a single paragraph.
 - ✅ **P1.3** — Resend send-failure outbox shipped. `email_outbox` table
   (migration 0026), durable opt-in via a new optional `outboxDb` arg on
   the 5 load-bearing send-sites (tier-assigned, refund-notice,

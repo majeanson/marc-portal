@@ -35,6 +35,12 @@ export interface Env {
   // Required for /api/payments/webhook signature verification; unset = the
   // webhook handler rejects every event with 401.
   STRIPE_WEBHOOK_SECRET?: string
+  // Resend webhook signing secret (Svix-style, prefixed with `whsec_`).
+  // Required for /api/webhooks/resend signature verification. Unset = the
+  // bounce/complaint webhook returns 503 and the email_events ingestion
+  // is dormant. P1.2 in AUDIT.md — code paths land before DNS for P1.1 is
+  // live, so an unset secret stays a non-event.
+  RESEND_WEBHOOK_SECRET?: string
   // Plaintext (wrangler.toml [vars]): the Stripe Price IDs for the two annual
   // custodian plans — Watch ($120/yr) and Care ($400/yr). Each is created once
   // in the Stripe Dashboard as a recurring CAD price. Unset = custodian
