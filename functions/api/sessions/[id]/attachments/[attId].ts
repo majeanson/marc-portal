@@ -17,7 +17,7 @@ import {
   serviceUnavailable,
   unauthorized,
 } from '../../../../_lib/json'
-import { canAccessSession, loadSession } from '../../../../_lib/sessions'
+import { requireSessionAccess } from '../../../../_lib/sessions'
 import { ATTACHMENT_COLUMNS, type AttachmentRow } from '../../../../_lib/attachments'
 
 async function loadAttachment(
@@ -42,14 +42,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   if (!env.MEDIA) return serviceUnavailable('attachments are not enabled')
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const sessionId = String(params.id ?? '')
   const attId = String(params.attId ?? '')
-  if (!sessionId || !attId) return badRequest('missing id')
+  if (!attId) return badRequest('missing id')
 
-  const session = await loadSession(env.DB, sessionId)
-  if (!session) return notFound()
-  if (session.deleted_at && !isAdmin(env, email)) return notFound()
-  if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
+  // Stream reads: visitor sees 404 on deleted session, admin still serves
+  // (file recovery via /admin/trash).
+  const access = await requireSessionAccess(env.DB, params.id, {
+    email,
+    isAdmin: isAdmin(env, email),
+  })
+  if (access instanceof Response) return access
+  const sessionId = access.id
 
   const att = await loadAttachment(env, sessionId, attId)
   if (!att) return notFound()
@@ -79,16 +82,19 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params
   if (!env.MEDIA) return serviceUnavailable('attachments are not enabled')
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const sessionId = String(params.id ?? '')
   const attId = String(params.attId ?? '')
-  if (!sessionId || !attId) return badRequest('missing id')
+  if (!attId) return badRequest('missing id')
 
-  const session = await loadSession(env.DB, sessionId)
-  if (!session) return notFound()
-  if (session.deleted_at) return notFound()
-
+  // Deleting an attachment of a deleted session would be confusing — hide-from-all.
   const admin = isAdmin(env, email)
-  if (!canAccessSession(email, admin, session)) return forbidden()
+  const access = await requireSessionAccess(
+    env.DB,
+    params.id,
+    { email, isAdmin: admin },
+    { softDeleted: 'hide-from-all' },
+  )
+  if (access instanceof Response) return access
+  const sessionId = access.id
 
   const att = await loadAttachment(env, sessionId, attId)
   if (!att) return ok({ ok: true })

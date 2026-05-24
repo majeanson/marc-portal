@@ -2,6 +2,8 @@
 // shape, access checks, status transitions. Raw SQL kept in handlers; this
 // file only owns the type and the small predicates.
 
+import { badRequest, forbidden, notFound } from './json'
+
 export type SessionStatus = 'draft' | 'triage' | 'active' | 'shipped' | 'rejected'
 
 /**
@@ -121,6 +123,53 @@ export function parseStatusHistory(raw: string | null): StatusHistoryEntry[] {
 
 export function appendStatusHistory(raw: string | null, entry: StatusHistoryEntry): string {
   return JSON.stringify([...parseStatusHistory(raw), entry])
+}
+
+/**
+ * Soft-delete policy for `requireSessionAccess`. Three real-world variants:
+ *  - `'hide-from-all'`     — 404 even to admin. Use for write paths that don't
+ *                            make sense on a deleted session (POST messages,
+ *                            new attachments, payment checkout / portal).
+ *  - `'hide-from-non-admin'` (default) — 404 to visitor, admin can still load.
+ *                            Use for read paths so admin trash recovery works.
+ *  - `'include'`           — return the row regardless. Use when the handler
+ *                            needs to decide its own response (e.g. DELETE
+ *                            handler that's idempotent — re-delete = 200 ok).
+ */
+export type SoftDeletedPolicy = 'hide-from-all' | 'hide-from-non-admin' | 'include'
+
+/**
+ * Resolve a per-session handler's auth + load + access dance in one call.
+ * Returns the SessionRow on success, or a Response (400 / 404 / 403) the
+ * handler can early-out with. Mirrors the `requireSignedIn` / `requireTenant`
+ * shape elsewhere in `_lib/`. The viewer's email + admin flag are passed in
+ * because every handler computes them anyway — keeps the helper from
+ * importing the Env type and avoids a second cookie check inside this call.
+ *
+ *   const access = await requireSessionAccess(env.DB, params.id, {
+ *     email, isAdmin: isAdmin(env, email)
+ *   })
+ *   if (access instanceof Response) return access
+ *   const session = access
+ */
+export async function requireSessionAccess(
+  db: D1Database,
+  sessionId: unknown,
+  viewer: { email: string; isAdmin: boolean },
+  options: { softDeleted?: SoftDeletedPolicy } = {},
+): Promise<SessionRow | Response> {
+  const id = typeof sessionId === 'string' ? sessionId : String(sessionId ?? '')
+  if (!id) return badRequest('missing id')
+  const session = await loadSession(db, id)
+  if (!session) return notFound()
+  const policy = options.softDeleted ?? 'hide-from-non-admin'
+  if (session.deleted_at) {
+    if (policy === 'hide-from-all') return notFound()
+    if (policy === 'hide-from-non-admin' && !viewer.isAdmin) return notFound()
+    // 'include' — fall through; handler decides what to do with a deleted row.
+  }
+  if (!canAccessSession(viewer.email, viewer.isAdmin, session)) return forbidden()
+  return session
 }
 
 /**

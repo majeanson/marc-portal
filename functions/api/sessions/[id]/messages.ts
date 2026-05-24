@@ -8,16 +8,9 @@ import { randomTokenB64url } from '../../../_lib/bytes'
 import { sendMarcMessageNotification, sendVisitorMessageNotification } from '../../../_lib/email'
 import type { Env } from '../../../_lib/env'
 import { isAdmin } from '../../../_lib/env'
-import {
-  badRequest,
-  forbidden,
-  notFound,
-  ok,
-  tooManyRequests,
-  unauthorized,
-} from '../../../_lib/json'
+import { badRequest, ok, tooManyRequests, unauthorized } from '../../../_lib/json'
 import { rateLimitCheck, rateLimitSweep } from '../../../_lib/ratelimit'
-import { canAccessSession, loadSession, primaryAdminEmail } from '../../../_lib/sessions'
+import { primaryAdminEmail, requireSessionAccess } from '../../../_lib/sessions'
 import { getLang } from '../../../_lib/userPrefs'
 import type { MessageRow } from '../../../_lib/sessions'
 import {
@@ -32,15 +25,15 @@ const MAX_BODY_LEN = 8000
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
-  if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env.DB, id)
-  if (!session) return notFound()
-  const adminGet = isAdmin(env, email)
-  if (!canAccessSession(email, adminGet, session)) return forbidden()
-  // Soft-deleted: visitor sees 404, admin still has read access by id.
-  if (session.deleted_at && !adminGet) return notFound()
+  // GET reads: visitor sees 404 on a soft-deleted session, admin still loads
+  // it (trash recovery surface).
+  const access = await requireSessionAccess(env.DB, params.id, {
+    email,
+    isAdmin: isAdmin(env, email),
+  })
+  if (access instanceof Response) return access
+  const id = access.id
 
   const res = await env.DB.prepare(
     `SELECT id, session_id, author, body, created_at
@@ -74,14 +67,18 @@ interface PostBody {
 export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
-  if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env.DB, id)
-  if (!session) return notFound()
-  if (session.deleted_at) return notFound()
+  // POST writes: no posting to a deleted session, ever — hide from all.
   const admin = isAdmin(env, email)
-  if (!canAccessSession(email, admin, session)) return forbidden()
+  const access = await requireSessionAccess(
+    env.DB,
+    params.id,
+    { email, isAdmin: admin },
+    { softDeleted: 'hide-from-all' },
+  )
+  if (access instanceof Response) return access
+  const session = access
+  const id = session.id
 
   // Throttle messaging: 60/h per actor email. Generous enough that real
   // back-and-forth never trips it; tight enough that nobody's hammering.

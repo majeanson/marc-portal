@@ -18,26 +18,23 @@ import {
 } from '../../../../_lib/advancements'
 import type { Env } from '../../../../_lib/env'
 import { isAdmin } from '../../../../_lib/env'
-import { badRequest, forbidden, notFound, ok, unauthorized } from '../../../../_lib/json'
-import { canAccessSession, loadSession } from '../../../../_lib/sessions'
+import { badRequest, forbidden, ok, unauthorized } from '../../../../_lib/json'
+import { requireSessionAccess } from '../../../../_lib/sessions'
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
-  if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env.DB, id)
-  if (!session) return notFound()
-  const admin = isAdmin(env, email)
-  // Soft-deleted: visitor sees 404, admin still has read access.
-  if (session.deleted_at && !admin) return notFound()
-  // Non-owner non-admin can still read public advancements as long as the
-  // session itself is reachable (not soft-deleted). Today canAccessSession
-  // gates the read, so non-owners 403 — the iframe time-travel surface is
-  // owner+admin until we expose a public showcase route. Keep that gate here
-  // and revisit when public sharing lands.
-  if (!canAccessSession(email, admin, session)) return forbidden()
+  // Visitor sees 404 on a soft-deleted session, admin still has read access.
+  // Non-owner non-admin gets 403 even on a live session — the iframe time-
+  // travel surface is owner+admin until we expose a public showcase route.
+  // Revisit when public sharing lands.
+  const access = await requireSessionAccess(env.DB, params.id, {
+    email,
+    isAdmin: isAdmin(env, email),
+  })
+  if (access instanceof Response) return access
+  const id = access.id
 
   const rows = await listAdvancementsForSession(env.DB, id)
   // Normalize: parse flags so the client doesn't re-do the same defensive
@@ -67,13 +64,20 @@ interface PostBody {
 export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
-  if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env.DB, id)
-  if (!session) return notFound()
-  if (session.deleted_at) return notFound()
-  if (!isAdmin(env, email)) return forbidden('only admin can post advancements')
+  // Posting an advancement to a deleted session is meaningless — hide-from-all.
+  // canAccessSession would pass for admin (and admin is the required role
+  // below), but the soft-delete check is independent.
+  const admin = isAdmin(env, email)
+  const access = await requireSessionAccess(
+    env.DB,
+    params.id,
+    { email, isAdmin: admin },
+    { softDeleted: 'hide-from-all' },
+  )
+  if (access instanceof Response) return access
+  const id = access.id
+  if (!admin) return forbidden('only admin can post advancements')
 
   let payload: PostBody
   try {

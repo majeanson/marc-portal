@@ -20,6 +20,7 @@ import {
   isValidStatus,
   loadSession,
   primaryAdminEmail,
+  requireSessionAccess,
 } from '../../_lib/sessions'
 import type { StatusHistoryEntry } from '../../_lib/sessions'
 import { getLang } from '../../_lib/userPrefs'
@@ -27,16 +28,15 @@ import { getLang } from '../../_lib/userPrefs'
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
-  if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env.DB, id)
-  if (!session) return notFound()
-  if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
-  // Soft-deleted rows: visitors get 404; admins still see them by id.
-  if (session.deleted_at && !isAdmin(env, email)) return notFound()
+  // Soft-deleted rows: visitors get 404; admin still loads them (trash UI).
+  const access = await requireSessionAccess(env.DB, params.id, {
+    email,
+    isAdmin: isAdmin(env, email),
+  })
+  if (access instanceof Response) return access
 
-  return ok({ session })
+  return ok({ session: access })
 }
 
 interface PatchBody {
@@ -426,15 +426,20 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
 export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
-  if (!id) return badRequest('missing id')
 
-  const session = await loadSession(env.DB, id)
-  if (!session) return notFound()
-  if (session.deleted_at) return ok({ ok: true })
-
+  // Idempotent re-delete: include soft-deleted rows so we can return ok+200
+  // when re-deleting an already-deleted session.
   const admin = isAdmin(env, email)
-  if (!canAccessSession(email, admin, session)) return forbidden()
+  const access = await requireSessionAccess(
+    env.DB,
+    params.id,
+    { email, isAdmin: admin },
+    { softDeleted: 'include' },
+  )
+  if (access instanceof Response) return access
+  const session = access
+  const id = session.id
+  if (session.deleted_at) return ok({ ok: true })
 
   const now = Math.floor(Date.now() / 1000)
   await env.DB.prepare(`UPDATE sessions SET deleted_at = ?, updated_at = ? WHERE id = ?`)

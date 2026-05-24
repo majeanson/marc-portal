@@ -20,8 +20,6 @@ import type { Env } from '../../../../_lib/env'
 import { isAdmin } from '../../../../_lib/env'
 import {
   badRequest,
-  forbidden,
-  notFound,
   ok,
   payloadTooLarge,
   serviceUnavailable,
@@ -30,7 +28,7 @@ import {
   unsupportedMediaType,
 } from '../../../../_lib/json'
 import { rateLimitCheck, rateLimitSweep } from '../../../../_lib/ratelimit'
-import { canAccessSession, loadSession } from '../../../../_lib/sessions'
+import { requireSessionAccess } from '../../../../_lib/sessions'
 import { transcribeAudio } from '../../../../_lib/transcribe'
 import {
   ATTACHMENT_COLUMNS,
@@ -64,13 +62,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   }
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
-  if (!id) return badRequest('missing session id')
 
-  const session = await loadSession(env.DB, id)
-  if (!session) return notFound()
-  if (session.deleted_at) return notFound()
-  if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
+  // Uploads onto a deleted session don't make sense — hide-from-all.
+  const access = await requireSessionAccess(
+    env.DB,
+    params.id,
+    { email, isAdmin: isAdmin(env, email) },
+    { softDeleted: 'hide-from-all' },
+  )
+  if (access instanceof Response) return access
+  const id = access.id
 
   // Throttle uploads. 30/h per email is plenty for thread-attached docs,
   // voice notes and sketches but tight enough that nobody's bulk-uploading.
@@ -207,13 +208,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
-  const id = String(params.id ?? '')
-  if (!id) return badRequest('missing session id')
 
-  const session = await loadSession(env.DB, id)
-  if (!session) return notFound()
-  if (session.deleted_at) return notFound()
-  if (!canAccessSession(email, isAdmin(env, email), session)) return forbidden()
+  // Listing uploads on a deleted session is pointless — hide-from-all.
+  const access = await requireSessionAccess(
+    env.DB,
+    params.id,
+    { email, isAdmin: isAdmin(env, email) },
+    { softDeleted: 'hide-from-all' },
+  )
+  if (access instanceof Response) return access
+  const id = access.id
 
   // Pre-message uploads only. Linked attachments come back through the
   // /messages list — no point in showing them twice.

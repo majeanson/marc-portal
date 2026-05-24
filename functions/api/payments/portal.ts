@@ -10,15 +10,8 @@
 import { currentEmail } from '../../_lib/auth'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
-import {
-  badRequest,
-  forbidden,
-  notFound,
-  ok,
-  serviceUnavailable,
-  unauthorized,
-} from '../../_lib/json'
-import { canAccessSession, type SessionRow } from '../../_lib/sessions'
+import { badRequest, notFound, ok, serviceUnavailable, unauthorized } from '../../_lib/json'
+import { requireSessionAccess } from '../../_lib/sessions'
 import { createBillingPortalSession } from '../../_lib/stripe'
 
 interface PortalBody {
@@ -41,18 +34,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const lang: 'fr' | 'en' = body.lang === 'en' ? 'en' : 'fr'
   if (typeof sessionId !== 'string' || !sessionId) return badRequest('sessionId required')
 
-  const session = await env.DB.prepare(
-    `SELECT id, email, intake_json, status, created_at, updated_at,
-            deleted_at, status_history,
-            showcased_at, showcase_title, showcase_tagline, tier
-     FROM sessions WHERE id = ? AND deleted_at IS NULL`,
-  )
-    .bind(sessionId)
-    .first<SessionRow>()
-  if (!session) return notFound('session not found')
-
-  const admin = isAdmin(env, email)
-  if (!canAccessSession(email, admin, session)) return forbidden()
+  // A deleted session has no live custodian subscription to portal into.
+  // The session row isn't needed beyond the access check — the Stripe lookup
+  // below keys off sessionId directly via payments.
+  const viewer = { email, isAdmin: isAdmin(env, email) }
+  const access = await requireSessionAccess(env.DB, sessionId, viewer, {
+    softDeleted: 'hide-from-all',
+  })
+  if (access instanceof Response) return access
 
   // Find the Stripe customer id from the most recent paid sub payment row
   // for this session. If the visitor never paid, there's no portal to open.

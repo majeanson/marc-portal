@@ -15,15 +15,7 @@ import { currentEmail } from '../../_lib/auth'
 import { randomTokenB64url } from '../../_lib/bytes'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
-import {
-  badRequest,
-  conflict,
-  forbidden,
-  notFound,
-  ok,
-  serviceUnavailable,
-  unauthorized,
-} from '../../_lib/json'
+import { badRequest, conflict, ok, serviceUnavailable, unauthorized } from '../../_lib/json'
 import {
   buildInstallmentPlan,
   CUSTODIAN_CENTS,
@@ -31,7 +23,7 @@ import {
   scopingLabel,
   SCOPING_CENTS,
 } from '../../_lib/pricing'
-import { canAccessSession, loadSession } from '../../_lib/sessions'
+import { requireSessionAccess } from '../../_lib/sessions'
 import {
   createOneTimeCheckoutSession,
   createSubscriptionCheckoutSession,
@@ -69,11 +61,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (typeof sessionId !== 'string' || !sessionId) return badRequest('sessionId required')
   if (!kind || !VALID_KINDS.has(kind)) return badRequest('invalid kind')
 
-  const session = await loadSession(env.DB, sessionId)
-  if (!session || session.deleted_at) return notFound('session not found')
-
+  // Deleted sessions can't checkout — hide-from-all even for admin.
   const admin = isAdmin(env, email)
-  if (!canAccessSession(email, admin, session)) return forbidden()
+  const access = await requireSessionAccess(
+    env.DB,
+    sessionId,
+    { email, isAdmin: admin },
+    { softDeleted: 'hide-from-all' },
+  )
+  if (access instanceof Response) return access
+  const session = access
 
   // Redirect URLs — ?paid=1/0 lets the SPA paint the right pill on return
   // without an extra API round-trip.

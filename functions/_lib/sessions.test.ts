@@ -11,6 +11,7 @@ import {
   isValidStatus,
   parseStatusHistory,
   primaryAdminEmail,
+  requireSessionAccess,
   type SessionRow,
   type StatusHistoryEntry,
 } from './sessions'
@@ -156,5 +157,88 @@ describe('countActiveAndTriage + isActiveAtCap + isTriageAtCap', () => {
     expect(isActiveAtCap({ active: ACTIVE_CAP - 1, triage: 0 })).toBe(false)
     expect(isTriageAtCap({ active: 0, triage: TRIAGE_CAP })).toBe(true)
     expect(isTriageAtCap({ active: 0, triage: TRIAGE_CAP - 1 })).toBe(false)
+  })
+})
+
+describe('requireSessionAccess', () => {
+  function dbWith(rows: Array<{ id: string; email?: string; deleted_at?: number | null }>) {
+    const db = new D1Mock()
+    for (const r of rows) {
+      db.sessions.set(r.id, {
+        id: r.id,
+        email: r.email ?? 'visitor@x.com',
+        intake_json: null,
+        status: 'active',
+        created_at: 1,
+        updated_at: 1,
+        deleted_at: r.deleted_at ?? null,
+        status_history: null,
+      })
+    }
+    return db as unknown as D1Database
+  }
+
+  const visitor = { email: 'visitor@x.com', isAdmin: false }
+  const admin = { email: 'marc@x.com', isAdmin: true }
+  const stranger = { email: 'someone@else.com', isAdmin: false }
+
+  it('400 on missing or empty session id', async () => {
+    const db = dbWith([])
+    const a = await requireSessionAccess(db, '', visitor)
+    expect(a).toBeInstanceOf(Response)
+    expect((a as Response).status).toBe(400)
+    const b = await requireSessionAccess(db, undefined, visitor)
+    expect((b as Response).status).toBe(400)
+  })
+
+  it('404 when session does not exist', async () => {
+    const db = dbWith([])
+    const r = await requireSessionAccess(db, 'no-such', visitor)
+    expect((r as Response).status).toBe(404)
+  })
+
+  it('default policy (hide-from-non-admin): visitor 404 on soft-deleted', async () => {
+    const db = dbWith([{ id: 's', deleted_at: 100 }])
+    const r = await requireSessionAccess(db, 's', visitor)
+    expect((r as Response).status).toBe(404)
+  })
+
+  it('default policy: admin still loads soft-deleted row', async () => {
+    const db = dbWith([{ id: 's', deleted_at: 100 }])
+    const r = await requireSessionAccess(db, 's', admin)
+    expect(r).not.toBeInstanceOf(Response)
+    expect((r as SessionRow).id).toBe('s')
+  })
+
+  it('hide-from-all: even admin gets 404 on soft-deleted', async () => {
+    const db = dbWith([{ id: 's', deleted_at: 100 }])
+    const r = await requireSessionAccess(db, 's', admin, { softDeleted: 'hide-from-all' })
+    expect((r as Response).status).toBe(404)
+  })
+
+  it('include: soft-deleted row returns to handler regardless of admin', async () => {
+    const db = dbWith([{ id: 's', deleted_at: 100 }])
+    const a = await requireSessionAccess(db, 's', visitor, { softDeleted: 'include' })
+    expect((a as SessionRow).id).toBe('s')
+    const b = await requireSessionAccess(db, 's', admin, { softDeleted: 'include' })
+    expect((b as SessionRow).id).toBe('s')
+  })
+
+  it('403 when live session belongs to someone else (non-admin viewer)', async () => {
+    const db = dbWith([{ id: 's', email: 'visitor@x.com' }])
+    const r = await requireSessionAccess(db, 's', stranger)
+    expect((r as Response).status).toBe(403)
+  })
+
+  it('returns the session for the owner', async () => {
+    const db = dbWith([{ id: 's', email: 'visitor@x.com' }])
+    const r = await requireSessionAccess(db, 's', visitor)
+    expect((r as SessionRow).email).toBe('visitor@x.com')
+  })
+
+  it('returns the session for admin (any owner)', async () => {
+    const db = dbWith([{ id: 's', email: 'visitor@x.com' }])
+    const r = await requireSessionAccess(db, 's', admin)
+    expect((r as SessionRow).email).toBe('visitor@x.com')
   })
 })

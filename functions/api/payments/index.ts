@@ -13,9 +13,9 @@
 import { currentEmail } from '../../_lib/auth'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
-import { badRequest, forbidden, notFound, ok, unauthorized } from '../../_lib/json'
+import { badRequest, ok, unauthorized } from '../../_lib/json'
 import { buildInstallmentPlan } from '../../_lib/pricing'
-import { canAccessSession, loadSession } from '../../_lib/sessions'
+import { requireSessionAccess } from '../../_lib/sessions'
 
 export type CustodianStatus = 'none' | 'active' | 'past_due' | 'canceled' | 'switched_to_tout_a_toi'
 
@@ -70,11 +70,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const sessionId = url.searchParams.get('sessionId')
   if (!sessionId) return badRequest('sessionId required')
 
-  const session = await loadSession(env.DB, sessionId)
-  if (!session || session.deleted_at) return notFound('session not found')
-
+  // Deleted sessions have no live payments summary to render.
   const admin = isAdmin(env, email)
-  if (!canAccessSession(email, admin, session)) return forbidden()
+  const access = await requireSessionAccess(
+    env.DB,
+    sessionId,
+    { email, isAdmin: admin },
+    { softDeleted: 'hide-from-all' },
+  )
+  if (access instanceof Response) return access
+  const session = access
 
   const res = await env.DB.prepare(
     `SELECT id, session_id, kind, tier, installment_index, installment_of,
