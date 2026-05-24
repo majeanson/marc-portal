@@ -6,7 +6,12 @@
   "domain": "marc-portal/admin",
   "componentFile": "functions/api/admin/vouches.ts",
   "problem": "/api/public/vouches returns only approved + not-deleted vouches with email stripped. The admin moderation page needs the OTHER half: pending + rejected + soft-deleted, WITH email attached for follow-up. /api/admin/vouches is that. Sorted pending-first (newest) then everything else by created_at DESC — puts the moderation queue at the top of the response so the UI doesn't have to bucket the wrong way.",
-  "tags": ["admin", "moderation", "full-row-view", "operator-only"],
+  "tags": [
+    "admin",
+    "moderation",
+    "full-row-view",
+    "operator-only"
+  ],
   "analysis": "GET only. currentEmail + isAdmin gates. Optional ?status=pending|approved|rejected narrows. Otherwise returns every vouch (including soft-deleted). Full VouchRow shape — email, IP, rate-limit metadata, all of it. Sort: pending first by created_at DESC, then status='approved'/'rejected' by created_at DESC, then soft-deleted last. AdminVouches client-side buckets by status.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 admin sweep."
+      "reason": "Initial author — P3 admin sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

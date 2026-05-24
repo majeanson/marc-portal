@@ -6,7 +6,12 @@
   "domain": "marc-portal/iterative",
   "componentFile": "functions/api/public/sessions/[id]/advancements.ts",
   "problem": "The /share/:id page is the URL-as-capability share view — anyone holding a session id can see the advancements admin flagged allowedForPublic for that session. This endpoint is its data-side: load the session, then return ONLY advancements with allowed_for_public=1. Session ids are 72-bit base64url tokens; guessing one is astronomically unlikely so the URL IS the access control. Default-private means nothing leaks unless admin explicitly opts in per-advancement.",
-  "tags": ["iterative", "unauth", "url-as-capability", "default-private"],
+  "tags": [
+    "iterative",
+    "unauth",
+    "url-as-capability",
+    "default-private"
+  ],
   "analysis": "GET only. Validates the session id param; loadSession() returns the session or null. If session doesn't exist OR deleted_at IS NOT NULL, return 404 — consistent with /api/public/sessions/[id]/advancements returning 404 for soft-deleted sessions, preserves zero-knowledge about whether a given id corresponds to anything real. If session exists, listAdvancementsForSession() returns ordered advancements; the handler filters to those with allowed_for_public=1 (parseFlags on the flags JSON). Returns the public projection of each advancement: id, label, body, date, iframe_path, build_url, commit_sha. No internal flags, no admin notes.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 public-API sweep."
+      "reason": "Initial author — P3 public-API sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

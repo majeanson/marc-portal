@@ -6,7 +6,12 @@
   "domain": "marc-portal/admin",
   "componentFile": "src/pages/AdminVouches.tsx",
   "problem": "Vouches submitted via the open /vouch form land in status='pending'. AdminVouches is where Marc moderates: approve to surface on /vouches, reject for spam, edit visitor copy (typos, length, voice), or soft-delete. Four sections stacked (pending / approved / rejected / trash) — each rendered only if non-empty so the page doesn't look half-built early on. Inline edit (no modal) keeps moderation fast.",
-  "tags": ["admin", "moderation", "vouches", "inline-edit"],
+  "tags": [
+    "admin",
+    "moderation",
+    "vouches",
+    "inline-edit"
+  ],
   "analysis": "GET /api/admin/vouches on mount; returns every vouch including pending/rejected/deleted with email attached. Sorted pending-first (newest) then everything else by created_at DESC. Client-side bucket by status into the four sections. Edit row expands inline with name/relationship/body/link fields; save PATCHes via PATCH /api/admin/vouches/:id. Status flip is the same endpoint with { status: 'approved' | 'rejected' }; delete via DELETE /api/admin/vouches/:id. Restore from trash is PATCH with { undelete: true }. Author email is shown (operator-only context) but never editable.",
   "decisions": [
     {
@@ -68,7 +73,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 admin sweep."
+      "reason": "Initial author — P3 admin sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

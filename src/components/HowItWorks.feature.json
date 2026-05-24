@@ -6,7 +6,12 @@
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/HowItWorks.tsx",
   "problem": "Visitors arriving at the home page need a fast 'how does this work?' answer before they're willing to read pricing or send an intake. HowItWorks is the home-page primer — short, no specifics about workflow, just the practice's shape. A HomeDrillCard at the bottom links to /parcours (the full 12-step Journey page) for visitors who want more.",
-  "tags": ["home-section", "primer", "drill-card", "neutral-colour"],
+  "tags": [
+    "home-section",
+    "primer",
+    "drill-card",
+    "neutral-colour"
+  ],
   "analysis": "Short copy block + a HomeDrillCard pointing at /parcours. Feature colour is intentionally NEUTRAL (HOME_SECTION_FEATURE['how'] is undefined) because 'how it works' crosses every feature — it'd be wrong to dot it with one feature's colour. The neutral hollow dot is rendered via FeatureDot's undefined-handling. Copy lives in DICT[lang].how.",
   "decisions": [
     {
@@ -60,7 +65,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P4 component sweep."
+      "reason": "Initial author — P4 component sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

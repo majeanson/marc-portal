@@ -6,7 +6,12 @@
   "domain": "marc-portal/admin",
   "componentFile": "functions/api/admin/vouches/[id].ts",
   "problem": "AdminVouches' per-row actions go through here. PATCH supports status flips (pending → approved / rejected), copy edits (body, name, link, relationship), and undelete (restore from trash). DELETE soft-removes (sets deleted_at). Author email and submission timestamp are immutable — those are dedup + audit keys.",
-  "tags": ["admin", "moderation", "operator-only", "soft-delete"],
+  "tags": [
+    "admin",
+    "moderation",
+    "operator-only",
+    "soft-delete"
+  ],
   "analysis": "PATCH onRequest. currentEmail + isAdmin. Body fields all optional partial-update; if `status` provided, validate against VOUCH_STATUSES enum; if `relationship`, validate via isValidRelationship. Body / name / link length-checked against the same VOUCH_LIMITS used by the open /vouches submission. `undelete: true` clears deleted_at + sets status back to 'pending' (consistent with sessions' trash-restore pattern). DELETE onRequest: soft-delete only (sets deleted_at = now); hard-delete is SQL-only.",
   "decisions": [
     {
@@ -62,7 +67,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 admin sweep."
+      "reason": "Initial author — P3 admin sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

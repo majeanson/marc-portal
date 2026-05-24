@@ -6,7 +6,12 @@
   "domain": "marc-portal/admin",
   "componentFile": "src/pages/AdminShowcase.tsx",
   "problem": "Each showcased project gets a dynamic OG card (functions/og/share/[id].ts) used as the social-unfurl preview. Card content drifts as session metadata changes; bad data (title overflow, missing tagline, un-tiered session) silently produces ugly cards that scrapers cache for days. AdminShowcase is the brand-check surface — a grid of every showcased project's OG card, with warning chips overlaid for each known issue. Operator-only.",
-  "tags": ["admin", "og", "brand-check", "warnings"],
+  "tags": [
+    "admin",
+    "og",
+    "brand-check",
+    "warnings"
+  ],
   "analysis": "GET /api/public/projects on mount (same data the public gallery uses; safe to fetch as admin too). Each project is rendered as a card with its actual OG image embedded via <img src='/og/share/<id>'>. WARNINGS are computed per-project: title length over OG safe area, missing tagline, no tier set, deploy URL missing. Warning chips overlay the card top; click chip to navigate to /admin/inbox/:id for the fix. Grid layout, no list mode.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 admin sweep."
+      "reason": "Initial author — P3 admin sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

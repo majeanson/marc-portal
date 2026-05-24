@@ -6,7 +6,12 @@
   "domain": "marc-portal/admin",
   "componentFile": "src/pages/Admin.tsx",
   "problem": "Every /admin/* surface needs the same wrapper: sidebar nav, language toggle, signed-in-as indicator, and the auth gate that bounces anon visitors to /login. Centralizing this in Admin.tsx as a layout component means each admin route is one focused screen, not a copy-pasted shell. Sub-routes render through <Outlet /> with the chrome already in place.",
-  "tags": ["admin", "shell", "auth-gate", "marketplace-shaped"],
+  "tags": [
+    "admin",
+    "shell",
+    "auth-gate",
+    "marketplace-shaped"
+  ],
   "analysis": "Layout component. useAuth() → if no email, <Navigate to='/login' replace />. Otherwise renders sidebar + header + <Outlet /> for sub-routes. useTenant() supplies tenant context for operator/buyer distinction; sub-routes decide what to show based on role. Mounted at /admin and /en/admin in router.tsx with index = AdminHub and children for /audit, /custodians, /inbox, /trash, /vouches, /showcase, /runbook. Marketplace-shaped surfaces (AdminFleet, AdminBilling, AdminTeam, AdminAppearance) are still reachable by direct URL per the root feature.json's 2026-05-09 note but no longer surfaced in the sidebar.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 admin sweep, originally deferred but documented per omega-done request."
+      "reason": "Initial author — P3 admin sweep, originally deferred but documented per omega-done request.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

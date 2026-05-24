@@ -6,7 +6,13 @@
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/FAQ.tsx",
   "problem": "The home page's FAQ section needs to handle the typical 'is this for me?' objections (price, timeline, ownership, idea-still-fuzzy, etc.) without a heavy interactive widget. The FAQ component is a native HTML <details>/<summary> accordion — no React state for open/closed — plus URL-hash sync so a /#faq-price link opens directly to that question. Each FAQ has a feature-colour dot tying it to the relevant feature.",
-  "tags": ["home-section", "accordion", "native-details", "deep-link", "feature-coloured"],
+  "tags": [
+    "home-section",
+    "accordion",
+    "native-details",
+    "deep-link",
+    "feature-coloured"
+  ],
   "analysis": "Renders DICT[lang].faq.items as an array of <details> elements. open/closed is browser-native — react-hooks/setState doesn't drive it. URL-hash sync uses a useEffect that listens for hashchange + on mount: if hash matches an item id, set its open attribute. The 'open all' override is the only React state. FAQ_FEATURE map (src/lib/features.ts) ties each FAQ slug to a feature; FeatureDot renders the colour next to the question. Inline FAQPage JSON-LD is injected for SEO. Accessibility is good by default (native disclosure pattern).",
   "decisions": [
     {
@@ -67,7 +73,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P4 component sweep."
+      "reason": "Initial author — P4 component sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

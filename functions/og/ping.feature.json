@@ -6,7 +6,12 @@
   "domain": "marc-portal/og",
   "componentFile": "functions/og/ping.ts",
   "problem": "When /og/share/:id or /og/home misbehaves, the FIRST question is 'is the functions/og/ tree even being picked up at deploy?'. A 404 there could mean Pages dropped the bundle, the bundle size exceeded the limit, or _routes.json drifted. /og/ping is the answer: plain-text 'og-ok' if reachable, JSON probe of font asset state if requested. Smaller, faster, and disjoint from the satori render path.",
-  "tags": ["og", "diagnostic", "uptime", "unauth"],
+  "tags": [
+    "og",
+    "diagnostic",
+    "uptime",
+    "unauth"
+  ],
   "analysis": "GET only. Default returns text/plain 'og-ok' with cache-control no-store (so a probe always hits the function). ?fonts=1 returns JSON: a per-font load result (ok + size + content-type per file in functions/_lib/og-fonts.ts's probe list). Returns 200 if all fonts load, 503 if any failed. Used during deploy verification and RUNBOOK § OG triage to isolate 'the function is reachable' from 'the render pipeline works'.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 OG-endpoint sweep."
+      "reason": "Initial author — P3 OG-endpoint sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

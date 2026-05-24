@@ -6,7 +6,12 @@
   "domain": "marc-portal/intake",
   "componentFile": "src/components/SketchCanvas.tsx",
   "problem": "The intake form's napkin sketch step needs Excalidraw (lightweight sketch tool). Excalidraw + its dependencies are ~600KB before assets. Importing statically would pay that cost on every intake load — most visitors don't open the sketch step. SketchCanvas is the boundary: a React.lazy-wrapped component that lazy-imports Excalidraw + its stylesheet. Callers route through React.lazy themselves too (e.g. NapkinReplay) so the chunk is doubly split.",
-  "tags": ["intake", "excalidraw", "code-split", "boundary"],
+  "tags": [
+    "intake",
+    "excalidraw",
+    "code-split",
+    "boundary"
+  ],
   "analysis": "Single component, mostly a wrapper around <Excalidraw />. Excalidraw imported via React.lazy. Excalidraw's stylesheet is imported inside this file (deliberate — the stylesheet is part of Excalidraw's package and would otherwise bundle eagerly). Callers should reach SketchCanvas via React.lazy too, so the lazy boundary actually code-splits. <Suspense> wrapping handles the chunk load. Forwards ref / API to caller via the ExcalidrawAPI type so callers (NapkinReplay, intake form) can drive the scene programmatically.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P4 component sweep."
+      "reason": "Initial author — P4 component sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

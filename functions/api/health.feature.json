@@ -6,7 +6,13 @@
   "domain": "marc-portal/infrastructure",
   "componentFile": "functions/api/health.ts",
   "problem": "Synthetic monitoring (Marc's curl, UptimeRobot, etc.) needs a cheap reachable endpoint that confirms the runtime is up AND D1 is responsive. /api/health does exactly that: runs SELECT 1 against D1, returns ok+200 on success, fail+500 on D1 exception. Public, unauthenticated, no tenant lookup — caller can be anyone.",
-  "tags": ["infrastructure", "uptime", "synthetic-monitor", "unauth", "no-tenant"],
+  "tags": [
+    "infrastructure",
+    "uptime",
+    "synthetic-monitor",
+    "unauth",
+    "no-tenant"
+  ],
   "analysis": "GET only. Bypasses tenant resolution conceptually (handler doesn't read ctx.data.tenant). Executes env.DB.prepare('SELECT 1').first() — D1's smallest valid roundtrip. On success: 200 { ok: true, db: 'ok', ts }. On exception: 500 { ok: false, db: 'fail', ts }. No commit hash today (would require build-time inject; relies on the SPA's static stamp at /meta for 'what's deployed').",
   "decisions": [
     {
@@ -61,7 +67,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 public-API sweep."
+      "reason": "Initial author — P3 public-API sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

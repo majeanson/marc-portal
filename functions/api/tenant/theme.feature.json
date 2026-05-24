@@ -6,7 +6,13 @@
   "domain": "marc-portal/infrastructure",
   "componentFile": "functions/api/tenant/theme.ts",
   "problem": "Future white-labelled tenants need a way to set their own theme tokens (accent colour, eyebrow text, etc.) without a code change. PATCH /api/tenant/theme accepts a partial theme JSON, validates per-key length limits, and writes it back. The render path (_lib/tenant.ts themeToCssVars) sanitizes values into CSS custom properties so an XSS via theme is bounded — but the endpoint still rejects breakouts at the input boundary. Operator-or-owner-only.",
-  "tags": ["infrastructure", "tenant", "operator-only", "csrf-protected", "key-allowlist"],
+  "tags": [
+    "infrastructure",
+    "tenant",
+    "operator-only",
+    "csrf-protected",
+    "key-allowlist"
+  ],
   "analysis": "PATCH only. Auth: requireTenant(ctx) + currentEmail() must match tenant.owner_email OR isAdmin. CSRF gated by middleware. Body { theme: Partial<ThemeJSON> }. Validation: KEY_LIMITS is an exhaustive allowlist of ThemeJSON keys → max char length per value. Unknown keys are SILENTLY REJECTED (not 400) so a partial schema mismatch between client and server doesn't fail noisy. Each value is also string-typed before storage. The full updated theme is UPSERTed; on success returns the new theme back.",
   "decisions": [
     {
@@ -62,7 +68,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 public-API sweep."
+      "reason": "Initial author — P3 public-API sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

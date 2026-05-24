@@ -6,7 +6,13 @@
   "domain": "marc-portal/admin",
   "componentFile": "src/pages/AdminRunbook.tsx",
   "problem": "Marc's operating-the-portal knowledge lives in two tracks: dev handoff (what infra is set up, what credentials exist, what monitoring) and user journey (what a visitor experience from intake to ship). Solo, the two are easy to keep in sync; under pressure, gaps appear (Track B says 'visitor receives email', Track A says 'Resend not yet configured' — silent handoff gap). AdminRunbook renders both tracks side by side; Track B steps with a `dependsOn` link to Track A get a red flag when the prerequisite is unchecked.",
-  "tags": ["admin", "runbook", "two-track", "dependency-check", "localStorage-progress"],
+  "tags": [
+    "admin",
+    "runbook",
+    "two-track",
+    "dependency-check",
+    "localStorage-progress"
+  ],
   "analysis": "Renders via <RunbookParallel /> (src/components/RunbookParallel.tsx) which takes the two tracks as props. Track A = dev handoff steps (defined in src/lib/runbook.ts); Track B = user journey steps with `dependsOn: 'track-a-step-id'` references. Per-step progress (checked/unchecked) is in localStorage, browser-local, no server sync. Reset button wipes all checks in one shot. The dependency check is real-time: changing a Track A check flips any Track B step depending on it (red flag if prereq unchecked).",
   "decisions": [
     {
@@ -62,7 +68,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 admin sweep."
+      "reason": "Initial author — P3 admin sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

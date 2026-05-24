@@ -6,7 +6,12 @@
   "domain": "marc-portal/showcase",
   "componentFile": "functions/api/public/vouches.ts",
   "problem": "The home-page social-proof block and the dedicated /vouches page both render approved testimonials. The vouches table also holds author_email for moderator follow-up; the public endpoint must strip that field at the projection level. Optional ?sessionId filter lets /share/:id surface vouches scoped to that specific project.",
-  "tags": ["showcase", "unauth", "projection-strip", "session-filter"],
+  "tags": [
+    "showcase",
+    "unauth",
+    "projection-strip",
+    "session-filter"
+  ],
   "analysis": "GET only. SELECT FROM vouches WHERE status = 'approved' AND deleted_at IS NULL ORDER BY created_at DESC. ?sessionId=X filter adds AND session_id = ?. toPublicVouchRow (functions/_lib/vouches.ts) projects each row to PublicVouchRow — no author_email. Volume is bounded by moderation throughput (~50/year ceiling at this practice's scale), so no pagination. Public consumers: home, /vouches, /share/:id with session filter.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 public-API sweep."
+      "reason": "Initial author — P3 public-API sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

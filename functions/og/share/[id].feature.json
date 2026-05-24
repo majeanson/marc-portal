@@ -6,7 +6,13 @@
   "domain": "marc-portal/og",
   "componentFile": "functions/og/share/[id].ts",
   "problem": "When someone shares a /share/:id URL on Slack/iMessage/LinkedIn/etc, the unfurl preview needs a personalised card — project title, tagline, tier, status — instead of a generic site image. Generated at edge-request time via workers-og (satori + resvg WASM) so the card reflects the live session state without a pre-render step. Falls back to the static /og-image.png if anything in the render path fails — the share URL still works, the preview just isn't personalised.",
-  "tags": ["og", "workers-og", "satori", "edge-render", "graceful-fallback"],
+  "tags": [
+    "og",
+    "workers-og",
+    "satori",
+    "edge-render",
+    "graceful-fallback"
+  ],
   "analysis": "GET only, unauth. loadSession by :id; if missing or not showcased, fall back to a 302 → /og-image.png. Otherwise: build OgFields { title, tagline, tier, status } from the session row, load fonts via loadOgFonts (functions/_lib/og-fonts.ts), render through workers-og's ImageResponse. PNG output is 1200×630 (the OG spec sweet spot Slack/iMessage prefer over SVG). Aggressive edge caching headers since the underlying showcase title rarely changes. ?debug=1 returns the resolved fields as text/plain JSON — useful for verifying reachability without bootstrapping satori. captureWorkerException on errors so Sentry sees rendering failures; fallback still serves so the visitor experience never breaks.",
   "decisions": [
     {
@@ -69,7 +75,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 OG-endpoint sweep."
+      "reason": "Initial author — P3 OG-endpoint sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

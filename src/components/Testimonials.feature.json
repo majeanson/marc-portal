@@ -6,7 +6,12 @@
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/Testimonials.tsx",
   "problem": "The home page needs social proof without overwhelming visitors with a wall of vouches. Testimonials shows the top 3 most recent approved vouches with a HomeDrillCard linking to /vouches for the full wall. Self-hides when no vouches are approved — keeps the home page honest for the early-practice state.",
-  "tags": ["home-section", "social-proof", "self-hiding", "shipped-feature"],
+  "tags": [
+    "home-section",
+    "social-proof",
+    "self-hiding",
+    "shipped-feature"
+  ],
   "analysis": "GET /api/public/vouches on mount; slice top 3 (HOME_LIMIT). Each rendered as a card with name + relationship pill + body. HomeDrillCard → /vouches at the bottom. Returns null when zero approved vouches. Feature-coloured as 'shipped' (HOME_SECTION_FEATURE['testimonials']) since vouches are the social-proof leg of the shipped feature.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P4 component sweep."
+      "reason": "Initial author — P4 component sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

@@ -6,7 +6,12 @@
   "domain": "marc-portal/admin",
   "componentFile": "src/pages/AdminCustodians.tsx",
   "problem": "Custodian subscriptions live in sessions.custodian_status with state transitions driven by /api/payments/webhook. Marc needs one place to see all subs at once: who's active (MRR + next renewal), who's past-due (Stripe failed — needs operator attention), and the history of switched/canceled. AdminCustodians is that page. No new endpoint required — reuses /api/sessions (admin scope) and buckets client-side.",
-  "tags": ["admin", "subscriptions", "mrr", "bucketed"],
+  "tags": [
+    "admin",
+    "subscriptions",
+    "mrr",
+    "bucketed"
+  ],
   "analysis": "GET /api/sessions on mount. Bucket sessions by custodian_status: active (renders with MRR sum + next-renewal dates), past_due (top of page, needs attention), switched_to_tout_a_toi + canceled (history strip). Empty buckets render nothing — page doesn't look half-built for a young practice with few subs. No /api/admin/subscriptions endpoint; deriving from session rows keeps the schema lean.",
   "decisions": [
     {
@@ -61,7 +66,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 admin sweep."
+      "reason": "Initial author — P3 admin sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []

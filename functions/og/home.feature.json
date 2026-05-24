@@ -6,7 +6,13 @@
   "domain": "marc-portal/og",
   "componentFile": "functions/og/home.ts",
   "problem": "The home page's social unfurl should reflect the practice's actual state — shipped count, currently-active project's title — not a static logo. /og/home is the dynamic version: editorial layout (cream paper, mono eyebrow, trio headline, sage accent), live stats footer pulled from D1 at request time. FR by default, ?lang=en for the English variant.",
-  "tags": ["og", "workers-og", "editorial", "live-stats", "graceful-fallback"],
+  "tags": [
+    "og",
+    "workers-og",
+    "editorial",
+    "live-stats",
+    "graceful-fallback"
+  ],
   "analysis": "GET only, unauth. Pulls two live numbers: shippedCount (COUNT sessions WHERE status='shipped') and activeTitle (the showcase_title of the currently-active session if any). Renders via workers-og's ImageResponse at 1200×630 PNG. ?lang=en swaps the dictionary; default is FR. Same render-with-fallback pattern as /og/share/:id — anything broken falls back to /og-image.png (FR) or /og-image-en.png (EN). ?debug=1 returns JSON of resolved fields; ?debug=render returns satori's actual error message on a failed render (deeper diagnostics than debug=1).",
   "decisions": [
     {
@@ -61,7 +67,9 @@
         "componentFile",
         "tags"
       ],
-      "reason": "Initial author — P3 OG-endpoint sweep."
+      "reason": "Initial author — P3 OG-endpoint sweep.",
+      "commit": "add6630",
+      "buildUrl": "https://52917cc7.marc-portal.pages.dev"
     }
   ],
   "annotations": []
