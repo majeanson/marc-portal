@@ -30,6 +30,7 @@ interface SessionRowMock {
   custodian_subscription_id?: string | null
   custodian_plan?: string | null
   all_yours_acknowledged_at?: number | null
+  community_discount?: number
 }
 
 interface PaymentRowMock {
@@ -285,7 +286,7 @@ class MockPreparedStatement {
     // SELECT session by id (full)
     if (sql.includes('FROM sessions WHERE id = ?') && sql.includes('SELECT id, email')) {
       const s = this.db.sessions.get(a[0] as string)
-      return s ? [{ ...s }] : []
+      return s ? [projectSession(s)] : []
     }
 
     // SELECT session list (admin all live)
@@ -296,7 +297,7 @@ class MockPreparedStatement {
       const out = [...this.db.sessions.values()]
         .filter((s) => s.deleted_at === null)
         .sort((x, y) => y.updated_at - x.updated_at)
-      return out.map((s) => ({ ...s }))
+      return out.map(projectSession)
     }
 
     // SELECT session list (admin trash)
@@ -308,7 +309,7 @@ class MockPreparedStatement {
       const out = [...this.db.sessions.values()]
         .filter((s) => s.deleted_at !== null)
         .sort((x, y) => y.updated_at - x.updated_at)
-      return out.map((s) => ({ ...s }))
+      return out.map(projectSession)
     }
 
     // SELECT session list (visitor own)
@@ -319,7 +320,7 @@ class MockPreparedStatement {
       const out = [...this.db.sessions.values()]
         .filter((s) => s.email === (a[0] as string) && s.deleted_at === null)
         .sort((x, y) => y.updated_at - x.updated_at)
-      return out.map((s) => ({ ...s }))
+      return out.map(projectSession)
     }
 
     // SELECT messages by session
@@ -828,6 +829,38 @@ class MockPreparedStatement {
       return row ? 1 : 0
     }
 
+    // Atomic freeze-checked community_discount toggle:
+    //   UPDATE sessions SET community_discount = ?, updated_at = ?
+    //   WHERE id = ?
+    //     AND NOT EXISTS (SELECT 1 FROM payments
+    //                     WHERE session_id = ? AND kind = 'build' AND status = 'paid')
+    // Returns meta.changes = 0 when a paid build leg exists (freeze tripped).
+    if (
+      sql.startsWith('UPDATE sessions SET community_discount = ?, updated_at = ?') &&
+      sql.includes('NOT EXISTS') &&
+      sql.includes("kind = 'build'") &&
+      sql.includes("status = 'paid'")
+    ) {
+      const nextFlag = a[0] as number
+      const updatedAt = a[1] as number
+      const id = a[2] as string
+      // a[3] is the second `id` binding for the subselect.
+      let hasPaidLeg = false
+      for (const p of this.db.payments.values()) {
+        if (p.session_id === id && p.kind === 'build' && p.status === 'paid') {
+          hasPaidLeg = true
+          break
+        }
+      }
+      if (hasPaidLeg) return 0
+      const row = this.db.sessions.get(id) as Record<string, unknown> | undefined
+      if (row) {
+        row.community_discount = nextFlag
+        row.updated_at = updatedAt
+      }
+      return row ? 1 : 0
+    }
+
     // UPDATE sessions SET tier3_split = ?, updated_at = ? WHERE id = ?
     if (sql.startsWith('UPDATE sessions SET tier3_split = ?, updated_at = ?')) {
       const id = a[2] as string
@@ -1258,6 +1291,15 @@ class MockPreparedStatement {
 
 function norm(sql: string): string {
   return sql.replace(/\s+/g, ' ').trim()
+}
+
+/** Spread a seeded session row and fill in any columns with a NOT NULL
+ *  DEFAULT 0 in the real schema. The mock seed paths often omit these,
+ *  so the spread would surface `undefined` where the production DB
+ *  always returns 0. Mirroring that here keeps `Boolean(row.X)`-style
+ *  defenses in handler code honest at test time too. */
+function projectSession(s: SessionRowMock): Record<string, unknown> {
+  return { ...s, community_discount: s.community_discount ?? 0 }
 }
 
 export function makeMockEnv(over: Record<string, unknown> = {}) {

@@ -72,6 +72,12 @@ export interface SessionRow {
    *  bare no. NULL = no note (the visitor sees only the standing pointers).
    *  Set via PATCH `declineNote`; admin-only. */
   decline_note: string | null
+  /** Operator-applied community pricing flag (0/1; SQLite has no real BOOL).
+   *  When 1, every build-tier installment is computed against COMMUNITY_DISCOUNT_PCT
+   *  (see functions/_lib/pricing.ts). Scoping + custodian unaffected. Once any
+   *  build leg is `paid`, the flag is frozen — PATCH /api/sessions/:id rejects
+   *  a toggle with 409, same atomic-guard shape as the capacity cap. */
+  community_discount: number
 }
 
 export interface MessageRow {
@@ -184,7 +190,7 @@ export async function loadSession(db: D1Database, id: string): Promise<SessionRo
               deleted_at, status_history,
               showcased_at, showcase_title, showcase_tagline, tier,
               tier4_amount_cents, tier3_split, custodian_status, custodian_plan,
-              all_yours_acknowledged_at, decline_note
+              all_yours_acknowledged_at, decline_note, community_discount
        FROM sessions WHERE id = ?`,
     )
     .bind(id)

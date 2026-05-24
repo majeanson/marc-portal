@@ -37,6 +37,7 @@ npm run db:migrate:prod
 | `0003_snd.sql`      | feat-2026-021 — snd_voice_clips for the productized SND template  |
 | `0004_volunteer.sql`| feat-2026-022 — vr_shifts + vr_signups for Volunteer Roster       |
 | `0024_user_prefs_first_name.sql` | Add `first_name` (nullable) to `user_prefs`           |
+| `0025_community_discount.sql`    | Add `community_discount` (INTEGER bool) to `sessions` |
 
 ## After applying 0002
 

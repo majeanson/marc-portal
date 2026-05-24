@@ -453,6 +453,134 @@ describe('PATCH /api/sessions/:id — acknowledgeAllYours', () => {
   })
 })
 
+describe('PATCH /api/sessions/:id — communityDiscount toggle', () => {
+  // The flag drives a 20% discount on every build-tier installment. The
+  // server-side guard is what makes the visitor's paid + unpaid legs always
+  // agree on the rate: once any build leg is paid, the flag is frozen.
+  // These tests pin (a) the admin gate, (b) type validation, (c) idempotent
+  // no-ops, (d) the freeze guard firing, and (e) refunding a leg releasing
+  // the freeze. Each one is a different operator triage path.
+
+  it('rejects non-admin callers (403)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'visitor@x.com',
+      body: { communityDiscount: true },
+    })
+    seedSession(ctx.env._db, { tier: 1, community_discount: 0 })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(403)
+    // Unchanged.
+    expect(ctx.env._db.sessions.get('s1')?.community_discount).toBe(0)
+  })
+
+  it('rejects non-boolean payloads (400)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { communityDiscount: 'yes' },
+    })
+    seedSession(ctx.env._db, { tier: 1, community_discount: 0 })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(400)
+  })
+
+  it('admin toggles 0 → 1 on a session with no payments yet', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { communityDiscount: true },
+    })
+    seedSession(ctx.env._db, { tier: 1, community_discount: 0 })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(ctx.env._db.sessions.get('s1')?.community_discount).toBe(1)
+  })
+
+  it('admin toggle to the current value is a no-op success', async () => {
+    // Same-value PATCH must not 409 — the admin UI may "save settings" on
+    // every keystroke or focus-out, and a no-op should pass cleanly.
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { communityDiscount: true },
+    })
+    seedSession(ctx.env._db, { tier: 1, community_discount: 1 })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(ctx.env._db.sessions.get('s1')?.community_discount).toBe(1)
+  })
+
+  it('freezes the flag once a build leg is paid (409 with frozen message)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { communityDiscount: true },
+    })
+    seedSession(ctx.env._db, { tier: 1, community_discount: 0 })
+    // Seed a paid build payment on this session.
+    ctx.env._db.payments.set('pay_1', {
+      id: 'pay_1',
+      session_id: 's1',
+      kind: 'build',
+      tier: 1,
+      installment_index: 1,
+      installment_of: 1,
+      amount_cents: 75000,
+      currency: 'cad',
+      status: 'paid',
+      stripe_checkout_session_id: 'cs_x',
+      stripe_payment_intent_id: 'pi_x',
+      stripe_subscription_id: null,
+      stripe_invoice_id: null,
+      stripe_customer_id: null,
+      created_at: 1700000000,
+      paid_at: 1700000001,
+    })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(409)
+    const body = (await res.json()) as { error?: string }
+    expect(body.error).toMatch(/frozen|paid/i)
+    // Unchanged.
+    expect(ctx.env._db.sessions.get('s1')?.community_discount).toBe(0)
+  })
+
+  it('refunding the paid leg releases the freeze', async () => {
+    // The freeze guard reads `status='paid'`. A refunded row has status
+    // 'refunded' — the NOT EXISTS becomes true and the toggle re-opens.
+    // This is the load-bearing recovery path documented in RUNBOOK §13.
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { communityDiscount: true },
+    })
+    seedSession(ctx.env._db, { tier: 1, community_discount: 0 })
+    ctx.env._db.payments.set('pay_1', {
+      id: 'pay_1',
+      session_id: 's1',
+      kind: 'build',
+      tier: 1,
+      installment_index: 1,
+      installment_of: 1,
+      amount_cents: 75000,
+      currency: 'cad',
+      status: 'refunded',
+      stripe_checkout_session_id: 'cs_x',
+      stripe_payment_intent_id: 'pi_x',
+      stripe_subscription_id: null,
+      stripe_invoice_id: null,
+      stripe_customer_id: null,
+      created_at: 1700000000,
+      paid_at: 1700000001,
+      refunded_at: 1700000500,
+      refunded_amount_cents: 75000,
+    })
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(ctx.env._db.sessions.get('s1')?.community_discount).toBe(1)
+  })
+})
+
 describe('DELETE /api/sessions/:id', () => {
   it('visitor self-withdraw soft-deletes + notifies admin', async () => {
     const ctx = makeCtx({ method: 'DELETE', asEmail: 'visitor@x.com' })

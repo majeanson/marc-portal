@@ -55,6 +55,11 @@ export interface BuildSummary {
   nextAmountCents: number | null
   /** Tier 4 only: classified but not yet quoted by admin. */
   quotePending: boolean
+  /** Mirrors sessions.community_discount (operator-applied 20% off on
+   *  community/OBNL projects). The amounts in this summary already reflect
+   *  the discount; this flag is the UI's hint to render a "tarif
+   *  communautaire" tag next to the price. */
+  community: boolean
 }
 
 export interface PaymentSummary {

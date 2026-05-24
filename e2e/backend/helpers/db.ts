@@ -82,6 +82,9 @@ interface SeedSessionOpts {
   /** Custodian state. Default 'none'; specs that test renewal/cancel
    *  override to 'active' so transitions are observable. */
   custodianStatus?: 'none' | 'active' | 'past_due' | 'canceled' | 'switched_to_tout_a_toi' | null
+  /** Community-pricing flag (default 0). When 1, build-tier checkouts charge
+   *  the 20% discount. Scoping + custodian unaffected. */
+  communityDiscount?: 0 | 1
 }
 
 /**
@@ -134,6 +137,10 @@ export function seedSession(opts: SeedSessionOpts): void {
   if (opts.custodianStatus != null) {
     cols.push('custodian_status')
     vals.push(opts.custodianStatus)
+  }
+  if (opts.communityDiscount != null) {
+    cols.push('community_discount')
+    vals.push(opts.communityDiscount)
   }
   const db = openD1()
   try {

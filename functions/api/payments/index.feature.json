@@ -1,7 +1,7 @@
 {
   "featureKey": "feat-2026-053",
   "title": "GET /api/payments — per-session payment summary",
-  "status": "frozen",
+  "status": "active",
   "schemaVersion": 1,
   "domain": "marc-portal/payments",
   "componentFile": "functions/api/payments/index.ts",
@@ -20,6 +20,12 @@
       "rationale": "In dev, the Stripe secret is sk_test_… — charges are fake. Without a visible 'TEST MODE' indicator, a developer doing manual QA could think they were on prod. A visible mode pill prevents that confusion. The mode is derived from the key prefix; if the prefix is unknown (e.g. partial key during setup), report 'unknown' and the UI hides the pill.",
       "recommendation": "Keep the mode in the response. Don't compute it client-side from anything else — the key prefix is the truth.",
       "date": "2026-05-15"
+    },
+    {
+      "decision": "BuildSummary carries a `community: boolean` field mirroring sessions.community_discount",
+      "rationale": "The next-leg amount in this summary is the server-computed, already-discounted figure when the flag is on. The client needs to render a 'tarif communautaire' tag + the regular-price anchor next to the discounted amount; without the flag in the summary, the UI would have to re-fetch the session row or compute the discount client-side. Carrying the boolean keeps the 'server is the single source of truth for pricing math' decision honest while letting the client describe what it shows.",
+      "recommendation": "When a new operator-set pricing modifier ships (étudiant, OBNL fédéré, etc.), thread it through the same pattern: a boolean on the summary, server applies the math, client renders the explanatory chrome.",
+      "date": "2026-05-24"
     }
   ],
   "successCriteria": "- A signed-in visitor (or admin) gets a complete payment summary for any session they can access\n- buildInstallmentPlan computes the next leg + amount; Tier 4 returns 'quote pending'\n- stripeMode is derived from the secret key prefix\n- custodianStatus reflects the latest webhook state\n- The payload is suitable for direct render in /me's PaymentActions component\n- 404 for missing or unauthorized session",
@@ -43,6 +49,12 @@
       "to": "frozen",
       "date": "2026-05-23",
       "reason": "Code-first doc co-located. Summary shape is stable; server-side-math posture is consistent across the payments family."
+    },
+    {
+      "from": "frozen",
+      "to": "active",
+      "date": "2026-05-24",
+      "reason": "BuildSummary gained a `community: boolean` field so the client can render the discount tag + the regular-price anchor without re-fetching the session row. Needs re-freeze once the operator has verified the end-to-end flow against a live Stripe receipt."
     }
   ],
   "lastVerifiedDate": "2026-05-23",
@@ -65,6 +77,12 @@
       "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/payments.",
       "commit": "dcfea4b",
       "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
+    },
+    {
+      "date": "2026-05-24",
+      "author": "marc+claude",
+      "fields_changed": ["status", "decisions", "statusHistory"],
+      "reason": "BuildSummary.community boolean added. The summary's next-leg amount is already discounted; the flag is the UI's cue to render the tag + regular-price anchor."
     }
   ],
   "annotations": []

@@ -60,6 +60,11 @@ export interface BuildSummary {
   nextAmountCents: number | null
   /** Tier 4 only: classified but not yet quoted by admin. */
   quotePending: boolean
+  /** True when the session carries the operator-applied community-pricing
+   *  flag (sessions.community_discount = 1). The amounts above already
+   *  reflect the discount; this flag lets the UI render a "tarif
+   *  communautaire" tag next to the price without re-querying the session. */
+  community: boolean
 }
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
@@ -98,8 +103,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // Build installment summary — null for an unclassified or Tier-0 session.
   let build: BuildSummary | null = null
   if (session.tier != null && session.tier > 0) {
-    const plan = buildInstallmentPlan(session.tier, session.tier3_split, session.tier4_amount_cents)
+    // Same community-flag plumbing as checkout.ts — the summary the visitor
+    // sees in MePortal/SessionPage must match what the server will actually
+    // charge, or the "you owe X" pill drifts from the Stripe receipt.
+    const plan = buildInstallmentPlan(
+      session.tier,
+      session.tier3_split,
+      session.tier4_amount_cents,
+      Boolean(session.community_discount),
+    )
     const paidCount = rows.filter((r) => r.kind === 'build' && r.status === 'paid').length
+    const community = Boolean(session.community_discount)
     if (plan == null) {
       // Only a Tier-4 session with no quote yet reaches here.
       build = {
@@ -109,6 +123,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         nextIndex: null,
         nextAmountCents: null,
         quotePending: true,
+        community,
       }
     } else {
       const nextIndex = paidCount < plan.length ? paidCount + 1 : null
@@ -127,6 +142,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         nextIndex,
         nextAmountCents,
         quotePending: false,
+        community,
       }
     }
   }

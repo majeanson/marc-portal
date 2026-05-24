@@ -49,6 +49,10 @@ import { AttachmentTile } from '../components/session/AttachmentTile'
 import { DeclinePanel } from '../components/session/DeclinePanel'
 import { NapkinArc } from '../components/session/NapkinArc'
 import type { ParsedNapkin } from '../components/session/NapkinSection'
+import {
+  CommunityDiscountFrozenError,
+  CommunityDiscountToggle,
+} from '../components/session/CommunityDiscountToggle'
 import { Tier3SplitInput } from '../components/session/Tier3SplitInput'
 import { Tier4AmountInput } from '../components/session/Tier4AmountInput'
 
@@ -199,6 +203,14 @@ const COPY = {
       'Choisis le découpage des versements pour ce projet Tier 3 : 50/50 (deux versements) ou 40/40/20 (trois versements). Par défaut : 50/50.',
     tier3Split5050: '50 / 50',
     tier3Split404020: '40 / 40 / 20',
+    communityDiscountLabel: 'Tarif communautaire',
+    communityDiscountOn: 'oui · −20 %',
+    communityDiscountOff: 'non',
+    communityDiscountHint:
+      'Rabais de 20 % sur les versements de build (Tier 1-4). N’affecte ni le rapport de cadrage ni le mode dépositaire. Se fige dès qu’un versement est payé — bascule avant d’encaisser.',
+    communityDiscountFrozen:
+      'Figé : un versement a déjà été payé. Pour changer, il faut rembourser le ou les versements d’abord.',
+    communityDiscountError: 'Échec — réseau ou serveur. Réessaie dans une seconde.',
     statusConfirmReject: (id: string) =>
       `Marquer la session ${id} comme refusée ? Le visiteur le verra. Continue ?`,
     statusConfirmShip: (id: string) =>
@@ -296,6 +308,14 @@ const COPY = {
       'Pick the installment split for this Tier 3 project: 50/50 (two payments) or 40/40/20 (three payments). Default: 50/50.',
     tier3Split5050: '50 / 50',
     tier3Split404020: '40 / 40 / 20',
+    communityDiscountLabel: 'Community rate',
+    communityDiscountOn: 'yes · −20%',
+    communityDiscountOff: 'no',
+    communityDiscountHint:
+      'Knock 20% off the build installments (Tier 1-4). Does NOT apply to the scoping report or custodian mode. Freezes the moment an installment is paid — flip before charging.',
+    communityDiscountFrozen:
+      'Frozen — an installment has already been paid. To change it, refund the paid installment(s) first.',
+    communityDiscountError: 'Save failed — network or server. Try again in a second.',
     statusConfirmReject: (id: string) =>
       `Mark session ${id} as rejected? The visitor will see this. Continue?`,
     statusConfirmShip: (id: string) =>
@@ -676,6 +696,39 @@ export function SessionPage({ lang }: { lang: Lang }) {
     }
   }
 
+  // Admin-only community-pricing flag setter. Two distinct 409 causes need
+  // distinct UI: (a) freeze rule — a build leg is paid, the toggle is locked
+  // forever-ish (until a refund); (b) stale row — admin loaded an older
+  // version and someone else edited. We map (a) to CommunityDiscountFrozenError
+  // so the toggle can render the precise "leg paid" hint, and treat (b) the
+  // same as other tier setters (refresh + refetch). Everything else propagates
+  // and the toggle shows its generic error state.
+  const onCommunityDiscountChange = async (next: boolean) => {
+    if (!id || !session) return
+    try {
+      const r = await patchSession(id, {
+        communityDiscount: next,
+        ifUpdatedAt: session.updated_at,
+      })
+      setSession(r.session)
+      setStaleConflict(false)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        if (/frozen/i.test(err.message)) {
+          // Freeze rule. Don't refetch — the row didn't change; only the
+          // toggle's "you can't flip me" knowledge is new.
+          throw new CommunityDiscountFrozenError()
+        }
+        // Stale row. Refresh, then surface the staleness via the same
+        // stale-conflict UI the other tier setters use.
+        setStaleConflict(true)
+        await refresh()
+        throw err
+      }
+      throw err
+    }
+  }
+
   // Optimistic intake save. IntakeSummary updates its visible value
   // optimistically via local input state; here we mirror that by writing
   // intake_json before the request. On 409 (concurrent edit) we refresh
@@ -910,6 +963,21 @@ export function SessionPage({ lang }: { lang: Lang }) {
 
               {isAdmin && session.tier === 3 && (
                 <Tier3SplitInput copy={t} split={session.tier3_split} onSave={onTier3SplitChange} />
+              )}
+
+              {/* Community pricing — only meaningful once a build tier is set
+                  (no point discounting a Tier 0 / unclassified session). The
+                  `frozen` prop pre-locks the toggle when a build leg is paid
+                  so the admin sees the locked state on render, not after a
+                  failed click. The server's atomic guard is still the source
+                  of truth — this is the proactive UI mirror. */}
+              {isAdmin && session.tier != null && session.tier > 0 && (
+                <CommunityDiscountToggle
+                  copy={t}
+                  on={Boolean(session.community_discount)}
+                  frozen={(summary?.build?.paidCount ?? 0) > 0}
+                  onSave={onCommunityDiscountChange}
+                />
               )}
 
               <SessionWhatsNext session={session} summary={summary} isAdmin={isAdmin} lang={lang} />

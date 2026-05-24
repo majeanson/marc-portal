@@ -83,6 +83,17 @@ export function Pricing({ lang }: { lang: Lang }) {
           </h3>
           <p className="tier__hardware-body">{t.hardwareNote}</p>
         </aside>
+        {/* Community rate — 20% off build tiers 1–4 for OBNL / nonprofit /
+            community projects. Operator-applied at triage (sessions.community_discount),
+            so there's no coupon UX to render here — just the eligibility cue.
+            Sits with the other sizing/eligibility notes (hardware) rather than
+            with the parallel-entry notes (rescue, custodian). */}
+        <aside className="tier__hardware-note" aria-labelledby="tier-community-heading">
+          <h3 id="tier-community-heading" className="tier__hardware-heading mono">
+            {t.communityNoteHeading}
+          </h3>
+          <p className="tier__hardware-body">{t.communityNote}</p>
+        </aside>
         {/* Rescue — a parallel entry point, not a tier. The ladder above
             measures build size; a rescue is sized by its audit, so it sits
             below the ladder as its own note and links into the intake. */}

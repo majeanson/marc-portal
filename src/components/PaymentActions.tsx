@@ -10,6 +10,7 @@ import {
   type PaymentSummary,
 } from '../lib/paymentsApi'
 import { formatDate, formatCadCents } from '../lib/format'
+import { TIER_TOTAL_CENTS } from '../lib/pricing'
 
 const COPY = {
   fr: {
@@ -18,6 +19,16 @@ const COPY = {
     // button and the post-payment "Payé · X $" pill use the same
     // convention. OQLF: thin-space + dollar sign after.
     projectHeading: 'Paiement du projet',
+    /** Tag shown next to the project heading when sessions.community_discount
+     *  is on. The amounts themselves already reflect the 20% off (the server
+     *  applies it). The tag is just the "why is this lower than the tier
+     *  price" cue. */
+    communityTag: 'tarif communautaire · 20 %',
+    /** Anchor line under the discounted amount: "Régulier 1 800 $ · −20 %".
+     *  Lets the visitor verify the math without leaving the page (no
+     *  Stripe-Coupon receipt line; the server sends a single reduced
+     *  line-item, so this is the one place the original total surfaces). */
+    communityAnchor: (regular: string) => `Régulier ${regular} · −20 %`,
     payInstallment: (idx: number, of: number, amount: string) =>
       of > 1 ? `Payer le versement ${idx}/${of} (${amount}) →` : `Payer (${amount}) →`,
     installmentHint:
@@ -92,6 +103,8 @@ const COPY = {
   },
   en: {
     projectHeading: 'Project payment',
+    communityTag: 'community rate · 20%',
+    communityAnchor: (regular: string) => `Regular ${regular} · −20%`,
     payInstallment: (idx: number, of: number, amount: string) =>
       of > 1 ? `Pay installment ${idx}/${of} (${amount}) →` : `Pay (${amount}) →`,
     installmentHint:
@@ -269,6 +282,24 @@ export function PaymentActions({
         }
       : null
 
+  // Community-rate anchor — when the discount is active, surface the regular
+  // tier total so the visitor can verify the 20% themselves. Server sends
+  // ONE reduced line item to Stripe (no Coupon row on the receipt), so this
+  // is the only place the original price appears for them. For Tier 1-3 it's
+  // the public tier total; for Tier 4 it's the admin's persisted quote.
+  // Hidden if we can't compute a regular total (Tier 4 with no quote, or
+  // an unclassified session).
+  const communityRegularCents: number | null = (() => {
+    if (!build?.community) return null
+    if (build.tier === 1 || build.tier === 2 || build.tier === 3) {
+      return TIER_TOTAL_CENTS[build.tier]
+    }
+    if (build.tier === 4 && session.tier4_amount_cents != null) {
+      return session.tier4_amount_cents
+    }
+    return null
+  })()
+
   const custodianState: 'none' | 'active' | 'past_due' | 'ended' =
     summary.custodianStatus === 'active'
       ? 'active'
@@ -369,6 +400,14 @@ export function PaymentActions({
         {projectState === 'pending-quote' && (
           <span className="me-portal__pay-muted">{copy.quotePending}</span>
         )}
+        {build?.community && projectState !== 'hidden' && (
+          <span className="me-portal__pay-section-tag mono">{copy.communityTag}</span>
+        )}
+        {communityRegularCents != null && projectState !== 'hidden' && (
+          <span className="me-portal__pay-anchor mono">
+            {copy.communityAnchor(formatCadCents(communityRegularCents, lang))}
+          </span>
+        )}
         {showCustodianSection && (
           <span
             className={`me-portal__pay-cust-pill me-portal__pay-cust-pill--${custodianState} mono`}
@@ -413,6 +452,12 @@ export function PaymentActions({
         >
           <h3 className="me-portal__pay-section-title mono" id={`pay-proj-${session.id}`}>
             {copy.projectHeading}
+            {build?.community && (
+              <>
+                {' '}
+                <span className="me-portal__pay-section-tag mono">{copy.communityTag}</span>
+              </>
+            )}
           </h3>
           <div className="me-portal__pay-section-body">
             {projectState === 'pay' && payButton && (
@@ -437,6 +482,15 @@ export function PaymentActions({
               <span className="me-portal__pay-muted">{copy.quotePending}</span>
             )}
           </div>
+          {/* Community-rate anchor — appears under the pay/paid state so the
+              visitor sees the regular tier total they would otherwise have
+              paid. Renders for both 'pay' (helps decide) and 'paid' (helps
+              verify the receipt) states. */}
+          {communityRegularCents != null && projectState !== 'pending-quote' && (
+            <p className="field__hint me-portal__pay-hint mono">
+              {copy.communityAnchor(formatCadCents(communityRegularCents, lang))}
+            </p>
+          )}
           {projectState === 'pay' && showInstallmentHint && (
             <p className="field__hint me-portal__pay-hint">{copy.installmentHint}</p>
           )}

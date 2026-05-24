@@ -89,6 +89,17 @@ export function Tier0({ lang }: { lang: Lang }) {
               <a className="hero__cta" href={lang === 'fr' ? '/intake' : '/en/intake'}>
                 {t.tier0.intakeCta}
               </a>
+              {/* Community-rate pointer — Tier 0 is free, so the 20% discount
+                  doesn't apply *here*, but a visitor on this page who's
+                  building for an OBNL needs to know the paid tiers are
+                  reduced too. Sends them to the home #pricing anchor where
+                  Pricing.tsx's communityNote aside lives. */}
+              <p className="tier0__community-note">
+                <strong>{t.tier0.communityNote}</strong> {t.tier0.communityNoteBody}{' '}
+                <a className="mono" href={lang === 'fr' ? '/#pricing' : '/en/#pricing'}>
+                  {t.tier0.communityNoteLink}
+                </a>
+              </p>
             </div>
           </div>
         </article>

@@ -19,7 +19,16 @@
 
 import { describe, expect, it } from 'vitest'
 import { DICT } from '../i18n'
-import { CUSTODIAN_CENTS, TIER_TOTAL_CENTS } from '../../functions/_lib/pricing'
+import {
+  applyCommunityDiscount as serverApply,
+  COMMUNITY_DISCOUNT_PCT as serverPct,
+  CUSTODIAN_CENTS,
+  TIER_TOTAL_CENTS,
+} from '../../functions/_lib/pricing'
+import {
+  applyCommunityDiscount as clientApply,
+  COMMUNITY_DISCOUNT_PCT as clientPct,
+} from './pricing'
 
 const LANGUAGES = ['fr', 'en'] as const
 
@@ -70,4 +79,29 @@ describe('pricing constants ↔ i18n display parity', () => {
       })
     })
   }
+})
+
+describe('community discount: client ↔ server lockstep', () => {
+  // Two pricing files, two opportunities to drift. The server charges based
+  // on the SERVER constant; the client shows a discounted preview based on
+  // the CLIENT constant. If they ever disagree, the visitor sees a number
+  // that isn't what gets billed.
+  it('the percentage is the same on both sides', () => {
+    expect(clientPct).toBe(serverPct)
+  })
+
+  it.each([1, 99, 100, 75_000, 180_000, 360_000, 7501, 900_000])(
+    'both apply identically to %i cents (community=true)',
+    (cents) => {
+      expect(clientApply(cents, true)).toBe(serverApply(cents, true))
+    },
+  )
+
+  it.each([0, 75_000, 12_000, 40_000])(
+    'both leave %i cents unchanged when community=false',
+    (cents) => {
+      expect(clientApply(cents, false)).toBe(cents)
+      expect(serverApply(cents, false)).toBe(cents)
+    },
+  )
 })

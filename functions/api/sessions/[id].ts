@@ -68,6 +68,13 @@ interface PatchBody {
   /** Admin-only: the "generous no" note shown to the visitor on a rejected
    *  session. A string sets it; null or empty string clears it. */
   declineNote?: unknown
+  /** Admin-only: community-pricing flag (boolean). When set true, the
+   *  session's build-tier installments are charged at the COMMUNITY_DISCOUNT_PCT
+   *  reduction. **Frozen** once any `build` payment row reaches `status='paid'`
+   *  — toggling either way after that returns 409 to keep the visitor's paid
+   *  legs and unpaid legs at the same rate. Same atomic WHERE-guard shape as
+   *  the capacity cap (no read-then-write race). */
+  communityDiscount?: unknown
 }
 
 export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params }) => {
@@ -315,6 +322,37 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
       )
         .bind(now, id)
         .run()
+    }
+  }
+
+  // Community-pricing flag (operator-set 20% off OBNL projects). Admin-only.
+  // Boolean. The "no toggle after first paid leg" invariant is enforced as an
+  // atomic NOT EXISTS guard on the UPDATE — if the row didn't change (because
+  // a paid build leg exists), we return 409. Same shape as the capacity cap
+  // (P1.7 in AUDIT.md): no read-then-write race, no need to wrap in a
+  // transaction. Idempotent: setting the flag to its current value is a
+  // no-op success (lets the admin UI "save settings" button stay simple).
+  if (body.communityDiscount !== undefined) {
+    if (!admin) return forbidden('only admin can set communityDiscount')
+    if (typeof body.communityDiscount !== 'boolean') {
+      return badRequest('communityDiscount must be a boolean')
+    }
+    const nextFlag = body.communityDiscount ? 1 : 0
+    const currentFlag = session.community_discount ?? 0
+    if (nextFlag !== currentFlag) {
+      const result = await env.DB.prepare(
+        `UPDATE sessions SET community_discount = ?, updated_at = ?
+         WHERE id = ?
+           AND NOT EXISTS (
+             SELECT 1 FROM payments
+             WHERE session_id = ? AND kind = 'build' AND status = 'paid'
+           )`,
+      )
+        .bind(nextFlag, now, id, id)
+        .run()
+      if ((result.meta?.changes ?? 0) === 0) {
+        return conflict('community discount is frozen — a build installment has already been paid')
+      }
     }
   }
 

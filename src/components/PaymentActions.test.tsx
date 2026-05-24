@@ -24,8 +24,10 @@ function mkSession(overrides: Partial<SessionRow> = {}): SessionRow {
     tier4_amount_cents: null,
     tier3_split: null,
     custodian_status: null,
+    custodian_plan: null,
     all_yours_acknowledged_at: null,
     decline_note: null,
+    community_discount: 0,
     ...overrides,
   }
 }
@@ -38,6 +40,7 @@ function mkBuild(overrides: Partial<BuildSummary> = {}): BuildSummary {
     nextIndex: 1,
     nextAmountCents: 75000,
     quotePending: false,
+    community: false,
     ...overrides,
   }
 }
@@ -108,6 +111,121 @@ describe('PaymentActions build installments', () => {
     )
     render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
     await waitFor(() => expect(screen.getByRole('button', { name: /Pay \(/ })).toBeInTheDocument())
+  })
+
+  it('renders the community-rate tag when build.community=true', async () => {
+    // Server already discounted nextAmountCents to 60000 ($600) and set
+    // community=true. The tag is what tells the visitor *why* the amount
+    // is lower than the public Tier 1 price — without it, the receipt
+    // reads as a mystery discount.
+    mockSummary(
+      mkSummary({
+        build: mkBuild({
+          tier: 1,
+          installmentCount: 1,
+          nextAmountCents: 60000,
+          community: true,
+        }),
+      }),
+    )
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    await waitFor(() => expect(screen.getByText(/community rate · 20%/i)).toBeInTheDocument())
+    // The pay button still appears with the discounted amount.
+    expect(screen.getByRole('button', { name: /Pay \(\$600/ })).toBeInTheDocument()
+  })
+
+  it('omits the community-rate tag when build.community=false', async () => {
+    mockSummary(mkSummary({ build: mkBuild({ tier: 1, community: false }) }))
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    await waitFor(() => expect(screen.getByRole('button', { name: /Pay \(/ })).toBeInTheDocument())
+    expect(screen.queryByText(/community rate/i)).not.toBeInTheDocument()
+  })
+
+  it('renders the FR community tag when lang=fr', async () => {
+    mockSummary(
+      mkSummary({
+        build: mkBuild({ tier: 1, nextAmountCents: 60000, community: true }),
+      }),
+    )
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="fr" />)
+    await waitFor(() =>
+      expect(screen.getByText(/tarif communautaire · 20\s?%/i)).toBeInTheDocument(),
+    )
+  })
+
+  it('renders the community tag in compact variant', async () => {
+    // The compact variant ships on /me cards — the tag has to show up there
+    // too or a visitor scrolling their session list wouldn't see why the
+    // pay amount is lower than the public tier price.
+    mockSummary(
+      mkSummary({
+        build: mkBuild({ tier: 1, nextAmountCents: 60000, community: true }),
+      }),
+    )
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" variant="compact" />)
+    await waitFor(() => expect(screen.getByText(/community rate · 20%/i)).toBeInTheDocument())
+  })
+
+  it('shows the regular tier anchor under the discounted amount (Tier 2)', async () => {
+    // Verifies the visitor can audit the discount themselves: server sends
+    // one reduced line item to Stripe, but the anchor on the portal makes
+    // the math visible without leaving the page.
+    mockSummary(
+      mkSummary({
+        build: mkBuild({
+          tier: 2,
+          installmentCount: 2,
+          nextIndex: 1,
+          nextAmountCents: 72000, // 1800 × 0.8 / 2
+          community: true,
+        }),
+      }),
+    )
+    render(<PaymentActions session={mkSession({ tier: 2 })} lang="en" />)
+    await waitFor(() => expect(screen.getByText(/Regular \$1,800 · −20%/)).toBeInTheDocument())
+  })
+
+  it('Tier 4 anchor uses tier4_amount_cents (the admin-quoted total)', async () => {
+    mockSummary(
+      mkSummary({
+        build: mkBuild({
+          tier: 4,
+          installmentCount: 3,
+          nextIndex: 1,
+          nextAmountCents: 288000, // 900_000 × 0.8 / 3 ≈ leg 1
+          community: true,
+        }),
+      }),
+    )
+    render(
+      <PaymentActions session={mkSession({ tier: 4, tier4_amount_cents: 900_000 })} lang="en" />,
+    )
+    await waitFor(() => expect(screen.getByText(/Regular \$9,000 · −20%/)).toBeInTheDocument())
+  })
+
+  it('Tier 4 anchor is hidden when there is no quote yet', async () => {
+    mockSummary(
+      mkSummary({
+        build: mkBuild({
+          tier: 4,
+          installmentCount: 0,
+          nextIndex: null,
+          nextAmountCents: null,
+          quotePending: true,
+          community: true, // operator set the flag before quoting
+        }),
+      }),
+    )
+    render(<PaymentActions session={mkSession({ tier: 4 })} lang="en" />)
+    await waitFor(() => expect(screen.getByText(/Tier 4 quote pending/i)).toBeInTheDocument())
+    expect(screen.queryByText(/Regular /)).not.toBeInTheDocument()
+  })
+
+  it('anchor omitted when community=false (no discount, nothing to anchor against)', async () => {
+    mockSummary(mkSummary({ build: mkBuild({ tier: 2, community: false }) }))
+    render(<PaymentActions session={mkSession({ tier: 2 })} lang="en" />)
+    await waitFor(() => expect(screen.getByRole('button', { name: /Pay/ })).toBeInTheDocument())
+    expect(screen.queryByText(/Regular /)).not.toBeInTheDocument()
   })
 
   it('labels the next installment leg for a Tier 2 build', async () => {

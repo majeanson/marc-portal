@@ -273,6 +273,9 @@ const FR = {
     hardwareNoteHeading: 'Ça implique du hardware ?',
     hardwareNote:
       'Tout ce qui touche un objet physique (un capteur, un Raspberry Pi, un écran au mur) démarre au Niveau 3. Les pièces, le montage et les tests sur place vont au-delà d’un projet purement logiciel.',
+    communityNoteHeading: 'C’est pour un OBNL ou un projet communautaire ?',
+    communityNote:
+      'Vingt pour cent de moins sur chacun des niveaux de build (1 à 4). Marc l’applique manuellement quand il triage — pas de coupon à entrer. Le rapport de cadrage et le mode dépositaire restent au prix régulier.',
     tiers: [
       {
         name: 'Niveau 0',
@@ -559,6 +562,9 @@ const FR = {
     growBack:
       "Si un de ces patrons ne suffit plus, c'est que ton problème a grandi. Bonne nouvelle, c'est probablement Niveau 1 ou 2 maintenant. Décris-moi ça.",
     intakeCta: 'Mon problème a grandi → ouvrir le formulaire',
+    communityNote: 'OBNL ou projet communautaire ?',
+    communityNoteBody: 'Les niveaux payants sont à −20 % — voir la grille de prix.',
+    communityNoteLink: 'Voir les prix communautaires →',
   },
 
   intake: {
@@ -1287,6 +1293,9 @@ const EN: Copy = {
     hardwareNoteHeading: 'Bringing hardware into it?',
     hardwareNote:
       'Anything involving a physical device (a sensor, a Raspberry Pi, a screen on the wall) starts at Tier 3. The parts, the wiring and the on-site testing put it past a pure-software job.',
+    communityNoteHeading: 'For a nonprofit or community project?',
+    communityNote:
+      'Twenty percent off each build tier (1–4). Marc applies it manually during triage — no coupon code to enter. The scoping report and custodian mode stay at the regular price.',
     tiers: [
       {
         name: 'Tier 0',
@@ -1569,6 +1578,9 @@ const EN: Copy = {
     growBack:
       "If one of these patterns isn't enough anymore, your problem grew. Good news: it's probably Tier 1 or 2 now. Tell me about it.",
     intakeCta: 'My problem grew → open the form',
+    communityNote: 'Nonprofit or community project?',
+    communityNoteBody: 'The paid tiers are 20% off — see the pricing grid.',
+    communityNoteLink: 'See community pricing →',
   },
 
   intake: {

@@ -902,6 +902,77 @@ pixels, not pixel-noise.
    PR gate by design (cost), but use it only for hot-fixes the regen
    workflow can't help with.
 
+## 13. Community-pricing flag — visitor dispute or stuck toggle
+
+**Symptoms:** EITHER (a) a visitor emails "I thought my project was
+community-rate, why is the receipt full price?", OR (b) the admin
+toggles **Tarif communautaire** on `/admin/inbox/:id` and the toggle
+snaps back with the inline "figé — un versement a déjà été payé"
+message.
+
+### What happens (system behavior)
+
+- `sessions.community_discount` (INTEGER 0/1) is read by every
+  `kind: 'build'` checkout in `functions/api/payments/checkout.ts`. When
+  1, `buildInstallmentPlan(..., true)` discounts the tier TOTAL by
+  `COMMUNITY_DISCOUNT_PCT` (20%) BEFORE splitting installments — so
+  every leg is reduced consistently and the legs still sum to the exact
+  discounted total. Scoping + custodian rows ignore the flag.
+- The flag is operator-set via PATCH `/api/sessions/:id` with body
+  `{ communityDiscount: boolean }`. Admin-only.
+- **Freeze rule:** the PATCH wraps the UPDATE in an atomic
+  `WHERE NOT EXISTS (SELECT 1 FROM payments WHERE session_id = ? AND
+  kind = 'build' AND status = 'paid')`. If any build leg is paid, the
+  UPDATE affects 0 rows and the server returns 409 with the message
+  `community discount is frozen — a build installment has already been
+  paid`. The `CommunityDiscountToggle` component catches the 409 and
+  renders the frozen-state hint inline.
+- The Stripe line-item label gets a `— tarif communautaire` (FR) /
+  `— community rate` (EN) suffix when the flag is on, so the visitor's
+  Stripe receipt + the CRA paper trail both name *why* the amount is
+  lower than the public tier price.
+
+### Step-by-step — visitor says they should have been community-rate
+
+1. **Check the session row.**
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "SELECT id, tier, community_discount FROM sessions WHERE id = '<sessionId>'"
+   ```
+   `community_discount = 0` means the flag wasn't set when the leg was
+   charged. The visitor saw the full-price button on `/me` and the
+   Stripe receipt has no community-rate suffix — consistent state.
+2. **Decide:** is this a misunderstanding (the project wasn't actually
+   eligible) or a true miss on your end (you forgot to toggle before
+   the leg was paid)?
+3. **If a true miss:** the freeze rule blocks a retroactive toggle.
+   The fix is a Stripe **refund**, then re-toggle, then re-checkout.
+   - In Stripe Dashboard, refund the charge. Webhook
+     `charge.refunded` writes `refunded_amount_cents = amount_cents`
+     and flips `status='refunded'` (see §10 for the full handler
+     behaviour). Once `status` is no longer `'paid'`, the freeze guard
+     releases.
+   - Toggle **Tarif communautaire** ON via `/admin/inbox/:id`.
+   - Ask the visitor to re-click Pay; the new checkout charges the
+     discounted amount.
+4. **Document the round-trip** in the session thread (visitor sees it):
+   "Refund issued for $X, community rate now applied, new charge at
+   $X×0.80 — sorry for the back-and-forth."
+
+### Step-by-step — toggle won't take, "figé" inline message
+
+This is the freeze rule firing as designed. The session has a paid
+build leg; the only way through is via §10's refund flow followed by a
+re-toggle (above). Don't try to bypass the guard in code — the whole
+point is that the visitor's paid and unpaid legs always agree on the
+rate.
+
+If you need to verify *which* leg is blocking:
+```bash
+npx wrangler d1 execute marc-portal-db --remote --command \
+  "SELECT id, kind, installment_index, status, amount_cents FROM payments WHERE session_id = '<sessionId>' AND kind = 'build' AND status = 'paid'"
+```
+
 ## Payments setup (one-time) — Stripe
 
 Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card

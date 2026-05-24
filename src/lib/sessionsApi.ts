@@ -61,6 +61,12 @@ export interface SessionRow {
    *  session is `rejected`. NULL = no note. Admin-only to set, via PATCH
    *  `declineNote`. */
   decline_note: string | null
+  /** Operator-applied community-pricing flag (0/1). When 1, the visitor's
+   *  build-tier installments are charged at COMMUNITY_DISCOUNT_PCT off.
+   *  Admin-only to set, via PATCH `communityDiscount`; once any build
+   *  installment is `paid` the flag is frozen (server returns 409 on toggle).
+   *  Scoping + custodian are unaffected by the flag. */
+  community_discount: number
 }
 
 /** What an attachment is — mirrors AttachmentKind in functions/_lib/attachments.ts.
@@ -136,6 +142,9 @@ export function patchSession(
     /** Admin-only: the "generous no" note shown on a rejected session.
      *  Pass null or '' to clear. */
     declineNote?: string | null
+    /** Admin-only: community-pricing flag. Frozen once any build leg is
+     *  paid (server returns 409 on a change after that). */
+    communityDiscount?: boolean
   },
 ): Promise<{ session: SessionRow }> {
   return api(`/api/sessions/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch })

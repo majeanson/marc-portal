@@ -24,3 +24,18 @@ export const CUSTODIAN_CENTS: Record<'watch' | 'care', number> = {
   watch: 12_000, // $120/yr
   care: 40_000, // $400/yr
 }
+
+/** Operator-applied discount for community/OBNL projects. Mirrors
+ *  functions/_lib/pricing.ts → COMMUNITY_DISCOUNT_PCT. Applies to build
+ *  tiers 1–4 only; scoping + custodian are unaffected. The flag itself
+ *  lives on sessions.community_discount (operator-set via /admin/inbox).
+ *  Parity with the server constant is pinned in pricingParity.test.ts. */
+export const COMMUNITY_DISCOUNT_PCT = 20
+
+/** Apply the community discount to a CAD-cents amount when `community`
+ *  is true. Math.round (single rounding point) keeps client display and
+ *  server charge in lockstep — both files round the same way. */
+export function applyCommunityDiscount(amountCents: number, community: boolean): number {
+  if (!community) return amountCents
+  return Math.round(amountCents * (1 - COMMUNITY_DISCOUNT_PCT / 100))
+}

@@ -1,0 +1,14 @@
+-- Add a per-session community-pricing flag. Operator-only (admin sets it
+-- from /admin/inbox); when set, every build-tier installment is computed
+-- against a 20% discount (see functions/_lib/pricing.ts).
+--
+-- INTEGER + DEFAULT 0 because SQLite doesn't have a real BOOLEAN — the
+-- existing tables follow the same convention (e.g. tenants.frozen). The
+-- atomic guard that prevents toggling the flag once a build leg is paid
+-- lives in PATCH /api/sessions/:id, not at the schema layer: SQLite
+-- triggers can't express "depends on payments table state" cleanly, and
+-- the handler-level check is the same pattern as the capacity cap.
+--
+-- Scoping and custodian rows are NOT discounted — the flag is read only
+-- in the `build` branch of the checkout handler. No data migration needed.
+ALTER TABLE sessions ADD COLUMN community_discount INTEGER NOT NULL DEFAULT 0;

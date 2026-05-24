@@ -167,7 +167,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     tier4Cents = dollars * 100
   }
 
-  const plan = buildInstallmentPlan(tier, session.tier3_split, tier4Cents)
+  // Community pricing — operator-set flag. SQLite stores it as INTEGER 0/1;
+  // coerce defensively in case a future migration changes the column type
+  // or a mock seeds it as boolean. The discount is applied inside
+  // buildInstallmentPlan against the tier total before the leg split so the
+  // 40/40/20 rounding remainder math stays exact and every leg is reduced
+  // by the same proportion. Scoping + custodian paths above DON'T pass the
+  // flag — those product lines aren't discounted (per the v1 scope).
+  const isCommunity = Boolean(session.community_discount)
+  const plan = buildInstallmentPlan(tier, session.tier3_split, tier4Cents, isCommunity)
   // Only Tier 4 with no quote yet reaches a null plan.
   if (plan == null) return conflict('tier 4 not quoted yet')
 
@@ -197,7 +205,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     amountCents = Math.max(50, amountCents - (credit?.c ?? 0))
   }
 
-  const baseLabel = installmentLabel(tier, nextIndex, plan.length, lang)
+  const baseLabel = installmentLabel(tier, nextIndex, plan.length, lang, isCommunity)
   const label = session.showcase_title ? `${baseLabel} — ${session.showcase_title}` : baseLabel
 
   await insertPending(env, {

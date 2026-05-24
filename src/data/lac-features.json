@@ -1,6 +1,146 @@
 {
   "features": [
     {
+      "featureKey": "feat-2026-050",
+      "title": "POST /api/payments/checkout — mint a Stripe Checkout session",
+      "status": "active",
+      "domain": "marc-portal/payments",
+      "tags": [
+        "payments",
+        "stripe",
+        "checkout",
+        "server-side-pricing",
+        "graceful-degrade"
+      ],
+      "componentFile": "functions/api/payments/checkout.ts",
+      "liveUrl": null,
+      "problem": "When the client clicks 'pay' on a session in pricing status, this endpoint mints a Stripe Checkout URL the browser redirects to. Stripe takes it from there (card form, 3DS, etc.) and pings /api/payments/webhook on completion. Three kinds: 'build' (next unpaid installment of the session's tier 1–4), 'scoping' ($250 scoping report, credited to leg 1), 'custodian' (annual subscription, Watch or Care plan). The server owns all pricing math — the client never sends an amount or a leg index, only the kind. That's the load-bearing property: any pricing change is one server-side update.",
+      "analysis": "POST handler taking { sessionId, kind, custodianPlan?, lang?, amountCadOverride? }. Auth: canAccessSession() (visitor self or admin). Pricing: buildInstallmentPlan() (functions/_lib/pricing.ts) reads the session's tier and the paid rows, computes the next unpaid leg + its amount with scoping credit applied. For 'custodian' kind, it picks the right Stripe Price ID from STRIPE_CUSTODIAN_WATCH_PRICE / _CARE_PRICE env vars. For 'scoping', uses CUSTODIAN_CENTS (the canonical $250 in CAD cents). amountCadOverride is admin-only and bypasses the plan computation for one-off cases. Inserts a payments row with status='pending' before calling Stripe; returns { url, paymentId } so the client knows which payment row the eventual webhook will resolve. STRIPE_SECRET_KEY guard: if unset, returns 503 with a clear message (graceful-degrade pattern). Same shape for missing custodian Price IDs.",
+      "decisions": [
+        {
+          "decision": "Server owns pricing math; client sends only the kind",
+          "rationale": "A client-sent amount is a security and consistency liability — a malicious client could send $1 for a $5000 leg, or a buggy client could compute the leg index wrong and pay the wrong installment. The server reads the session's tier + paid rows, computes the next leg, and uses the canonical price. The client only signals intent ('I want to pay'); the math is server-only. AUDIT P1.7's same lesson applied here.",
+          "recommendation": "Don't accept client amounts. amountCadOverride exists as an admin escape for one-off cases (Tier 4 custom quotes) but is strictly admin-gated."
+        },
+        {
+          "decision": "Scoping credit applies to leg 1 automatically",
+          "rationale": "The $250 scoping report is a separate kind but its value is credited against the next build's leg 1. Without automatic crediting, the visitor would pay scoping then see their leg 1 unchanged — they'd need to remember to ask, or the admin would manually adjust. Crediting in buildInstallmentPlan removes this paper-shuffling completely; the math is consistent.",
+          "recommendation": "Keep the credit in buildInstallmentPlan() — that's the canonical pricing module. Don't split scoping into its own column on payments; the link is by session + kind."
+        },
+        {
+          "decision": "503 with a clear message if STRIPE_SECRET_KEY missing, not a generic 500",
+          "rationale": "The Stripe binding is optional (graceful-degrade pattern across the codebase). If a dev environment doesn't have Stripe configured, the rest of the app works; only payments are unavailable. 503 'payments unavailable' is the truthful response shape — 500 would suggest a bug. Same pattern for missing custodian Price IDs (which would otherwise produce a confusing 'no such Price' from Stripe).",
+          "recommendation": "When adding any new Stripe dependency, follow the same pattern: env check at handler entry, 503 with a useful message if missing."
+        },
+        {
+          "decision": "Community discount (20% off build tiers) is applied to the tier TOTAL before the installment split, not per-leg after",
+          "rationale": "Applying per-leg-after means the 40/40/20 split's rounding remainder could shift cents between legs unpredictably. Applying to the total once means the legs continue to be exact proportions of the (discounted) total — visitor sees three evenly-discounted amounts on the Stripe receipt, not 60% / 60% / 30.07%. Same defense as the original 40/40/20 invariant: legs sum to exactly the total.",
+          "recommendation": "If a second discount type ever ships (étudiant, OBNL fédéré, etc.), thread it through the same buildInstallmentPlan(community) signature rather than stacking discount math at the handler level."
+        },
+        {
+          "decision": "Community discount does NOT apply to scoping or custodian payments",
+          "rationale": "Scoping is a fixed $250 acquisition product; the 20% off would dilute it below the cost of running the scoping conversation. Custodian is a Stripe-Price subscription, not an ad-hoc amount — discounting it would require a Stripe Coupon, new env vars, a separate Loi 25 PIA mention, and a more complex toggle UX. v1 scope is build tiers only; the boolean flag carries that contract.",
+          "recommendation": "Don't widen the discount surface without an explicit user-facing reason. The CommunityDiscountToggle component's copy + the Pricing.tsx communityNote both say 'build tiers only' — that copy is the operator's contract with the visitor."
+        },
+        {
+          "decision": "Freeze the community flag once any build leg is paid (atomic NOT EXISTS guard in PATCH /api/sessions/:id)",
+          "rationale": "A toggle after the first paid leg would mean leg N+1 is charged at a different rate than legs 1..N. The visitor sees an inconsistent receipt (or worse, retroactive disagreement). Same shape as AUDIT P1.7's capacity-cap fix: fold the precondition into the UPDATE's WHERE so two concurrent toggles can't race. Returns 409 with a 'frozen' message; the admin must refund the paid leg first if a correction is truly needed.",
+          "recommendation": "Keep the atomic guard in the UPDATE. Don't add a read-then-write helper. The CommunityDiscountToggle catches the 409 and renders the frozen-state hint inline."
+        }
+      ],
+      "successCriteria": "- A signed-in client (or admin) can mint a Checkout URL for build / scoping / custodian\n- Pricing comes from the server's buildInstallmentPlan; client cannot override (except admin via amountCadOverride)\n- Scoping payments credit leg 1 automatically\n- STRIPE_SECRET_KEY unset → 503 with a clear message\n- Stripe Checkout URL is returned + a paymentId for the eventual webhook to resolve\n- Tier 4 (custom-quote) sessions cannot mint a checkout without an admin amount override\n- Tests exercise the happy path + the unset-key path",
+      "knownLimitations": [
+        "Tier 4 always requires an admin amount override; visitors can't self-serve a Tier 4 checkout. By design — Tier 4 IS the custom-quote tier",
+        "If STRIPE_SECRET_KEY is set but the webhook secret is wrong, the checkout flow completes but the webhook can't verify the event signature. The webhook returns 200 (to prevent Stripe retry storms) but the payment row stays pending. RUNBOOK §Stripe covers this triage",
+        "Custodian Price IDs are env vars; if a Price ID changes in Stripe (e.g. price renamed), this handler will mint a checkout pointing at the stale ID until the env is updated",
+        "Scoping credit is applied at plan-computation time only; an admin manually creating a leg 1 payments row would not get the credit automatically",
+        "Stripe Checkout sessions expire 24h after creation; clicking a stale 'pay' link would 404 on Stripe's side. The SPA's PaymentActions re-mints on each click",
+        "Community discount toggling is frozen once any build leg is paid (server returns 409). For a correction after that, the admin must issue a Stripe refund first (which marks the row 'refunded'), then the freeze releases and the flag becomes toggleable again"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-15",
+          "reason": "Endpoint shipped with all three kinds (build / scoping / custodian) and the scoping-credit logic."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Server-side-pricing and graceful-degrade patterns stable; e2e harness stub is the canonical test path."
+        },
+        {
+          "from": "frozen",
+          "to": "active",
+          "date": "2026-05-24",
+          "reason": "Adding community-pricing flag (sessions.community_discount → 20% off build tiers 1-4). Touches buildInstallmentPlan signature + installmentLabel + payment summary response; needs re-freeze once the operator has verified the discount math against a real Stripe receipt."
+        }
+      ],
+      "lastTransitionDate": "2026-05-24"
+    },
+    {
+      "featureKey": "feat-2026-053",
+      "title": "GET /api/payments — per-session payment summary",
+      "status": "active",
+      "domain": "marc-portal/payments",
+      "tags": [
+        "payments",
+        "summary",
+        "server-side-math",
+        "stripe-mode-badge"
+      ],
+      "componentFile": "functions/api/payments/index.ts",
+      "liveUrl": null,
+      "problem": "The /me dashboard and /session/:id both need a unified view of what's been paid, what's owed, what subscription state the session is in. Per-row Stripe queries would be slow and leak Stripe-specific concepts into the SPA. This endpoint returns a single summary per session: { rows (paid history), custodianStatus, stripeMode, build (next-unpaid-leg with amount), scoping (paid or unpaid status) } — all the math done server-side, the client just renders.",
+      "analysis": "GET ?sessionId=X. Auth: canAccessSession(). loadSession() + a query against the payments table for this session's rows. buildInstallmentPlan() (functions/_lib/pricing.ts) computes the build leg + amount with scoping credit applied, OR signals 'Tier-4 quote pending' if the session is Tier 4 without an admin-set amount. stripeMode is derived from the secret key prefix ('sk_test_' → 'test', 'sk_live_' → 'live') and surfaces as a visible UI pill so visitors don't mistake test charges for real. custodianStatus is the session row's custodian_status column ('none' | 'active' | 'past_due' | 'canceled' | 'switched_to_tout_a_toi'). The whole payload is consistent with what the webhook writes; this endpoint is purely read-side.",
+      "decisions": [
+        {
+          "decision": "Server returns the next unpaid leg's amount; client never computes",
+          "rationale": "Same lesson as /api/payments/checkout: client-computed amounts are a security and consistency liability. The summary returns the canonical amount the client should render; checkout uses the same buildInstallmentPlan() to compute when minting. Single source of truth for pricing math.",
+          "recommendation": "Don't let the client compute 'days until renewal' or any other derived value here. If the UI needs it, surface it in this payload."
+        },
+        {
+          "decision": "Expose stripeMode so the UI can render a 'TEST MODE' pill",
+          "rationale": "In dev, the Stripe secret is sk_test_… — charges are fake. Without a visible 'TEST MODE' indicator, a developer doing manual QA could think they were on prod. A visible mode pill prevents that confusion. The mode is derived from the key prefix; if the prefix is unknown (e.g. partial key during setup), report 'unknown' and the UI hides the pill.",
+          "recommendation": "Keep the mode in the response. Don't compute it client-side from anything else — the key prefix is the truth."
+        },
+        {
+          "decision": "BuildSummary carries a `community: boolean` field mirroring sessions.community_discount",
+          "rationale": "The next-leg amount in this summary is the server-computed, already-discounted figure when the flag is on. The client needs to render a 'tarif communautaire' tag + the regular-price anchor next to the discounted amount; without the flag in the summary, the UI would have to re-fetch the session row or compute the discount client-side. Carrying the boolean keeps the 'server is the single source of truth for pricing math' decision honest while letting the client describe what it shows.",
+          "recommendation": "When a new operator-set pricing modifier ships (étudiant, OBNL fédéré, etc.), thread it through the same pattern: a boolean on the summary, server applies the math, client renders the explanatory chrome."
+        }
+      ],
+      "successCriteria": "- A signed-in visitor (or admin) gets a complete payment summary for any session they can access\n- buildInstallmentPlan computes the next leg + amount; Tier 4 returns 'quote pending'\n- stripeMode is derived from the secret key prefix\n- custodianStatus reflects the latest webhook state\n- The payload is suitable for direct render in /me's PaymentActions component\n- 404 for missing or unauthorized session",
+      "knownLimitations": [
+        "No pagination on rows — a long-running custodian with many invoices accumulates rows. At current scale (custodian is annual, max 1 invoice/year per sub), not a concern",
+        "stripeMode = 'unknown' fallback may surface during initial deploys before STRIPE_SECRET_KEY is set; the UI hides the pill in that case",
+        "Currency is implied (CAD); a future multi-currency change would require schema work + this payload's structure to carry currency per row",
+        "The summary doesn't include refund history detail — only the rolled-up refunded_amount_cents on each row. Stripe Dashboard has the granular history"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-15",
+          "reason": "Endpoint shipped with the full summary structure used by /me's PaymentActions."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Summary shape is stable; server-side-math posture is consistent across the payments family."
+        },
+        {
+          "from": "frozen",
+          "to": "active",
+          "date": "2026-05-24",
+          "reason": "BuildSummary gained a `community: boolean` field so the client can render the discount tag + the regular-price anchor without re-fetching the session row. Needs re-freeze once the operator has verified the end-to-end flow against a live Stripe receipt."
+        }
+      ],
+      "lastTransitionDate": "2026-05-24"
+    },
+    {
       "featureKey": "feat-2026-024",
       "title": "Handoff ritual — two ownership modes and a public checklist",
       "status": "active",
@@ -2857,113 +2997,6 @@
       "lastTransitionDate": "2026-05-23"
     },
     {
-      "featureKey": "feat-2026-050",
-      "title": "POST /api/payments/checkout — mint a Stripe Checkout session",
-      "status": "frozen",
-      "domain": "marc-portal/payments",
-      "tags": [
-        "payments",
-        "stripe",
-        "checkout",
-        "server-side-pricing",
-        "graceful-degrade"
-      ],
-      "componentFile": "functions/api/payments/checkout.ts",
-      "liveUrl": null,
-      "problem": "When the client clicks 'pay' on a session in pricing status, this endpoint mints a Stripe Checkout URL the browser redirects to. Stripe takes it from there (card form, 3DS, etc.) and pings /api/payments/webhook on completion. Three kinds: 'build' (next unpaid installment of the session's tier 1–4), 'scoping' ($250 scoping report, credited to leg 1), 'custodian' (annual subscription, Watch or Care plan). The server owns all pricing math — the client never sends an amount or a leg index, only the kind. That's the load-bearing property: any pricing change is one server-side update.",
-      "analysis": "POST handler taking { sessionId, kind, custodianPlan?, lang?, amountCadOverride? }. Auth: canAccessSession() (visitor self or admin). Pricing: buildInstallmentPlan() (functions/_lib/pricing.ts) reads the session's tier and the paid rows, computes the next unpaid leg + its amount with scoping credit applied. For 'custodian' kind, it picks the right Stripe Price ID from STRIPE_CUSTODIAN_WATCH_PRICE / _CARE_PRICE env vars. For 'scoping', uses CUSTODIAN_CENTS (the canonical $250 in CAD cents). amountCadOverride is admin-only and bypasses the plan computation for one-off cases. Inserts a payments row with status='pending' before calling Stripe; returns { url, paymentId } so the client knows which payment row the eventual webhook will resolve. STRIPE_SECRET_KEY guard: if unset, returns 503 with a clear message (graceful-degrade pattern). Same shape for missing custodian Price IDs.",
-      "decisions": [
-        {
-          "decision": "Server owns pricing math; client sends only the kind",
-          "rationale": "A client-sent amount is a security and consistency liability — a malicious client could send $1 for a $5000 leg, or a buggy client could compute the leg index wrong and pay the wrong installment. The server reads the session's tier + paid rows, computes the next leg, and uses the canonical price. The client only signals intent ('I want to pay'); the math is server-only. AUDIT P1.7's same lesson applied here.",
-          "recommendation": "Don't accept client amounts. amountCadOverride exists as an admin escape for one-off cases (Tier 4 custom quotes) but is strictly admin-gated."
-        },
-        {
-          "decision": "Scoping credit applies to leg 1 automatically",
-          "rationale": "The $250 scoping report is a separate kind but its value is credited against the next build's leg 1. Without automatic crediting, the visitor would pay scoping then see their leg 1 unchanged — they'd need to remember to ask, or the admin would manually adjust. Crediting in buildInstallmentPlan removes this paper-shuffling completely; the math is consistent.",
-          "recommendation": "Keep the credit in buildInstallmentPlan() — that's the canonical pricing module. Don't split scoping into its own column on payments; the link is by session + kind."
-        },
-        {
-          "decision": "503 with a clear message if STRIPE_SECRET_KEY missing, not a generic 500",
-          "rationale": "The Stripe binding is optional (graceful-degrade pattern across the codebase). If a dev environment doesn't have Stripe configured, the rest of the app works; only payments are unavailable. 503 'payments unavailable' is the truthful response shape — 500 would suggest a bug. Same pattern for missing custodian Price IDs (which would otherwise produce a confusing 'no such Price' from Stripe).",
-          "recommendation": "When adding any new Stripe dependency, follow the same pattern: env check at handler entry, 503 with a useful message if missing."
-        }
-      ],
-      "successCriteria": "- A signed-in client (or admin) can mint a Checkout URL for build / scoping / custodian\n- Pricing comes from the server's buildInstallmentPlan; client cannot override (except admin via amountCadOverride)\n- Scoping payments credit leg 1 automatically\n- STRIPE_SECRET_KEY unset → 503 with a clear message\n- Stripe Checkout URL is returned + a paymentId for the eventual webhook to resolve\n- Tier 4 (custom-quote) sessions cannot mint a checkout without an admin amount override\n- Tests exercise the happy path + the unset-key path",
-      "knownLimitations": [
-        "Tier 4 always requires an admin amount override; visitors can't self-serve a Tier 4 checkout. By design — Tier 4 IS the custom-quote tier",
-        "If STRIPE_SECRET_KEY is set but the webhook secret is wrong, the checkout flow completes but the webhook can't verify the event signature. The webhook returns 200 (to prevent Stripe retry storms) but the payment row stays pending. RUNBOOK §Stripe covers this triage",
-        "Custodian Price IDs are env vars; if a Price ID changes in Stripe (e.g. price renamed), this handler will mint a checkout pointing at the stale ID until the env is updated",
-        "Scoping credit is applied at plan-computation time only; an admin manually creating a leg 1 payments row would not get the credit automatically",
-        "Stripe Checkout sessions expire 24h after creation; clicking a stale 'pay' link would 404 on Stripe's side. The SPA's PaymentActions re-mints on each click"
-      ],
-      "statusHistory": [
-        {
-          "from": "draft",
-          "to": "active",
-          "date": "2026-05-15",
-          "reason": "Endpoint shipped with all three kinds (build / scoping / custodian) and the scoping-credit logic."
-        },
-        {
-          "from": "active",
-          "to": "frozen",
-          "date": "2026-05-23",
-          "reason": "Code-first doc co-located. Server-side-pricing and graceful-degrade patterns stable; e2e harness stub is the canonical test path."
-        }
-      ],
-      "lastTransitionDate": "2026-05-23"
-    },
-    {
-      "featureKey": "feat-2026-053",
-      "title": "GET /api/payments — per-session payment summary",
-      "status": "frozen",
-      "domain": "marc-portal/payments",
-      "tags": [
-        "payments",
-        "summary",
-        "server-side-math",
-        "stripe-mode-badge"
-      ],
-      "componentFile": "functions/api/payments/index.ts",
-      "liveUrl": null,
-      "problem": "The /me dashboard and /session/:id both need a unified view of what's been paid, what's owed, what subscription state the session is in. Per-row Stripe queries would be slow and leak Stripe-specific concepts into the SPA. This endpoint returns a single summary per session: { rows (paid history), custodianStatus, stripeMode, build (next-unpaid-leg with amount), scoping (paid or unpaid status) } — all the math done server-side, the client just renders.",
-      "analysis": "GET ?sessionId=X. Auth: canAccessSession(). loadSession() + a query against the payments table for this session's rows. buildInstallmentPlan() (functions/_lib/pricing.ts) computes the build leg + amount with scoping credit applied, OR signals 'Tier-4 quote pending' if the session is Tier 4 without an admin-set amount. stripeMode is derived from the secret key prefix ('sk_test_' → 'test', 'sk_live_' → 'live') and surfaces as a visible UI pill so visitors don't mistake test charges for real. custodianStatus is the session row's custodian_status column ('none' | 'active' | 'past_due' | 'canceled' | 'switched_to_tout_a_toi'). The whole payload is consistent with what the webhook writes; this endpoint is purely read-side.",
-      "decisions": [
-        {
-          "decision": "Server returns the next unpaid leg's amount; client never computes",
-          "rationale": "Same lesson as /api/payments/checkout: client-computed amounts are a security and consistency liability. The summary returns the canonical amount the client should render; checkout uses the same buildInstallmentPlan() to compute when minting. Single source of truth for pricing math.",
-          "recommendation": "Don't let the client compute 'days until renewal' or any other derived value here. If the UI needs it, surface it in this payload."
-        },
-        {
-          "decision": "Expose stripeMode so the UI can render a 'TEST MODE' pill",
-          "rationale": "In dev, the Stripe secret is sk_test_… — charges are fake. Without a visible 'TEST MODE' indicator, a developer doing manual QA could think they were on prod. A visible mode pill prevents that confusion. The mode is derived from the key prefix; if the prefix is unknown (e.g. partial key during setup), report 'unknown' and the UI hides the pill.",
-          "recommendation": "Keep the mode in the response. Don't compute it client-side from anything else — the key prefix is the truth."
-        }
-      ],
-      "successCriteria": "- A signed-in visitor (or admin) gets a complete payment summary for any session they can access\n- buildInstallmentPlan computes the next leg + amount; Tier 4 returns 'quote pending'\n- stripeMode is derived from the secret key prefix\n- custodianStatus reflects the latest webhook state\n- The payload is suitable for direct render in /me's PaymentActions component\n- 404 for missing or unauthorized session",
-      "knownLimitations": [
-        "No pagination on rows — a long-running custodian with many invoices accumulates rows. At current scale (custodian is annual, max 1 invoice/year per sub), not a concern",
-        "stripeMode = 'unknown' fallback may surface during initial deploys before STRIPE_SECRET_KEY is set; the UI hides the pill in that case",
-        "Currency is implied (CAD); a future multi-currency change would require schema work + this payload's structure to carry currency per row",
-        "The summary doesn't include refund history detail — only the rolled-up refunded_amount_cents on each row. Stripe Dashboard has the granular history"
-      ],
-      "statusHistory": [
-        {
-          "from": "draft",
-          "to": "active",
-          "date": "2026-05-15",
-          "reason": "Endpoint shipped with the full summary structure used by /me's PaymentActions."
-        },
-        {
-          "from": "active",
-          "to": "frozen",
-          "date": "2026-05-23",
-          "reason": "Code-first doc co-located. Summary shape is stable; server-side-math posture is consistent across the payments family."
-        }
-      ],
-      "lastTransitionDate": "2026-05-23"
-    },
-    {
       "featureKey": "feat-2026-052",
       "title": "POST /api/payments/portal — Stripe Customer Portal session",
       "status": "frozen",
@@ -4529,5 +4562,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-24T01:13:39.675Z"
+  "generatedAt": "2026-05-24T15:44:27.324Z"
 }

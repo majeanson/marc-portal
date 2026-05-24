@@ -1,7 +1,7 @@
 {
   "featureKey": "feat-2026-050",
   "title": "POST /api/payments/checkout — mint a Stripe Checkout session",
-  "status": "frozen",
+  "status": "active",
   "schemaVersion": 1,
   "domain": "marc-portal/payments",
   "componentFile": "functions/api/payments/checkout.ts",
@@ -26,6 +26,24 @@
       "rationale": "The Stripe binding is optional (graceful-degrade pattern across the codebase). If a dev environment doesn't have Stripe configured, the rest of the app works; only payments are unavailable. 503 'payments unavailable' is the truthful response shape — 500 would suggest a bug. Same pattern for missing custodian Price IDs (which would otherwise produce a confusing 'no such Price' from Stripe).",
       "recommendation": "When adding any new Stripe dependency, follow the same pattern: env check at handler entry, 503 with a useful message if missing.",
       "date": "2026-05-15"
+    },
+    {
+      "decision": "Community discount (20% off build tiers) is applied to the tier TOTAL before the installment split, not per-leg after",
+      "rationale": "Applying per-leg-after means the 40/40/20 split's rounding remainder could shift cents between legs unpredictably. Applying to the total once means the legs continue to be exact proportions of the (discounted) total — visitor sees three evenly-discounted amounts on the Stripe receipt, not 60% / 60% / 30.07%. Same defense as the original 40/40/20 invariant: legs sum to exactly the total.",
+      "recommendation": "If a second discount type ever ships (étudiant, OBNL fédéré, etc.), thread it through the same buildInstallmentPlan(community) signature rather than stacking discount math at the handler level.",
+      "date": "2026-05-24"
+    },
+    {
+      "decision": "Community discount does NOT apply to scoping or custodian payments",
+      "rationale": "Scoping is a fixed $250 acquisition product; the 20% off would dilute it below the cost of running the scoping conversation. Custodian is a Stripe-Price subscription, not an ad-hoc amount — discounting it would require a Stripe Coupon, new env vars, a separate Loi 25 PIA mention, and a more complex toggle UX. v1 scope is build tiers only; the boolean flag carries that contract.",
+      "recommendation": "Don't widen the discount surface without an explicit user-facing reason. The CommunityDiscountToggle component's copy + the Pricing.tsx communityNote both say 'build tiers only' — that copy is the operator's contract with the visitor.",
+      "date": "2026-05-24"
+    },
+    {
+      "decision": "Freeze the community flag once any build leg is paid (atomic NOT EXISTS guard in PATCH /api/sessions/:id)",
+      "rationale": "A toggle after the first paid leg would mean leg N+1 is charged at a different rate than legs 1..N. The visitor sees an inconsistent receipt (or worse, retroactive disagreement). Same shape as AUDIT P1.7's capacity-cap fix: fold the precondition into the UPDATE's WHERE so two concurrent toggles can't race. Returns 409 with a 'frozen' message; the admin must refund the paid leg first if a correction is truly needed.",
+      "recommendation": "Keep the atomic guard in the UPDATE. Don't add a read-then-write helper. The CommunityDiscountToggle catches the 409 and renders the frozen-state hint inline.",
+      "date": "2026-05-24"
     }
   ],
   "successCriteria": "- A signed-in client (or admin) can mint a Checkout URL for build / scoping / custodian\n- Pricing comes from the server's buildInstallmentPlan; client cannot override (except admin via amountCadOverride)\n- Scoping payments credit leg 1 automatically\n- STRIPE_SECRET_KEY unset → 503 with a clear message\n- Stripe Checkout URL is returned + a paymentId for the eventual webhook to resolve\n- Tier 4 (custom-quote) sessions cannot mint a checkout without an admin amount override\n- Tests exercise the happy path + the unset-key path",
@@ -36,7 +54,8 @@
     "If STRIPE_SECRET_KEY is set but the webhook secret is wrong, the checkout flow completes but the webhook can't verify the event signature. The webhook returns 200 (to prevent Stripe retry storms) but the payment row stays pending. RUNBOOK §Stripe covers this triage",
     "Custodian Price IDs are env vars; if a Price ID changes in Stripe (e.g. price renamed), this handler will mint a checkout pointing at the stale ID until the env is updated",
     "Scoping credit is applied at plan-computation time only; an admin manually creating a leg 1 payments row would not get the credit automatically",
-    "Stripe Checkout sessions expire 24h after creation; clicking a stale 'pay' link would 404 on Stripe's side. The SPA's PaymentActions re-mints on each click"
+    "Stripe Checkout sessions expire 24h after creation; clicking a stale 'pay' link would 404 on Stripe's side. The SPA's PaymentActions re-mints on each click",
+    "Community discount toggling is frozen once any build leg is paid (server returns 409). For a correction after that, the admin must issue a Stripe refund first (which marks the row 'refunded'), then the freeze releases and the flag becomes toggleable again"
   ],
   "statusHistory": [
     {
@@ -50,6 +69,12 @@
       "to": "frozen",
       "date": "2026-05-23",
       "reason": "Code-first doc co-located. Server-side-pricing and graceful-degrade patterns stable; e2e harness stub is the canonical test path."
+    },
+    {
+      "from": "frozen",
+      "to": "active",
+      "date": "2026-05-24",
+      "reason": "Adding community-pricing flag (sessions.community_discount → 20% off build tiers 1-4). Touches buildInstallmentPlan signature + installmentLabel + payment summary response; needs re-freeze once the operator has verified the discount math against a real Stripe receipt."
     }
   ],
   "lastVerifiedDate": "2026-05-23",
@@ -72,6 +97,12 @@
       "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/payments/checkout.",
       "commit": "dcfea4b",
       "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
+    },
+    {
+      "date": "2026-05-24",
+      "author": "marc+claude",
+      "fields_changed": ["status", "decisions", "knownLimitations", "statusHistory"],
+      "reason": "Community-pricing flag (sessions.community_discount). 20% off build tiers 1-4 only; scoping + custodian unaffected. Operator-applied; frozen after first paid leg via atomic NOT EXISTS guard in PATCH /api/sessions/:id."
     }
   ],
   "annotations": []
