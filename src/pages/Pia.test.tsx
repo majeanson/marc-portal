@@ -38,7 +38,7 @@ function Wrap({ children }: { children: React.ReactNode }) {
 }
 
 describe('Pia page', () => {
-  it('renders both PIA sections with correct anchor ids', () => {
+  it('renders both PIA sections in French with correct anchor ids', () => {
     const { container } = render(
       <Wrap>
         <Pia lang="fr" />
@@ -46,22 +46,24 @@ describe('Pia page', () => {
     )
     // Top-level title (FR chrome)
     expect(screen.getByText(/Évaluations des facteurs/i)).toBeInTheDocument()
-    // Both PIAs render with their canonical h2s
-    expect(screen.getByText(/Sentry integration/i)).toBeInTheDocument()
-    expect(screen.getByText(/Stripe integration/i)).toBeInTheDocument()
+    // Both PIA bodies render their French h2s ({ selector: 'h2' } scopes
+    // away from the Privacy.tsx-style mentions that surface elsewhere on
+    // the page, e.g. inside the Sentry/Stripe prose).
+    expect(screen.getByText(/intégration Sentry/i, { selector: 'h2' })).toBeInTheDocument()
+    expect(screen.getByText(/intégration Stripe/i, { selector: 'h2' })).toBeInTheDocument()
     // Anchors exist for Privacy.tsx deep-links to land on
     expect(container.querySelector('#sentry')).not.toBeNull()
     expect(container.querySelector('#stripe')).not.toBeNull()
   })
 
-  it('renders EN chrome when lang=en', () => {
+  it('renders both PIA sections in English when lang=en', () => {
     render(
       <Wrap>
         <Pia lang="en" />
       </Wrap>,
     )
     expect(screen.getByText(/Privacy Impact Assessments/)).toBeInTheDocument()
-    // Body of the PIA text is English regardless of chrome lang
+    expect(screen.getByText(/Sentry integration/i)).toBeInTheDocument()
     expect(screen.getByText(/Stripe integration/i)).toBeInTheDocument()
   })
 })

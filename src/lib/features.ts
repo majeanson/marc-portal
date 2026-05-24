@@ -158,10 +158,12 @@ export const PAGE_FEATURE: Partial<Record<string, FeatureId>> = {
   'page.meta': 'meta',
   'page.atelier': 'meta',
   'page.map-page': 'meta',
-  // "Ton passage" arc — three meta-tinted pages that surface the visitor's
-  // own data trail. Receipt (per-visit), dossier (per-account contrast vs
-  // common SaaS), au-revoir (the erasure ritual after DELETE /api/me).
+  // "Ton passage" arc — four meta-tinted pages that surface the visitor's
+  // own data trail. Receipt (per-visit), my-data (Loi 25 right-of-access),
+  // dossier (per-account contrast vs common SaaS), au-revoir (the erasure
+  // ritual after DELETE /api/me).
   'page.passage': 'meta',
+  'page.my-data': 'meta',
   'page.dossier': 'meta',
   'page.au-revoir': 'meta',
 }

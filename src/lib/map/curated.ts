@@ -236,6 +236,45 @@ const PAGE_PATCHES = [
     ),
     group: 'group.feat-meta',
   },
+  // The "ton passage" trio + the right-of-access page — meta-tinted
+  // transparency surfaces that complete the Loi 25 arc. Auth-gated for
+  // /me/data + /me/dossier; /passage and /au-revoir are public.
+  {
+    id: 'page.my-data',
+    label: bi('Mes données', 'My data'),
+    desc: bi(
+      'Le droit d’accès Loi 25 — tout ce que je garde sur toi, en clair.',
+      'The Loi 25 right of access — everything I keep on you, in plain words.',
+    ),
+    group: 'group.feat-meta',
+  },
+  {
+    id: 'page.dossier',
+    label: bi('Mon dossier', 'My dossier'),
+    desc: bi(
+      'Ton dossier ici, vu côte à côte avec ce qu’un Facebook garde.',
+      'Your file here, set side by side with what a Facebook keeps.',
+    ),
+    group: 'group.feat-meta',
+  },
+  {
+    id: 'page.passage',
+    label: bi('Ton passage', 'Your visit'),
+    desc: bi(
+      'Reçu de ta visite — témoins, stockage local, pages parcourues. Aucun envoi serveur.',
+      'Receipt of your visit — cookies, local storage, pages walked. Nothing sent server-side.',
+    ),
+    group: 'group.feat-meta',
+  },
+  {
+    id: 'page.au-revoir',
+    label: bi('Au revoir', 'Goodbye'),
+    desc: bi(
+      'La page d’adieu après suppression du compte. Six mots, fond papier.',
+      'The farewell page after account deletion. Six tokens, paper backdrop.',
+    ),
+    group: 'group.feat-meta',
+  },
 
   // 7 — Operator console (admin)
   {
@@ -458,7 +497,17 @@ const GROUPS: MapGroup[] = [
     layer: 'pages',
     visibility: 'public',
     order: 7,
-    nodeIds: ['page.privacy', 'page.pia', 'page.meta', 'page.atelier', 'page.map-page'],
+    nodeIds: [
+      'page.privacy',
+      'page.pia',
+      'page.meta',
+      'page.atelier',
+      'page.map-page',
+      'page.my-data',
+      'page.dossier',
+      'page.passage',
+      'page.au-revoir',
+    ],
   },
   {
     id: 'group.feat-operator',
