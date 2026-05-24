@@ -62,6 +62,33 @@ export async function uploadSketch(
   return uploadForm(sessionId, form)
 }
 
+/**
+ * Upload the intake-time napkin PNG to its own R2-backed attachment row
+ * (kind='napkin'). One per session, server-enforced. The data URL the
+ * Excalidraw exporter hands back is converted to a blob client-side so the
+ * upload is a real multipart payload — not a giant base64 string riding in
+ * `intake_json`. See P1.8 in AUDIT.md.
+ *
+ * Throws ApiError (409) if a napkin already exists for the session; the
+ * intake submit path treats this as a no-op (the napkin is already saved).
+ */
+export async function uploadNapkin(
+  sessionId: string,
+  pngDataUrl: string,
+): Promise<{ attachment: AttachmentRow }> {
+  // fetch() on a data URL synthesizes a Response we can read as a Blob —
+  // saves writing the base64 decoder by hand.
+  const blob = await (await fetch(pngDataUrl)).blob()
+  const form = new FormData()
+  form.append('file', new File([blob], 'napkin.png', { type: 'image/png' }))
+  // ?kind=napkin asks the server to treat this as THE napkin (one-per-session
+  // guard, image/png enforcement, exempt from the orphan-attachment sweep).
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/attachments?kind=napkin`, {
+    method: 'POST',
+    formData: form,
+  })
+}
+
 /** Pre-message uploads I made on this session, that haven't been linked yet. */
 export function listPendingAttachments(sessionId: string): Promise<{
   attachments: AttachmentRow[]

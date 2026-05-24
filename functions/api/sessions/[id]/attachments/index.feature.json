@@ -1,12 +1,20 @@
 {
   "featureKey": "feat-2026-059",
-  "title": "GET + POST /api/sessions/:id/attachments — upload file/voice/sketch",
-  "status": "frozen",
+  "title": "GET + POST /api/sessions/:id/attachments — upload file/voice/sketch/napkin",
+  "status": "active",
   "schemaVersion": 1,
   "domain": "marc-portal/engagement",
   "componentFile": "functions/api/sessions/[id]/attachments/index.ts",
-  "problem": "Messages on a session can carry attachments — documents, voice notes (with auto-transcription), Excalidraw scenes. POST handles upload (one per request, multipart/form-data), deciding the kind from content type: file (streamed to R2), voice (buffered, magic-byte checked, transcribed via Workers AI, stored), sketch (buffered, parsed + shape-checked, stored). Attachments are uploaded BEFORE the message that references them; the messages POST then links them by id. GET lists unlinked uploads the current actor has made for this session — useful for resumed flows where the user navigated away mid-message.",
-  "tags": ["engagement", "r2", "workers-ai", "magic-byte", "two-phase-upload", "graceful-degrade"],
+  "problem": "Messages on a session can carry attachments — documents, voice notes (with auto-transcription), Excalidraw scenes. The intake step can attach a napkin (PNG snapshot of the visitor's sketch, session-scoped, one per session). POST handles upload (one per request, multipart/form-data), deciding the kind from content type by default OR from an explicit `?kind=napkin` query param: file (streamed to R2), voice (buffered, magic-byte checked, transcribed via Workers AI, stored), sketch (buffered, parsed + shape-checked, stored), napkin (image/png streamed to R2, one-per-session enforced, exempt from the orphan-attachment sweep). Thread attachments are uploaded BEFORE the message that references them; the messages POST then links them by id. GET lists unlinked uploads the current actor has made for this session — useful for resumed flows where the user navigated away mid-message.",
+  "tags": [
+    "engagement",
+    "r2",
+    "workers-ai",
+    "magic-byte",
+    "two-phase-upload",
+    "graceful-degrade",
+    "napkin"
+  ],
   "analysis": "POST: canAccessSession + parse multipart. Content type drives the branch — application/* → file kind, audio/* → voice, application/json with shape → sketch. Each branch validates: file streams to R2 (memory-thin to avoid bloating worker memory); voice buffers, magic-byte check via attachments _lib helper, optional Workers AI transcription (if env.AI binding present), store both bytes (R2) + transcript (D1 column); sketch buffers, parse JSON, shape-check Excalidraw scene structure, store as text in D1 (small, no R2 trip). All write an attachments row with message_id = NULL (pre-link state). Per-session storage quota enforced (MAX_ATTACHMENT_BYTES_PER_SESSION) — AUDIT P2.17 work. Per-attachment size limit too. GET: SELECT WHERE session_id = ? AND author = (currentEmail-derived) AND message_id IS NULL — only the actor's own unlinked uploads, so admin and visitor can't see each other's pre-message drafts.",
   "decisions": [
     {
@@ -26,6 +34,12 @@
       "rationale": "Workers AI is an optional binding. If unset, voice attachments still upload + store — they just lack transcripts. The voice playback works fine; only the searchable text is missing. Graceful-degrade pattern. The transcript column can be backfilled later via a one-shot script if Workers AI becomes available.",
       "recommendation": "If transcription is ever required (not optional), the right answer is to fail the upload, not silently store without transcript. Today opportunistic is correct.",
       "date": "2026-05-14"
+    },
+    {
+      "decision": "Napkin kind requires explicit ?kind=napkin — the sniffer never picks it",
+      "rationale": "A napkin PNG looks identical to any other image/png to the content-type sniffer. The kind value carries one-per-session + orphan-sweep-exempt semantics that don't belong on a generic thread attachment; if the sniffer could elect napkin, a visitor's screenshot-as-attachment would silently become THE napkin. Explicit opt-in from the intake client keeps the semantics honest.",
+      "recommendation": "If a 'replace napkin' flow ever appears, layer it as a DELETE-then-POST (admin-gated) rather than allowing two simultaneous napkins or in-place overwrite.",
+      "date": "2026-05-24"
     }
   ],
   "successCriteria": "- Each kind (file / voice / sketch) validates its own content shape before storing\n- Magic-byte sniffing rejects mislabeled files\n- Per-session storage quota enforced; over-quota → 413\n- R2 binding unset → 503 (graceful-degrade)\n- Voice attachments upload even when AI binding unset (transcript = null)\n- GET returns only the current actor's own unlinked uploads for this session\n- Each upload is one row in attachments with message_id = NULL until linked",
@@ -56,6 +70,12 @@
       "to": "frozen",
       "date": "2026-05-23",
       "reason": "Code-first doc co-located. Two-phase upload + magic-byte + quota patterns all stable."
+    },
+    {
+      "from": "frozen",
+      "to": "active",
+      "date": "2026-05-24",
+      "reason": "AUDIT P1.8: napkin moved from intake_json into R2 as a new AttachmentKind. Handler now accepts ?kind=napkin override (one-per-session, image/png only); needs a re-freeze pass once the intake flow has shipped in production for a couple of submits."
     }
   ],
   "lastVerifiedDate": "2026-05-23",
@@ -78,6 +98,12 @@
       "reason": "Initial author — P2 critical-API sweep, co-located doc for /api/sessions/:id/attachments.",
       "commit": "dcfea4b",
       "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
+    },
+    {
+      "date": "2026-05-24",
+      "author": "marc+claude",
+      "fields_changed": ["title", "problem", "tags", "decisions", "status", "statusHistory"],
+      "reason": "AUDIT P1.8 — napkin PNG moved into R2 as a kind='napkin' attachment; handler accepts ?kind=napkin override with one-per-session + image/png enforcement."
     }
   ],
   "annotations": []

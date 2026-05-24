@@ -9,10 +9,15 @@ import { randomTokenB64url } from './bytes'
  *            original feat-message-attachments behaviour.
  *   voice  — an audio recording. Carries a `transcript` (Whisper at the edge).
  *   sketch — an Excalidraw scene (JSON). Re-openable + replayable in-thread.
+ *   napkin — the intake-time PNG snapshot of the visitor's sketch. Session-
+ *            scoped (never linked to a message); rendered in NapkinSection.
+ *            Distinct from `sketch` so the orphan sweep can skip it (it's
+ *            intentionally always message_id=NULL — see digest.ts), and so
+ *            the one-per-session invariant has a kind to key on.
  * Stored explicitly rather than re-derived per render so the thread UI and
  * the orphan sweep don't each re-sniff MIME.
  */
-export type AttachmentKind = 'file' | 'voice' | 'sketch'
+export type AttachmentKind = 'file' | 'voice' | 'sketch' | 'napkin'
 
 export interface AttachmentRow {
   id: string
@@ -57,6 +62,11 @@ export const MAX_VOICE_SIZE = 8 * 1024 * 1024
  *  few hundred KB. 2 MB is generous headroom; the cap just stops a pathological
  *  payload from being buffered + parsed. */
 export const MAX_SKETCH_SIZE = 2 * 1024 * 1024
+
+/** Per-napkin ceiling. An Excalidraw-exported PNG at the canvas's natural
+ *  resolution is comfortably under 2 MB; 4 MB gives us headroom for retina /
+ *  very busy sketches without inviting full-resolution photos as "napkins". */
+export const MAX_NAPKIN_SIZE = 4 * 1024 * 1024
 
 /** Per-message ceiling. Server-enforced via the linker. */
 export const MAX_ATTACHMENTS_PER_MESSAGE = 5
@@ -113,12 +123,37 @@ export function isAllowedContentType(contentType: string): boolean {
 /**
  * Classify an attachment by its content type. The result is persisted in the
  * `kind` column so the thread renderer and the orphan sweep never re-sniff.
+ *
+ * `napkin` is intentionally NOT returned here — a napkin PNG looks like any
+ * other image/png to the sniffer. The upload handler asks for it explicitly
+ * via `?kind=napkin` (one per session, intake submission path).
  */
 export function attachmentKind(contentType: string): AttachmentKind {
   const ct = baseContentType(contentType)
   if (ct.startsWith('audio/')) return 'voice'
   if (ct === EXCALIDRAW_CONTENT_TYPE) return 'sketch'
   return 'file'
+}
+
+/**
+ * Look up the (at most one) napkin attachment for a session. Returns the row
+ * if present, null otherwise. Used by the session-row SELECT to denormalize
+ * `napkin_attachment_id` so SessionPage can build the URL in one round-trip,
+ * and as a precondition check in the upload handler's one-per-session guard.
+ */
+export async function findNapkinForSession(
+  db: D1Database,
+  sessionId: string,
+): Promise<AttachmentRow | null> {
+  return db
+    .prepare(
+      `SELECT ${ATTACHMENT_COLUMNS}
+       FROM attachments
+       WHERE session_id = ? AND kind = 'napkin'
+       LIMIT 1`,
+    )
+    .bind(sessionId)
+    .first<AttachmentRow>()
 }
 
 /**

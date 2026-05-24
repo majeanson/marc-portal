@@ -78,6 +78,12 @@ export interface SessionRow {
    *  build leg is `paid`, the flag is frozen — PATCH /api/sessions/:id rejects
    *  a toggle with 409, same atomic-guard shape as the capacity cap. */
   community_discount: number
+  /** Derived: id of the (single) attachments row with kind='napkin' for this
+   *  session, NULL when no napkin was uploaded. Populated by a correlated
+   *  subquery in every session SELECT so the session view can build the PNG
+   *  URL without a second round-trip. Not stored in the `sessions` table —
+   *  the source of truth is the attachments row. See P1.8 in AUDIT.md. */
+  napkin_attachment_id: string | null
 }
 
 export interface MessageRow {
@@ -183,16 +189,20 @@ export async function requireSessionAccess(
  * SELECT shape stays in lockstep with SessionRow (4 handlers used to inline
  * this same SQL).
  */
+/** Shared session-row SELECT projection. `napkin_attachment_id` is a derived
+ *  correlated subquery rather than a stored column — see SessionRow's comment. */
+export const SESSION_SELECT_COLUMNS = `id, email, intake_json, status, created_at, updated_at,
+        deleted_at, status_history,
+        showcased_at, showcase_title, showcase_tagline, tier,
+        tier4_amount_cents, tier3_split, custodian_status, custodian_plan,
+        all_yours_acknowledged_at, decline_note, community_discount,
+        (SELECT id FROM attachments
+         WHERE session_id = sessions.id AND kind = 'napkin'
+         LIMIT 1) AS napkin_attachment_id`
+
 export async function loadSession(db: D1Database, id: string): Promise<SessionRow | null> {
   return db
-    .prepare(
-      `SELECT id, email, intake_json, status, created_at, updated_at,
-              deleted_at, status_history,
-              showcased_at, showcase_title, showcase_tagline, tier,
-              tier4_amount_cents, tier3_split, custodian_status, custodian_plan,
-              all_yours_acknowledged_at, decline_note, community_discount
-       FROM sessions WHERE id = ?`,
-    )
+    .prepare(`SELECT ${SESSION_SELECT_COLUMNS} FROM sessions WHERE id = ?`)
     .bind(id)
     .first<SessionRow>()
 }

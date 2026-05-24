@@ -973,6 +973,84 @@ npx wrangler d1 execute marc-portal-db --remote --command \
   "SELECT id, kind, installment_index, status, amount_cents FROM payments WHERE session_id = '<sessionId>' AND kind = 'build' AND status = 'paid'"
 ```
 
+## 14. Napkin missing on a session view
+
+**Symptoms:** Visitor sketched on the intake form, submitted, and the
+napkin section on `/session/:id` shows no image (or worse, a broken
+`<img>`). The other intake details look right.
+
+### What happens (system behavior)
+
+Since P1.8 the napkin PNG is stored as a `kind='napkin'` row in
+`attachments` (R2-backed), not inline in `intake_json`. The intake
+client does two requests in sequence:
+
+1. `POST /api/sessions` creates the session row. The PNG is **not** in
+   the payload; only the editable scene + caption + form answers ride
+   in `intake_json`.
+2. `POST /api/sessions/:id/attachments?kind=napkin` uploads the PNG.
+
+Step 2 is best-effort. If it fails, the session still exists — the
+orchestrator (`src/lib/submitIntake.ts`) logs the upload error to Sentry
+via `captureException` and proceeds. The visitor never sees a hard
+error; they land on the confirmation page as if the submit fully
+succeeded.
+
+The session view (`src/pages/SessionPage.tsx`) builds the napkin's URL
+from `session.napkin_attachment_id` (a derived field surfaced by every
+session SELECT via a correlated subquery on the `attachments` table).
+If that field is `NULL` AND the legacy inline `intake_json.napkin.png`
+data URL is absent, NapkinSection is dropped entirely.
+
+### Step-by-step — visitor says their sketch is missing
+
+1. **Check Sentry first.** A `napkin upload failed: …` event from
+   `Intake.tsx` (signed-in submit) or `MePortal.tsx` (post-magic-link
+   finalize) will be present. The event's `sessionId` extra ties it to
+   the affected row.
+
+2. **Check the D1 row:**
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "SELECT id, kind FROM attachments WHERE session_id = '<sessionId>'"
+   ```
+   - No `kind='napkin'` row → the upload truly failed. Continue to step 3.
+   - One `kind='napkin'` row but the visitor can't see it → check R2.
+
+3. **Check R2** (the object SHOULD be at `sessions/<sessionId>/<attachmentId>`):
+   ```bash
+   npx wrangler r2 object get marc-portal-media \
+     "sessions/<sessionId>/<attachmentId>" --pipe > /tmp/check.png
+   ```
+   A non-zero file means the object exists and the issue is client-
+   side rendering (cache, CSP, browser console for clues). A 404 means
+   the DB row points at a missing R2 object — see step 4.
+
+4. **Recovery: ask the visitor to redraw + resubmit.** Don't try to
+   patch the DB row in place. The intake draft is preserved across the
+   magic-link round-trip, so the visitor's scene is usually still in
+   their browser's `intake-draft` localStorage. Telling them
+   "your sketch didn't make it — open intake and resubmit" is the
+   cheapest recovery; the new submit hits the same code path with a
+   fresh upload attempt.
+
+5. **If R2 is the wider issue** (multiple napkins failed in a short
+   window), check `gh run view --log` on the latest deploy for
+   `env.MEDIA` binding warnings, and the Cloudflare R2 dashboard for
+   error rates. The intake page hides the sketch step gracefully when
+   R2 is unbound (the upload returns 503), but a *transient* R2
+   outage would manifest as Sentry events with no graceful-degrade.
+
+### Why we don't auto-retry server-side
+
+The orchestrator could re-POST the napkin on failure, but the failure
+modes that actually fire (R2 transient, magic-byte rejection on a
+malformed PNG, per-session quota exceeded by a bad client) are not
+helped by retry — they need either a human looking at Sentry or a
+visitor-driven redo. Carrying the data URL forward in a
+client-side retry queue is the next step if Sentry events start
+clustering; until then, the redo-from-draft path is enough.
+
 ## Payments setup (one-time) — Stripe
 
 Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card

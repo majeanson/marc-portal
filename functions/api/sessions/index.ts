@@ -8,7 +8,12 @@ import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
 import { badRequest, conflict, ok, tooManyRequests, unauthorized } from '../../_lib/json'
 import { clientIp, rateLimitCheck, rateLimitSweep } from '../../_lib/ratelimit'
-import { countActiveAndTriage, isTriageAtCap, type SessionRow } from '../../_lib/sessions'
+import {
+  countActiveAndTriage,
+  isTriageAtCap,
+  SESSION_SELECT_COLUMNS,
+  type SessionRow,
+} from '../../_lib/sessions'
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
@@ -22,21 +27,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   const stmt = admin
     ? env.DB.prepare(
-        `SELECT id, email, intake_json, status, created_at, updated_at,
-                deleted_at, status_history,
-                showcased_at, showcase_title, showcase_tagline, tier,
-                tier4_amount_cents, tier3_split, custodian_status, custodian_plan,
-                all_yours_acknowledged_at, decline_note, community_discount
+        `SELECT ${SESSION_SELECT_COLUMNS}
          FROM sessions
          WHERE deleted_at ${wantDeleted ? 'IS NOT NULL' : 'IS NULL'}
          ORDER BY updated_at DESC`,
       )
     : env.DB.prepare(
-        `SELECT id, email, intake_json, status, created_at, updated_at,
-                deleted_at, status_history,
-                showcased_at, showcase_title, showcase_tagline, tier,
-                tier4_amount_cents, tier3_split, custodian_status, custodian_plan,
-                all_yours_acknowledged_at, decline_note, community_discount
+        `SELECT ${SESSION_SELECT_COLUMNS}
          FROM sessions WHERE email = ? AND deleted_at IS NULL
          ORDER BY updated_at DESC`,
       ).bind(email)
@@ -92,12 +89,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       typeof body.intakeJson === 'string' ? body.intakeJson : JSON.stringify(body.intakeJson)
   }
 
-  // Defensive size cap on the serialized intake. The napkin sketch is the
-  // only field that can grow large (data-URL PNG); a misbehaving client
-  // could blow up a DB row otherwise. 1 MB is generous for a normal intake
-  // (text only is ~5 KB) and tight enough to refuse abusive PNGs. Once
-  // napkin moves to R2 (P1.8) this ceiling becomes purely belt-and-suspenders.
-  const MAX_INTAKE_BYTES = 1024 * 1024
+  // Defensive size cap on the serialized intake. The PNG snapshot of the
+  // napkin sketch was the only field that could grow large; after P1.8 it
+  // lives in R2 (uploaded as a separate kind='napkin' attachment by the
+  // intake client), and only the editable scene JSON + caption + form
+  // answers remain inline. 256 KB is comfortable headroom for a busy
+  // Excalidraw scene; a real intake is well under 50 KB. The cap survives
+  // as defense-in-depth against a misbehaving client pasting back a PNG.
+  const MAX_INTAKE_BYTES = 256 * 1024
   if (intakeJson && intakeJson.length > MAX_INTAKE_BYTES) {
     return badRequest('intake payload too large')
   }
@@ -132,6 +131,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     all_yours_acknowledged_at: null,
     decline_note: null,
     community_discount: 0,
+    // The intake client may follow up with a napkin upload (POST
+    // /api/sessions/:id/attachments?kind=napkin). At the moment of this
+    // synthetic return there is no attachment yet — the client doesn't
+    // need this field on the create response.
+    napkin_attachment_id: null,
   }
   return ok({ session: row })
 }

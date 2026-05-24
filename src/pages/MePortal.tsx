@@ -8,11 +8,12 @@ import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
 import {
   listSessions,
-  createSession,
   deleteMyAccount,
   type SessionRow,
   type SessionStatus,
 } from '../lib/sessionsApi'
+import { submitIntake } from '../lib/submitIntake'
+import { captureException } from '../lib/sentry'
 import { clearDraft, loadDraftWithTTL } from '../lib/draft'
 import { markJustErased } from '../lib/erasureFlag'
 import { PENDING_INTAKE_KEY, type PendingIntake } from './Intake'
@@ -322,8 +323,17 @@ export function MePortal({ lang }: { lang: Lang }) {
     let cancelled = false
     ;(async () => {
       try {
-        const { session } = await createSession(pending.intake)
+        // Same orchestrator as Intake.tsx — splits the napkin PNG off into
+        // its own R2-backed attachment after the session POST. A napkin-
+        // upload failure here is reported but does not abort the navigate;
+        // the visitor's session is what matters.
+        const { session, napkinUploadError } = await submitIntake(pending.intake)
         if (cancelled) return
+        if (napkinUploadError) {
+          captureException(new Error(`napkin upload failed (post-link): ${napkinUploadError}`), {
+            sessionId: session.id,
+          })
+        }
         clearDraft(PENDING_INTAKE_KEY)
         clearDraft('intake-draft')
         navigate(`${langPrefix}/session/${session.id}`, { replace: true })

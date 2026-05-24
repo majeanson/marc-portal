@@ -17,14 +17,15 @@ import type { VoiceNapkin } from '../lib/intakeMediaApi'
 import { flagSet, flagWrite, loadDraft, saveDraft, clearDraft } from '../lib/draft'
 import { useAuth } from '../lib/authContext'
 import {
-  createSession,
   getCapacityLive,
   getIntakeDraft,
   saveIntakeDraft,
   clearIntakeDraft,
   type SessionStatus,
 } from '../lib/sessionsApi'
+import { submitIntake } from '../lib/submitIntake'
 import { ApiError } from '../lib/api'
+import { captureException } from '../lib/sentry'
 
 type Step = 'vibe' | 'account' | 'type' | 'form' | 'confirmation'
 
@@ -280,9 +281,19 @@ export function Intake({ lang }: { lang: Lang }) {
 
     if (isSameLoggedInUser) {
       try {
-        const { session } = await createSession(intakePayload)
-        // Successful submit — drop the server-side draft (best-effort). The
-        // sketch rode along inside intakePayload; it's in the session now.
+        // submitIntake splits the napkin PNG off into its own R2-backed
+        // attachment upload (kind='napkin') after the session POST. The
+        // editable scene + caption stay in intake_json. A napkin-upload
+        // failure does NOT abort the submit — the session is the load-
+        // bearing part. We log to Sentry so the failure is visible without
+        // surfacing an error the visitor can't act on.
+        const { session, napkinUploadError } = await submitIntake(intakePayload)
+        if (napkinUploadError) {
+          captureException(new Error(`napkin upload failed: ${napkinUploadError}`), {
+            sessionId: session.id,
+          })
+        }
+        // Successful submit — drop the server-side draft (best-effort).
         clearIntakeDraft().catch(() => {})
         const next: IntakeDraft = {
           ...draft,

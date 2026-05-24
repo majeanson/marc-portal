@@ -35,6 +35,7 @@ import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSche
 import { computeSla, formatDateTime, formatRelativeWindow } from '../lib/format'
 import { markSeen } from '../lib/unread'
 import {
+  attachmentUrl,
   deleteAttachment,
   formatFileSize,
   uploadAttachment,
@@ -91,22 +92,24 @@ function tryParseIntake(raw: string | null): ParsedIntake | null {
     ) {
       let napkin: ParsedNapkin | undefined
       const n = (obj as { napkin?: unknown }).napkin
-      if (
-        n &&
-        typeof n === 'object' &&
-        typeof (n as ParsedNapkin).png === 'string' &&
-        typeof (n as ParsedNapkin).text === 'string'
-      ) {
-        // The editable scene only rides on intakes submitted after the napkin
-        // was folded into the form; guard its shape so older PNG-only sessions
-        // (and any malformed payload) still parse.
+      if (n && typeof n === 'object' && typeof (n as ParsedNapkin).text === 'string') {
+        // Three intake-payload generations live concurrently:
+        //   pre-fold (legacy):    napkin = { png(data URL), text, savedAt }
+        //   in-form, pre-P1.8:    napkin = { png(data URL), text, savedAt, scene }
+        //   in-form, post-P1.8:   napkin = { text, savedAt, scene } — the PNG
+        //                         lives in R2 as a kind='napkin' attachment;
+        //                         the render layer fills `png` from
+        //                         session.napkin_attachment_id below.
+        // We accept a missing png in the payload; the caller injects the
+        // attachment URL when applicable.
+        const png = typeof (n as ParsedNapkin).png === 'string' ? (n as ParsedNapkin).png : ''
         const sc = (n as { scene?: unknown }).scene
         const scene =
           sc && typeof sc === 'object' && Array.isArray((sc as NapkinScene).elements)
             ? { elements: (sc as NapkinScene).elements }
             : undefined
         napkin = {
-          png: (n as ParsedNapkin).png,
+          png,
           text: (n as ParsedNapkin).text,
           savedAt: (n as ParsedNapkin).savedAt ?? '',
           scene,
@@ -906,6 +909,19 @@ export function SessionPage({ lang }: { lang: Lang }) {
   const backLabel = isAdmin ? t.backToInbox : t.backToMe
   const intakeText = session.intake_json
   const parsed = tryParseIntake(intakeText)
+  // P1.8: the napkin PNG now lives as a kind='napkin' R2 attachment. Old
+  // sessions still carry it inline as a data URL in intake_json.napkin.png;
+  // new ones leave that field empty and rely on session.napkin_attachment_id.
+  // Fill `png` here so NapkinSection stays URL-agnostic.
+  if (parsed?.napkin && !parsed.napkin.png && session.napkin_attachment_id) {
+    parsed.napkin.png = attachmentUrl(session.id, session.napkin_attachment_id)
+  }
+  // A napkin with neither a stored data URL nor an attachment id is a no-op
+  // (the visitor never drew); drop it so NapkinSection doesn't render an
+  // empty image element.
+  if (parsed?.napkin && !parsed.napkin.png) {
+    parsed.napkin = undefined
+  }
   // Fallback only when parse fails — let users see the raw stored payload.
   let intakePretty: string | null = null
   if (!parsed && intakeText) {

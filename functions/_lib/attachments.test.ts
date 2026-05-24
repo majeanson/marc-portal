@@ -3,9 +3,11 @@ import {
   attachmentKind,
   baseContentType,
   EXCALIDRAW_CONTENT_TYPE,
+  findNapkinForSession,
   isAllowedContentType,
   MAX_ATTACHMENT_SIZE,
   MAX_ATTACHMENTS_PER_MESSAGE,
+  MAX_NAPKIN_SIZE,
   MAX_SKETCH_SIZE,
   MAX_VOICE_SIZE,
   newAttachmentId,
@@ -13,6 +15,8 @@ import {
   safeFilename,
   verifyMagicBytesBuffer,
 } from './attachments'
+import { D1Mock } from '../../tests/d1-mock'
+import type { D1Database } from '@cloudflare/workers-types'
 
 describe('isAllowedContentType', () => {
   it('accepts image/* and text/*', () => {
@@ -78,6 +82,14 @@ describe('attachmentKind', () => {
     expect(attachmentKind('image/png')).toBe('file')
     expect(attachmentKind('application/pdf')).toBe('file')
     expect(attachmentKind('application/json')).toBe('file')
+  })
+
+  it("never classifies image/png as 'napkin' — that requires explicit opt-in", () => {
+    // The napkin kind exists, but it's only set when the upload handler is
+    // called with `?kind=napkin`. A bare image/png upload from a thread
+    // attachment must still classify as 'file', or the orphan sweep would
+    // skip it incorrectly (napkin is exempt; thread attachments are not).
+    expect(attachmentKind('image/png')).toBe('file')
   })
 })
 
@@ -163,5 +175,137 @@ describe('constants', () => {
     expect(MAX_SKETCH_SIZE).toBe(2 * 1024 * 1024)
     expect(MAX_VOICE_SIZE).toBeLessThan(MAX_ATTACHMENT_SIZE)
     expect(MAX_SKETCH_SIZE).toBeLessThan(MAX_ATTACHMENT_SIZE)
+  })
+
+  it('napkin ceiling sits below the streamed-file ceiling', () => {
+    expect(MAX_NAPKIN_SIZE).toBe(4 * 1024 * 1024)
+    expect(MAX_NAPKIN_SIZE).toBeLessThan(MAX_ATTACHMENT_SIZE)
+  })
+})
+
+describe('findNapkinForSession', () => {
+  it('returns null when no napkin attached', async () => {
+    const db = new D1Mock()
+    db.sessions.set('s1', {
+      id: 's1',
+      email: 'v@x',
+      intake_json: null,
+      status: 'draft',
+      created_at: 1,
+      updated_at: 1,
+      deleted_at: null,
+      status_history: null,
+      showcased_at: null,
+      showcase_title: null,
+      showcase_tagline: null,
+    })
+    const got = await findNapkinForSession(db as unknown as D1Database, 's1')
+    expect(got).toBeNull()
+  })
+
+  it('returns the napkin row when one exists', async () => {
+    const db = new D1Mock()
+    db.attachments.set('a1', {
+      id: 'a1',
+      session_id: 's1',
+      message_id: null,
+      uploaded_by: 'v@x',
+      filename: 'napkin.png',
+      content_type: 'image/png',
+      size: 1024,
+      r2_key: 'sessions/s1/a1',
+      created_at: 1,
+      kind: 'napkin',
+    })
+    const got = await findNapkinForSession(db as unknown as D1Database, 's1')
+    expect(got?.id).toBe('a1')
+    expect(got?.kind).toBe('napkin')
+  })
+
+  it('orphan-sweep SQL skips kind=napkin while collecting other orphans', async () => {
+    // Direct query path — mirrors the SQL in functions/api/admin/digest.ts.
+    // Proves the d1-mock filter matches the production WHERE clause.
+    const db = new D1Mock()
+    const oldEnough = 1
+    const recent = 9_999_999_999
+    db.attachments.set('orphan_file', {
+      id: 'orphan_file',
+      session_id: 's1',
+      message_id: null,
+      uploaded_by: 'v@x',
+      filename: 'leftover.pdf',
+      content_type: 'application/pdf',
+      size: 100,
+      r2_key: 'sessions/s1/orphan_file',
+      created_at: oldEnough,
+      kind: 'file',
+    })
+    db.attachments.set('napkin', {
+      id: 'napkin',
+      session_id: 's1',
+      message_id: null,
+      uploaded_by: 'v@x',
+      filename: 'napkin.png',
+      content_type: 'image/png',
+      size: 100,
+      r2_key: 'sessions/s1/napkin',
+      created_at: oldEnough,
+      kind: 'napkin',
+    })
+    db.attachments.set('linked', {
+      id: 'linked',
+      session_id: 's1',
+      message_id: 'm1',
+      uploaded_by: 'v@x',
+      filename: 'doc.pdf',
+      content_type: 'application/pdf',
+      size: 100,
+      r2_key: 'sessions/s1/linked',
+      created_at: oldEnough,
+      kind: 'file',
+    })
+
+    const res = await db
+      .prepare(
+        `SELECT id, r2_key FROM attachments
+         WHERE message_id IS NULL AND kind != 'napkin' AND created_at < ?`,
+      )
+      .bind(recent)
+      .all<{ id: string; r2_key: string }>()
+
+    const ids = (res.results ?? []).map((r) => r.id)
+    expect(ids).toEqual(['orphan_file'])
+    expect(ids).not.toContain('napkin')
+    expect(ids).not.toContain('linked')
+  })
+
+  it('ignores attachments of other kinds (sketch, file, voice)', async () => {
+    const db = new D1Mock()
+    db.attachments.set('a_sketch', {
+      id: 'a_sketch',
+      session_id: 's1',
+      message_id: 'm1',
+      uploaded_by: 'v@x',
+      filename: 'doodle.excalidraw',
+      content_type: EXCALIDRAW_CONTENT_TYPE,
+      size: 1024,
+      r2_key: 'sessions/s1/a_sketch',
+      created_at: 1,
+      kind: 'sketch',
+    })
+    db.attachments.set('a_file', {
+      id: 'a_file',
+      session_id: 's1',
+      message_id: null,
+      uploaded_by: 'v@x',
+      filename: 'photo.png',
+      content_type: 'image/png',
+      size: 1024,
+      r2_key: 'sessions/s1/a_file',
+      created_at: 1,
+      kind: 'file',
+    })
+    const got = await findNapkinForSession(db as unknown as D1Database, 's1')
+    expect(got).toBeNull()
   })
 })

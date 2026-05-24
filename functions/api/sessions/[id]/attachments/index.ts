@@ -20,6 +20,7 @@ import type { Env } from '../../../../_lib/env'
 import { isAdmin } from '../../../../_lib/env'
 import {
   badRequest,
+  conflict,
   ok,
   payloadTooLarge,
   serviceUnavailable,
@@ -33,9 +34,11 @@ import { transcribeAudio } from '../../../../_lib/transcribe'
 import {
   ATTACHMENT_COLUMNS,
   attachmentKind,
+  findNapkinForSession,
   isAllowedContentType,
   MAX_ATTACHMENT_BYTES_PER_SESSION,
   MAX_ATTACHMENT_SIZE,
+  MAX_NAPKIN_SIZE,
   MAX_SKETCH_SIZE,
   MAX_VOICE_SIZE,
   newAttachmentId,
@@ -53,6 +56,7 @@ import {
 function sizeCapFor(kind: AttachmentKind): number {
   if (kind === 'voice') return MAX_VOICE_SIZE
   if (kind === 'sketch') return MAX_SKETCH_SIZE
+  if (kind === 'napkin') return MAX_NAPKIN_SIZE
   return MAX_ATTACHMENT_SIZE
 }
 
@@ -106,7 +110,33 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   if (!isAllowedContentType(file.type)) {
     return unsupportedMediaType(`content type not allowed: ${file.type || 'unknown'}`)
   }
-  const kind = attachmentKind(file.type)
+
+  // `?kind=napkin` opts into the intake-time napkin path: the PNG snapshot
+  // of the visitor's Excalidraw sketch, attached at session-creation. The
+  // sniffer would otherwise classify image/png as `'file'` — napkin needs an
+  // explicit caller to mean "this is THE napkin, enforce one-per-session".
+  // Every other kind (file/voice/sketch) is derived from the content type.
+  const url = new URL(request.url)
+  const requestedKind = url.searchParams.get('kind')
+  let kind: AttachmentKind
+  if (requestedKind === 'napkin') {
+    if (file.type !== 'image/png') {
+      return unsupportedMediaType('napkin must be image/png')
+    }
+    // One napkin per session — the intake serializes a single sketch. A
+    // re-submit / re-upload story doesn't exist in v1, so a second POST
+    // would silently shadow the first; refuse with 409 instead. The
+    // visitor can delete the existing one (admin-gated) if a redo is
+    // really needed.
+    const existing = await findNapkinForSession(env.DB, id)
+    if (existing) return conflict('napkin already exists for this session')
+    kind = 'napkin'
+  } else if (requestedKind && requestedKind !== 'file') {
+    return badRequest(`unknown kind: ${requestedKind}`)
+  } else {
+    kind = attachmentKind(file.type)
+  }
+
   if (file.size > sizeCapFor(kind)) {
     return payloadTooLarge(
       `file exceeds the ${Math.round(sizeCapFor(kind) / 1024 / 1024)} MB limit`,
@@ -131,7 +161,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   let r2Body: ReadableStream | ArrayBuffer
   let transcript: string | null = null
 
-  if (kind === 'file') {
+  // Streamed path: file uploads + napkin PNGs. Both are binary blobs we
+  // want straight to R2 without buffering in worker memory. The magic-byte
+  // check rewraps the stream so the upload still works.
+  if (kind === 'file' || kind === 'napkin') {
     // Magic-byte check on a streamed file: refuse a payload whose first bytes
     // don't match the declared Content-Type for the high-value classes. The
     // client-supplied MIME isn't trusted. Returns a fresh stream (the original

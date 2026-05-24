@@ -122,6 +122,12 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
   // IS NULL) older than 7 days. Visitors who upload but never send a message
   // leave R2 + DB rows behind; this sweep reclaims them. R2 objects are
   // deleted alongside the DB row so we don't leak storage.
+  //
+  // `kind = 'napkin'` is excluded: napkin attachments are session-scoped by
+  // design (one per session, never linked to a message), so they would
+  // otherwise be eligible for sweep the moment they age out. The napkin
+  // belongs to the intake — it stays alive as long as the session does, and
+  // is erased via /api/me's cascade when the visitor erases their data.
   try {
     const orphanCutoff = now - 7 * 86_400
     interface OrphanRow {
@@ -130,7 +136,7 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     }
     const orphans = await env.DB.prepare(
       `SELECT id, r2_key FROM attachments
-       WHERE message_id IS NULL AND created_at < ?`,
+       WHERE message_id IS NULL AND kind != 'napkin' AND created_at < ?`,
     )
       .bind(orphanCutoff)
       .all<OrphanRow>()

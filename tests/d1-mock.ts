@@ -75,6 +75,12 @@ interface AttachmentRowMock {
   size: number
   r2_key: string
   created_at: number
+  /** Mirrors AttachmentKind in functions/_lib/attachments.ts. Defaults to
+   *  'file' so existing tests that omit it keep working — same shape as the
+   *  real schema's DEFAULT 'file'. */
+  kind?: string
+  /** Voice notes only; left unset for everything else. */
+  transcript?: string | null
 }
 
 interface RateLimitRowMock {
@@ -286,7 +292,7 @@ class MockPreparedStatement {
     // SELECT session by id (full)
     if (sql.includes('FROM sessions WHERE id = ?') && sql.includes('SELECT id, email')) {
       const s = this.db.sessions.get(a[0] as string)
-      return s ? [projectSession(s)] : []
+      return s ? [projectSession(this.db, s)] : []
     }
 
     // SELECT session list (admin all live)
@@ -297,7 +303,7 @@ class MockPreparedStatement {
       const out = [...this.db.sessions.values()]
         .filter((s) => s.deleted_at === null)
         .sort((x, y) => y.updated_at - x.updated_at)
-      return out.map(projectSession)
+      return out.map((s) => projectSession(this.db, s))
     }
 
     // SELECT session list (admin trash)
@@ -309,7 +315,7 @@ class MockPreparedStatement {
       const out = [...this.db.sessions.values()]
         .filter((s) => s.deleted_at !== null)
         .sort((x, y) => y.updated_at - x.updated_at)
-      return out.map(projectSession)
+      return out.map((s) => projectSession(this.db, s))
     }
 
     // SELECT session list (visitor own)
@@ -320,7 +326,7 @@ class MockPreparedStatement {
       const out = [...this.db.sessions.values()]
         .filter((s) => s.email === (a[0] as string) && s.deleted_at === null)
         .sort((x, y) => y.updated_at - x.updated_at)
-      return out.map(projectSession)
+      return out.map((s) => projectSession(this.db, s))
     }
 
     // SELECT messages by session
@@ -361,6 +367,19 @@ class MockPreparedStatement {
       return [{ ...att }]
     }
 
+    // SELECT ... FROM attachments WHERE session_id = ? AND kind = 'napkin' LIMIT 1
+    // — findNapkinForSession + the upload handler's one-per-session check.
+    if (
+      sql.includes('FROM attachments') &&
+      sql.includes("kind = 'napkin'") &&
+      sql.includes('WHERE session_id = ?')
+    ) {
+      for (const at of this.db.attachments.values()) {
+        if (at.session_id === a[0] && at.kind === 'napkin') return [{ ...at }]
+      }
+      return []
+    }
+
     // SELECT attachments WHERE session_id = ? AND uploaded_by = ? AND message_id IS NULL
     if (
       sql.includes('FROM attachments') &&
@@ -385,15 +404,18 @@ class MockPreparedStatement {
       return [{ total }]
     }
 
-    // SELECT id, r2_key FROM attachments WHERE message_id IS NULL AND created_at < ?
+    // SELECT id, r2_key FROM attachments WHERE message_id IS NULL
+    //   AND kind != 'napkin' AND created_at < ?
     if (
       sql.includes('FROM attachments') &&
       sql.includes('WHERE message_id IS NULL') &&
       sql.includes('created_at <')
     ) {
       const cutoff = a[0] as number
+      const skipNapkin = sql.includes("kind != 'napkin'")
       const out = [...this.db.attachments.values()]
         .filter((at) => at.message_id === null && at.created_at < cutoff)
+        .filter((at) => (skipNapkin ? at.kind !== 'napkin' : true))
         .map((at) => ({ id: at.id, r2_key: at.r2_key }))
       return out
     }
@@ -928,7 +950,12 @@ class MockPreparedStatement {
     }
 
     if (sql.startsWith('INSERT INTO attachments')) {
+      // `message_id` is a literal NULL in the INSERT (no bind), so the
+      // bind order in both the pre-migration and post-migration handlers
+      // is: id, session_id, uploaded_by, filename, content_type, size,
+      // r2_key, created_at[, kind, transcript].
       const id = a[0] as string
+      const hasKind = sql.includes('kind')
       this.db.attachments.set(id, {
         id,
         session_id: a[1] as string,
@@ -939,6 +966,8 @@ class MockPreparedStatement {
         size: a[5] as number,
         r2_key: a[6] as string,
         created_at: a[7] as number,
+        kind: hasKind ? (a[8] as string) : 'file',
+        transcript: hasKind ? ((a[9] as string | null) ?? null) : null,
       })
       return 1
     }
@@ -1297,9 +1326,24 @@ function norm(sql: string): string {
  *  DEFAULT 0 in the real schema. The mock seed paths often omit these,
  *  so the spread would surface `undefined` where the production DB
  *  always returns 0. Mirroring that here keeps `Boolean(row.X)`-style
- *  defenses in handler code honest at test time too. */
-function projectSession(s: SessionRowMock): Record<string, unknown> {
-  return { ...s, community_discount: s.community_discount ?? 0 }
+ *  defenses in handler code honest at test time too.
+ *
+ *  `napkin_attachment_id` is a derived correlated subquery on the real
+ *  query — we recompute it here from the attachments map so the mock
+ *  agrees with production on its presence/absence. */
+function projectSession(db: D1Mock, s: SessionRowMock): Record<string, unknown> {
+  let napkin_attachment_id: string | null = null
+  for (const at of db.attachments.values()) {
+    if (at.session_id === s.id && at.kind === 'napkin') {
+      napkin_attachment_id = at.id
+      break
+    }
+  }
+  return {
+    ...s,
+    community_discount: s.community_discount ?? 0,
+    napkin_attachment_id,
+  }
 }
 
 export function makeMockEnv(over: Record<string, unknown> = {}) {

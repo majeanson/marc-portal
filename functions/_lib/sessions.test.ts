@@ -9,6 +9,7 @@ import {
   isActiveAtCap,
   isTriageAtCap,
   isValidStatus,
+  loadSession,
   parseStatusHistory,
   primaryAdminEmail,
   requireSessionAccess,
@@ -29,6 +30,23 @@ function makeSession(over: Partial<SessionRow> = {}): SessionRow {
     status_history: null,
     ...over,
   }
+}
+
+function seedSession(db: D1Mock, over: Record<string, unknown> = {}): void {
+  db.sessions.set('s1', {
+    id: 's1',
+    email: 'visitor@x.com',
+    intake_json: null,
+    status: 'draft',
+    created_at: 1,
+    updated_at: 1,
+    deleted_at: null,
+    status_history: null,
+    showcased_at: null,
+    showcase_title: null,
+    showcase_tagline: null,
+    ...over,
+  })
 }
 
 describe('isValidStatus', () => {
@@ -240,5 +258,90 @@ describe('requireSessionAccess', () => {
     const db = dbWith([{ id: 's', email: 'visitor@x.com' }])
     const r = await requireSessionAccess(db, 's', admin)
     expect((r as SessionRow).email).toBe('visitor@x.com')
+  })
+})
+
+describe('loadSession — napkin_attachment_id derivation', () => {
+  // The session SELECT now carries a correlated subquery that surfaces the
+  // (single) kind='napkin' attachment's id, so SessionPage can build the
+  // PNG URL in one round-trip. These tests prove the projection is wired.
+
+  it('returns null napkin_attachment_id when no napkin attached', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    const row = await loadSession(db as unknown as D1Database, 's1')
+    expect(row?.napkin_attachment_id).toBeNull()
+  })
+
+  it('surfaces the attachment id when a kind=napkin row exists', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    db.attachments.set('nap1', {
+      id: 'nap1',
+      session_id: 's1',
+      message_id: null,
+      uploaded_by: 'visitor@x.com',
+      filename: 'napkin.png',
+      content_type: 'image/png',
+      size: 1024,
+      r2_key: 'sessions/s1/nap1',
+      created_at: 1,
+      kind: 'napkin',
+    })
+    const row = await loadSession(db as unknown as D1Database, 's1')
+    expect(row?.napkin_attachment_id).toBe('nap1')
+  })
+
+  it('ignores other-kind attachments on the same session', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    db.attachments.set('a_file', {
+      id: 'a_file',
+      session_id: 's1',
+      message_id: null,
+      uploaded_by: 'visitor@x.com',
+      filename: 'doc.pdf',
+      content_type: 'application/pdf',
+      size: 1024,
+      r2_key: 'sessions/s1/a_file',
+      created_at: 1,
+      kind: 'file',
+    })
+    const row = await loadSession(db as unknown as D1Database, 's1')
+    expect(row?.napkin_attachment_id).toBeNull()
+  })
+
+  it("doesn't leak napkin ids across sessions", async () => {
+    const db = new D1Mock()
+    seedSession(db, { id: 's1' })
+    db.sessions.set('s2', {
+      id: 's2',
+      email: 'other@x.com',
+      intake_json: null,
+      status: 'draft',
+      created_at: 2,
+      updated_at: 2,
+      deleted_at: null,
+      status_history: null,
+      showcased_at: null,
+      showcase_title: null,
+      showcase_tagline: null,
+    })
+    db.attachments.set('nap2', {
+      id: 'nap2',
+      session_id: 's2',
+      message_id: null,
+      uploaded_by: 'other@x.com',
+      filename: 'napkin.png',
+      content_type: 'image/png',
+      size: 1024,
+      r2_key: 'sessions/s2/nap2',
+      created_at: 2,
+      kind: 'napkin',
+    })
+    const s1 = await loadSession(db as unknown as D1Database, 's1')
+    const s2 = await loadSession(db as unknown as D1Database, 's2')
+    expect(s1?.napkin_attachment_id).toBeNull()
+    expect(s2?.napkin_attachment_id).toBe('nap2')
   })
 })

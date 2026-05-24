@@ -67,12 +67,19 @@ export interface SessionRow {
    *  installment is `paid` the flag is frozen (server returns 409 on toggle).
    *  Scoping + custodian are unaffected by the flag. */
   community_discount: number
+  /** Derived from a correlated subquery on `attachments` — the id of the
+   *  (single) kind='napkin' attachment, or null when no napkin was
+   *  uploaded with the intake. Lets SessionPage build the PNG URL via
+   *  `attachmentUrl(sessionId, napkin_attachment_id)` in one round-trip. */
+  napkin_attachment_id: string | null
 }
 
 /** What an attachment is — mirrors AttachmentKind in functions/_lib/attachments.ts.
  *  'file' = a picked document, 'voice' = an audio recording (carries a
- *  transcript), 'sketch' = an Excalidraw scene. */
-export type AttachmentKind = 'file' | 'voice' | 'sketch'
+ *  transcript), 'sketch' = an Excalidraw scene, 'napkin' = the intake-time
+ *  PNG snapshot of the visitor's sketch (one per session, never linked to
+ *  a message; rendered by NapkinSection). */
+export type AttachmentKind = 'file' | 'voice' | 'sketch' | 'napkin'
 
 export interface AttachmentRow {
   id: string
@@ -84,7 +91,7 @@ export interface AttachmentRow {
   size: number
   r2_key: string
   created_at: number
-  /** 'file' | 'voice' | 'sketch'. */
+  /** 'file' | 'voice' | 'sketch' | 'napkin'. */
   kind: AttachmentKind
   /** Voice notes only: the edge-transcribed text. NULL otherwise. */
   transcript: string | null

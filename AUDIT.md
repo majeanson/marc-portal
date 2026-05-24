@@ -58,19 +58,27 @@
   `result.meta.changes === 0`. Atomic in SQLite. Mock updated, tests pass.
 
 ### Napkin PNG schema bomb
-- ⏭ **P1.8** — Move napkin PNG out of `intake_json` into R2. **Deferred.**
-  Two reasons: (1) dataset is tiny today (~handful of napkin rows; the schema
-  bomb is preventative, not actively hurting); (2) doing it correctly is a
-  multi-step refactor (session row must exist before the FK-constrained
-  attachment row, so we'd need either a two-phase POST, a placeholder-then-
-  update flow, or a multipart upload endpoint — each with its own error
-  recovery story). Defense-in-depth meanwhile: the 1 MB intake payload cap
-  (P3.5) refuses oversized napkins at the server boundary. Re-open when
-  napkin volume actually hurts query times, OR when we touch session POST
-  for another reason and can fold this in cleanly.
-  - 2026-05-21 — mildly more pressing: the napkin fold into the intake form
-    means the *editable scene JSON* now rides in `intake_json` alongside the
-    PNG, so payloads grew. The P3.5 cap still holds the line meanwhile.
+- ✅ **P1.8** — Napkin PNG moved out of `intake_json` into R2. Two-phase
+  intake submit: POST `/api/sessions` creates the session with just the
+  editable scene + caption inline; the client immediately follows up with
+  POST `/api/sessions/:id/attachments?kind=napkin` for the PNG. The
+  attachments pipeline already had the R2 + magic-byte + per-session quota
+  primitives — the change is a new `'napkin'` AttachmentKind value, an
+  explicit `?kind=napkin` opt-in on the upload handler (one per session,
+  image/png only), a correlated subquery surfacing `napkin_attachment_id`
+  on every session row, and an orphan-sweep exemption (`kind != 'napkin'`)
+  in the digest cron so a session-scoped napkin isn't reaped at the 7-day
+  cutoff. Failure shape: a napkin-upload failure does NOT roll back the
+  session — the orchestrator (`src/lib/submitIntake.ts`) returns the
+  session + an optional `napkinUploadError` so the caller logs to Sentry
+  but doesn't abort the submit. Intake cap dropped from 1 MB to 256 KB
+  (defense in depth — a real intake without the PNG is well under 50 KB).
+  Backwards-compat: legacy sessions whose napkin is still inline in
+  `intake_json` continue to render via the data URL; the SessionPage
+  parser prefers the inline `png` field when present, falls back to
+  building the attachment URL from `napkin_attachment_id` otherwise.
+  Tests: napkin AttachmentKind, `findNapkinForSession`, orphan-sweep
+  exclusion, session SELECT projection, submitIntake split/failure cases.
 
 ### Iframe sandbox
 - ⏭ **P1.9** — Drop `allow-same-origin` from iframe sandboxes. **Deferred with

@@ -6,12 +6,7 @@
   "domain": "marc-portal/payments",
   "componentFile": "functions/api/payments/index.ts",
   "problem": "The /me dashboard and /session/:id both need a unified view of what's been paid, what's owed, what subscription state the session is in. Per-row Stripe queries would be slow and leak Stripe-specific concepts into the SPA. This endpoint returns a single summary per session: { rows (paid history), custodianStatus, stripeMode, build (next-unpaid-leg with amount), scoping (paid or unpaid status) } — all the math done server-side, the client just renders.",
-  "tags": [
-    "payments",
-    "summary",
-    "server-side-math",
-    "stripe-mode-badge"
-  ],
+  "tags": ["payments", "summary", "server-side-math", "stripe-mode-badge"],
   "analysis": "GET ?sessionId=X. Auth: canAccessSession(). loadSession() + a query against the payments table for this session's rows. buildInstallmentPlan() (functions/_lib/pricing.ts) computes the build leg + amount with scoping credit applied, OR signals 'Tier-4 quote pending' if the session is Tier 4 without an admin-set amount. stripeMode is derived from the secret key prefix ('sk_test_' → 'test', 'sk_live_' → 'live') and surfaces as a visible UI pill so visitors don't mistake test charges for real. custodianStatus is the session row's custodian_status column ('none' | 'active' | 'past_due' | 'canceled' | 'switched_to_tout_a_toi'). The whole payload is consistent with what the webhook writes; this endpoint is purely read-side.",
   "decisions": [
     {
@@ -86,11 +81,7 @@
     {
       "date": "2026-05-24",
       "author": "marc+claude",
-      "fields_changed": [
-        "status",
-        "decisions",
-        "statusHistory"
-      ],
+      "fields_changed": ["status", "decisions", "statusHistory"],
       "reason": "BuildSummary.community boolean added. The summary's next-leg amount is already discounted; the flag is the UI's cue to render the tag + regular-price anchor.",
       "commit": "aaf4c9f",
       "buildUrl": "https://fb5267fc.marc-portal.pages.dev"
