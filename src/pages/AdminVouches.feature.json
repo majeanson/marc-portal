@@ -1,0 +1,75 @@
+{
+  "featureKey": "feat-2026-078",
+  "title": "Admin vouches — moderation surface for testimonials",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminVouches.tsx",
+  "problem": "Vouches submitted via the open /vouch form land in status='pending'. AdminVouches is where Marc moderates: approve to surface on /vouches, reject for spam, edit visitor copy (typos, length, voice), or soft-delete. Four sections stacked (pending / approved / rejected / trash) — each rendered only if non-empty so the page doesn't look half-built early on. Inline edit (no modal) keeps moderation fast.",
+  "tags": ["admin", "moderation", "vouches", "inline-edit"],
+  "analysis": "GET /api/admin/vouches on mount; returns every vouch including pending/rejected/deleted with email attached. Sorted pending-first (newest) then everything else by created_at DESC. Client-side bucket by status into the four sections. Edit row expands inline with name/relationship/body/link fields; save PATCHes via PATCH /api/admin/vouches/:id. Status flip is the same endpoint with { status: 'approved' | 'rejected' }; delete via DELETE /api/admin/vouches/:id. Restore from trash is PATCH with { undelete: true }. Author email is shown (operator-only context) but never editable.",
+  "decisions": [
+    {
+      "decision": "Inline edit row, not a modal",
+      "rationale": "Moderation is fast work — read, edit, approve, next. A modal interrupts the flow with a focus shift + close click. An inline-expanding row keeps the operator on the same scroll position and lets them approve-then-edit-the-next without modal whiplash.",
+      "recommendation": "Don't switch to a modal. If two operators ever need to moderate concurrently, the race is on the SAVE, not the edit UX.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "Edit is intentionally broad (name + body + link + relationship)",
+      "rationale": "Marc routinely tightens visitor copy before approving — typos, length over the comfortable limit, voice that doesn't match the practice. A narrow edit ('only fix typos') would force separate workflows. Broad edit makes the moderation surface feel like a real editor, not a triage console.",
+      "recommendation": "Keep edit broad. If a future need wants 'preserve original' as a feature, surface a 'show original' affordance, don't restrict editing.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "Author email immutable",
+      "rationale": "Email is the contact channel for moderator follow-up + the dedup key for rate-limit. Changing it would break either or both. If a vouch comes in with a wrong email, reject + ask the submitter to resubmit.",
+      "recommendation": "Don't add email edit. The submission flow is the right place to fix that.",
+      "date": "2026-05-18"
+    }
+  ],
+  "successCriteria": "- Lists pending / approved / rejected / trash sections; empty sections don't render\n- Inline edit row supports name + relationship + body + link\n- Status flips work; soft-delete + restore work\n- Author email is shown (operator context) but not editable\n- Single fetch on mount\n- Visitor never sees pending/rejected/trash from this page",
+  "implementation": "src/pages/AdminVouches.tsx — useEffect → /api/admin/vouches. Local state per editing row. PATCH + DELETE via admin endpoints. Tests covered by the vouches integration tests.",
+  "userGuide": "Visit /admin/vouches. Click a pending row → edit + approve. Reject for spam. Soft-delete moves to trash; restore from trash returns to pending. To bulk operate: not implemented; per-row at current scale.",
+  "knownLimitations": [
+    "No bulk operations; each row is its own click",
+    "Edit doesn't versioning — overwrite is permanent. Original copy is gone after save",
+    "No filter / search UI; current scale doesn't warrant",
+    "Sort is sticky (pending first, then created_at desc); no custom sort"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-18",
+      "reason": "Page shipped with the four-section layout + inline edit."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Inline-edit + broad-edit decisions stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

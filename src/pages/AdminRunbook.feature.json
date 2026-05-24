@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-081",
+  "title": "Admin runbook — two-track operator runbook with handoff-gap detection",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminRunbook.tsx",
+  "problem": "Marc's operating-the-portal knowledge lives in two tracks: dev handoff (what infra is set up, what credentials exist, what monitoring) and user journey (what a visitor experience from intake to ship). Solo, the two are easy to keep in sync; under pressure, gaps appear (Track B says 'visitor receives email', Track A says 'Resend not yet configured' — silent handoff gap). AdminRunbook renders both tracks side by side; Track B steps with a `dependsOn` link to Track A get a red flag when the prerequisite is unchecked.",
+  "tags": ["admin", "runbook", "two-track", "dependency-check", "localStorage-progress"],
+  "analysis": "Renders via <RunbookParallel /> (src/components/RunbookParallel.tsx) which takes the two tracks as props. Track A = dev handoff steps (defined in src/lib/runbook.ts); Track B = user journey steps with `dependsOn: 'track-a-step-id'` references. Per-step progress (checked/unchecked) is in localStorage, browser-local, no server sync. Reset button wipes all checks in one shot. The dependency check is real-time: changing a Track A check flips any Track B step depending on it (red flag if prereq unchecked).",
+  "decisions": [
+    {
+      "decision": "Per-step progress in localStorage, not server-side",
+      "rationale": "Runbook progress is per-operator, per-device. Server-syncing would create a shared mutable list that two operators could trip over. localStorage keeps it private + per-device, which matches the 'this is my checklist' mental model.",
+      "recommendation": "Don't add server sync. If multi-device sync becomes a real ask, evaluate whether a shared runbook is even what you want (probably not).",
+      "date": "2026-05-20"
+    },
+    {
+      "decision": "dependsOn red flag, not greyed-out unavailable",
+      "rationale": "Greying out 'visitor receives email' until Resend is configured would HIDE the dependency. The point of the runbook is to SHOW the gaps. Red flag + checkbox-still-clickable lets admin proceed anyway (knowing the gap exists) or fix the prereq first.",
+      "recommendation": "Keep red flag, not disable. Visibility is the value.",
+      "date": "2026-05-20"
+    }
+  ],
+  "successCriteria": "- Track A + Track B render side by side\n- Per-step checkbox state persists in localStorage\n- Reset wipes all checks\n- Track B steps with `dependsOn` flag when prereq is unchecked\n- Bilingual support",
+  "implementation": "src/pages/AdminRunbook.tsx — minimal wrapper around <RunbookParallel />. Step definitions in src/lib/runbook.ts. localStorage key + reset handler in RunbookParallel. Dependency check via cross-track id lookup.",
+  "userGuide": "Visit /admin/runbook. Check off steps as you complete them. If a Track B step shows a red flag, its Track A prereq is unchecked — finish the prereq first OR proceed knowing the gap. Reset to clear all progress.",
+  "knownLimitations": [
+    "Browser-local progress; switching device or clearing storage loses state",
+    "Step definitions are hardcoded in src/lib/runbook.ts; adding a step requires a code change + deploy",
+    "dependsOn supports one prereq per step; a step needing two prereqs would need multi-dep support (not implemented)",
+    "Track B's 'visitor experience' isn't auto-derived from real data; it's a curated list"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-20",
+      "reason": "Page shipped with the two-track layout + dependency check."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Two-track + red-flag pattern stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

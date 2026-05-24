@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-070",
+  "title": "GET /og/home — dynamic OG card for the home page",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/og",
+  "componentFile": "functions/og/home.ts",
+  "problem": "The home page's social unfurl should reflect the practice's actual state — shipped count, currently-active project's title — not a static logo. /og/home is the dynamic version: editorial layout (cream paper, mono eyebrow, trio headline, sage accent), live stats footer pulled from D1 at request time. FR by default, ?lang=en for the English variant.",
+  "tags": ["og", "workers-og", "editorial", "live-stats", "graceful-fallback"],
+  "analysis": "GET only, unauth. Pulls two live numbers: shippedCount (COUNT sessions WHERE status='shipped') and activeTitle (the showcase_title of the currently-active session if any). Renders via workers-og's ImageResponse at 1200×630 PNG. ?lang=en swaps the dictionary; default is FR. Same render-with-fallback pattern as /og/share/:id — anything broken falls back to /og-image.png (FR) or /og-image-en.png (EN). ?debug=1 returns JSON of resolved fields; ?debug=render returns satori's actual error message on a failed render (deeper diagnostics than debug=1).",
+  "decisions": [
+    {
+      "decision": "Pull live stats at render time, not from a precomputed manifest",
+      "rationale": "Pre-rendering the home OG card means recomputing every shipped-count change; the practice ships rarely but every ship would invalidate the cache. Pulling at request time + caching at the edge per unique URL is cheaper to maintain and stays current. The two D1 queries (count + active title) are cheap.",
+      "recommendation": "Don't precompute. If a future need wants the active project's iframe preview composited in (image work), revisit — but the current 'numbers footer' is exactly the right amount of liveness.",
+      "date": "2026-05-15"
+    },
+    {
+      "decision": "Two debug modes (?debug=1 + ?debug=render)",
+      "rationale": "When the OG endpoint is broken, you need to know WHICH layer broke. ?debug=1 (resolved fields) verifies the handler is reached and the D1 read worked. ?debug=render captures satori's actual error message — needed when the field load works but the render fails (font missing, layout breaks satori's parser). Two modes is cheap; one composite mode would conflate the layers.",
+      "recommendation": "Mirror these in any new OG endpoint. RUNBOOK § OG triage assumes their presence.",
+      "date": "2026-05-15"
+    }
+  ],
+  "successCriteria": "- A scraper requesting /og/home gets the FR editorial card by default\n- ?lang=en serves the EN editorial card\n- Live shippedCount + activeTitle are reflected in the footer\n- Render exceptions fall back to /og-image.png or /og-image-en.png\n- ?debug=1 and ?debug=render both return useful diagnostics",
+  "implementation": "functions/og/home.ts — single onRequestGet. Two D1 queries collected as HomeFields. workers-og's ImageResponse with the editorial layout. Lang dictionary defined locally; FR is the canonical content. Tests: functions/og/home.test.ts covers happy + fallback.",
+  "userGuide": "Used by the home page's <meta property='og:image'> injected by _middleware.ts's HTMLRewriter rewrite — bare '/' → /og/home, '/en' → /og/home?lang=en. To preview FR: open /og/home directly in a browser. To preview EN: /og/home?lang=en. To trigger a fresh render after a ship: invalidate edge cache or wait for TTL.",
+  "knownLimitations": [
+    "Two distinct languages means two cache entries (FR + EN); not a problem at this scale",
+    "activeTitle uses showcase_title; if a session is active but not showcased, the footer renders generic copy",
+    "The editorial layout is hand-built in satori JSX inside the handler; complex layout changes require touching this file"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-15",
+      "reason": "Endpoint shipped with editorial layout + live stats footer + bilingual support."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Live-stats + fallback pattern stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 OG-endpoint sweep."
+    }
+  ],
+  "annotations": []
+}

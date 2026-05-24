@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-073",
+  "title": "Admin shell — chrome + auth gate for the /admin tree",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/Admin.tsx",
+  "problem": "Every /admin/* surface needs the same wrapper: sidebar nav, language toggle, signed-in-as indicator, and the auth gate that bounces anon visitors to /login. Centralizing this in Admin.tsx as a layout component means each admin route is one focused screen, not a copy-pasted shell. Sub-routes render through <Outlet /> with the chrome already in place.",
+  "tags": ["admin", "shell", "auth-gate", "marketplace-shaped"],
+  "analysis": "Layout component. useAuth() → if no email, <Navigate to='/login' replace />. Otherwise renders sidebar + header + <Outlet /> for sub-routes. useTenant() supplies tenant context for operator/buyer distinction; sub-routes decide what to show based on role. Mounted at /admin and /en/admin in router.tsx with index = AdminHub and children for /audit, /custodians, /inbox, /trash, /vouches, /showcase, /runbook. Marketplace-shaped surfaces (AdminFleet, AdminBilling, AdminTeam, AdminAppearance) are still reachable by direct URL per the root feature.json's 2026-05-09 note but no longer surfaced in the sidebar.",
+  "decisions": [
+    {
+      "decision": "Centralize the auth gate at the layout, not per-sub-route",
+      "rationale": "Each /admin/* sub-route would otherwise need its own useAuth() guard. Centralizing means the gate is one component; missing it on a new sub-route is structurally impossible because the sub-route is under <Outlet />.",
+      "recommendation": "When adding a new /admin sub-route, mount it as a child of Admin in router.tsx. Don't bypass the layout.",
+      "date": "2026-05-09"
+    },
+    {
+      "decision": "Marketplace-shaped surfaces kept direct-URL reachable",
+      "rationale": "Per the root feature.json 2026-05-09 note: the marketplace surfaces (Fleet, Billing, Team, Appearance) cover a hypothetical buyer scenario. Removing them entirely would mean rewriting later if that scenario reopens. Hiding from sidebar removes the cost of carrying without losing the option.",
+      "recommendation": "If the buyer scenario stays off the table for ~12 months, evaluate deleting these surfaces; until then, keep them parked.",
+      "date": "2026-05-09"
+    }
+  ],
+  "successCriteria": "- Anon visitor on /admin/* is redirected to /login\n- Signed-in operator sees the sidebar + sub-route content\n- Sidebar reflects the active route\n- Language toggle works in both /admin and /en/admin trees\n- Sub-routes render via <Outlet /> with chrome already in place",
+  "implementation": "src/pages/Admin.tsx — single layout component. useAuth + useTenant context reads. Sidebar items hardcoded; no dynamic role-based hiding today. <Outlet /> renders the active sub-route.",
+  "userGuide": "Visit /admin (signed in) → land on AdminHub (the operator console index). Sub-routes: /admin/inbox (sessions queue), /admin/trash (soft-deleted), /admin/custodians (subscriptions), /admin/vouches (moderation), /admin/showcase (OG card grid), /admin/audit (action log), /admin/runbook (operator runbook).",
+  "knownLimitations": [
+    "No role-based sidebar (every signed-in admin sees everything); fine for single-operator practice",
+    "Auth gate uses client-side redirect — there's a brief flash before /login renders. Acceptable",
+    "Marketplace-shaped surfaces (AdminFleet etc.) aren't lazy-removed; they ship in the bundle (~few KB)"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-09",
+      "reason": "Layout shipped with the auth gate + sidebar."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Layout + auth gate stable; marketplace-shaped surface posture decision documented."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep, originally deferred but documented per omega-done request."
+    }
+  ],
+  "annotations": []
+}

@@ -1,0 +1,81 @@
+{
+  "featureKey": "feat-2026-094",
+  "title": "Time-travel scrubber — keyboard-navigable build-history player",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/iterative",
+  "componentFile": "src/components/TimeTravelScrubber.tsx",
+  "problem": "On /share/:id, the recipient should be able to step through a session's build advancements — not just see the latest. TimeTravelScrubber takes an ordered array of public advancements and presents play/pause + step controls + an iframe embedding each step's build URL. Arrow keys step, Space toggles play. ?step=N URL param deep-links to a specific moment, so a shareable URL can point at 'the state right after the napkin sketch landed'.",
+  "tags": ["iterative", "scrubber", "keyboard-nav", "deep-link", "iframe"],
+  "analysis": "Props: items (array of PublicAdvancementRow). Renders the iframe of the current step's build URL with metadata (label + date + step N of M). Controls: prev/next/play/pause buttons + arrow-key + Space handler. PLAY_INTERVAL_MS = 3500 (per-step pacing on play). STEP_PARAM = 'step' for URL deep-linking; readStepFromUrl clamps to [0, max] so a malformed ?step= falls to a valid index. Replaces idx in the URL via history.replaceState on every change so a shared URL captures the current scrub position. Keyboard handler is window-level and gates on focus-inside-scrubber-root (no global capture). aria-describedby ties a visible mono-pill keyboard hint to the section.",
+  "decisions": [
+    {
+      "decision": "Window-level keyboard handler with focus-inside gate",
+      "rationale": "Capturing arrows globally would steal them from the rest of the page. A window listener that checks 'is focus inside .scrubber-root?' lets arrows work when the scrubber is the visitor's locus, and stays out of the way otherwise. Buttons are real <button>s so Tab+Enter+Space all work natively.",
+      "recommendation": "Don't switch to document.addEventListener with always-on capture. The focus-inside gate IS the affordance.",
+      "date": "2026-05-17"
+    },
+    {
+      "decision": "?step is 1-indexed for humans",
+      "rationale": "?step=3 reads as 'step 3 of 5' to a human; ?step=2 (0-indexed) would be confusing. Internally the component uses 0-indexed idx; readStepFromUrl converts. AUDIT P3.3 documented this decision.",
+      "recommendation": "Keep 1-indexed. External code that links to ?step= must use the 1-indexed convention.",
+      "date": "2026-05-17"
+    },
+    {
+      "decision": "Replace state on idx change, don't push",
+      "rationale": "history.replaceState means the back button doesn't navigate through scrub positions — it leaves the page. Push would create N entries for N scrub positions, polluting back-button history. Replace keeps the URL shareable without inflating history.",
+      "recommendation": "Don't switch to push. Shareable + non-polluting is the right balance.",
+      "date": "2026-05-17"
+    }
+  ],
+  "successCriteria": "- Step controls work via buttons, arrow keys, Space\n- ?step=N deep-links to that 1-indexed step\n- idx changes update URL via replaceState\n- Iframe loads the current step's build URL\n- Keyboard handler only fires when focus is inside the scrubber root\n- Visible keyboard hint with aria-describedby",
+  "implementation": "src/components/TimeTravelScrubber.tsx — useState for idx + isPlaying. useEffect for keyboard listener + interval. useMemo for step-derived values. AUDIT P3.1 + P3.2 + P3.3 work all shipped here.",
+  "userGuide": "Consumed by src/pages/PublicAdvancements.tsx. To embed in another page: pass an array of PublicAdvancementRow. Step navigation: arrow keys or buttons. Play toggle: Space (when focus inside). To deep-link a scrub: append ?step=<1-indexed> to the URL.",
+  "knownLimitations": [
+    "Iframe load time depends on the build URL; no per-step preloading",
+    "Play interval is hardcoded (3500ms); not configurable per session",
+    "If items[].build_url is missing (unstamped), the iframe falls back to about:blank",
+    "Single global keyboard listener; multiple scrubbers on one page would conflict (not a current case)"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-12",
+      "reason": "Component shipped with the iframe + controls."
+    },
+    {
+      "from": "active",
+      "to": "active",
+      "date": "2026-05-17",
+      "reason": "AUDIT P3.1 + P3.2 + P3.3 work landed: visible keyboard hint, window-level handler with focus gate, ?step deep link."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Keyboard nav + deep-link patterns stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

@@ -25,22 +25,26 @@
 
 ## Coverage at a glance
 
-> Updated 2026-05-23 after the P1 + P2 sweep — all visitor-facing pages
-> and critical API handlers documented. Lighter P3 + P4 surfaces (admin,
-> OG endpoints, chrome components) are now the remaining gap.
+> Updated 2026-05-23 after the **omega sweep** — every visitor-facing,
+> auth-gated, critical-API, public-API, OG, admin, and worth-documenting
+> component surface is now documented. The only remaining gap is the
+> chrome-only component layer (skip-by-design per the existing precedent:
+> feature.json earns its keep only when the surface IS the feature, not a
+> generic primitive used by other features).
 
-| Surface     | Total | Documented | Gap |
-| ----------- | ----: | ---------: | --: |
-| `src/pages` |    33 |         24 |   9 |
-| `src/components` |  47 |       2 |  45 |
-| `functions/api` |  32 |        21 |  11 |
-| `functions/_middleware.ts` | 1 | 1 | 0 |
-| `functions/og`  |   4 |          0 |   4 |
-| **Total**   |   117 |         48 |  69 |
+| Surface     | Total | Documented | Gap                         |
+| ----------- | ----: | ---------: | --------------------------- |
+| `src/pages` |    33 |         31 |   2 (NotFound/RouteError ⏭) |
+| `src/components` |  47 |     13 |  34 (chrome ⏭)              |
+| `functions/api` |  32 |       32 |   0                         |
+| `functions/_middleware.ts` | 1 | 1 | 0                       |
+| `functions/og`  |   4 |          4 |   0                         |
+| **Total documented** | 117 |    81 | —                           |
 
 The root `feature.json` (the "Marc-Portal" mega-feature) is healthy and
-active; verified 2026-05-23. The 47 co-located feature.jsons + the root
-all surface at `/meta` via `build-lac-meta.mjs`.
+active; verified 2026-05-23. The 82 co-located feature.jsons + the root
+all surface at `/meta` via `build-lac-meta.mjs` (**83 features total**
+in the manifest, up from 10 at the start of the 2026-05-23 sweep).
 
 ---
 
@@ -110,50 +114,60 @@ All shipped 2026-05-23.
 
 ## P3 — Public read-only API + utilities
 
-- ⬜ **functions/api/public/projects.ts**
-- ⬜ **functions/api/public/vouches.ts**
-- ⬜ **functions/api/public/sessions/[id]/advancements.ts**
-- ⬜ **functions/api/tenant.ts**
-- ⬜ **functions/api/tenant/theme.ts**
-- ⬜ **functions/api/meta/stats.ts**
-- ⬜ **functions/api/health.ts**
-- ⬜ **functions/og/share/[id].ts** — dynamic OG card.
-- ⬜ **functions/og/home.ts**
-- ⬜ **functions/og/certificate/[id].ts**
-- ⬜ **functions/og/ping.ts**
+All shipped 2026-05-23.
 
-## P3 — Admin surfaces (direct-URL only, not in sidebar)
+- ✅ **functions/api/public/projects.ts**
+- ✅ **functions/api/public/vouches.ts**
+- ✅ **functions/api/public/sessions/[id]/advancements.ts**
+- ✅ **functions/api/tenant.ts**
+- ✅ **functions/api/tenant/theme.ts**
+- ✅ **functions/api/meta/stats.ts**
+- ✅ **functions/api/health.ts**
+- ✅ **functions/og/share/[id].ts** — dynamic OG card.
+- ✅ **functions/og/home.ts**
+- ✅ **functions/og/certificate/[id].ts**
+- ✅ **functions/og/ping.ts**
 
-Marketplace-shaped pages kept reachable for a hypothetical buyer (per
-root `feature.json`'s 2026-05-09 note). Documenting them is low ROI
-unless the buyer story re-opens — defer unless boredom.
+## P3 — Admin surfaces (omega-done sweep)
 
-- ⏭ src/pages/Admin.tsx, AdminAudit, AdminCustodians, AdminHub,
-  AdminInbox, AdminRunbook, AdminShowcase, AdminTrash, AdminVouches
-- ⏭ functions/api/admin/audit.ts, digest.ts, test-emails.ts,
-  vouches.ts, vouches/[id].ts
+Originally marked deferred per the root `feature.json`'s 2026-05-09 note,
+but documented as part of the omega sweep so /meta reflects the full
+codebase. Each doc carries the "marketplace-shaped, low buyer ROI"
+context so the future-deletion conversation isn't lost.
 
-## P4 — Shared chrome components
+- ✅ src/pages/Admin.tsx — shell + auth gate
+- ✅ src/pages/AdminHub.tsx — operator console index
+- ✅ src/pages/AdminInbox.tsx — sessions queue
+- ✅ src/pages/AdminTrash.tsx — soft-deleted recovery
+- ✅ src/pages/AdminCustodians.tsx — subscriptions
+- ✅ src/pages/AdminVouches.tsx — moderation
+- ✅ src/pages/AdminShowcase.tsx — OG brand-check
+- ✅ src/pages/AdminAudit.tsx — audit log viewer
+- ✅ src/pages/AdminRunbook.tsx — two-track operator runbook
+- ✅ functions/api/admin/audit.ts
+- ✅ functions/api/admin/digest.ts
+- ✅ functions/api/admin/test-emails.ts
+- ✅ functions/api/admin/vouches.ts
+- ✅ functions/api/admin/vouches/[id].ts
 
-Most components are generic UI primitives; a feature.json next to
-`Header.tsx` or `Footer.tsx` would document the chrome, not a feature.
-Only components that ARE a standalone user-meaning earn one — the
-existing precedent (`Pricing.feature.json`, `VibeFilter.feature.json`)
-is the bar.
+## P4 — Worth-documenting components (omega-done sweep)
 
-**Worth documenting** (standalone user-meaning):
-- ⬜ **src/components/FAQ.tsx**
-- ⬜ **src/components/HowItWorks.tsx**
-- ⬜ **src/components/About.tsx**
-- ⬜ **src/components/FeaturedProjects.tsx**
-- ⬜ **src/components/BringAnything.tsx**
-- ⬜ **src/components/Testimonials.tsx**
-- ⬜ **src/components/Hero.tsx**
-- ⬜ **src/components/TimeTravelScrubber.tsx** (AUDIT P3.1–P3.3
-  shipped behaviour worth co-locating)
-- ⬜ **src/components/NapkinReplay.tsx**
-- ⬜ **src/components/SketchCanvas.tsx**
-- ⬜ **src/components/VoiceRecorder.tsx**
+All shipped 2026-05-23. Standalone user-meaning components — the FAQ
+accordion, the home-page primer/about/featured-projects/bring-anything/
+testimonials/hero blocks, the time-travel scrubber, the Excalidraw
+boundary, the voice recorder.
+
+- ✅ **src/components/FAQ.tsx**
+- ✅ **src/components/HowItWorks.tsx**
+- ✅ **src/components/About.tsx**
+- ✅ **src/components/FeaturedProjects.tsx**
+- ✅ **src/components/BringAnything.tsx**
+- ✅ **src/components/Testimonials.tsx**
+- ✅ **src/components/Hero.tsx**
+- ✅ **src/components/TimeTravelScrubber.tsx**
+- ✅ **src/components/NapkinReplay.tsx**
+- ✅ **src/components/SketchCanvas.tsx**
+- ✅ **src/components/VoiceRecorder.tsx**
 
 **Skip** (chrome — no standalone user-meaning; the feature lives
 elsewhere): Header, Footer, PageMast, FeatureDot, FeatureContinue,

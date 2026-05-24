@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-075",
+  "title": "Admin inbox — every session in one scannable queue",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminInbox.tsx",
+  "problem": "Marc needs a single page that lists every session (every status, every visitor) sorted by what needs attention first. AdminInbox is that. Reads /api/sessions (admin scope), groups by status, sorts within groups by SLA pressure (oldest triage at the top), and surfaces enough metadata per row to triage without opening each session. Clicking a row navigates to /admin/inbox/:id which is the SessionPage in admin mode.",
+  "tags": ["admin", "inbox", "triage", "sla-pressure"],
+  "analysis": "GET /api/sessions on mount; admin scope returns every non-deleted session. Group client-side by status (triage, active, etc.), sort within each group by SLA pressure (computeSla from src/lib/format.ts — hours since creation vs. the 72h SLA constant). Each row shows: visitor email + first-name, problem type label, status pill, time since creation, SLA badge (green/amber/red). Click → navigate to /admin/inbox/:id which reuses SessionPage in operator mode.",
+  "decisions": [
+    {
+      "decision": "Reuse /api/sessions for inbox view, not a dedicated /api/admin/inbox endpoint",
+      "rationale": "The list endpoint already returns admin-scope data when called with admin cookie. Adding a parallel endpoint would duplicate auth gating and projection logic. The /me dashboard and /admin/inbox call the same endpoint with different rendering — SQL is the projection.",
+      "recommendation": "When adding a new admin-facing view of sessions, render from the same endpoint. If a new view needs fundamentally different shape, evaluate a new endpoint, not the inbox shortcut.",
+      "date": "2026-05-09"
+    },
+    {
+      "decision": "SLA pressure sort within status groups, not status-then-time",
+      "rationale": "An operator scanning the inbox should see the most-urgent triage at the top — a 70h-old triage is more important than a 5h-old triage. Status grouping keeps similar work together; SLA pressure within ranks them. Pure time-sort would mix freshly-created and aged across statuses.",
+      "recommendation": "Don't reorder. The grouping is the affordance.",
+      "date": "2026-05-09"
+    }
+  ],
+  "successCriteria": "- Lists every non-deleted session in admin scope\n- Groups by status with most-urgent first within each group\n- SLA badge color reflects pressure (green / amber / red)\n- Click navigates to /admin/inbox/:id which is SessionPage in operator mode\n- Single fetch on mount; no per-row request",
+  "implementation": "src/pages/AdminInbox.tsx — useEffect → listSessions. Sorted via computeSla + status-keyed bucketing. Reuses problem-type labels from src/lib/intakeSchemas.ts.",
+  "userGuide": "Land here from /admin sidebar or the hub. Each row links to /admin/inbox/:id which renders SessionPage in operator mode (full visitor + admin controls). To filter by status or search visitor email: not implemented today; use Ctrl+F. To export the inbox: not implemented; SELECT directly in D1.",
+  "knownLimitations": [
+    "No filter UI (status, problem type, email search) — single-operator scale, Ctrl+F is enough",
+    "No bulk operations — every status flip is per-session via the session page",
+    "Sort is client-side; a very large inbox (~1000+ rows) would be slow. Current scale: <100"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-09",
+      "reason": "Page shipped with the grouped + SLA-sorted inbox view."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Reuse-/api/sessions pattern stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

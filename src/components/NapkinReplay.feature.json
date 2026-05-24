@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-095",
+  "title": "Napkin replay — paced sketch playback for the engagement view",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/intake",
+  "componentFile": "src/components/NapkinReplay.tsx",
+  "problem": "An intake's napkin sketch (Excalidraw scene) is most affecting when seen drawn out, not static. NapkinReplay takes a saved scene and replays its elements in order over a fixed total wall-clock window — so a 6-stroke sketch and a 60-stroke sketch both finish in the same time. The total window is hand-tuned; element pacing adapts to fit. Lazy-loads Excalidraw (heavy ~600KB) only when the panel is opened.",
+  "tags": ["intake", "excalidraw", "replay", "lazy-loaded", "fixed-window"],
+  "analysis": "Props: napkin scene JSON. Lazy-imports SketchCanvas (which itself lazy-imports Excalidraw). Total replay window is a constant; element count drives per-element pacing (totalMs / elementCount = perElement). On mount of the canvas, starts a setInterval that progressively reveals elements via Excalidraw's updateScene API. Pause/resume controls + replay-from-start. Replay runs once by default; user can re-replay.",
+  "decisions": [
+    {
+      "decision": "Fixed total window, not fixed per-element pacing",
+      "rationale": "A 60-element sketch paced at 200ms/element takes 12 seconds — too long. A 6-element sketch at 200ms takes 1.2 seconds — over too fast. Fixed total window means both feel consistent. The trade-off: dense sketches reveal fast, sparse sketches reveal slowly, but both finish in the affecting-but-not-tedious window.",
+      "recommendation": "Don't switch to fixed per-element pacing. The window length is tuned; adjust the constant if needed.",
+      "date": "2026-05-13"
+    },
+    {
+      "decision": "Lazy-load SketchCanvas, not import statically",
+      "rationale": "Excalidraw + its dependencies are ~600KB. Loading on every session view would bloat the chunk. Lazy via React.lazy means a session WITHOUT a napkin doesn't pay the cost.",
+      "recommendation": "When using Excalidraw anywhere, route through SketchCanvas's lazy boundary.",
+      "date": "2026-05-13"
+    }
+  ],
+  "successCriteria": "- Replay completes in the fixed window regardless of element count\n- Excalidraw is loaded only when the panel opens\n- Pause/resume/restart controls work\n- Original scene state is restored after replay\n- Replay is one-shot by default; can be replayed via UI",
+  "implementation": "src/components/NapkinReplay.tsx — useEffect handles the setInterval-driven reveal. useRef holds the Excalidraw API instance. <Suspense> wraps the lazy SketchCanvas import.",
+  "userGuide": "Used in the engagement view to replay an intake's sketch. To preview locally: open a session with a sketch in /admin/inbox/:id. To adjust the window length: edit the constant at top of file.",
+  "knownLimitations": [
+    "Replay is element-by-element; doesn't reveal stroke-by-stroke within an element. Acceptable resolution",
+    "Pause keeps the partial state; restart wipes back to empty. No 'rewind' affordance",
+    "Excalidraw's API may change across versions — pin the version carefully (boring-tech mandate)",
+    "Replay window is per-component, not configurable per session"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-13",
+      "reason": "Component shipped with the fixed-window replay + lazy load."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Fixed-window decision stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-068",
+  "title": "GET /api/health — uptime + D1 connectivity probe",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/infrastructure",
+  "componentFile": "functions/api/health.ts",
+  "problem": "Synthetic monitoring (Marc's curl, UptimeRobot, etc.) needs a cheap reachable endpoint that confirms the runtime is up AND D1 is responsive. /api/health does exactly that: runs SELECT 1 against D1, returns ok+200 on success, fail+500 on D1 exception. Public, unauthenticated, no tenant lookup — caller can be anyone.",
+  "tags": ["infrastructure", "uptime", "synthetic-monitor", "unauth", "no-tenant"],
+  "analysis": "GET only. Bypasses tenant resolution conceptually (handler doesn't read ctx.data.tenant). Executes env.DB.prepare('SELECT 1').first() — D1's smallest valid roundtrip. On success: 200 { ok: true, db: 'ok', ts }. On exception: 500 { ok: false, db: 'fail', ts }. No commit hash today (would require build-time inject; relies on the SPA's static stamp at /meta for 'what's deployed').",
+  "decisions": [
+    {
+      "decision": "Run SELECT 1 against D1, not just confirm the worker is up",
+      "rationale": "Worker-up-but-DB-down is the realistic partial failure mode. A no-D1 health check would return 200 during a D1 outage and not alert. SELECT 1 is the cheapest possible probe that catches the real failure modes.",
+      "recommendation": "Don't add more checks (R2, Stripe, Resend) here — each is a graceful-degrade dependency, not a hard-down trigger. If R2 is down, the worker still serves; the synthetic monitor should treat R2-down differently from worker-down.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "500 on D1 failure, NOT 200 with fail flag",
+      "rationale": "Synthetic monitors (UptimeRobot, etc.) treat any non-200 as down. Returning 200 even when D1 is broken would silently disable monitoring. 500 is the truthful signal.",
+      "recommendation": "Keep the 500. The JSON body still has the structured 'db: fail' so a custom monitor can read details, but the status code is the load-bearing signal.",
+      "date": "2026-05-12"
+    }
+  ],
+  "successCriteria": "- A curl reaches the endpoint without auth\n- D1 responsive → 200 with { ok: true, db: 'ok' }\n- D1 broken → 500 with { ok: false, db: 'fail' }\n- Response time is sub-100ms typical (one D1 roundtrip)\n- No tenant lookup needed",
+  "implementation": "functions/api/health.ts — single onRequestGet. Try/catch around env.DB.prepare('SELECT 1').first(). Returns JSON via _lib/json helpers.",
+  "userGuide": "Synthetic monitor target. To smoke-test: curl https://marcportal.com/api/health. To wire UptimeRobot or similar: HEAD or GET this URL; alert on non-200 or response > 5s. To verify in dev: curl http://localhost:8788/api/health.",
+  "knownLimitations": [
+    "No commit hash in the response today — would require a build-time define plumbed through the Functions bundle; SPA's static commit stamp at /meta is the workaround",
+    "Doesn't probe R2 / Workers AI / Stripe / Resend; those are graceful-degrade dependencies and a unified health would lie about partial failures",
+    "Timestamp resolution is millisecond; clock skew between worker instances is bounded but theoretically the ts could be slightly stale"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-12",
+      "reason": "Endpoint shipped with the D1 probe + truthful status code."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Probe minimalism is stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 public-API sweep."
+    }
+  ],
+  "annotations": []
+}

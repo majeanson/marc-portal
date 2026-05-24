@@ -1,0 +1,67 @@
+{
+  "featureKey": "feat-2026-091",
+  "title": "Bring anything — neutralizes the vibe-filter for hesitant visitors",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/home-section",
+  "componentFile": "src/components/BringAnything.tsx",
+  "problem": "The VibeFilter section ('je fais / je fais pas') answers the 'is this for me?' question with explicit do/don't lists. A side effect: a hesitant visitor who sees an item they're unsure about on the 'don't' side may self-filter out incorrectly. BringAnything sits IMMEDIATELY after VibeFilter to neutralize that self-filter — Marc's framing is 'I want every idea to come in; the triage is my job, not the visitor's.' The examples are aspirational, not historical, since the practice hasn't built a long history yet.",
+  "tags": ["home-section", "anti-self-filter", "intake-feature"],
+  "analysis": "DICT[lang].bringAnything content block. Sits right after VibeFilter in Home.tsx render order, by design — its job is to undo the over-filter the vibe section can cause. Examples are aspirational ('things I'd happily take') not 'projects I have shipped'. Feature-coloured as 'intake' (HOME_SECTION_FEATURE['bring-anything']) since it pushes the visitor toward the intake form.",
+  "decisions": [
+    {
+      "decision": "Sits directly after VibeFilter, by render order",
+      "rationale": "BringAnything's purpose is to neutralize VibeFilter's self-filter effect. The two sections must be adjacent and in order; reordering them breaks the funnel logic.",
+      "recommendation": "Don't reorder these two. If a future audit suggests a different funnel structure, evaluate whether BringAnything still has its purpose; if so, keep adjacent.",
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Aspirational examples, not 'projects I've shipped'",
+      "rationale": "The practice hasn't built a multi-year client history yet. Falsely-historic examples would be dishonest; aspirational examples ('things I'd happily take') are structurally true.",
+      "recommendation": "Once the showcase has 6+ shipped projects, revisit — maybe the section can use real anonymized examples. Until then, aspirational copy.",
+      "date": "2026-05-07"
+    }
+  ],
+  "successCriteria": "- Renders directly after VibeFilter in home order\n- Copy positions Marc as the triager, not the visitor\n- Examples are aspirational (not falsely historic)\n- Bilingual at full parity\n- Feature-coloured as intake (pushes toward intake form)",
+  "implementation": "src/components/BringAnything.tsx — DICT[lang].bringAnything. SectionEyebrow + HOME_FOLIOS for chrome.",
+  "userGuide": "Edit copy via DICT.fr.bringAnything / DICT.en.bringAnything. If reordering Home sections, keep BringAnything immediately after VibeFilter.",
+  "knownLimitations": [
+    "Examples may go stale; revisit periodically",
+    "No CTA button (intentional — the section is messaging, not conversion)"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Component shipped to neutralize VibeFilter's over-filter."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Adjacency-to-VibeFilter decision stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-084",
+  "title": "POST /api/admin/test-emails — operator deliverability + voice check",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "functions/api/admin/test-emails.ts",
+  "problem": "The portal sends ~12 distinct email types (magic link, status changes, message notifications, payment confirmations, digest, etc.). Each has its own template, voice, lang variant. Without a fire-everything diagnostic, the operator only sees an email type by actually walking the matching user flow — slow, hard to QA changes, easy to miss a regression. /api/admin/test-emails fires one of every type at the signed-in admin's address with synthetic sample data. Zero production rows read or touched.",
+  "tags": ["admin", "deliverability", "diagnostic", "synthetic-data", "rate-paced"],
+  "analysis": "POST only. Operator gate (currentEmail + isAdmin). CSRF enforced by middleware. Iterates a defined list of email types, calls each one with synthetic sample data hardcoded in the handler. Pacing: ~600ms sleep between sends to stay under Resend's 2 req/s free-tier rate. Total: 12 sends × 600ms = ~7s, well under Pages Functions' 30s wall-time budget. Returns 200 { sent: [...types] } on success.",
+  "decisions": [
+    {
+      "decision": "Sequential pacing instead of Promise.all, stay under Resend's 2 req/s",
+      "rationale": "Resend's free tier rate-limits at ~2 req/s. Promise.all would burst all 12 at once and hit the limit, getting 429s on the latter half. Sequential with ~600ms gap pacing keeps every send under the rate limit + gets all 12 in under 10 seconds.",
+      "recommendation": "Don't refactor to parallel. If Resend's rate ever increases, evaluate; until then, sequential is correct.",
+      "date": "2026-05-19"
+    },
+    {
+      "decision": "Synthetic sample data, never read prod rows",
+      "rationale": "Reading real visitor data to test an email template would leak that data into the test email — even to the operator, that's a privacy footnote. Hardcoded synthetic data ('Test Visitor', 'sample@example.com', a fixture intake JSON) makes the test deterministic + privacy-safe.",
+      "recommendation": "Don't make the sample data dynamic. If a future need wants 'render this email type for THIS real session', that's a different endpoint with different gating.",
+      "date": "2026-05-19"
+    }
+  ],
+  "successCriteria": "- Operator gets ~12 emails (one per type) at their address\n- Each email uses synthetic data; no prod rows read\n- Sequential pacing stays under Resend rate limit\n- Total send completes well under 30s wall-time\n- 200 + sent list on success",
+  "implementation": "functions/api/admin/test-emails.ts — onRequestPost. EMAIL_TYPES array drives the iteration. Sleep helper between sends. Tests: functions/api/admin/test-emails.test.ts covers auth + the type iteration shape.",
+  "userGuide": "Operator only. POST /api/admin/test-emails (with CSRF token). Wait ~10s; check inbox. Use to: verify deliverability after Resend config changes, eyeball a new email template, regression-check voice across the catalog. No UI link by default; access via curl or browser devtools.",
+  "knownLimitations": [
+    "Sends to the signed-in admin's address only — can't target another address (avoids accidental spam vector)",
+    "Synthetic data is hardcoded; a new email type requires updating both EMAIL_TYPES and possibly the sample fixture",
+    "If Resend hits a temporary outage during the send loop, latter emails fail — handler returns 200 with the partial sent list (best-effort)",
+    "No dry-run mode; sending IS the test"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-19",
+      "reason": "Endpoint shipped with all 12 email types + rate-paced sequential sends."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Synthetic-data + pacing decisions stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

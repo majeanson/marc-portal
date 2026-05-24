@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-092",
+  "title": "Testimonials — home-page vouches block (top 3)",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/home-section",
+  "componentFile": "src/components/Testimonials.tsx",
+  "problem": "The home page needs social proof without overwhelming visitors with a wall of vouches. Testimonials shows the top 3 most recent approved vouches with a HomeDrillCard linking to /vouches for the full wall. Self-hides when no vouches are approved — keeps the home page honest for the early-practice state.",
+  "tags": ["home-section", "social-proof", "self-hiding", "shipped-feature"],
+  "analysis": "GET /api/public/vouches on mount; slice top 3 (HOME_LIMIT). Each rendered as a card with name + relationship pill + body. HomeDrillCard → /vouches at the bottom. Returns null when zero approved vouches. Feature-coloured as 'shipped' (HOME_SECTION_FEATURE['testimonials']) since vouches are the social-proof leg of the shipped feature.",
+  "decisions": [
+    {
+      "decision": "Top 3 only on home; full wall at /vouches",
+      "rationale": "Three is enough to signal 'this is real'; more is noise on a home page. The drill-card is the affordance for visitors who want more.",
+      "recommendation": "Don't change HOME_LIMIT. The number was tuned for visual density.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "Self-hide when zero vouches, no 'no testimonials yet' copy",
+      "rationale": "Same logic as FeaturedProjects: early-practice self-hide is more honest than skeleton state copy.",
+      "recommendation": "Keep self-hide.",
+      "date": "2026-05-18"
+    }
+  ],
+  "successCriteria": "- Top 3 approved vouches on home\n- Self-hide when empty\n- HomeDrillCard routes to /vouches\n- Bilingual at full parity",
+  "implementation": "src/components/Testimonials.tsx — useEffect → listPublicVouches, slice top HOME_LIMIT. Each card uses relationship-pill styling shared with /vouches. Returns null when array is empty.",
+  "userGuide": "Vouches appear here once moderated to approved via /admin/vouches. To change the number shown: edit HOME_LIMIT constant.",
+  "knownLimitations": [
+    "Top 3 is hardcoded; not configurable per visitor / locale",
+    "No filter by relationship — newest 3 regardless of type",
+    "Self-hide hides analytics signal of 'empty practice'"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-18",
+      "reason": "Component shipped paired with the vouches moderation flow."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Top-3 + self-hide stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

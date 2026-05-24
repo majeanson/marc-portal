@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-096",
+  "title": "Sketch canvas — Excalidraw boundary with lazy chunk + CSS code-split",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/intake",
+  "componentFile": "src/components/SketchCanvas.tsx",
+  "problem": "The intake form's napkin sketch step needs Excalidraw (lightweight sketch tool). Excalidraw + its dependencies are ~600KB before assets. Importing statically would pay that cost on every intake load — most visitors don't open the sketch step. SketchCanvas is the boundary: a React.lazy-wrapped component that lazy-imports Excalidraw + its stylesheet. Callers route through React.lazy themselves too (e.g. NapkinReplay) so the chunk is doubly split.",
+  "tags": ["intake", "excalidraw", "code-split", "boundary"],
+  "analysis": "Single component, mostly a wrapper around <Excalidraw />. Excalidraw imported via React.lazy. Excalidraw's stylesheet is imported inside this file (deliberate — the stylesheet is part of Excalidraw's package and would otherwise bundle eagerly). Callers should reach SketchCanvas via React.lazy too, so the lazy boundary actually code-splits. <Suspense> wrapping handles the chunk load. Forwards ref / API to caller via the ExcalidrawAPI type so callers (NapkinReplay, intake form) can drive the scene programmatically.",
+  "decisions": [
+    {
+      "decision": "Lazy-import via React.lazy at this boundary, callers do same",
+      "rationale": "A single React.lazy upstream lets some code-paths reach Excalidraw eagerly via static imports. Double-lazy (this component + every caller) means EVERY reach is async, so the chunk is genuinely split.",
+      "recommendation": "Every component that uses SketchCanvas should also be lazy-loaded by its caller. Static-import-then-lazy defeats the split.",
+      "date": "2026-05-11"
+    },
+    {
+      "decision": "Excalidraw stylesheet imported in this file, not in styles.css",
+      "rationale": "Importing in styles.css would bundle the CSS into the main bundle. Importing it here (inside the lazy boundary) means the CSS comes down with the JS chunk — same load-once-when-opened semantics as the component.",
+      "recommendation": "Don't move the @import to styles.css. The boundary integrity depends on co-locating the CSS with the lazy component.",
+      "date": "2026-05-11"
+    }
+  ],
+  "successCriteria": "- Excalidraw chunk loads only when SketchCanvas mounts (via caller-side React.lazy)\n- Excalidraw CSS code-splits with the chunk\n- ExcalidrawAPI is forwarded to caller via ref\n- Scene state survives across renders within the component\n- Heavy chunk never on the home/intake critical path",
+  "implementation": "src/components/SketchCanvas.tsx — React.lazy import of Excalidraw + its stylesheet. <Suspense> for the chunk load fallback. Type ExcalidrawAPI for the API surface.",
+  "userGuide": "Use as <SketchCanvas onChange={...} api={apiRef} />. The api ref exposes Excalidraw's updateScene + restore methods for programmatic control (used by NapkinReplay). To trigger chunk preload (rare): import the file dynamically with a then-discard pattern.",
+  "knownLimitations": [
+    "Lazy load means a brief flicker on first open; mitigated by the <Suspense> fallback which renders a sketch-canvas placeholder",
+    "Excalidraw's API surface may change across versions — TypeScript types catch most breaks at compile time",
+    "Static imports anywhere in the call chain will defeat the split; CI bundle analyzer would catch but isn't currently wired up"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-11",
+      "reason": "Component shipped as the Excalidraw lazy boundary."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Boundary + double-lazy pattern stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

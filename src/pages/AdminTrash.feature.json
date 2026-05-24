@@ -1,0 +1,62 @@
+{
+  "featureKey": "feat-2026-076",
+  "title": "Admin trash — soft-deleted sessions, restorable",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminTrash.tsx",
+  "problem": "Sessions soft-delete via DELETE /api/sessions/:id; the row stays in D1 with deleted_at set. AdminTrash is the recovery surface — lists soft-deleted sessions, shows when each was deleted and by whom, and offers a one-click restore. Without this, recovering an accidentally-deleted session would require SQL access.",
+  "tags": ["admin", "soft-delete", "restore", "recovery"],
+  "analysis": "GET /api/sessions?deleted=true (admin-only opt-in flag) on mount; returns ONLY rows with deleted_at IS NOT NULL. Each row shows: visitor email, problem type, original status (last value before delete), when deleted, who deleted (self vs admin). Restore button → PATCH /api/sessions/:id with { restore: true } which clears deleted_at and resets status to 'triage' (the safest restoration target — admin decides next move from there).",
+  "decisions": [
+    {
+      "decision": "Restore lands at status='triage', not the pre-delete status",
+      "rationale": "Restoring directly to whatever status the session held before delete could put it back into active capacity (breaking the cap rule). Landing at 'triage' is safe — admin reviews and transitions explicitly. Worst case: a restored session needs one PATCH to active. Best case: the deletion was correct and the restoration is a clean re-triage.",
+      "recommendation": "Keep the triage-restore. If an admin wants to restore to exact prior state, they can do that via two PATCHes (restore + transition).",
+      "date": "2026-05-13"
+    }
+  ],
+  "successCriteria": "- Lists only soft-deleted sessions\n- Restore button works in one click\n- Restored session lands at status='triage'\n- Visitors never see soft-deleted sessions on /me regardless of admin actions\n- Forbidden message for non-admin visitors who somehow reach the page",
+  "implementation": "src/pages/AdminTrash.tsx — useEffect → listSessions(?deleted=true). undeleteSession() (src/lib/sessionsApi.ts) wraps the restore PATCH. Confirmation modal omitted; restore is reversible (just delete again).",
+  "userGuide": "Visit /admin/trash. Click restore on a row to bring it back to triage. To permanently delete: there's no UI; SQL only (DELETE FROM sessions WHERE id = ?). Soft-delete is the visitor-facing 'delete' semantic; hard-delete only happens via /api/me's full erasure flow.",
+  "knownLimitations": [
+    "No bulk restore — one click per row",
+    "No filter / search; current scale doesn't warrant",
+    "Restored sessions go to triage even if originally far past that — admin re-evaluates"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-13",
+      "reason": "Page shipped with the trash list + one-click restore."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Restore-to-triage decision stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

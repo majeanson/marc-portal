@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-064",
+  "title": "GET /api/public/sessions/:id/advancements — unauth share-link feed",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/iterative",
+  "componentFile": "functions/api/public/sessions/[id]/advancements.ts",
+  "problem": "The /share/:id page is the URL-as-capability share view — anyone holding a session id can see the advancements admin flagged allowedForPublic for that session. This endpoint is its data-side: load the session, then return ONLY advancements with allowed_for_public=1. Session ids are 72-bit base64url tokens; guessing one is astronomically unlikely so the URL IS the access control. Default-private means nothing leaks unless admin explicitly opts in per-advancement.",
+  "tags": ["iterative", "unauth", "url-as-capability", "default-private"],
+  "analysis": "GET only. Validates the session id param; loadSession() returns the session or null. If session doesn't exist OR deleted_at IS NOT NULL, return 404 — consistent with /api/public/sessions/[id]/advancements returning 404 for soft-deleted sessions, preserves zero-knowledge about whether a given id corresponds to anything real. If session exists, listAdvancementsForSession() returns ordered advancements; the handler filters to those with allowed_for_public=1 (parseFlags on the flags JSON). Returns the public projection of each advancement: id, label, body, date, iframe_path, build_url, commit_sha. No internal flags, no admin notes.",
+  "decisions": [
+    {
+      "decision": "404 the recipient if no public advancements exist — don't differentiate 'no such session' from 'session has nothing public'",
+      "rationale": "Differentiating would leak the existence of sessions whose admin hasn't flagged anything public yet. A consistent 404 across both cases preserves zero-knowledge about session existence to anyone holding only an id. Mirrors /share/:id's expectations.",
+      "recommendation": "Keep the 404 generic.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "Default-private: no flag means no leak",
+      "rationale": "Every new advancement lands with allowed_for_public=0 unless admin explicitly opts in. This is the safer default — admin should ACT to publish, not REMEMBER to unpublish. Combined with the session-id-as-capability model, the only way an advancement reaches the public is admin's explicit per-row flag.",
+      "recommendation": "When adding new advancement fields, default-deny them too. A new field that's public by default would be a regression in this model.",
+      "date": "2026-05-12"
+    }
+  ],
+  "successCriteria": "- Anon visitor with the session id sees only allowed_for_public=1 advancements\n- Internal advancements (work-in-progress notes admin hasn't published) NEVER leak\n- 404 is uniform across 'no such session' and 'session has zero public advancements'\n- Soft-deleted sessions return 404\n- Ordering matches the admin-side ordering",
+  "implementation": "functions/api/public/sessions/[id]/advancements.ts — single onRequestGet. loadSession from _lib/sessions, listAdvancementsForSession + parseFlags from _lib/advancements. Returns array of public-projected AdvancementRow entries. Tests: covered indirectly by the /share/:id integration tests.",
+  "userGuide": "Consumed by src/pages/PublicAdvancements.tsx via src/lib/advancementsApi.ts → listPublicAdvancements(sessionId). To preview: GET http://localhost:8788/api/public/sessions/<id>/advancements where <id> is a real session id.",
+  "knownLimitations": [
+    "Session id is the only access control; a leaked URL is unrevokable short of clearing every advancement's allowed_for_public flag",
+    "No rate limit on this endpoint — public-by-design with high cost per request would be a vector; advancement reads are cheap so not a concern today",
+    "Iframe sandbox tightening (AUDIT P1.9 deferred) affects the consumer page, not this handler — it just returns URLs"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-12",
+      "reason": "Endpoint shipped paired with the /share/:id page; URL-as-capability + default-private flag model live."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. 404-uniformity and default-private behaviors stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 public-API sweep."
+    }
+  ],
+  "annotations": []
+}

@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-090",
+  "title": "Featured projects — home-page shipped-work strip",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/home-section",
+  "componentFile": "src/components/FeaturedProjects.tsx",
+  "problem": "The most persuasive answer to 'is this a real practice?' is showing shipped work. FeaturedProjects is the home-page strip: top entries from the public showcase, each with a live iframe preview, drilling into /projects for the full gallery. Self-hides when the showcase is empty (early-practice state) so the home page doesn't render a half-built section.",
+  "tags": ["home-section", "showcase", "iframe-preview", "self-hiding", "view-transitions"],
+  "analysis": "GET /api/public/projects on mount. Renders the top N as ProjectCardPreview cards — each shows the showcase_title + tagline + an iframe of the current build URL (or a static placeholder if iframe_path is absent). HomeDrillCard at the bottom routes to /projects for the full gallery. useViewTransitionState from react-router-dom enables a smooth view transition into /projects on click. Returns null when the fetch returns zero rows — no empty-state copy, no skeleton; the section just doesn't exist for empty practices.",
+  "decisions": [
+    {
+      "decision": "Self-hide when empty (no rendering), not 'no projects yet' copy",
+      "rationale": "An early-practice home page with 'no projects yet' would scream early-practice. Self-hiding lets the section appear only when there's something to show. The visitor experiences a coherent home page either way; once shipped, the section appears organically.",
+      "recommendation": "Keep self-hide. If a future need wants a 'coming soon' affordance, add it elsewhere (e.g. a teaser at the section's anchor); don't dilute this section.",
+      "date": "2026-05-09"
+    },
+    {
+      "decision": "iframe preview, not screenshot",
+      "rationale": "An iframe shows the actual live site — proof that the build exists and works. A screenshot would be cheaper but stale. The iframe sandbox is permissive enough for self-hosted demos (AUDIT P1.9 deferred tightening). The cost is iframe load time; mitigated by lazy load + viewport-aware embedding.",
+      "recommendation": "Don't switch to screenshots. If iframe load cost becomes a Lighthouse issue, evaluate intersection observer to defer until scrolled into view.",
+      "date": "2026-05-09"
+    }
+  ],
+  "successCriteria": "- Renders top N showcased projects (currently 3)\n- Each card embeds the live build via iframe\n- Self-hides when zero projects\n- HomeDrillCard routes to /projects\n- View transition animates the navigation\n- Bilingual at full parity",
+  "implementation": "src/components/FeaturedProjects.tsx — useEffect → listPublicProjects, top 3 to ProjectCardPreview. useViewTransitionState for the drill click. Returns null when no projects.",
+  "userGuide": "To flag a session as showcased: admin sets showcased_at + showcase_title + showcase_tagline via /admin/inbox/:id. On next home page load, it appears here. Order is newest-showcased first; no manual reorder UI.",
+  "knownLimitations": [
+    "Top N is hardcoded at 3; visible-on-home is fixed",
+    "iframe sandbox tightening (AUDIT P1.9 deferred) — currently permissive",
+    "If a build URL goes 404, the iframe renders the browser's broken-page state; no error handling",
+    "Self-hide branch means analytics can't distinguish 'no projects shown because empty' from 'visitor didn't scroll'"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-09",
+      "reason": "Component shipped with the live iframe preview + self-hide + view transition."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Self-hide + iframe-preview decisions stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

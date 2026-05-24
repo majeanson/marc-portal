@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-080",
+  "title": "Admin audit — reverse-chronological feed of operator actions",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminAudit.tsx",
+  "problem": "Operator-significant actions (tenant provisioning, theme edits, status freezes, etc.) need a trail. AdminAudit reads /api/admin/audit and renders the audit_log table as a reverse-chronological feed. Read-only — append-only is the contract; nothing here can edit history. Client-side actor + action substring filters help narrow down without server-side date-range queries (deferred — small log size).",
+  "tags": ["admin", "audit-log", "read-only", "client-side-filter"],
+  "analysis": "GET /api/admin/audit on mount; returns recent audit_log entries (server-side limit; client paginates if more). Each row has id + ts + actor_email + tenant_id + action string + optional payload JSON. Renders newest first. Two filter inputs: actor substring + action substring; match-count badge updates as user types. Clear-filters button. No edit affordance — history is append-only.",
+  "decisions": [
+    {
+      "decision": "Client-side filters, server-side date-range deferred",
+      "rationale": "audit_log is small (operator actions are rare). Fetching everything + filtering client-side is fine at this scale. Server-side date-range would add a /api/admin/audit?from=...&to=... param with its own pagination — deferred until log size makes client-filter slow.",
+      "recommendation": "Don't pre-emptively add server-side filter. Revisit when audit_log crosses ~5000 rows or response payload approaches 1MB.",
+      "date": "2026-05-17"
+    },
+    {
+      "decision": "No edit, no delete affordance",
+      "rationale": "An audit log that can be edited isn't an audit log. The contract is append-only; the SQL has no DELETE/UPDATE path exposed via any handler. Edit would also confuse compliance review.",
+      "recommendation": "Don't add edit. If a wrong entry needs context, append a new entry referring to it.",
+      "date": "2026-05-17"
+    }
+  ],
+  "successCriteria": "- Lists audit_log entries newest first\n- Two filter inputs (actor, action) work client-side with match-count badge\n- Clear-filters resets to full list\n- Operator-only (gated at the API)\n- No edit, no delete affordance",
+  "implementation": "src/pages/AdminAudit.tsx — useEffect → /api/admin/audit. Local state for filter strings. Filtered + count computed via useMemo. Tests covered by the audit endpoint tests.",
+  "userGuide": "Visit /admin/audit. Type into filter inputs to narrow. To find a specific session's audit trail: filter by action substring containing the session id. To export: not implemented; SQL the table directly.",
+  "knownLimitations": [
+    "Server-side limit on initial fetch; very old entries require pagination (not surfaced today)",
+    "No date range filter UI; client-side substring is the only narrowing today",
+    "Payload JSON is shown verbatim — could be long. No truncation/preview UI",
+    "audit_log inserts are best-effort from the handlers that emit them; a failure to insert isn't fatal but is silent"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-17",
+      "reason": "Page shipped with the feed + client-side filters (AUDIT P3.17)."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Append-only contract + client-filter posture stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

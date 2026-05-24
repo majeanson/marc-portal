@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-086",
+  "title": "PATCH + DELETE /api/admin/vouches/:id — moderation actions",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "functions/api/admin/vouches/[id].ts",
+  "problem": "AdminVouches' per-row actions go through here. PATCH supports status flips (pending → approved / rejected), copy edits (body, name, link, relationship), and undelete (restore from trash). DELETE soft-removes (sets deleted_at). Author email and submission timestamp are immutable — those are dedup + audit keys.",
+  "tags": ["admin", "moderation", "operator-only", "soft-delete"],
+  "analysis": "PATCH onRequest. currentEmail + isAdmin. Body fields all optional partial-update; if `status` provided, validate against VOUCH_STATUSES enum; if `relationship`, validate via isValidRelationship. Body / name / link length-checked against the same VOUCH_LIMITS used by the open /vouches submission. `undelete: true` clears deleted_at + sets status back to 'pending' (consistent with sessions' trash-restore pattern). DELETE onRequest: soft-delete only (sets deleted_at = now); hard-delete is SQL-only.",
+  "decisions": [
+    {
+      "decision": "undelete returns to status='pending', not original status",
+      "rationale": "Same logic as session restore: a soft-deleted vouch might have been deleted as spam, then later it turns out to be legitimate. Restoring to 'pending' forces a fresh moderation decision rather than auto-publishing potentially-spam content.",
+      "recommendation": "Keep the pending-restore. Trusting the original status would auto-publish spam on a restore.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "Author email + timestamp immutable",
+      "rationale": "Email is the rate-limit dedup key and the moderator's follow-up channel. Timestamp is the audit anchor. Both unchangeable maintains the integrity of those uses.",
+      "recommendation": "Don't add edit. If a wrong email needs fixing, reject + ask the submitter to resubmit.",
+      "date": "2026-05-18"
+    }
+  ],
+  "successCriteria": "- PATCH supports status / body / name / link / relationship / undelete in partial shape\n- DELETE soft-removes (sets deleted_at)\n- Validation rejects bad statuses / relationships / overlength bodies\n- Email + timestamp can't be changed\n- 403 for non-operator, 401 for anon, 404 for unknown id",
+  "implementation": "functions/api/admin/vouches/[id].ts — onRequestPatch + onRequestDelete. Validation reuses the open-endpoint validators (VOUCH_LIMITS, isValidRelationship). Returns the updated row on success.",
+  "userGuide": "Operator only. PATCH /api/admin/vouches/:id with the fields to update. DELETE /api/admin/vouches/:id to soft-remove. To restore from trash: PATCH with { undelete: true }. The AdminVouches page wraps these calls.",
+  "knownLimitations": [
+    "No edit history — overwrite is permanent for the affected fields",
+    "Hard-delete only via direct SQL; the soft-delete pattern preserves the row for recovery",
+    "Undelete → pending means re-moderation is required; an admin wanting to restore exact prior state needs two PATCHes",
+    "No bulk PATCH — one row per call"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-18",
+      "reason": "Endpoint shipped paired with the index handler + AdminVouches page."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Edit + undelete-to-pending decisions stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

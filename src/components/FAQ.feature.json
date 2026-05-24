@@ -1,0 +1,74 @@
+{
+  "featureKey": "feat-2026-087",
+  "title": "FAQ — disclosure accordion with URL-hash deep links",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/home-section",
+  "componentFile": "src/components/FAQ.tsx",
+  "problem": "The home page's FAQ section needs to handle the typical 'is this for me?' objections (price, timeline, ownership, idea-still-fuzzy, etc.) without a heavy interactive widget. The FAQ component is a native HTML <details>/<summary> accordion — no React state for open/closed — plus URL-hash sync so a /#faq-price link opens directly to that question. Each FAQ has a feature-colour dot tying it to the relevant feature.",
+  "tags": ["home-section", "accordion", "native-details", "deep-link", "feature-coloured"],
+  "analysis": "Renders DICT[lang].faq.items as an array of <details> elements. open/closed is browser-native — react-hooks/setState doesn't drive it. URL-hash sync uses a useEffect that listens for hashchange + on mount: if hash matches an item id, set its open attribute. The 'open all' override is the only React state. FAQ_FEATURE map (src/lib/features.ts) ties each FAQ slug to a feature; FeatureDot renders the colour next to the question. Inline FAQPage JSON-LD is injected for SEO. Accessibility is good by default (native disclosure pattern).",
+  "decisions": [
+    {
+      "decision": "Native <details>/<summary>, not a custom React accordion",
+      "rationale": "Native gets ARIA right, keyboard right, screen-reader right, with zero JS. A custom React accordion would re-implement all of that, less reliably. The only React state we need is the 'open all' override and the URL-hash sync — both well-suited to React; the open/closed state itself stays in the DOM.",
+      "recommendation": "Don't switch to a custom accordion. If a future need wants per-item analytics on open, add an onclick listener but keep the native disclosure pattern.",
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "URL hash → open item, deep linkable",
+      "rationale": "A /#faq-price link should land on the FAQ section AND open the price question. The hashchange listener + on-mount check handles both. The hash → slug map is keyed by FAQ slug (FAQ_FEATURE in features.ts), so the same id is the anchor + the colour + the deep link target.",
+      "recommendation": "When adding a FAQ item, add it to DICT, FAQ_FEATURE, and FAQ_LABEL together. The features.test.ts test catches drift.",
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Inject FAQPage JSON-LD",
+      "rationale": "Google's rich-result FAQ snippet requires the JSON-LD structured data. Injecting it inline (vs. a hosted .jsonld file) keeps the FAQ + its structured data in one place. SEO benefit is real for the long-tail Quebec-local case-study traffic the practice targets.",
+      "recommendation": "Update the JSON-LD when adding/changing FAQ items. The shape is hand-maintained; don't auto-generate (the human-readable answers and the JSON-LD answers can diverge slightly for SEO formatting).",
+      "date": "2026-05-07"
+    }
+  ],
+  "successCriteria": "- FAQ items render as native disclosure accordion\n- /#faq-<slug> deep links open the right item\n- Each item shows its feature colour via FeatureDot\n- 'Open all' button works\n- FAQPage JSON-LD is injected for SEO\n- Bilingual at full parity",
+  "implementation": "src/components/FAQ.tsx — DICT[lang].faq.items array. JSON-LD inlined as <script type='application/ld+json'>. hashchange listener cleaned up on unmount. FAQ_FEATURE + FAQ_LABEL + DICT keep three places in sync; guarded by features.test.ts.",
+  "userGuide": "Added/modified via three places in lockstep: DICT.fr.faq.items + DICT.en.faq.items (content) + FAQ_FEATURE (feature colour) + FAQ_LABEL (short label for /carte's FeatureIndex). Tests catch drift. To deep-link: /#faq-<slug> opens the matching item.",
+  "knownLimitations": [
+    "JSON-LD is hand-maintained alongside DICT; risk of divergence if updated in one place. Mitigation: SEO QA after major FAQ changes",
+    "Native <details> doesn't animate open/close uniformly across browsers; this is intentional (anti-AI-tells — uniform fade-in feels generic)",
+    "Hash sync fires on hashchange; programmatic state changes (e.g. router-driven) don't trip it. The home page's nav uses real hash anchors so this works"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Component shipped with the native disclosure + URL-hash sync + JSON-LD."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Native disclosure + hash deep links stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

@@ -1,0 +1,62 @@
+{
+  "featureKey": "feat-2026-089",
+  "title": "About — home-page block introducing Marc",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/home-section",
+  "componentFile": "src/components/About.tsx",
+  "problem": "The home page sells a HUMAN solo Québécois dev — the visitor needs to see who they're working with. About is the home-page introduction block: portrait + short bio + GitHub link. Portrait gracefully degrades to text-only if /marc.jpg ever 404s (onError handler hides the figure).",
+  "tags": ["home-section", "about", "portrait", "graceful-degrade"],
+  "analysis": "Renders DICT[lang].about copy. /marc.jpg is the portrait; <img onError> hides the figure so a 404 doesn't render a broken-image icon. GITHUB_URL is hardcoded. CrossFeatureLink at the bottom routes to /parcours for more depth. Feature colour is HOME_SECTION_FEATURE['about'] = 'meta' (the backstage feature) — about-the-practice is meta-tinted.",
+  "decisions": [
+    {
+      "decision": "Portrait onError hides the figure instead of showing alt text",
+      "rationale": "A broken image icon looks broken. Alt text on a hidden figure is gentler — the bio paragraph still reads. The cost is no portrait shown when 404'd; cheaper than rendering wrong.",
+      "recommendation": "Keep the onError handler. The previous version showed a generic placeholder which AUDIT P3.18 corrected.",
+      "date": "2026-05-08"
+    }
+  ],
+  "successCriteria": "- Portrait + bio + GitHub link render\n- Portrait gracefully degrades on 404\n- About section is meta-tinted (backstage feature colour)\n- Bilingual at full parity",
+  "implementation": "src/components/About.tsx — DICT[lang].about. <img src='/marc.jpg' onError={hideFigure}/>. SectionEyebrow + HOME_FOLIOS for chrome.",
+  "userGuide": "Edit copy via DICT.fr.about / DICT.en.about. Update portrait by replacing public/marc.jpg. Update GitHub URL via the GITHUB_URL constant.",
+  "knownLimitations": [
+    "Portrait is a single asset; no responsive srcset",
+    "GitHub URL is hardcoded; no link to other socials (no Twitter, LinkedIn) by design — Marc's professional surface is the portal itself",
+    "Bio length is short by intent; if the practice ever wants a deeper About page, fork into /about"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Component shipped with portrait + bio."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. onError graceful-degrade pattern stable since AUDIT P3.18 cleanup."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

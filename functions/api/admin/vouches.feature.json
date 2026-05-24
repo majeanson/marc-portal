@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-085",
+  "title": "GET /api/admin/vouches — moderation list including pending + trash",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "functions/api/admin/vouches.ts",
+  "problem": "/api/public/vouches returns only approved + not-deleted vouches with email stripped. The admin moderation page needs the OTHER half: pending + rejected + soft-deleted, WITH email attached for follow-up. /api/admin/vouches is that. Sorted pending-first (newest) then everything else by created_at DESC — puts the moderation queue at the top of the response so the UI doesn't have to bucket the wrong way.",
+  "tags": ["admin", "moderation", "full-row-view", "operator-only"],
+  "analysis": "GET only. currentEmail + isAdmin gates. Optional ?status=pending|approved|rejected narrows. Otherwise returns every vouch (including soft-deleted). Full VouchRow shape — email, IP, rate-limit metadata, all of it. Sort: pending first by created_at DESC, then status='approved'/'rejected' by created_at DESC, then soft-deleted last. AdminVouches client-side buckets by status.",
+  "decisions": [
+    {
+      "decision": "Sort puts pending at top of response, not status-then-time",
+      "rationale": "The moderation queue is what admin opens this page to handle. Returning everything sorted by created_at puts ancient approved rows at the top, burying the queue. Pending-first ordering shaves a client-side sort step and makes the API itself reflect the operator's priority.",
+      "recommendation": "Don't reorder. If a future admin view wants different ordering, add a ?sort= param; keep this default.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "?status= filter is OPTIONAL, default is everything",
+      "rationale": "AdminVouches renders all four buckets at once — needing everything is the common case. ?status= is for occasional needs (e.g. 'just show me trash' for cleanup). Default-everything matches the page; filter is the special case.",
+      "recommendation": "Keep optional. If a use case needs default-narrowed (e.g. mobile UI shows only pending), thread that through the client.",
+      "date": "2026-05-18"
+    }
+  ],
+  "successCriteria": "- Operator gets every vouch including pending + rejected + soft-deleted\n- Author email + IP + rate-limit metadata included (operator context)\n- ?status= narrows when present\n- Pending-first ordering with newest-first within\n- 403 for non-operator, 401 for anon",
+  "implementation": "functions/api/admin/vouches.ts — single onRequestGet. SELECT with optional WHERE status = ?. VOUCH_STATUSES enum + VouchRow type from _lib/vouches.ts. Tests covered by the vouches integration tests.",
+  "userGuide": "Consumed by src/pages/AdminVouches.tsx. To preview: curl https://marcportal.com/api/admin/vouches -b 'mp_session=<admin>'. To filter: ?status=pending.",
+  "knownLimitations": [
+    "Returns every vouch — no pagination. Fine at current scale; revisit at ~500+ rows",
+    "No date range filter at the API; admin's client-side filter handles narrowing",
+    "Sort is server-side; can't be changed via query param today"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-18",
+      "reason": "Endpoint shipped with the moderation-queue ordering."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Pending-first sort + optional filter stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

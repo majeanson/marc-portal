@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-063",
+  "title": "GET /api/public/vouches — unauth approved-vouches feed",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/showcase",
+  "componentFile": "functions/api/public/vouches.ts",
+  "problem": "The home-page social-proof block and the dedicated /vouches page both render approved testimonials. The vouches table also holds author_email for moderator follow-up; the public endpoint must strip that field at the projection level. Optional ?sessionId filter lets /share/:id surface vouches scoped to that specific project.",
+  "tags": ["showcase", "unauth", "projection-strip", "session-filter"],
+  "analysis": "GET only. SELECT FROM vouches WHERE status = 'approved' AND deleted_at IS NULL ORDER BY created_at DESC. ?sessionId=X filter adds AND session_id = ?. toPublicVouchRow (functions/_lib/vouches.ts) projects each row to PublicVouchRow — no author_email. Volume is bounded by moderation throughput (~50/year ceiling at this practice's scale), so no pagination. Public consumers: home, /vouches, /share/:id with session filter.",
+  "decisions": [
+    {
+      "decision": "Centralize projection in _lib/vouches.ts (toPublicVouchRow)",
+      "rationale": "Two consumers (this endpoint + future endpoints that surface vouches) need the same projection. Centralizing the function + the PublicVouchRow type means there's one place to change if the public shape needs adjustment, and the type system catches any new consumer trying to surface a private field.",
+      "recommendation": "Don't inline a projection in handlers. If a new public surface needs a different cut, add a sibling function in _lib/vouches.ts; keep them all in one file.",
+      "date": "2026-05-18"
+    },
+    {
+      "decision": "?sessionId filter is optional; default returns all approved",
+      "rationale": "/share/:id needs scoped vouches (only this project's). The home + /vouches pages want everything. One endpoint with an optional filter is simpler than two endpoints with different defaults.",
+      "recommendation": "Don't add other filters (by relationship, by date range) here — those are display-time concerns. The client trims.",
+      "date": "2026-05-18"
+    }
+  ],
+  "successCriteria": "- Anon visitor gets approved + not-deleted vouches\n- author_email never appears in the response (projection strip)\n- ?sessionId=X scopes to that session's vouches\n- Soft-deleted vouches and pending/rejected vouches are excluded\n- Newest-first ordering",
+  "implementation": "functions/api/public/vouches.ts — single onRequestGet. SELECT with optional WHERE clause for sessionId. Map rows through toPublicVouchRow. Tests: functions/_lib/vouches.test.ts covers the projection contract; functions/api/public/vouches.test.ts (if it exists) handles integration.",
+  "userGuide": "Consumed by src/lib/vouchesApi.ts → listPublicVouches(sessionId?). To preview: GET http://localhost:8788/api/public/vouches. To preview with filter: GET http://localhost:8788/api/public/vouches?sessionId=X.",
+  "knownLimitations": [
+    "No pagination — fine at current scale (single-curator moderation queue)",
+    "?sessionId is a string filter, not validated for format here; non-existent sessions return an empty array which is the correct UX (no leak)",
+    "Vouches table also holds anti-spam metadata (IP, rate-limit hits) that's intentionally not in PublicVouchRow"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-18",
+      "reason": "Endpoint shipped with the PII-stripped projection + optional sessionId filter."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Projection contract stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 public-API sweep."
+    }
+  ],
+  "annotations": []
+}

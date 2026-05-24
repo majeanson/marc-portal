@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-077",
+  "title": "Admin custodians — every subscription state at a glance",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminCustodians.tsx",
+  "problem": "Custodian subscriptions live in sessions.custodian_status with state transitions driven by /api/payments/webhook. Marc needs one place to see all subs at once: who's active (MRR + next renewal), who's past-due (Stripe failed — needs operator attention), and the history of switched/canceled. AdminCustodians is that page. No new endpoint required — reuses /api/sessions (admin scope) and buckets client-side.",
+  "tags": ["admin", "subscriptions", "mrr", "bucketed"],
+  "analysis": "GET /api/sessions on mount. Bucket sessions by custodian_status: active (renders with MRR sum + next-renewal dates), past_due (top of page, needs attention), switched_to_tout_a_toi + canceled (history strip). Empty buckets render nothing — page doesn't look half-built for a young practice with few subs. No /api/admin/subscriptions endpoint; deriving from session rows keeps the schema lean.",
+  "decisions": [
+    {
+      "decision": "Reuse /api/sessions, no dedicated subscriptions endpoint",
+      "rationale": "custodian_status is a column on the session row, set by the webhook. The list endpoint already returns it. Adding /api/admin/subscriptions would duplicate auth + projection work for zero schema benefit.",
+      "recommendation": "If subscription queries get complex (e.g. churn analysis), add a /api/admin/subscriptions/analytics that returns aggregate-only data; keep this page reading from /api/sessions.",
+      "date": "2026-05-16"
+    },
+    {
+      "decision": "Past-due bucket renders at the TOP, not in status order",
+      "rationale": "Past-due means Stripe's payment retry has failed enough that admin needs to step in — usually a card update or a cancel. Surfacing it first puts the operator-urgent work at the top. Active subs (no work needed) sit below.",
+      "recommendation": "Keep past-due at the top. The page is for operator work, not balance-sheet review.",
+      "date": "2026-05-16"
+    }
+  ],
+  "successCriteria": "- All active subs visible with their MRR contribution and next renewal\n- Past-due subs surface at top with the session link for triage\n- Switched / canceled history kept browsable\n- Empty buckets render nothing (no half-built page in young practice)\n- One fetch on mount; client-side bucketing",
+  "implementation": "src/pages/AdminCustodians.tsx — useEffect → listSessions, useMemo to bucket. Sums MRR from active subs' tier × custodian_plan_cents. Next-renewal computed from sub_start + plan period (annual). Each row links to /admin/inbox/:id for drill-in.",
+  "userGuide": "Visit /admin/custodians. Past-due rows have a 'investigate' link to the session. To manually flip a custodian_status (rare): edit via the session page or SQL. The webhook is the normal source of truth.",
+  "knownLimitations": [
+    "Past-due investigation is operator manual — no automated re-charge attempt beyond Stripe's built-in retry. Stripe retries 4 times over 4 weeks by default",
+    "MRR sum is computed client-side and only over current active subs; refund history isn't surfaced here (see /admin/inbox/:id for that)",
+    "No CSV export; SQL the customers table or use the Stripe Dashboard for accounting"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-16",
+      "reason": "Page shipped with the three-bucket layout."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Bucketing pattern stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

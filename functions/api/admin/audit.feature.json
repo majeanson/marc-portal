@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-082",
+  "title": "GET /api/admin/audit — recent audit_log feed (operator only)",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "functions/api/admin/audit.ts",
+  "problem": "AdminAudit needs a feed of recent audit_log entries; this endpoint serves that. Operator-only, returns the most recent entries ordered ts DESC. Tenant-scoped via requireTenant — audit_log is per-tenant so a fleet admin doesn't see another tenant's actions.",
+  "tags": ["admin", "audit-log", "operator-gated", "tenant-scoped"],
+  "analysis": "GET only. currentEmail → unauthorized if missing. isAdmin → forbidden if not operator. requireTenant → ctx.data.tenant or 500. SELECT FROM audit_log WHERE tenant_id = ? ORDER BY ts DESC LIMIT N (N defined at top of file, currently 200). Returns array of AuditRow. No filter params today; AdminAudit does the filtering client-side.",
+  "decisions": [
+    {
+      "decision": "Server-side LIMIT, no pagination",
+      "rationale": "audit_log is small. Returning the most-recent 200 covers every realistic operator query. A LIMIT-without-pagination is simpler than a paginated API; AdminAudit's client-side filtering handles search.",
+      "recommendation": "When the log crosses ~1000 entries per tenant, add a /api/admin/audit?cursor=... param. Don't over-engineer earlier.",
+      "date": "2026-05-17"
+    },
+    {
+      "decision": "Tenant-scoped at the WHERE clause",
+      "rationale": "audit_log entries are per-tenant. Filtering at the SQL level (not in app code) means even a misconfigured admin can't accidentally see another tenant's log. requireTenant guarantees tenant_id is non-null.",
+      "recommendation": "When adding new admin endpoints that touch audit_log, thread tenant the same way.",
+      "date": "2026-05-17"
+    }
+  ],
+  "successCriteria": "- Operator gets recent audit_log (tenant-scoped)\n- Non-operator → 403\n- Anon → 401\n- Tenant lookup failure → 500 (requireTenant)\n- Newest-first ordering\n- Server-side LIMIT prevents giant responses",
+  "implementation": "functions/api/admin/audit.ts — single onRequestGet. AuditRow interface. Tests: covered indirectly by admin integration tests.",
+  "userGuide": "Consumed by src/pages/AdminAudit.tsx. To query directly: curl https://marcportal.com/api/admin/audit -b 'mp_session=<admin>'. To insert manually for testing: INSERT INTO audit_log (id, ts, actor_email, tenant_id, action, payload) VALUES (...).",
+  "knownLimitations": [
+    "No pagination; LIMIT is fixed server-side",
+    "No date range / actor filter at the API; client filters",
+    "Payload column is opaque JSON; structured search would require JSON1 or a dedicated index",
+    "Insertion into audit_log is best-effort from emitting handlers; a silent miss has no detection"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-17",
+      "reason": "Endpoint shipped paired with AdminAudit page."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Tenant scoping + LIMIT pattern stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

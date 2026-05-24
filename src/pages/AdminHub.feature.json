@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-074",
+  "title": "Admin hub — operator console index",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminHub.tsx",
+  "problem": "An operator hitting /admin needs to see what state the practice is in at a glance — pending triage count, active session, due-soon checks, recent audit activity — and then click through to the right tool. AdminHub is that index page. Mounted as the /admin/index route, it groups every admin surface + external dashboard (Stripe, Resend, CF) into scannable tiles, with live counters where possible. The same grouping definitions feed the /carte map's Admin layer so the two views stay in sync.",
+  "tags": ["admin", "console", "tile-layout", "live-counters"],
+  "analysis": "Reads /api/sessions (admin sees all) on mount to compute live counters: pending triage count, active session title + age, custodian past-due count. Tiles are grouped by purpose (Sessions, Vouches, Payments, Observability, External) using HUB_SECTIONS defined in src/lib/admin/hubSections.ts — single source so /carte's Admin layer can render the same grouping. Each tile is a labeled link + optional badge (e.g. red dot for past-due, count for pending queue). External tiles link out to Stripe Dashboard, Resend, CF Pages — not embedded, deliberately, since each surface has its own auth.",
+  "decisions": [
+    {
+      "decision": "Group definitions in src/lib/admin/hubSections.ts, not inline",
+      "rationale": "Two consumers (this page + /carte's Admin layer) need the same grouped tile structure. Centralizing means one place to add a new admin surface; both consumers pick it up.",
+      "recommendation": "When adding a new admin surface, add it to hubSections.ts. Don't add inline tile defs here.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "External dashboards are linked out, never embedded",
+      "rationale": "Embedding Stripe / Resend / CF dashboards would either require their iframe support (not always available) or proxy their auth (huge security surface). Linking out is simple and respects each tool's native auth.",
+      "recommendation": "Don't try to embed external dashboards.",
+      "date": "2026-05-12"
+    }
+  ],
+  "successCriteria": "- Land on /admin and see live counters for pending triage, active session, past-due custodians\n- Tiles are grouped by purpose, not alphabetically\n- External tools open in new tab\n- /carte's Admin layer mirrors the same grouping\n- Single fetch on mount; no per-tile waterfall",
+  "implementation": "src/pages/AdminHub.tsx — useEffect → listSessions → useMemo to compute counters. HUB_SECTIONS imported from src/lib/admin/hubSections.ts. Tile components are inline; future could extract.",
+  "userGuide": "Visit /admin → land here. Click a tile to drill into the surface. To rearrange or add: edit hubSections.ts and both AdminHub + /carte's Admin layer pick up the change. For tile badges that need new live data, extend the listSessions response or add a parallel fetch.",
+  "knownLimitations": [
+    "Single fetch on mount; counters can drift if a transition happens elsewhere while the page is open. Acceptable — the page is a hub, not a real-time dashboard",
+    "External tile links assume the operator is already signed into Stripe / Resend / CF; no SSO chain",
+    "Tile badges are computed client-side; a buggy listSessions response could miscount"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-12",
+      "reason": "Page shipped as /admin index; replaced the legacy redirect to the now-hidden /admin/apparence."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Tile model + grouping centralization stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

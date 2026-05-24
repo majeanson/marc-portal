@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-079",
+  "title": "Admin showcase — operator-only OG card grid + brand-check",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminShowcase.tsx",
+  "problem": "Each showcased project gets a dynamic OG card (functions/og/share/[id].ts) used as the social-unfurl preview. Card content drifts as session metadata changes; bad data (title overflow, missing tagline, un-tiered session) silently produces ugly cards that scrapers cache for days. AdminShowcase is the brand-check surface — a grid of every showcased project's OG card, with warning chips overlaid for each known issue. Operator-only.",
+  "tags": ["admin", "og", "brand-check", "warnings"],
+  "analysis": "GET /api/public/projects on mount (same data the public gallery uses; safe to fetch as admin too). Each project is rendered as a card with its actual OG image embedded via <img src='/og/share/<id>'>. WARNINGS are computed per-project: title length over OG safe area, missing tagline, no tier set, deploy URL missing. Warning chips overlay the card top; click chip to navigate to /admin/inbox/:id for the fix. Grid layout, no list mode.",
+  "decisions": [
+    {
+      "decision": "Render the actual OG image, not a placeholder",
+      "rationale": "Brand-check means seeing what social scrapers actually see. A placeholder would mask render bugs in workers-og. Rendering the live OG endpoint via <img> means font issues, layout breaks, etc. all surface here.",
+      "recommendation": "Don't switch to a placeholder. If <img> requests stress the OG endpoint, add CF Pages edge caching — but the real OG renders are what we need to eyeball.",
+      "date": "2026-05-20"
+    },
+    {
+      "decision": "Warnings as overlay chips, not a separate audit page",
+      "rationale": "Seeing the warning next to the card it applies to lets admin diagnose visually — 'oh, the title is overflowing' makes sense when you SEE the overflow + the warning together. A separate audit list would force admin to map warning → card mentally.",
+      "recommendation": "Add new warning types as needed; keep them visual + adjacent.",
+      "date": "2026-05-20"
+    }
+  ],
+  "successCriteria": "- Every showcased project renders its real OG card\n- Warning chips overlay each card for any detected issue\n- Click a chip → navigate to /admin/inbox/:id for the fix\n- Operator-only (anon visitors redirect)\n- Brand-check at a glance",
+  "implementation": "src/pages/AdminShowcase.tsx — useEffect → listPublicProjects. WARNINGS compute per-project from row fields. Inline <img src='/og/share/<id>'> for the card image. Grid CSS via styles.css.",
+  "userGuide": "Visit /admin/showcase. Scan the grid; any card with chips needs attention. Click a chip → land on the session page → fix the metadata → return here to verify. Cards may take a moment to refresh after a fix; CF edge cache.",
+  "knownLimitations": [
+    "OG cards render via <img> tag; some browsers cache aggressively. Hard refresh if needed",
+    "Warning list is static (predefined types); new types require a code change",
+    "If /og/share/:id returns the static fallback (rendering failure), this page shows the fallback too — operator can't distinguish 'no warning' from 'render broke'. RUNBOOK § OG triage covers"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-20",
+      "reason": "Page shipped with the grid + warning chip overlay."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Render-real-OG + adjacent-warnings decisions stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-072",
+  "title": "GET /og/ping — diagnostic probe for the OG renderer",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/og",
+  "componentFile": "functions/og/ping.ts",
+  "problem": "When /og/share/:id or /og/home misbehaves, the FIRST question is 'is the functions/og/ tree even being picked up at deploy?'. A 404 there could mean Pages dropped the bundle, the bundle size exceeded the limit, or _routes.json drifted. /og/ping is the answer: plain-text 'og-ok' if reachable, JSON probe of font asset state if requested. Smaller, faster, and disjoint from the satori render path.",
+  "tags": ["og", "diagnostic", "uptime", "unauth"],
+  "analysis": "GET only. Default returns text/plain 'og-ok' with cache-control no-store (so a probe always hits the function). ?fonts=1 returns JSON: a per-font load result (ok + size + content-type per file in functions/_lib/og-fonts.ts's probe list). Returns 200 if all fonts load, 503 if any failed. Used during deploy verification and RUNBOOK § OG triage to isolate 'the function is reachable' from 'the render pipeline works'.",
+  "decisions": [
+    {
+      "decision": "Plain text 'og-ok' as the default response, not JSON",
+      "rationale": "Plain text is the smallest possible signal that the function is alive. JSON or HTML would imply we're testing something else (parser, framework). The ASCII string is unambiguous — a curl pipe to grep just works.",
+      "recommendation": "Don't elaborate the default response. If new diagnostics are needed, add another ?flag mode.",
+      "date": "2026-05-14"
+    },
+    {
+      "decision": "Separate ?fonts=1 mode, not always-on",
+      "rationale": "Font probe loads every TTF/OTF, which takes ~50ms cold. Doing it on every /og/ping would slow down the basic reachability check. Opt-in via the query param keeps the basic probe instant and surfaces detailed font state only when asked.",
+      "recommendation": "When adding another probe mode (e.g. ?cache=1), follow the same opt-in pattern.",
+      "date": "2026-05-14"
+    }
+  ],
+  "successCriteria": "- /og/ping returns 200 + 'og-ok' as plain text\n- /og/ping?fonts=1 returns 200 + JSON when all fonts load; 503 when any fail\n- Cache-control is no-store so probes always reach the function\n- Disjoint from the satori render path — works even when satori is broken",
+  "implementation": "functions/og/ping.ts — single onRequestGet. probeOgFonts (functions/_lib/og-fonts.ts) handles the per-font load + JSON projection. The default response is hardcoded; minimal allocations.",
+  "userGuide": "Used during deploy verification: curl https://marcportal.com/og/ping should return 'og-ok'. If it returns 404 or HTML, Pages dropped the functions/og/ tree — check bundle size in deploy logs. If it returns 'og-ok' but /og/share/:id is broken, the satori path is the problem; check ?fonts=1. RUNBOOK § OG documents the full triage tree.",
+  "knownLimitations": [
+    "?fonts=1 loads all fonts; ~50ms cold. Not suitable for high-frequency uptime monitoring",
+    "Doesn't probe the satori render itself — that's intentional, would require rendering a test image which has its own failure surface",
+    "If the worker is broken before reaching this handler (e.g. cold-start crash), the response will be CF's generic 5xx page rather than 'og-ok'; that's still useful signal"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-14",
+      "reason": "Diagnostic endpoint shipped alongside the OG renderer."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Two-mode probe stable; RUNBOOK depends on it."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 OG-endpoint sweep."
+    }
+  ],
+  "annotations": []
+}

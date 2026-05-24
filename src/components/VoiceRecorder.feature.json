@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-097",
+  "title": "Voice recorder — shared mic capture for intake and session thread",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/intake",
+  "componentFile": "src/components/VoiceRecorder.tsx",
+  "problem": "Both the intake form and the session thread want voice-note capture: tradespeople prefer speaking to typing. The two contexts have different consent wording (intake clips are transcribed-and-discarded; session clips are retained) and different confirm-button labels — so the recorder is context-agnostic. Caller supplies the copy; this component only knows how to capture audio, show a preview, and hand the blob back.",
+  "tags": ["intake", "engagement", "mic-capture", "context-agnostic", "shared-component"],
+  "analysis": "MediaRecorder API; navigator.mediaDevices.getUserMedia for stream. State machine: idle → recording → preview → confirmed (or cancelled back to idle). Records to a Blob via MediaRecorder's dataavailable event. Preview offers playback before confirm. onConfirm(blob) handed to caller. Cleanup releases the mic track on unmount or cancel. Permission prompt the FIRST time; subsequent uses skip the prompt on the same origin.",
+  "decisions": [
+    {
+      "decision": "Context-agnostic; caller supplies consent line and confirm label",
+      "rationale": "Intake's recording is transcribed-and-discarded (no retention question). A session message's recording is retained (different Loi 25 footnote). The consent copy + button label must reflect WHICH context — but the recording mechanics are the same. Letting the caller supply the copy keeps the recorder reusable.",
+      "recommendation": "When adding a third context (e.g. admin voice note for moderator), supply its own copy. Don't fork the recorder.",
+      "date": "2026-05-14"
+    },
+    {
+      "decision": "Preview before confirm, not auto-submit",
+      "rationale": "A voice note is often a re-do — first attempt is too long, second attempt is right. Forcing review-before-submit catches the 'didn't mean to record' case and gives the user a chance to delete a bad take without sending it anywhere.",
+      "recommendation": "Keep the preview step. If a future UX wants 'one-shot quick voice', evaluate as a separate component.",
+      "date": "2026-05-14"
+    }
+  ],
+  "successCriteria": "- Captures audio via MediaRecorder + getUserMedia\n- Preview-before-confirm workflow\n- Mic stream released on unmount + cancel\n- Caller controls consent copy + confirm label\n- Bilingual at full parity (DICT[lang])\n- Graceful handling of permission denial",
+  "implementation": "src/components/VoiceRecorder.tsx — useState machine for recording/preview state. useRef for MediaRecorder instance. useCallback for handlers. Permission denial shows a polite 'tap to retry permission' state.",
+  "userGuide": "Use as <VoiceRecorder consentLine={...} confirmLabel={...} onConfirm={blob => ...} />. The blob is audio/webm typically (browser-dependent). Upstream: intake POSTs to /api/intake/transcribe; session thread POSTs to /api/sessions/:id/attachments. To test mic permission flow: open in an incognito tab with a fresh permission state.",
+  "knownLimitations": [
+    "MediaRecorder produces audio/webm in Chrome/Firefox, audio/mp4 in Safari — different mimetype; consumer handles",
+    "No auto-stop at a duration cap; user must hit stop. Could add a max-duration prop",
+    "Permission denial state is a polite 'tap to retry'; some browsers permanently deny on first refusal and require user to re-grant via browser settings",
+    "Single-channel mono assumed; multi-mic setups use the default"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-14",
+      "reason": "Component shipped as the shared mic-capture surface for intake + session."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Context-agnostic + preview pattern stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

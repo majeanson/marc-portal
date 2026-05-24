@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-066",
+  "title": "PATCH /api/tenant/theme — operator-only theme JSON edits",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/infrastructure",
+  "componentFile": "functions/api/tenant/theme.ts",
+  "problem": "Future white-labelled tenants need a way to set their own theme tokens (accent colour, eyebrow text, etc.) without a code change. PATCH /api/tenant/theme accepts a partial theme JSON, validates per-key length limits, and writes it back. The render path (_lib/tenant.ts themeToCssVars) sanitizes values into CSS custom properties so an XSS via theme is bounded — but the endpoint still rejects breakouts at the input boundary. Operator-or-owner-only.",
+  "tags": ["infrastructure", "tenant", "operator-only", "csrf-protected", "key-allowlist"],
+  "analysis": "PATCH only. Auth: requireTenant(ctx) + currentEmail() must match tenant.owner_email OR isAdmin. CSRF gated by middleware. Body { theme: Partial<ThemeJSON> }. Validation: KEY_LIMITS is an exhaustive allowlist of ThemeJSON keys → max char length per value. Unknown keys are SILENTLY REJECTED (not 400) so a partial schema mismatch between client and server doesn't fail noisy. Each value is also string-typed before storage. The full updated theme is UPSERTed; on success returns the new theme back.",
+  "decisions": [
+    {
+      "decision": "Silent reject of unknown keys instead of 400",
+      "rationale": "A future client could send keys the server doesn't yet know about (during a deploy window). Returning 400 would break the client until the deploy completes; silently dropping unknown keys preserves the known-key writes. The trade-off is debuggability: a misspelled key from a real user is silently ignored. Mitigation: the operator UI mirrors KEY_LIMITS so misspellings are caught client-side.",
+      "recommendation": "Don't 400 on unknown keys. If a future need wants strict-schema enforcement, add it as opt-in (?strict=true) so legacy clients don't break.",
+      "date": "2026-05-10"
+    },
+    {
+      "decision": "Per-key max length, not a per-row size cap",
+      "rationale": "Theme JSON is a structured record, not free text. Each key has a real-world limit (e.g. CSS color value is short, eyebrow text is a phrase). Per-key limits catch a hostile input where one field is enormous and another is normal-sized.",
+      "recommendation": "When adding a new theme key, set its limit thoughtfully — too high invites abuse, too low is annoying.",
+      "date": "2026-05-10"
+    }
+  ],
+  "successCriteria": "- Only operator OR tenant.owner_email can PATCH\n- CSRF gate enforced via middleware\n- Per-key length limits reject oversized values\n- Unknown keys are silently dropped, not 400\n- The render-side (themeToCssVars) sanitizes for CSS injection\n- Response carries the full updated theme",
+  "implementation": "functions/api/tenant/theme.ts — onRequestPatch. KEY_LIMITS constant. UPDATE tenants SET theme_json = ? WHERE id = ?. requireTenant from _lib/tenant.ts. Tests: covered in functions/api/tenant/theme.test.ts if it exists.",
+  "userGuide": "Used by the AdminAppearance surface (currently hidden, kept for the buyer-admin scenario per root feature.json's 2026-05-09 note). To set a theme manually: PATCH /api/tenant/theme with { theme: { accent: '#e7a64b' } }. Operator login required.",
+  "knownLimitations": [
+    "Silent unknown-key drop means a typo is hard to diagnose; the operator UI mitigates",
+    "themeToCssVars sanitization is the load-bearing render-time guard — never bypass it when surfacing theme values into HTML",
+    "Theme history isn't versioned; an overwrite is permanent. Acceptable for current single-operator practice",
+    "No way to revert via this endpoint to a 'default theme' state explicitly — submit the default values yourself"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-10",
+      "reason": "Endpoint shipped with KEY_LIMITS allowlist + operator-or-owner gate."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Validation + write-back pattern stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 public-API sweep."
+    }
+  ],
+  "annotations": []
+}

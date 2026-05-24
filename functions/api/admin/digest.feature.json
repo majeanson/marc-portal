@@ -1,0 +1,69 @@
+{
+  "featureKey": "feat-2026-083",
+  "title": "POST /api/admin/digest — daily-cron operator summary email",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "functions/api/admin/digest.ts",
+  "problem": "Pages Functions don't have scheduled triggers natively. A free external cron (cron-job.org, a CF Workers scheduled trigger in a separate worker) hits this endpoint once a day to compile a digest email: any triage rows over 48h old + any unresolved admin_alerts (Stripe-notification fallbacks from the webhook's maybeNotifyAdmin). Marc's daily operational alarm without paying for a hosted scheduler.",
+  "tags": ["admin", "cron", "digest", "out-of-band-auth", "csrf-exempt"],
+  "analysis": "POST only. Auth: requires X-Digest-Token header matching env.DIGEST_TOKEN — out-of-band so no human cookie is required (a cron job posts without a browser). CSRF-exempt in middleware. Idempotent — calling twice in the same hour just sends two emails (acceptable; the external cron typically fires once daily). Body: query D1 for triage sessions WHERE updated_at < now() - 48h AND deleted_at IS NULL; query admin_alerts WHERE resolved_at IS NULL. Build the email; send via Resend to primaryAdminEmail (functions/_lib/sessions.ts) in the right lang (getLang(adminEmail)). 200 ok on send, 500 on Resend failure.",
+  "decisions": [
+    {
+      "decision": "Out-of-band auth (X-Digest-Token) instead of cookie",
+      "rationale": "The caller is a cron job, not a browser. No cookie context, so the standard auth doesn't apply. A shared-secret header is the simplest auth for server-to-server calls; the token lives in CF secrets and the cron job's config. Compromise on either side means rotating the token.",
+      "recommendation": "Keep the token-header pattern. If a second cron-triggered endpoint is added, reuse the same secret name + header.",
+      "date": "2026-05-14"
+    },
+    {
+      "decision": "admin_alerts are surfaced but have no UI to mark resolved",
+      "rationale": "admin_alerts rows are inserted when the webhook's maybeNotifyAdmin can't reach Marc via the primary channel (Resend down, etc.) — rare but real. The digest re-surfaces them so they don't vanish. There's no UI to mark resolved because the volume is so low (single-digit per year). Marc manually clears resolved entries in D1 when fixing the underlying issue.",
+      "recommendation": "Don't build a UI. If volume crosses ~10/year, evaluate.",
+      "date": "2026-05-17"
+    }
+  ],
+  "successCriteria": "- X-Digest-Token validates against env.DIGEST_TOKEN; mismatch → 401\n- Triage rows older than 48h are listed in the email\n- Unresolved admin_alerts are listed in the email\n- Idempotent — twice-fired produces two emails, no DB mutation\n- Send via Resend; failures return 500 (cron should retry)\n- 200 + summary on success",
+  "implementation": "functions/api/admin/digest.ts — onRequestPost. DigestEnv extends Env with DIGEST_TOKEN. Two D1 queries. Email template lives near the handler. Tests: functions/api/admin/digest.test.ts covers auth + content shape.",
+  "userGuide": "Configure an external cron (cron-job.org, free tier) to POST https://marcportal.com/api/admin/digest with X-Digest-Token header set to the secret. Daily cadence is the intent; hourly would be too noisy. To manually trigger: curl with the header. To inspect last sent: there's no record (the email IS the record); Resend's dashboard has the sent log.",
+  "knownLimitations": [
+    "External cron is a separate failure mode — if cron-job.org is down, no digest. Mitigation: receive emails for active sessions via /api/sessions's notification side effects",
+    "Digest content is hand-curated in the handler; a new alert type requires code change",
+    "Idempotency is a feature for the visitor's mailbox (no duplicate emails on cron retry); but it ALSO means we can't deduplicate alerts across multiple sends",
+    "No quiet hours; cron fires whenever cron-job.org fires"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-14",
+      "reason": "Endpoint shipped with the daily-digest content + DIGEST_TOKEN auth."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. External-cron + token-header pattern stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 admin sweep."
+    }
+  ],
+  "annotations": []
+}

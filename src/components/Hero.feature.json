@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-093",
+  "title": "Hero — the home-page cover (offer + capacity + clock-aware greeting)",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/home-section",
+  "componentFile": "src/components/Hero.tsx",
+  "problem": "The Hero is the home page's magazine cover — the visitor's first paragraph of contact with the practice. It carries the offer headline, a live capacity readout (1 active + 1 in triage = open or paused), a HeroShippedProject card linking to the latest showcased work, and a clock-aware greeting (late-night gets a dry 'encore là?' because most honest traffic happens after 22h). Capacity is fetched from /api/capacity at request time — visitor sees the truth, not a marketing claim.",
+  "tags": ["home-section", "hero", "live-capacity", "clock-aware", "shipped-feed"],
+  "analysis": "Renders DICT[lang].hero copy. Two live data sources fetched on mount: getCapacityLive (returns the current 1+1 cap state for the badge) and listPublicProjects (top 1 for HeroShippedProject). Clock-aware greeting via pickSalut(lang) — reads visitor's local clock and picks the right greeting (morning / day / evening / late-night). Late-night gets the dry Québécois 'encore là?' which is the anti-AI-tells anchor — no AI would write that line. Feature colour is undefined (Hero crosses every feature).",
+  "decisions": [
+    {
+      "decision": "Capacity is fetched live, not a static claim",
+      "rationale": "Saying 'I take 1 active build at a time' is a structural claim — it must be testable. Showing the LIVE state ('currently building X for Y, triage queue is open / closed') turns it from claim into observation. Capacity cap race fix (AUDIT P1.7) makes this trustworthy.",
+      "recommendation": "Don't switch to static copy. The live readout IS the trust statement.",
+      "date": "2026-05-09"
+    },
+    {
+      "decision": "Clock-aware greeting in Québécois register",
+      "rationale": "Default greeting + late-night variant. Late-night ('encore là?') is the Québécois register tell — no chatbot would write that. Marc's family-first practice has a late-night honest-traffic pattern (visitors browsing after kid-bedtime); the greeting acknowledges it.",
+      "recommendation": "Don't translate 'encore là?' to anything generic. The literal Québécois is the load-bearing word.",
+      "date": "2026-05-09"
+    }
+  ],
+  "successCriteria": "- Renders offer headline + capacity badge + HeroShippedProject + greeting\n- Capacity readout reflects live D1 state\n- Greeting varies with visitor's local clock\n- Late-night greeting in Québécois register\n- Bilingual at full parity\n- Two live fetches on mount, no waterfall",
+  "implementation": "src/components/Hero.tsx — useEffect fetches getCapacityLive + listPublicProjects in parallel. pickSalut(lang) returns the greeting string based on new Date().getHours(). useLangSwitch hook handles the FR/EN toggle in-page.",
+  "userGuide": "Edit headline copy via DICT.fr.hero / DICT.en.hero. To adjust greeting time windows: pickSalut in the file. To change the capacity badge wording: same file. The HeroShippedProject component renders the embedded preview.",
+  "knownLimitations": [
+    "Two fetches on mount; mitigated by parallelism. If capacity API is down, the badge shows a fallback state",
+    "Clock-aware greeting reads VISITOR's clock; an admin viewing from a different timezone might get a 'wrong-feeling' greeting. Cost is tiny",
+    "HeroShippedProject embeds the latest showcased project; if none exist, falls back to a static placeholder"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Component shipped with the offer + live capacity + greeting."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Live-capacity + clock-aware greeting stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

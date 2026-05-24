@@ -1,0 +1,76 @@
+{
+  "featureKey": "feat-2026-071",
+  "title": "GET /og/certificate/:id — auth-gated handoff certificate PNG",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/handoff",
+  "componentFile": "functions/og/certificate/[id].ts",
+  "problem": "A shipped session deserves a keepsake — the 'certificat de passation' the visitor (or buyer) can download and keep as the artifact of ownership. Renders project + date + transferred-assets summary + the v1.0-handoff tag on a 1000×1400 portrait PNG. Auth-gated (unlike the share OG card) because the certificate carries the visitor's name; only the session owner or admin may fetch it. Deliberately text-only to keep satori's CPU cost well clear of the worker's CPU ceiling.",
+  "tags": ["handoff", "auth-gated", "workers-og", "keepsake", "text-only"],
+  "analysis": "GET only. Auth: currentEmail() + canAccessSession() (visitor self OR admin). loadSession; if missing or not the visitor's, 404. Render via workers-og's ImageResponse at 1000×1400 portrait (suited for printing on letter/A4). Text-only by design — no embedded images, no decorative SVG paths — so satori's render stays fast and CPU-cheap. The handoff date is from the session row's shipped_at; the assets line lists what was transferred (URL, GitHub repo, 1Password vault). ?lang=en swaps copy; default is FR. ?debug=1 returns the resolved fields as JSON. captureWorkerException wraps render failures; no static fallback here (the certificate is personalised — a generic substitute would be misleading), so a render failure returns 500 with a useful error body.",
+  "decisions": [
+    {
+      "decision": "Auth-gated; no public certificate URL",
+      "rationale": "The certificate carries the visitor's name and transfer details. A public URL would let anyone with the session id download personal data. Same authorisation as the session itself — visitor self OR admin.",
+      "recommendation": "Don't make this public. If a future need wants a visitor-shareable proof, generate a different artifact (e.g. a redacted version with only the project URL).",
+      "date": "2026-05-20"
+    },
+    {
+      "decision": "Text-only render, no embedded images",
+      "rationale": "satori on CF Workers has a tight CPU budget — complex layouts with image rendering trigger the 1102 error (CPU exceeded). A text-only layout renders well within budget; the certificate looks professional without imagery (typography does the visual work).",
+      "recommendation": "Don't add embedded images. If a future need wants a logo, evaluate satori's actual CPU cost with the change; the worker CPU limit is a hard ceiling, not a recommendation.",
+      "date": "2026-05-20"
+    },
+    {
+      "decision": "500 on render failure, NOT static fallback",
+      "rationale": "The share OG card falls back to a static image because a 'preview is generic' is acceptable. A handoff certificate is personalised — a generic substitute would be misleading and undermine the keepsake value. A 500 with a clear error body lets the UI render 'certificate temporarily unavailable, retry' instead of handing the visitor a wrong document.",
+      "recommendation": "Keep the 500-not-fallback. If failure rate is high, fix the root cause (font, layout); never serve the wrong certificate.",
+      "date": "2026-05-20"
+    }
+  ],
+  "successCriteria": "- A signed-in visitor (or admin) can download their certificate at /og/certificate/<id>\n- Anon visitors and other-session visitors get 403 (or 404 to preserve session-existence privacy)\n- Render is text-only, well within satori's CF Worker CPU budget\n- ?lang=en swaps copy\n- ?debug=1 returns resolved fields\n- Render failure returns 500 with a useful error, NOT a generic fallback",
+  "implementation": "functions/og/certificate/[id].ts — single onRequestGet. currentEmail + canAccessSession gates. loadSession + assemble the certificate fields. workers-og ImageResponse at 1000×1400. MONTHS dictionary localises month names. Tests: covered alongside the other OG endpoints.",
+  "userGuide": "Linked from /session/:id when the session is shipped. To preview as session owner: visit /og/certificate/<id> in a logged-in browser. To preview EN: ?lang=en. To debug: ?debug=1 returns JSON. To trigger a re-render after metadata change: invalidate edge cache or wait for TTL.",
+  "knownLimitations": [
+    "No static fallback by design; a transient render failure shows 500 to the visitor",
+    "Text-only means no logo on the certificate; if branding ever needs visual marks, evaluate satori CPU carefully",
+    "Worker CPU limit (50ms typical) is the hard ceiling; complex content additions could trip 1102 errors. Test render time after layout changes",
+    "Portrait orientation (1000×1400) is good for letter/A4 print but unusual for social previews — that's fine, this isn't a social card",
+    "The visitor's name comes from session metadata; a session without a name renders blank in that field"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-20",
+      "reason": "Endpoint shipped with auth gate + text-only certificate layout + bilingual support."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Auth gate + no-fallback decision stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 OG-endpoint sweep."
+    }
+  ],
+  "annotations": []
+}

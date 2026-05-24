@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-062",
+  "title": "GET /api/public/projects — unauth showcased-projects gallery feed",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/showcase",
+  "componentFile": "functions/api/public/projects.ts",
+  "problem": "The home-page hero projects strip and the /projects gallery both need a list of admin-curated showcase entries — sessions with showcased_at set, pulling in their pinned current-build advancement for the iframe preview. The data is public by design but pulls from session rows that ALSO contain PII (visitor email, intake content). This handler is the projection that strips PII at the SQL level and returns only what the gallery needs.",
+  "tags": ["showcase", "unauth", "projection-strip", "loi-25-friendly"],
+  "analysis": "GET only. SELECT showcased sessions (showcased_at IS NOT NULL AND deleted_at IS NULL), JOIN their pinned current_build advancement when present. Project to ShowcaseRow: id, showcased_at, showcase_title, showcase_tagline, status, tier, current build_url + iframe_path + commit_sha. No email, no intake_json, no message bodies, no internal advancements. parseFlags is used to read the pinned-current-build flag from the advancement's flags JSON. Ordered newest-showcased first. No pagination — the showcase is small by intent (the practice doesn't ship 200 projects), and a curator-bounded list doesn't need infinite scroll.",
+  "decisions": [
+    {
+      "decision": "Strip PII at the SQL SELECT, not in the handler",
+      "rationale": "Same defense-in-depth pattern as /api/public/vouches. A future handler refactor that accidentally returns the full row should STILL not leak PII because the projection doesn't include those columns. TypeScript bound to ShowcaseRow catches anyone reaching for email.",
+      "recommendation": "When adding a new public field, add it to the SELECT explicitly. When adding a private field to sessions, NEVER add it here.",
+      "date": "2026-05-12"
+    },
+    {
+      "decision": "No pagination",
+      "rationale": "The showcase is small (~10-30 entries over 3 years per the root feature.json's projections). Pagination adds client + server complexity for zero benefit at this scale. If the list ever grows past ~100, the client can trim for display; if it grows past ~500, revisit.",
+      "recommendation": "Don't pre-emptively paginate. The current trade-off (one round-trip for the full list) is fine.",
+      "date": "2026-05-12"
+    }
+  ],
+  "successCriteria": "- An anon visitor can fetch the showcase list with no auth\n- The response carries zero PII (email, intake_json, message body) regardless of session row state\n- Pinned current-build advancement is included when set; null when not\n- Soft-deleted sessions never appear\n- Ordering is newest-showcased-first",
+  "implementation": "functions/api/public/projects.ts — single onRequestGet. Single LEFT JOIN against advancements WHERE flags JSON contains 'current_build'. parseFlags helper from _lib/advancements. ShowcaseRow type lives in this file. Tests: covered indirectly by the home-page integration tests; explicit unit test in functions/api/public/projects.test.ts.",
+  "userGuide": "Used by src/pages/Home.tsx and src/pages/Projects.tsx via src/lib/projectsApi.ts. To preview the feed: GET http://localhost:8788/api/public/projects. To add a project to the showcase: admin sets showcased_at + showcase_title + showcase_tagline on the session row via /admin/inbox/:id; the next GET picks it up.",
+  "knownLimitations": [
+    "Caching: no Cache-Control header set; CF Pages handles edge caching via its own rules. If a future need wants tighter cache control, set headers here",
+    "iframe sandbox attributes on the current_build URL are decided by the consumer (Home.tsx, Projects.tsx) — see AUDIT P1.9 for the deferred tighten-the-sandbox work",
+    "No tenant scoping in the query: tenant resolution happens in _middleware.ts before the handler; the session rows are already tenant-scoped via FK"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-12",
+      "reason": "Endpoint shipped with the PII-stripped projection."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Projection-strip + no-pagination patterns stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 public-API sweep."
+    }
+  ],
+  "annotations": []
+}

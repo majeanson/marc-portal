@@ -147,6 +147,1008 @@
       "lastTransitionDate": "2026-05-21"
     },
     {
+      "featureKey": "feat-2026-089",
+      "title": "About — home-page block introducing Marc",
+      "status": "frozen",
+      "domain": "marc-portal/home-section",
+      "tags": [
+        "home-section",
+        "about",
+        "portrait",
+        "graceful-degrade"
+      ],
+      "componentFile": "src/components/About.tsx",
+      "liveUrl": null,
+      "problem": "The home page sells a HUMAN solo Québécois dev — the visitor needs to see who they're working with. About is the home-page introduction block: portrait + short bio + GitHub link. Portrait gracefully degrades to text-only if /marc.jpg ever 404s (onError handler hides the figure).",
+      "analysis": "Renders DICT[lang].about copy. /marc.jpg is the portrait; <img onError> hides the figure so a 404 doesn't render a broken-image icon. GITHUB_URL is hardcoded. CrossFeatureLink at the bottom routes to /parcours for more depth. Feature colour is HOME_SECTION_FEATURE['about'] = 'meta' (the backstage feature) — about-the-practice is meta-tinted.",
+      "decisions": [
+        {
+          "decision": "Portrait onError hides the figure instead of showing alt text",
+          "rationale": "A broken image icon looks broken. Alt text on a hidden figure is gentler — the bio paragraph still reads. The cost is no portrait shown when 404'd; cheaper than rendering wrong.",
+          "recommendation": "Keep the onError handler. The previous version showed a generic placeholder which AUDIT P3.18 corrected."
+        }
+      ],
+      "successCriteria": "- Portrait + bio + GitHub link render\n- Portrait gracefully degrades on 404\n- About section is meta-tinted (backstage feature colour)\n- Bilingual at full parity",
+      "knownLimitations": [
+        "Portrait is a single asset; no responsive srcset",
+        "GitHub URL is hardcoded; no link to other socials (no Twitter, LinkedIn) by design — Marc's professional surface is the portal itself",
+        "Bio length is short by intent; if the practice ever wants a deeper About page, fork into /about"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Component shipped with portrait + bio."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. onError graceful-degrade pattern stable since AUDIT P3.18 cleanup."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-091",
+      "title": "Bring anything — neutralizes the vibe-filter for hesitant visitors",
+      "status": "frozen",
+      "domain": "marc-portal/home-section",
+      "tags": [
+        "home-section",
+        "anti-self-filter",
+        "intake-feature"
+      ],
+      "componentFile": "src/components/BringAnything.tsx",
+      "liveUrl": null,
+      "problem": "The VibeFilter section ('je fais / je fais pas') answers the 'is this for me?' question with explicit do/don't lists. A side effect: a hesitant visitor who sees an item they're unsure about on the 'don't' side may self-filter out incorrectly. BringAnything sits IMMEDIATELY after VibeFilter to neutralize that self-filter — Marc's framing is 'I want every idea to come in; the triage is my job, not the visitor's.' The examples are aspirational, not historical, since the practice hasn't built a long history yet.",
+      "analysis": "DICT[lang].bringAnything content block. Sits right after VibeFilter in Home.tsx render order, by design — its job is to undo the over-filter the vibe section can cause. Examples are aspirational ('things I'd happily take') not 'projects I have shipped'. Feature-coloured as 'intake' (HOME_SECTION_FEATURE['bring-anything']) since it pushes the visitor toward the intake form.",
+      "decisions": [
+        {
+          "decision": "Sits directly after VibeFilter, by render order",
+          "rationale": "BringAnything's purpose is to neutralize VibeFilter's self-filter effect. The two sections must be adjacent and in order; reordering them breaks the funnel logic.",
+          "recommendation": "Don't reorder these two. If a future audit suggests a different funnel structure, evaluate whether BringAnything still has its purpose; if so, keep adjacent."
+        },
+        {
+          "decision": "Aspirational examples, not 'projects I've shipped'",
+          "rationale": "The practice hasn't built a multi-year client history yet. Falsely-historic examples would be dishonest; aspirational examples ('things I'd happily take') are structurally true.",
+          "recommendation": "Once the showcase has 6+ shipped projects, revisit — maybe the section can use real anonymized examples. Until then, aspirational copy."
+        }
+      ],
+      "successCriteria": "- Renders directly after VibeFilter in home order\n- Copy positions Marc as the triager, not the visitor\n- Examples are aspirational (not falsely historic)\n- Bilingual at full parity\n- Feature-coloured as intake (pushes toward intake form)",
+      "knownLimitations": [
+        "Examples may go stale; revisit periodically",
+        "No CTA button (intentional — the section is messaging, not conversion)"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Component shipped to neutralize VibeFilter's over-filter."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Adjacency-to-VibeFilter decision stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-087",
+      "title": "FAQ — disclosure accordion with URL-hash deep links",
+      "status": "frozen",
+      "domain": "marc-portal/home-section",
+      "tags": [
+        "home-section",
+        "accordion",
+        "native-details",
+        "deep-link",
+        "feature-coloured"
+      ],
+      "componentFile": "src/components/FAQ.tsx",
+      "liveUrl": null,
+      "problem": "The home page's FAQ section needs to handle the typical 'is this for me?' objections (price, timeline, ownership, idea-still-fuzzy, etc.) without a heavy interactive widget. The FAQ component is a native HTML <details>/<summary> accordion — no React state for open/closed — plus URL-hash sync so a /#faq-price link opens directly to that question. Each FAQ has a feature-colour dot tying it to the relevant feature.",
+      "analysis": "Renders DICT[lang].faq.items as an array of <details> elements. open/closed is browser-native — react-hooks/setState doesn't drive it. URL-hash sync uses a useEffect that listens for hashchange + on mount: if hash matches an item id, set its open attribute. The 'open all' override is the only React state. FAQ_FEATURE map (src/lib/features.ts) ties each FAQ slug to a feature; FeatureDot renders the colour next to the question. Inline FAQPage JSON-LD is injected for SEO. Accessibility is good by default (native disclosure pattern).",
+      "decisions": [
+        {
+          "decision": "Native <details>/<summary>, not a custom React accordion",
+          "rationale": "Native gets ARIA right, keyboard right, screen-reader right, with zero JS. A custom React accordion would re-implement all of that, less reliably. The only React state we need is the 'open all' override and the URL-hash sync — both well-suited to React; the open/closed state itself stays in the DOM.",
+          "recommendation": "Don't switch to a custom accordion. If a future need wants per-item analytics on open, add an onclick listener but keep the native disclosure pattern."
+        },
+        {
+          "decision": "URL hash → open item, deep linkable",
+          "rationale": "A /#faq-price link should land on the FAQ section AND open the price question. The hashchange listener + on-mount check handles both. The hash → slug map is keyed by FAQ slug (FAQ_FEATURE in features.ts), so the same id is the anchor + the colour + the deep link target.",
+          "recommendation": "When adding a FAQ item, add it to DICT, FAQ_FEATURE, and FAQ_LABEL together. The features.test.ts test catches drift."
+        },
+        {
+          "decision": "Inject FAQPage JSON-LD",
+          "rationale": "Google's rich-result FAQ snippet requires the JSON-LD structured data. Injecting it inline (vs. a hosted .jsonld file) keeps the FAQ + its structured data in one place. SEO benefit is real for the long-tail Quebec-local case-study traffic the practice targets.",
+          "recommendation": "Update the JSON-LD when adding/changing FAQ items. The shape is hand-maintained; don't auto-generate (the human-readable answers and the JSON-LD answers can diverge slightly for SEO formatting)."
+        }
+      ],
+      "successCriteria": "- FAQ items render as native disclosure accordion\n- /#faq-<slug> deep links open the right item\n- Each item shows its feature colour via FeatureDot\n- 'Open all' button works\n- FAQPage JSON-LD is injected for SEO\n- Bilingual at full parity",
+      "knownLimitations": [
+        "JSON-LD is hand-maintained alongside DICT; risk of divergence if updated in one place. Mitigation: SEO QA after major FAQ changes",
+        "Native <details> doesn't animate open/close uniformly across browsers; this is intentional (anti-AI-tells — uniform fade-in feels generic)",
+        "Hash sync fires on hashchange; programmatic state changes (e.g. router-driven) don't trip it. The home page's nav uses real hash anchors so this works"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Component shipped with the native disclosure + URL-hash sync + JSON-LD."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Native disclosure + hash deep links stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-090",
+      "title": "Featured projects — home-page shipped-work strip",
+      "status": "frozen",
+      "domain": "marc-portal/home-section",
+      "tags": [
+        "home-section",
+        "showcase",
+        "iframe-preview",
+        "self-hiding",
+        "view-transitions"
+      ],
+      "componentFile": "src/components/FeaturedProjects.tsx",
+      "liveUrl": null,
+      "problem": "The most persuasive answer to 'is this a real practice?' is showing shipped work. FeaturedProjects is the home-page strip: top entries from the public showcase, each with a live iframe preview, drilling into /projects for the full gallery. Self-hides when the showcase is empty (early-practice state) so the home page doesn't render a half-built section.",
+      "analysis": "GET /api/public/projects on mount. Renders the top N as ProjectCardPreview cards — each shows the showcase_title + tagline + an iframe of the current build URL (or a static placeholder if iframe_path is absent). HomeDrillCard at the bottom routes to /projects for the full gallery. useViewTransitionState from react-router-dom enables a smooth view transition into /projects on click. Returns null when the fetch returns zero rows — no empty-state copy, no skeleton; the section just doesn't exist for empty practices.",
+      "decisions": [
+        {
+          "decision": "Self-hide when empty (no rendering), not 'no projects yet' copy",
+          "rationale": "An early-practice home page with 'no projects yet' would scream early-practice. Self-hiding lets the section appear only when there's something to show. The visitor experiences a coherent home page either way; once shipped, the section appears organically.",
+          "recommendation": "Keep self-hide. If a future need wants a 'coming soon' affordance, add it elsewhere (e.g. a teaser at the section's anchor); don't dilute this section."
+        },
+        {
+          "decision": "iframe preview, not screenshot",
+          "rationale": "An iframe shows the actual live site — proof that the build exists and works. A screenshot would be cheaper but stale. The iframe sandbox is permissive enough for self-hosted demos (AUDIT P1.9 deferred tightening). The cost is iframe load time; mitigated by lazy load + viewport-aware embedding.",
+          "recommendation": "Don't switch to screenshots. If iframe load cost becomes a Lighthouse issue, evaluate intersection observer to defer until scrolled into view."
+        }
+      ],
+      "successCriteria": "- Renders top N showcased projects (currently 3)\n- Each card embeds the live build via iframe\n- Self-hides when zero projects\n- HomeDrillCard routes to /projects\n- View transition animates the navigation\n- Bilingual at full parity",
+      "knownLimitations": [
+        "Top N is hardcoded at 3; visible-on-home is fixed",
+        "iframe sandbox tightening (AUDIT P1.9 deferred) — currently permissive",
+        "If a build URL goes 404, the iframe renders the browser's broken-page state; no error handling",
+        "Self-hide branch means analytics can't distinguish 'no projects shown because empty' from 'visitor didn't scroll'"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-09",
+          "reason": "Component shipped with the live iframe preview + self-hide + view transition."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Self-hide + iframe-preview decisions stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-093",
+      "title": "Hero — the home-page cover (offer + capacity + clock-aware greeting)",
+      "status": "frozen",
+      "domain": "marc-portal/home-section",
+      "tags": [
+        "home-section",
+        "hero",
+        "live-capacity",
+        "clock-aware",
+        "shipped-feed"
+      ],
+      "componentFile": "src/components/Hero.tsx",
+      "liveUrl": null,
+      "problem": "The Hero is the home page's magazine cover — the visitor's first paragraph of contact with the practice. It carries the offer headline, a live capacity readout (1 active + 1 in triage = open or paused), a HeroShippedProject card linking to the latest showcased work, and a clock-aware greeting (late-night gets a dry 'encore là?' because most honest traffic happens after 22h). Capacity is fetched from /api/capacity at request time — visitor sees the truth, not a marketing claim.",
+      "analysis": "Renders DICT[lang].hero copy. Two live data sources fetched on mount: getCapacityLive (returns the current 1+1 cap state for the badge) and listPublicProjects (top 1 for HeroShippedProject). Clock-aware greeting via pickSalut(lang) — reads visitor's local clock and picks the right greeting (morning / day / evening / late-night). Late-night gets the dry Québécois 'encore là?' which is the anti-AI-tells anchor — no AI would write that line. Feature colour is undefined (Hero crosses every feature).",
+      "decisions": [
+        {
+          "decision": "Capacity is fetched live, not a static claim",
+          "rationale": "Saying 'I take 1 active build at a time' is a structural claim — it must be testable. Showing the LIVE state ('currently building X for Y, triage queue is open / closed') turns it from claim into observation. Capacity cap race fix (AUDIT P1.7) makes this trustworthy.",
+          "recommendation": "Don't switch to static copy. The live readout IS the trust statement."
+        },
+        {
+          "decision": "Clock-aware greeting in Québécois register",
+          "rationale": "Default greeting + late-night variant. Late-night ('encore là?') is the Québécois register tell — no chatbot would write that. Marc's family-first practice has a late-night honest-traffic pattern (visitors browsing after kid-bedtime); the greeting acknowledges it.",
+          "recommendation": "Don't translate 'encore là?' to anything generic. The literal Québécois is the load-bearing word."
+        }
+      ],
+      "successCriteria": "- Renders offer headline + capacity badge + HeroShippedProject + greeting\n- Capacity readout reflects live D1 state\n- Greeting varies with visitor's local clock\n- Late-night greeting in Québécois register\n- Bilingual at full parity\n- Two live fetches on mount, no waterfall",
+      "knownLimitations": [
+        "Two fetches on mount; mitigated by parallelism. If capacity API is down, the badge shows a fallback state",
+        "Clock-aware greeting reads VISITOR's clock; an admin viewing from a different timezone might get a 'wrong-feeling' greeting. Cost is tiny",
+        "HeroShippedProject embeds the latest showcased project; if none exist, falls back to a static placeholder"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Component shipped with the offer + live capacity + greeting."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Live-capacity + clock-aware greeting stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-088",
+      "title": "How it works — home-page primer with drill-card to /parcours",
+      "status": "frozen",
+      "domain": "marc-portal/home-section",
+      "tags": [
+        "home-section",
+        "primer",
+        "drill-card",
+        "neutral-colour"
+      ],
+      "componentFile": "src/components/HowItWorks.tsx",
+      "liveUrl": null,
+      "problem": "Visitors arriving at the home page need a fast 'how does this work?' answer before they're willing to read pricing or send an intake. HowItWorks is the home-page primer — short, no specifics about workflow, just the practice's shape. A HomeDrillCard at the bottom links to /parcours (the full 12-step Journey page) for visitors who want more.",
+      "analysis": "Short copy block + a HomeDrillCard pointing at /parcours. Feature colour is intentionally NEUTRAL (HOME_SECTION_FEATURE['how'] is undefined) because 'how it works' crosses every feature — it'd be wrong to dot it with one feature's colour. The neutral hollow dot is rendered via FeatureDot's undefined-handling. Copy lives in DICT[lang].how.",
+      "decisions": [
+        {
+          "decision": "Neutral feature colour (undefined), not a specific feature",
+          "rationale": "How-it-works describes the WHOLE practice; pinning it to one feature would mislead the visitor about which colour represents what. The neutral hollow dot is the deliberate visual signal that this section bridges every feature.",
+          "recommendation": "When adding a new home section, decide on its feature deliberately. Most sections should pick one; meta-explainer sections should pick undefined."
+        },
+        {
+          "decision": "Short primer + drill-card, not a full walkthrough on home",
+          "rationale": "Home page is sequence; each section answers one visitor question. 'How does this work?' gets a short answer here + a deeper read available behind a click. Putting the full 12-step walkthrough on home would bury other sections.",
+          "recommendation": "Keep the primer short. If new content emerges, add it to /parcours, not here."
+        }
+      ],
+      "successCriteria": "- Renders short primer + drill-card to /parcours\n- Feature dot is neutral (undefined feature)\n- Bilingual at full parity",
+      "knownLimitations": [
+        "Primer copy is hardcoded; if the practice's shape changes, edit DICT",
+        "Drill-card style is shared with FeaturedProjects/Testimonials' HomeDrillCard; restyle there to change here"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Component shipped with primer + drill-card."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Neutral-colour decision stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-095",
+      "title": "Napkin replay — paced sketch playback for the engagement view",
+      "status": "frozen",
+      "domain": "marc-portal/intake",
+      "tags": [
+        "intake",
+        "excalidraw",
+        "replay",
+        "lazy-loaded",
+        "fixed-window"
+      ],
+      "componentFile": "src/components/NapkinReplay.tsx",
+      "liveUrl": null,
+      "problem": "An intake's napkin sketch (Excalidraw scene) is most affecting when seen drawn out, not static. NapkinReplay takes a saved scene and replays its elements in order over a fixed total wall-clock window — so a 6-stroke sketch and a 60-stroke sketch both finish in the same time. The total window is hand-tuned; element pacing adapts to fit. Lazy-loads Excalidraw (heavy ~600KB) only when the panel is opened.",
+      "analysis": "Props: napkin scene JSON. Lazy-imports SketchCanvas (which itself lazy-imports Excalidraw). Total replay window is a constant; element count drives per-element pacing (totalMs / elementCount = perElement). On mount of the canvas, starts a setInterval that progressively reveals elements via Excalidraw's updateScene API. Pause/resume controls + replay-from-start. Replay runs once by default; user can re-replay.",
+      "decisions": [
+        {
+          "decision": "Fixed total window, not fixed per-element pacing",
+          "rationale": "A 60-element sketch paced at 200ms/element takes 12 seconds — too long. A 6-element sketch at 200ms takes 1.2 seconds — over too fast. Fixed total window means both feel consistent. The trade-off: dense sketches reveal fast, sparse sketches reveal slowly, but both finish in the affecting-but-not-tedious window.",
+          "recommendation": "Don't switch to fixed per-element pacing. The window length is tuned; adjust the constant if needed."
+        },
+        {
+          "decision": "Lazy-load SketchCanvas, not import statically",
+          "rationale": "Excalidraw + its dependencies are ~600KB. Loading on every session view would bloat the chunk. Lazy via React.lazy means a session WITHOUT a napkin doesn't pay the cost.",
+          "recommendation": "When using Excalidraw anywhere, route through SketchCanvas's lazy boundary."
+        }
+      ],
+      "successCriteria": "- Replay completes in the fixed window regardless of element count\n- Excalidraw is loaded only when the panel opens\n- Pause/resume/restart controls work\n- Original scene state is restored after replay\n- Replay is one-shot by default; can be replayed via UI",
+      "knownLimitations": [
+        "Replay is element-by-element; doesn't reveal stroke-by-stroke within an element. Acceptable resolution",
+        "Pause keeps the partial state; restart wipes back to empty. No 'rewind' affordance",
+        "Excalidraw's API may change across versions — pin the version carefully (boring-tech mandate)",
+        "Replay window is per-component, not configurable per session"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-13",
+          "reason": "Component shipped with the fixed-window replay + lazy load."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Fixed-window decision stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-096",
+      "title": "Sketch canvas — Excalidraw boundary with lazy chunk + CSS code-split",
+      "status": "frozen",
+      "domain": "marc-portal/intake",
+      "tags": [
+        "intake",
+        "excalidraw",
+        "code-split",
+        "boundary"
+      ],
+      "componentFile": "src/components/SketchCanvas.tsx",
+      "liveUrl": null,
+      "problem": "The intake form's napkin sketch step needs Excalidraw (lightweight sketch tool). Excalidraw + its dependencies are ~600KB before assets. Importing statically would pay that cost on every intake load — most visitors don't open the sketch step. SketchCanvas is the boundary: a React.lazy-wrapped component that lazy-imports Excalidraw + its stylesheet. Callers route through React.lazy themselves too (e.g. NapkinReplay) so the chunk is doubly split.",
+      "analysis": "Single component, mostly a wrapper around <Excalidraw />. Excalidraw imported via React.lazy. Excalidraw's stylesheet is imported inside this file (deliberate — the stylesheet is part of Excalidraw's package and would otherwise bundle eagerly). Callers should reach SketchCanvas via React.lazy too, so the lazy boundary actually code-splits. <Suspense> wrapping handles the chunk load. Forwards ref / API to caller via the ExcalidrawAPI type so callers (NapkinReplay, intake form) can drive the scene programmatically.",
+      "decisions": [
+        {
+          "decision": "Lazy-import via React.lazy at this boundary, callers do same",
+          "rationale": "A single React.lazy upstream lets some code-paths reach Excalidraw eagerly via static imports. Double-lazy (this component + every caller) means EVERY reach is async, so the chunk is genuinely split.",
+          "recommendation": "Every component that uses SketchCanvas should also be lazy-loaded by its caller. Static-import-then-lazy defeats the split."
+        },
+        {
+          "decision": "Excalidraw stylesheet imported in this file, not in styles.css",
+          "rationale": "Importing in styles.css would bundle the CSS into the main bundle. Importing it here (inside the lazy boundary) means the CSS comes down with the JS chunk — same load-once-when-opened semantics as the component.",
+          "recommendation": "Don't move the @import to styles.css. The boundary integrity depends on co-locating the CSS with the lazy component."
+        }
+      ],
+      "successCriteria": "- Excalidraw chunk loads only when SketchCanvas mounts (via caller-side React.lazy)\n- Excalidraw CSS code-splits with the chunk\n- ExcalidrawAPI is forwarded to caller via ref\n- Scene state survives across renders within the component\n- Heavy chunk never on the home/intake critical path",
+      "knownLimitations": [
+        "Lazy load means a brief flicker on first open; mitigated by the <Suspense> fallback which renders a sketch-canvas placeholder",
+        "Excalidraw's API surface may change across versions — TypeScript types catch most breaks at compile time",
+        "Static imports anywhere in the call chain will defeat the split; CI bundle analyzer would catch but isn't currently wired up"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-11",
+          "reason": "Component shipped as the Excalidraw lazy boundary."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Boundary + double-lazy pattern stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-092",
+      "title": "Testimonials — home-page vouches block (top 3)",
+      "status": "frozen",
+      "domain": "marc-portal/home-section",
+      "tags": [
+        "home-section",
+        "social-proof",
+        "self-hiding",
+        "shipped-feature"
+      ],
+      "componentFile": "src/components/Testimonials.tsx",
+      "liveUrl": null,
+      "problem": "The home page needs social proof without overwhelming visitors with a wall of vouches. Testimonials shows the top 3 most recent approved vouches with a HomeDrillCard linking to /vouches for the full wall. Self-hides when no vouches are approved — keeps the home page honest for the early-practice state.",
+      "analysis": "GET /api/public/vouches on mount; slice top 3 (HOME_LIMIT). Each rendered as a card with name + relationship pill + body. HomeDrillCard → /vouches at the bottom. Returns null when zero approved vouches. Feature-coloured as 'shipped' (HOME_SECTION_FEATURE['testimonials']) since vouches are the social-proof leg of the shipped feature.",
+      "decisions": [
+        {
+          "decision": "Top 3 only on home; full wall at /vouches",
+          "rationale": "Three is enough to signal 'this is real'; more is noise on a home page. The drill-card is the affordance for visitors who want more.",
+          "recommendation": "Don't change HOME_LIMIT. The number was tuned for visual density."
+        },
+        {
+          "decision": "Self-hide when zero vouches, no 'no testimonials yet' copy",
+          "rationale": "Same logic as FeaturedProjects: early-practice self-hide is more honest than skeleton state copy.",
+          "recommendation": "Keep self-hide."
+        }
+      ],
+      "successCriteria": "- Top 3 approved vouches on home\n- Self-hide when empty\n- HomeDrillCard routes to /vouches\n- Bilingual at full parity",
+      "knownLimitations": [
+        "Top 3 is hardcoded; not configurable per visitor / locale",
+        "No filter by relationship — newest 3 regardless of type",
+        "Self-hide hides analytics signal of 'empty practice'"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-18",
+          "reason": "Component shipped paired with the vouches moderation flow."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Top-3 + self-hide stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-094",
+      "title": "Time-travel scrubber — keyboard-navigable build-history player",
+      "status": "frozen",
+      "domain": "marc-portal/iterative",
+      "tags": [
+        "iterative",
+        "scrubber",
+        "keyboard-nav",
+        "deep-link",
+        "iframe"
+      ],
+      "componentFile": "src/components/TimeTravelScrubber.tsx",
+      "liveUrl": null,
+      "problem": "On /share/:id, the recipient should be able to step through a session's build advancements — not just see the latest. TimeTravelScrubber takes an ordered array of public advancements and presents play/pause + step controls + an iframe embedding each step's build URL. Arrow keys step, Space toggles play. ?step=N URL param deep-links to a specific moment, so a shareable URL can point at 'the state right after the napkin sketch landed'.",
+      "analysis": "Props: items (array of PublicAdvancementRow). Renders the iframe of the current step's build URL with metadata (label + date + step N of M). Controls: prev/next/play/pause buttons + arrow-key + Space handler. PLAY_INTERVAL_MS = 3500 (per-step pacing on play). STEP_PARAM = 'step' for URL deep-linking; readStepFromUrl clamps to [0, max] so a malformed ?step= falls to a valid index. Replaces idx in the URL via history.replaceState on every change so a shared URL captures the current scrub position. Keyboard handler is window-level and gates on focus-inside-scrubber-root (no global capture). aria-describedby ties a visible mono-pill keyboard hint to the section.",
+      "decisions": [
+        {
+          "decision": "Window-level keyboard handler with focus-inside gate",
+          "rationale": "Capturing arrows globally would steal them from the rest of the page. A window listener that checks 'is focus inside .scrubber-root?' lets arrows work when the scrubber is the visitor's locus, and stays out of the way otherwise. Buttons are real <button>s so Tab+Enter+Space all work natively.",
+          "recommendation": "Don't switch to document.addEventListener with always-on capture. The focus-inside gate IS the affordance."
+        },
+        {
+          "decision": "?step is 1-indexed for humans",
+          "rationale": "?step=3 reads as 'step 3 of 5' to a human; ?step=2 (0-indexed) would be confusing. Internally the component uses 0-indexed idx; readStepFromUrl converts. AUDIT P3.3 documented this decision.",
+          "recommendation": "Keep 1-indexed. External code that links to ?step= must use the 1-indexed convention."
+        },
+        {
+          "decision": "Replace state on idx change, don't push",
+          "rationale": "history.replaceState means the back button doesn't navigate through scrub positions — it leaves the page. Push would create N entries for N scrub positions, polluting back-button history. Replace keeps the URL shareable without inflating history.",
+          "recommendation": "Don't switch to push. Shareable + non-polluting is the right balance."
+        }
+      ],
+      "successCriteria": "- Step controls work via buttons, arrow keys, Space\n- ?step=N deep-links to that 1-indexed step\n- idx changes update URL via replaceState\n- Iframe loads the current step's build URL\n- Keyboard handler only fires when focus is inside the scrubber root\n- Visible keyboard hint with aria-describedby",
+      "knownLimitations": [
+        "Iframe load time depends on the build URL; no per-step preloading",
+        "Play interval is hardcoded (3500ms); not configurable per session",
+        "If items[].build_url is missing (unstamped), the iframe falls back to about:blank",
+        "Single global keyboard listener; multiple scrubbers on one page would conflict (not a current case)"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-12",
+          "reason": "Component shipped with the iframe + controls."
+        },
+        {
+          "from": "active",
+          "to": "active",
+          "date": "2026-05-17",
+          "reason": "AUDIT P3.1 + P3.2 + P3.3 work landed: visible keyboard hint, window-level handler with focus gate, ?step deep link."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Keyboard nav + deep-link patterns stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-097",
+      "title": "Voice recorder — shared mic capture for intake and session thread",
+      "status": "frozen",
+      "domain": "marc-portal/intake",
+      "tags": [
+        "intake",
+        "engagement",
+        "mic-capture",
+        "context-agnostic",
+        "shared-component"
+      ],
+      "componentFile": "src/components/VoiceRecorder.tsx",
+      "liveUrl": null,
+      "problem": "Both the intake form and the session thread want voice-note capture: tradespeople prefer speaking to typing. The two contexts have different consent wording (intake clips are transcribed-and-discarded; session clips are retained) and different confirm-button labels — so the recorder is context-agnostic. Caller supplies the copy; this component only knows how to capture audio, show a preview, and hand the blob back.",
+      "analysis": "MediaRecorder API; navigator.mediaDevices.getUserMedia for stream. State machine: idle → recording → preview → confirmed (or cancelled back to idle). Records to a Blob via MediaRecorder's dataavailable event. Preview offers playback before confirm. onConfirm(blob) handed to caller. Cleanup releases the mic track on unmount or cancel. Permission prompt the FIRST time; subsequent uses skip the prompt on the same origin.",
+      "decisions": [
+        {
+          "decision": "Context-agnostic; caller supplies consent line and confirm label",
+          "rationale": "Intake's recording is transcribed-and-discarded (no retention question). A session message's recording is retained (different Loi 25 footnote). The consent copy + button label must reflect WHICH context — but the recording mechanics are the same. Letting the caller supply the copy keeps the recorder reusable.",
+          "recommendation": "When adding a third context (e.g. admin voice note for moderator), supply its own copy. Don't fork the recorder."
+        },
+        {
+          "decision": "Preview before confirm, not auto-submit",
+          "rationale": "A voice note is often a re-do — first attempt is too long, second attempt is right. Forcing review-before-submit catches the 'didn't mean to record' case and gives the user a chance to delete a bad take without sending it anywhere.",
+          "recommendation": "Keep the preview step. If a future UX wants 'one-shot quick voice', evaluate as a separate component."
+        }
+      ],
+      "successCriteria": "- Captures audio via MediaRecorder + getUserMedia\n- Preview-before-confirm workflow\n- Mic stream released on unmount + cancel\n- Caller controls consent copy + confirm label\n- Bilingual at full parity (DICT[lang])\n- Graceful handling of permission denial",
+      "knownLimitations": [
+        "MediaRecorder produces audio/webm in Chrome/Firefox, audio/mp4 in Safari — different mimetype; consumer handles",
+        "No auto-stop at a duration cap; user must hit stop. Could add a max-duration prop",
+        "Permission denial state is a polite 'tap to retry'; some browsers permanently deny on first refusal and require user to re-grant via browser settings",
+        "Single-channel mono assumed; multi-mic setups use the default"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-14",
+          "reason": "Component shipped as the shared mic-capture surface for intake + session."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Context-agnostic + preview pattern stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-073",
+      "title": "Admin shell — chrome + auth gate for the /admin tree",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "shell",
+        "auth-gate",
+        "marketplace-shaped"
+      ],
+      "componentFile": "src/pages/Admin.tsx",
+      "liveUrl": null,
+      "problem": "Every /admin/* surface needs the same wrapper: sidebar nav, language toggle, signed-in-as indicator, and the auth gate that bounces anon visitors to /login. Centralizing this in Admin.tsx as a layout component means each admin route is one focused screen, not a copy-pasted shell. Sub-routes render through <Outlet /> with the chrome already in place.",
+      "analysis": "Layout component. useAuth() → if no email, <Navigate to='/login' replace />. Otherwise renders sidebar + header + <Outlet /> for sub-routes. useTenant() supplies tenant context for operator/buyer distinction; sub-routes decide what to show based on role. Mounted at /admin and /en/admin in router.tsx with index = AdminHub and children for /audit, /custodians, /inbox, /trash, /vouches, /showcase, /runbook. Marketplace-shaped surfaces (AdminFleet, AdminBilling, AdminTeam, AdminAppearance) are still reachable by direct URL per the root feature.json's 2026-05-09 note but no longer surfaced in the sidebar.",
+      "decisions": [
+        {
+          "decision": "Centralize the auth gate at the layout, not per-sub-route",
+          "rationale": "Each /admin/* sub-route would otherwise need its own useAuth() guard. Centralizing means the gate is one component; missing it on a new sub-route is structurally impossible because the sub-route is under <Outlet />.",
+          "recommendation": "When adding a new /admin sub-route, mount it as a child of Admin in router.tsx. Don't bypass the layout."
+        },
+        {
+          "decision": "Marketplace-shaped surfaces kept direct-URL reachable",
+          "rationale": "Per the root feature.json 2026-05-09 note: the marketplace surfaces (Fleet, Billing, Team, Appearance) cover a hypothetical buyer scenario. Removing them entirely would mean rewriting later if that scenario reopens. Hiding from sidebar removes the cost of carrying without losing the option.",
+          "recommendation": "If the buyer scenario stays off the table for ~12 months, evaluate deleting these surfaces; until then, keep them parked."
+        }
+      ],
+      "successCriteria": "- Anon visitor on /admin/* is redirected to /login\n- Signed-in operator sees the sidebar + sub-route content\n- Sidebar reflects the active route\n- Language toggle works in both /admin and /en/admin trees\n- Sub-routes render via <Outlet /> with chrome already in place",
+      "knownLimitations": [
+        "No role-based sidebar (every signed-in admin sees everything); fine for single-operator practice",
+        "Auth gate uses client-side redirect — there's a brief flash before /login renders. Acceptable",
+        "Marketplace-shaped surfaces (AdminFleet etc.) aren't lazy-removed; they ship in the bundle (~few KB)"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-09",
+          "reason": "Layout shipped with the auth gate + sidebar."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Layout + auth gate stable; marketplace-shaped surface posture decision documented."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-080",
+      "title": "Admin audit — reverse-chronological feed of operator actions",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "audit-log",
+        "read-only",
+        "client-side-filter"
+      ],
+      "componentFile": "src/pages/AdminAudit.tsx",
+      "liveUrl": null,
+      "problem": "Operator-significant actions (tenant provisioning, theme edits, status freezes, etc.) need a trail. AdminAudit reads /api/admin/audit and renders the audit_log table as a reverse-chronological feed. Read-only — append-only is the contract; nothing here can edit history. Client-side actor + action substring filters help narrow down without server-side date-range queries (deferred — small log size).",
+      "analysis": "GET /api/admin/audit on mount; returns recent audit_log entries (server-side limit; client paginates if more). Each row has id + ts + actor_email + tenant_id + action string + optional payload JSON. Renders newest first. Two filter inputs: actor substring + action substring; match-count badge updates as user types. Clear-filters button. No edit affordance — history is append-only.",
+      "decisions": [
+        {
+          "decision": "Client-side filters, server-side date-range deferred",
+          "rationale": "audit_log is small (operator actions are rare). Fetching everything + filtering client-side is fine at this scale. Server-side date-range would add a /api/admin/audit?from=...&to=... param with its own pagination — deferred until log size makes client-filter slow.",
+          "recommendation": "Don't pre-emptively add server-side filter. Revisit when audit_log crosses ~5000 rows or response payload approaches 1MB."
+        },
+        {
+          "decision": "No edit, no delete affordance",
+          "rationale": "An audit log that can be edited isn't an audit log. The contract is append-only; the SQL has no DELETE/UPDATE path exposed via any handler. Edit would also confuse compliance review.",
+          "recommendation": "Don't add edit. If a wrong entry needs context, append a new entry referring to it."
+        }
+      ],
+      "successCriteria": "- Lists audit_log entries newest first\n- Two filter inputs (actor, action) work client-side with match-count badge\n- Clear-filters resets to full list\n- Operator-only (gated at the API)\n- No edit, no delete affordance",
+      "knownLimitations": [
+        "Server-side limit on initial fetch; very old entries require pagination (not surfaced today)",
+        "No date range filter UI; client-side substring is the only narrowing today",
+        "Payload JSON is shown verbatim — could be long. No truncation/preview UI",
+        "audit_log inserts are best-effort from the handlers that emit them; a failure to insert isn't fatal but is silent"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-17",
+          "reason": "Page shipped with the feed + client-side filters (AUDIT P3.17)."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Append-only contract + client-filter posture stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-077",
+      "title": "Admin custodians — every subscription state at a glance",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "subscriptions",
+        "mrr",
+        "bucketed"
+      ],
+      "componentFile": "src/pages/AdminCustodians.tsx",
+      "liveUrl": null,
+      "problem": "Custodian subscriptions live in sessions.custodian_status with state transitions driven by /api/payments/webhook. Marc needs one place to see all subs at once: who's active (MRR + next renewal), who's past-due (Stripe failed — needs operator attention), and the history of switched/canceled. AdminCustodians is that page. No new endpoint required — reuses /api/sessions (admin scope) and buckets client-side.",
+      "analysis": "GET /api/sessions on mount. Bucket sessions by custodian_status: active (renders with MRR sum + next-renewal dates), past_due (top of page, needs attention), switched_to_tout_a_toi + canceled (history strip). Empty buckets render nothing — page doesn't look half-built for a young practice with few subs. No /api/admin/subscriptions endpoint; deriving from session rows keeps the schema lean.",
+      "decisions": [
+        {
+          "decision": "Reuse /api/sessions, no dedicated subscriptions endpoint",
+          "rationale": "custodian_status is a column on the session row, set by the webhook. The list endpoint already returns it. Adding /api/admin/subscriptions would duplicate auth + projection work for zero schema benefit.",
+          "recommendation": "If subscription queries get complex (e.g. churn analysis), add a /api/admin/subscriptions/analytics that returns aggregate-only data; keep this page reading from /api/sessions."
+        },
+        {
+          "decision": "Past-due bucket renders at the TOP, not in status order",
+          "rationale": "Past-due means Stripe's payment retry has failed enough that admin needs to step in — usually a card update or a cancel. Surfacing it first puts the operator-urgent work at the top. Active subs (no work needed) sit below.",
+          "recommendation": "Keep past-due at the top. The page is for operator work, not balance-sheet review."
+        }
+      ],
+      "successCriteria": "- All active subs visible with their MRR contribution and next renewal\n- Past-due subs surface at top with the session link for triage\n- Switched / canceled history kept browsable\n- Empty buckets render nothing (no half-built page in young practice)\n- One fetch on mount; client-side bucketing",
+      "knownLimitations": [
+        "Past-due investigation is operator manual — no automated re-charge attempt beyond Stripe's built-in retry. Stripe retries 4 times over 4 weeks by default",
+        "MRR sum is computed client-side and only over current active subs; refund history isn't surfaced here (see /admin/inbox/:id for that)",
+        "No CSV export; SQL the customers table or use the Stripe Dashboard for accounting"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-16",
+          "reason": "Page shipped with the three-bucket layout."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Bucketing pattern stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-074",
+      "title": "Admin hub — operator console index",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "console",
+        "tile-layout",
+        "live-counters"
+      ],
+      "componentFile": "src/pages/AdminHub.tsx",
+      "liveUrl": null,
+      "problem": "An operator hitting /admin needs to see what state the practice is in at a glance — pending triage count, active session, due-soon checks, recent audit activity — and then click through to the right tool. AdminHub is that index page. Mounted as the /admin/index route, it groups every admin surface + external dashboard (Stripe, Resend, CF) into scannable tiles, with live counters where possible. The same grouping definitions feed the /carte map's Admin layer so the two views stay in sync.",
+      "analysis": "Reads /api/sessions (admin sees all) on mount to compute live counters: pending triage count, active session title + age, custodian past-due count. Tiles are grouped by purpose (Sessions, Vouches, Payments, Observability, External) using HUB_SECTIONS defined in src/lib/admin/hubSections.ts — single source so /carte's Admin layer can render the same grouping. Each tile is a labeled link + optional badge (e.g. red dot for past-due, count for pending queue). External tiles link out to Stripe Dashboard, Resend, CF Pages — not embedded, deliberately, since each surface has its own auth.",
+      "decisions": [
+        {
+          "decision": "Group definitions in src/lib/admin/hubSections.ts, not inline",
+          "rationale": "Two consumers (this page + /carte's Admin layer) need the same grouped tile structure. Centralizing means one place to add a new admin surface; both consumers pick it up.",
+          "recommendation": "When adding a new admin surface, add it to hubSections.ts. Don't add inline tile defs here."
+        },
+        {
+          "decision": "External dashboards are linked out, never embedded",
+          "rationale": "Embedding Stripe / Resend / CF dashboards would either require their iframe support (not always available) or proxy their auth (huge security surface). Linking out is simple and respects each tool's native auth.",
+          "recommendation": "Don't try to embed external dashboards."
+        }
+      ],
+      "successCriteria": "- Land on /admin and see live counters for pending triage, active session, past-due custodians\n- Tiles are grouped by purpose, not alphabetically\n- External tools open in new tab\n- /carte's Admin layer mirrors the same grouping\n- Single fetch on mount; no per-tile waterfall",
+      "knownLimitations": [
+        "Single fetch on mount; counters can drift if a transition happens elsewhere while the page is open. Acceptable — the page is a hub, not a real-time dashboard",
+        "External tile links assume the operator is already signed into Stripe / Resend / CF; no SSO chain",
+        "Tile badges are computed client-side; a buggy listSessions response could miscount"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-12",
+          "reason": "Page shipped as /admin index; replaced the legacy redirect to the now-hidden /admin/apparence."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Tile model + grouping centralization stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-075",
+      "title": "Admin inbox — every session in one scannable queue",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "inbox",
+        "triage",
+        "sla-pressure"
+      ],
+      "componentFile": "src/pages/AdminInbox.tsx",
+      "liveUrl": null,
+      "problem": "Marc needs a single page that lists every session (every status, every visitor) sorted by what needs attention first. AdminInbox is that. Reads /api/sessions (admin scope), groups by status, sorts within groups by SLA pressure (oldest triage at the top), and surfaces enough metadata per row to triage without opening each session. Clicking a row navigates to /admin/inbox/:id which is the SessionPage in admin mode.",
+      "analysis": "GET /api/sessions on mount; admin scope returns every non-deleted session. Group client-side by status (triage, active, etc.), sort within each group by SLA pressure (computeSla from src/lib/format.ts — hours since creation vs. the 72h SLA constant). Each row shows: visitor email + first-name, problem type label, status pill, time since creation, SLA badge (green/amber/red). Click → navigate to /admin/inbox/:id which reuses SessionPage in operator mode.",
+      "decisions": [
+        {
+          "decision": "Reuse /api/sessions for inbox view, not a dedicated /api/admin/inbox endpoint",
+          "rationale": "The list endpoint already returns admin-scope data when called with admin cookie. Adding a parallel endpoint would duplicate auth gating and projection logic. The /me dashboard and /admin/inbox call the same endpoint with different rendering — SQL is the projection.",
+          "recommendation": "When adding a new admin-facing view of sessions, render from the same endpoint. If a new view needs fundamentally different shape, evaluate a new endpoint, not the inbox shortcut."
+        },
+        {
+          "decision": "SLA pressure sort within status groups, not status-then-time",
+          "rationale": "An operator scanning the inbox should see the most-urgent triage at the top — a 70h-old triage is more important than a 5h-old triage. Status grouping keeps similar work together; SLA pressure within ranks them. Pure time-sort would mix freshly-created and aged across statuses.",
+          "recommendation": "Don't reorder. The grouping is the affordance."
+        }
+      ],
+      "successCriteria": "- Lists every non-deleted session in admin scope\n- Groups by status with most-urgent first within each group\n- SLA badge color reflects pressure (green / amber / red)\n- Click navigates to /admin/inbox/:id which is SessionPage in operator mode\n- Single fetch on mount; no per-row request",
+      "knownLimitations": [
+        "No filter UI (status, problem type, email search) — single-operator scale, Ctrl+F is enough",
+        "No bulk operations — every status flip is per-session via the session page",
+        "Sort is client-side; a very large inbox (~1000+ rows) would be slow. Current scale: <100"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-09",
+          "reason": "Page shipped with the grouped + SLA-sorted inbox view."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Reuse-/api/sessions pattern stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-081",
+      "title": "Admin runbook — two-track operator runbook with handoff-gap detection",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "runbook",
+        "two-track",
+        "dependency-check",
+        "localStorage-progress"
+      ],
+      "componentFile": "src/pages/AdminRunbook.tsx",
+      "liveUrl": null,
+      "problem": "Marc's operating-the-portal knowledge lives in two tracks: dev handoff (what infra is set up, what credentials exist, what monitoring) and user journey (what a visitor experience from intake to ship). Solo, the two are easy to keep in sync; under pressure, gaps appear (Track B says 'visitor receives email', Track A says 'Resend not yet configured' — silent handoff gap). AdminRunbook renders both tracks side by side; Track B steps with a `dependsOn` link to Track A get a red flag when the prerequisite is unchecked.",
+      "analysis": "Renders via <RunbookParallel /> (src/components/RunbookParallel.tsx) which takes the two tracks as props. Track A = dev handoff steps (defined in src/lib/runbook.ts); Track B = user journey steps with `dependsOn: 'track-a-step-id'` references. Per-step progress (checked/unchecked) is in localStorage, browser-local, no server sync. Reset button wipes all checks in one shot. The dependency check is real-time: changing a Track A check flips any Track B step depending on it (red flag if prereq unchecked).",
+      "decisions": [
+        {
+          "decision": "Per-step progress in localStorage, not server-side",
+          "rationale": "Runbook progress is per-operator, per-device. Server-syncing would create a shared mutable list that two operators could trip over. localStorage keeps it private + per-device, which matches the 'this is my checklist' mental model.",
+          "recommendation": "Don't add server sync. If multi-device sync becomes a real ask, evaluate whether a shared runbook is even what you want (probably not)."
+        },
+        {
+          "decision": "dependsOn red flag, not greyed-out unavailable",
+          "rationale": "Greying out 'visitor receives email' until Resend is configured would HIDE the dependency. The point of the runbook is to SHOW the gaps. Red flag + checkbox-still-clickable lets admin proceed anyway (knowing the gap exists) or fix the prereq first.",
+          "recommendation": "Keep red flag, not disable. Visibility is the value."
+        }
+      ],
+      "successCriteria": "- Track A + Track B render side by side\n- Per-step checkbox state persists in localStorage\n- Reset wipes all checks\n- Track B steps with `dependsOn` flag when prereq is unchecked\n- Bilingual support",
+      "knownLimitations": [
+        "Browser-local progress; switching device or clearing storage loses state",
+        "Step definitions are hardcoded in src/lib/runbook.ts; adding a step requires a code change + deploy",
+        "dependsOn supports one prereq per step; a step needing two prereqs would need multi-dep support (not implemented)",
+        "Track B's 'visitor experience' isn't auto-derived from real data; it's a curated list"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-20",
+          "reason": "Page shipped with the two-track layout + dependency check."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Two-track + red-flag pattern stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-079",
+      "title": "Admin showcase — operator-only OG card grid + brand-check",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "og",
+        "brand-check",
+        "warnings"
+      ],
+      "componentFile": "src/pages/AdminShowcase.tsx",
+      "liveUrl": null,
+      "problem": "Each showcased project gets a dynamic OG card (functions/og/share/[id].ts) used as the social-unfurl preview. Card content drifts as session metadata changes; bad data (title overflow, missing tagline, un-tiered session) silently produces ugly cards that scrapers cache for days. AdminShowcase is the brand-check surface — a grid of every showcased project's OG card, with warning chips overlaid for each known issue. Operator-only.",
+      "analysis": "GET /api/public/projects on mount (same data the public gallery uses; safe to fetch as admin too). Each project is rendered as a card with its actual OG image embedded via <img src='/og/share/<id>'>. WARNINGS are computed per-project: title length over OG safe area, missing tagline, no tier set, deploy URL missing. Warning chips overlay the card top; click chip to navigate to /admin/inbox/:id for the fix. Grid layout, no list mode.",
+      "decisions": [
+        {
+          "decision": "Render the actual OG image, not a placeholder",
+          "rationale": "Brand-check means seeing what social scrapers actually see. A placeholder would mask render bugs in workers-og. Rendering the live OG endpoint via <img> means font issues, layout breaks, etc. all surface here.",
+          "recommendation": "Don't switch to a placeholder. If <img> requests stress the OG endpoint, add CF Pages edge caching — but the real OG renders are what we need to eyeball."
+        },
+        {
+          "decision": "Warnings as overlay chips, not a separate audit page",
+          "rationale": "Seeing the warning next to the card it applies to lets admin diagnose visually — 'oh, the title is overflowing' makes sense when you SEE the overflow + the warning together. A separate audit list would force admin to map warning → card mentally.",
+          "recommendation": "Add new warning types as needed; keep them visual + adjacent."
+        }
+      ],
+      "successCriteria": "- Every showcased project renders its real OG card\n- Warning chips overlay each card for any detected issue\n- Click a chip → navigate to /admin/inbox/:id for the fix\n- Operator-only (anon visitors redirect)\n- Brand-check at a glance",
+      "knownLimitations": [
+        "OG cards render via <img> tag; some browsers cache aggressively. Hard refresh if needed",
+        "Warning list is static (predefined types); new types require a code change",
+        "If /og/share/:id returns the static fallback (rendering failure), this page shows the fallback too — operator can't distinguish 'no warning' from 'render broke'. RUNBOOK § OG triage covers"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-20",
+          "reason": "Page shipped with the grid + warning chip overlay."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Render-real-OG + adjacent-warnings decisions stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-076",
+      "title": "Admin trash — soft-deleted sessions, restorable",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "soft-delete",
+        "restore",
+        "recovery"
+      ],
+      "componentFile": "src/pages/AdminTrash.tsx",
+      "liveUrl": null,
+      "problem": "Sessions soft-delete via DELETE /api/sessions/:id; the row stays in D1 with deleted_at set. AdminTrash is the recovery surface — lists soft-deleted sessions, shows when each was deleted and by whom, and offers a one-click restore. Without this, recovering an accidentally-deleted session would require SQL access.",
+      "analysis": "GET /api/sessions?deleted=true (admin-only opt-in flag) on mount; returns ONLY rows with deleted_at IS NOT NULL. Each row shows: visitor email, problem type, original status (last value before delete), when deleted, who deleted (self vs admin). Restore button → PATCH /api/sessions/:id with { restore: true } which clears deleted_at and resets status to 'triage' (the safest restoration target — admin decides next move from there).",
+      "decisions": [
+        {
+          "decision": "Restore lands at status='triage', not the pre-delete status",
+          "rationale": "Restoring directly to whatever status the session held before delete could put it back into active capacity (breaking the cap rule). Landing at 'triage' is safe — admin reviews and transitions explicitly. Worst case: a restored session needs one PATCH to active. Best case: the deletion was correct and the restoration is a clean re-triage.",
+          "recommendation": "Keep the triage-restore. If an admin wants to restore to exact prior state, they can do that via two PATCHes (restore + transition)."
+        }
+      ],
+      "successCriteria": "- Lists only soft-deleted sessions\n- Restore button works in one click\n- Restored session lands at status='triage'\n- Visitors never see soft-deleted sessions on /me regardless of admin actions\n- Forbidden message for non-admin visitors who somehow reach the page",
+      "knownLimitations": [
+        "No bulk restore — one click per row",
+        "No filter / search; current scale doesn't warrant",
+        "Restored sessions go to triage even if originally far past that — admin re-evaluates"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-13",
+          "reason": "Page shipped with the trash list + one-click restore."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Restore-to-triage decision stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-078",
+      "title": "Admin vouches — moderation surface for testimonials",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "moderation",
+        "vouches",
+        "inline-edit"
+      ],
+      "componentFile": "src/pages/AdminVouches.tsx",
+      "liveUrl": null,
+      "problem": "Vouches submitted via the open /vouch form land in status='pending'. AdminVouches is where Marc moderates: approve to surface on /vouches, reject for spam, edit visitor copy (typos, length, voice), or soft-delete. Four sections stacked (pending / approved / rejected / trash) — each rendered only if non-empty so the page doesn't look half-built early on. Inline edit (no modal) keeps moderation fast.",
+      "analysis": "GET /api/admin/vouches on mount; returns every vouch including pending/rejected/deleted with email attached. Sorted pending-first (newest) then everything else by created_at DESC. Client-side bucket by status into the four sections. Edit row expands inline with name/relationship/body/link fields; save PATCHes via PATCH /api/admin/vouches/:id. Status flip is the same endpoint with { status: 'approved' | 'rejected' }; delete via DELETE /api/admin/vouches/:id. Restore from trash is PATCH with { undelete: true }. Author email is shown (operator-only context) but never editable.",
+      "decisions": [
+        {
+          "decision": "Inline edit row, not a modal",
+          "rationale": "Moderation is fast work — read, edit, approve, next. A modal interrupts the flow with a focus shift + close click. An inline-expanding row keeps the operator on the same scroll position and lets them approve-then-edit-the-next without modal whiplash.",
+          "recommendation": "Don't switch to a modal. If two operators ever need to moderate concurrently, the race is on the SAVE, not the edit UX."
+        },
+        {
+          "decision": "Edit is intentionally broad (name + body + link + relationship)",
+          "rationale": "Marc routinely tightens visitor copy before approving — typos, length over the comfortable limit, voice that doesn't match the practice. A narrow edit ('only fix typos') would force separate workflows. Broad edit makes the moderation surface feel like a real editor, not a triage console.",
+          "recommendation": "Keep edit broad. If a future need wants 'preserve original' as a feature, surface a 'show original' affordance, don't restrict editing."
+        },
+        {
+          "decision": "Author email immutable",
+          "rationale": "Email is the contact channel for moderator follow-up + the dedup key for rate-limit. Changing it would break either or both. If a vouch comes in with a wrong email, reject + ask the submitter to resubmit.",
+          "recommendation": "Don't add email edit. The submission flow is the right place to fix that."
+        }
+      ],
+      "successCriteria": "- Lists pending / approved / rejected / trash sections; empty sections don't render\n- Inline edit row supports name + relationship + body + link\n- Status flips work; soft-delete + restore work\n- Author email is shown (operator context) but not editable\n- Single fetch on mount\n- Visitor never sees pending/rejected/trash from this page",
+      "knownLimitations": [
+        "No bulk operations; each row is its own click",
+        "Edit doesn't versioning — overwrite is permanent. Original copy is gone after save",
+        "No filter / search UI; current scale doesn't warrant",
+        "Sort is sticky (pending first, then created_at desc); no custom sort"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-18",
+          "reason": "Page shipped with the four-section layout + inline edit."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Inline-edit + broad-edit decisions stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
       "featureKey": "feat-2026-028",
       "title": "L'atelier — the portal's design system as a public exhibit",
       "status": "frozen",
@@ -1115,6 +2117,257 @@
       "lastTransitionDate": "2026-05-23"
     },
     {
+      "featureKey": "feat-2026-082",
+      "title": "GET /api/admin/audit — recent audit_log feed (operator only)",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "audit-log",
+        "operator-gated",
+        "tenant-scoped"
+      ],
+      "componentFile": "functions/api/admin/audit.ts",
+      "liveUrl": null,
+      "problem": "AdminAudit needs a feed of recent audit_log entries; this endpoint serves that. Operator-only, returns the most recent entries ordered ts DESC. Tenant-scoped via requireTenant — audit_log is per-tenant so a fleet admin doesn't see another tenant's actions.",
+      "analysis": "GET only. currentEmail → unauthorized if missing. isAdmin → forbidden if not operator. requireTenant → ctx.data.tenant or 500. SELECT FROM audit_log WHERE tenant_id = ? ORDER BY ts DESC LIMIT N (N defined at top of file, currently 200). Returns array of AuditRow. No filter params today; AdminAudit does the filtering client-side.",
+      "decisions": [
+        {
+          "decision": "Server-side LIMIT, no pagination",
+          "rationale": "audit_log is small. Returning the most-recent 200 covers every realistic operator query. A LIMIT-without-pagination is simpler than a paginated API; AdminAudit's client-side filtering handles search.",
+          "recommendation": "When the log crosses ~1000 entries per tenant, add a /api/admin/audit?cursor=... param. Don't over-engineer earlier."
+        },
+        {
+          "decision": "Tenant-scoped at the WHERE clause",
+          "rationale": "audit_log entries are per-tenant. Filtering at the SQL level (not in app code) means even a misconfigured admin can't accidentally see another tenant's log. requireTenant guarantees tenant_id is non-null.",
+          "recommendation": "When adding new admin endpoints that touch audit_log, thread tenant the same way."
+        }
+      ],
+      "successCriteria": "- Operator gets recent audit_log (tenant-scoped)\n- Non-operator → 403\n- Anon → 401\n- Tenant lookup failure → 500 (requireTenant)\n- Newest-first ordering\n- Server-side LIMIT prevents giant responses",
+      "knownLimitations": [
+        "No pagination; LIMIT is fixed server-side",
+        "No date range / actor filter at the API; client filters",
+        "Payload column is opaque JSON; structured search would require JSON1 or a dedicated index",
+        "Insertion into audit_log is best-effort from emitting handlers; a silent miss has no detection"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-17",
+          "reason": "Endpoint shipped paired with AdminAudit page."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Tenant scoping + LIMIT pattern stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-083",
+      "title": "POST /api/admin/digest — daily-cron operator summary email",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "cron",
+        "digest",
+        "out-of-band-auth",
+        "csrf-exempt"
+      ],
+      "componentFile": "functions/api/admin/digest.ts",
+      "liveUrl": null,
+      "problem": "Pages Functions don't have scheduled triggers natively. A free external cron (cron-job.org, a CF Workers scheduled trigger in a separate worker) hits this endpoint once a day to compile a digest email: any triage rows over 48h old + any unresolved admin_alerts (Stripe-notification fallbacks from the webhook's maybeNotifyAdmin). Marc's daily operational alarm without paying for a hosted scheduler.",
+      "analysis": "POST only. Auth: requires X-Digest-Token header matching env.DIGEST_TOKEN — out-of-band so no human cookie is required (a cron job posts without a browser). CSRF-exempt in middleware. Idempotent — calling twice in the same hour just sends two emails (acceptable; the external cron typically fires once daily). Body: query D1 for triage sessions WHERE updated_at < now() - 48h AND deleted_at IS NULL; query admin_alerts WHERE resolved_at IS NULL. Build the email; send via Resend to primaryAdminEmail (functions/_lib/sessions.ts) in the right lang (getLang(adminEmail)). 200 ok on send, 500 on Resend failure.",
+      "decisions": [
+        {
+          "decision": "Out-of-band auth (X-Digest-Token) instead of cookie",
+          "rationale": "The caller is a cron job, not a browser. No cookie context, so the standard auth doesn't apply. A shared-secret header is the simplest auth for server-to-server calls; the token lives in CF secrets and the cron job's config. Compromise on either side means rotating the token.",
+          "recommendation": "Keep the token-header pattern. If a second cron-triggered endpoint is added, reuse the same secret name + header."
+        },
+        {
+          "decision": "admin_alerts are surfaced but have no UI to mark resolved",
+          "rationale": "admin_alerts rows are inserted when the webhook's maybeNotifyAdmin can't reach Marc via the primary channel (Resend down, etc.) — rare but real. The digest re-surfaces them so they don't vanish. There's no UI to mark resolved because the volume is so low (single-digit per year). Marc manually clears resolved entries in D1 when fixing the underlying issue.",
+          "recommendation": "Don't build a UI. If volume crosses ~10/year, evaluate."
+        }
+      ],
+      "successCriteria": "- X-Digest-Token validates against env.DIGEST_TOKEN; mismatch → 401\n- Triage rows older than 48h are listed in the email\n- Unresolved admin_alerts are listed in the email\n- Idempotent — twice-fired produces two emails, no DB mutation\n- Send via Resend; failures return 500 (cron should retry)\n- 200 + summary on success",
+      "knownLimitations": [
+        "External cron is a separate failure mode — if cron-job.org is down, no digest. Mitigation: receive emails for active sessions via /api/sessions's notification side effects",
+        "Digest content is hand-curated in the handler; a new alert type requires code change",
+        "Idempotency is a feature for the visitor's mailbox (no duplicate emails on cron retry); but it ALSO means we can't deduplicate alerts across multiple sends",
+        "No quiet hours; cron fires whenever cron-job.org fires"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-14",
+          "reason": "Endpoint shipped with the daily-digest content + DIGEST_TOKEN auth."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. External-cron + token-header pattern stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-084",
+      "title": "POST /api/admin/test-emails — operator deliverability + voice check",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "deliverability",
+        "diagnostic",
+        "synthetic-data",
+        "rate-paced"
+      ],
+      "componentFile": "functions/api/admin/test-emails.ts",
+      "liveUrl": null,
+      "problem": "The portal sends ~12 distinct email types (magic link, status changes, message notifications, payment confirmations, digest, etc.). Each has its own template, voice, lang variant. Without a fire-everything diagnostic, the operator only sees an email type by actually walking the matching user flow — slow, hard to QA changes, easy to miss a regression. /api/admin/test-emails fires one of every type at the signed-in admin's address with synthetic sample data. Zero production rows read or touched.",
+      "analysis": "POST only. Operator gate (currentEmail + isAdmin). CSRF enforced by middleware. Iterates a defined list of email types, calls each one with synthetic sample data hardcoded in the handler. Pacing: ~600ms sleep between sends to stay under Resend's 2 req/s free-tier rate. Total: 12 sends × 600ms = ~7s, well under Pages Functions' 30s wall-time budget. Returns 200 { sent: [...types] } on success.",
+      "decisions": [
+        {
+          "decision": "Sequential pacing instead of Promise.all, stay under Resend's 2 req/s",
+          "rationale": "Resend's free tier rate-limits at ~2 req/s. Promise.all would burst all 12 at once and hit the limit, getting 429s on the latter half. Sequential with ~600ms gap pacing keeps every send under the rate limit + gets all 12 in under 10 seconds.",
+          "recommendation": "Don't refactor to parallel. If Resend's rate ever increases, evaluate; until then, sequential is correct."
+        },
+        {
+          "decision": "Synthetic sample data, never read prod rows",
+          "rationale": "Reading real visitor data to test an email template would leak that data into the test email — even to the operator, that's a privacy footnote. Hardcoded synthetic data ('Test Visitor', 'sample@example.com', a fixture intake JSON) makes the test deterministic + privacy-safe.",
+          "recommendation": "Don't make the sample data dynamic. If a future need wants 'render this email type for THIS real session', that's a different endpoint with different gating."
+        }
+      ],
+      "successCriteria": "- Operator gets ~12 emails (one per type) at their address\n- Each email uses synthetic data; no prod rows read\n- Sequential pacing stays under Resend rate limit\n- Total send completes well under 30s wall-time\n- 200 + sent list on success",
+      "knownLimitations": [
+        "Sends to the signed-in admin's address only — can't target another address (avoids accidental spam vector)",
+        "Synthetic data is hardcoded; a new email type requires updating both EMAIL_TYPES and possibly the sample fixture",
+        "If Resend hits a temporary outage during the send loop, latter emails fail — handler returns 200 with the partial sent list (best-effort)",
+        "No dry-run mode; sending IS the test"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-19",
+          "reason": "Endpoint shipped with all 12 email types + rate-paced sequential sends."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Synthetic-data + pacing decisions stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-086",
+      "title": "PATCH + DELETE /api/admin/vouches/:id — moderation actions",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "moderation",
+        "operator-only",
+        "soft-delete"
+      ],
+      "componentFile": "functions/api/admin/vouches/[id].ts",
+      "liveUrl": null,
+      "problem": "AdminVouches' per-row actions go through here. PATCH supports status flips (pending → approved / rejected), copy edits (body, name, link, relationship), and undelete (restore from trash). DELETE soft-removes (sets deleted_at). Author email and submission timestamp are immutable — those are dedup + audit keys.",
+      "analysis": "PATCH onRequest. currentEmail + isAdmin. Body fields all optional partial-update; if `status` provided, validate against VOUCH_STATUSES enum; if `relationship`, validate via isValidRelationship. Body / name / link length-checked against the same VOUCH_LIMITS used by the open /vouches submission. `undelete: true` clears deleted_at + sets status back to 'pending' (consistent with sessions' trash-restore pattern). DELETE onRequest: soft-delete only (sets deleted_at = now); hard-delete is SQL-only.",
+      "decisions": [
+        {
+          "decision": "undelete returns to status='pending', not original status",
+          "rationale": "Same logic as session restore: a soft-deleted vouch might have been deleted as spam, then later it turns out to be legitimate. Restoring to 'pending' forces a fresh moderation decision rather than auto-publishing potentially-spam content.",
+          "recommendation": "Keep the pending-restore. Trusting the original status would auto-publish spam on a restore."
+        },
+        {
+          "decision": "Author email + timestamp immutable",
+          "rationale": "Email is the rate-limit dedup key and the moderator's follow-up channel. Timestamp is the audit anchor. Both unchangeable maintains the integrity of those uses.",
+          "recommendation": "Don't add edit. If a wrong email needs fixing, reject + ask the submitter to resubmit."
+        }
+      ],
+      "successCriteria": "- PATCH supports status / body / name / link / relationship / undelete in partial shape\n- DELETE soft-removes (sets deleted_at)\n- Validation rejects bad statuses / relationships / overlength bodies\n- Email + timestamp can't be changed\n- 403 for non-operator, 401 for anon, 404 for unknown id",
+      "knownLimitations": [
+        "No edit history — overwrite is permanent for the affected fields",
+        "Hard-delete only via direct SQL; the soft-delete pattern preserves the row for recovery",
+        "Undelete → pending means re-moderation is required; an admin wanting to restore exact prior state needs two PATCHes",
+        "No bulk PATCH — one row per call"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-18",
+          "reason": "Endpoint shipped paired with the index handler + AdminVouches page."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Edit + undelete-to-pending decisions stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-085",
+      "title": "GET /api/admin/vouches — moderation list including pending + trash",
+      "status": "frozen",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "moderation",
+        "full-row-view",
+        "operator-only"
+      ],
+      "componentFile": "functions/api/admin/vouches.ts",
+      "liveUrl": null,
+      "problem": "/api/public/vouches returns only approved + not-deleted vouches with email stripped. The admin moderation page needs the OTHER half: pending + rejected + soft-deleted, WITH email attached for follow-up. /api/admin/vouches is that. Sorted pending-first (newest) then everything else by created_at DESC — puts the moderation queue at the top of the response so the UI doesn't have to bucket the wrong way.",
+      "analysis": "GET only. currentEmail + isAdmin gates. Optional ?status=pending|approved|rejected narrows. Otherwise returns every vouch (including soft-deleted). Full VouchRow shape — email, IP, rate-limit metadata, all of it. Sort: pending first by created_at DESC, then status='approved'/'rejected' by created_at DESC, then soft-deleted last. AdminVouches client-side buckets by status.",
+      "decisions": [
+        {
+          "decision": "Sort puts pending at top of response, not status-then-time",
+          "rationale": "The moderation queue is what admin opens this page to handle. Returning everything sorted by created_at puts ancient approved rows at the top, burying the queue. Pending-first ordering shaves a client-side sort step and makes the API itself reflect the operator's priority.",
+          "recommendation": "Don't reorder. If a future admin view wants different ordering, add a ?sort= param; keep this default."
+        },
+        {
+          "decision": "?status= filter is OPTIONAL, default is everything",
+          "rationale": "AdminVouches renders all four buckets at once — needing everything is the common case. ?status= is for occasional needs (e.g. 'just show me trash' for cleanup). Default-everything matches the page; filter is the special case.",
+          "recommendation": "Keep optional. If a use case needs default-narrowed (e.g. mobile UI shows only pending), thread that through the client."
+        }
+      ],
+      "successCriteria": "- Operator gets every vouch including pending + rejected + soft-deleted\n- Author email + IP + rate-limit metadata included (operator context)\n- ?status= narrows when present\n- Pending-first ordering with newest-first within\n- 403 for non-operator, 401 for anon",
+      "knownLimitations": [
+        "Returns every vouch — no pagination. Fine at current scale; revisit at ~500+ rows",
+        "No date range filter at the API; admin's client-side filter handles narrowing",
+        "Sort is server-side; can't be changed via query param today"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-18",
+          "reason": "Endpoint shipped with the moderation-queue ordering."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Pending-first sort + optional filter stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
       "featureKey": "feat-2026-045",
       "title": "POST /api/auth/logout — clear the session cookie",
       "status": "frozen",
@@ -1273,6 +2526,56 @@
           "to": "frozen",
           "date": "2026-05-23",
           "reason": "Code-first doc co-located. Verification flow has been stable since launch."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-068",
+      "title": "GET /api/health — uptime + D1 connectivity probe",
+      "status": "frozen",
+      "domain": "marc-portal/infrastructure",
+      "tags": [
+        "infrastructure",
+        "uptime",
+        "synthetic-monitor",
+        "unauth",
+        "no-tenant"
+      ],
+      "componentFile": "functions/api/health.ts",
+      "liveUrl": null,
+      "problem": "Synthetic monitoring (Marc's curl, UptimeRobot, etc.) needs a cheap reachable endpoint that confirms the runtime is up AND D1 is responsive. /api/health does exactly that: runs SELECT 1 against D1, returns ok+200 on success, fail+500 on D1 exception. Public, unauthenticated, no tenant lookup — caller can be anyone.",
+      "analysis": "GET only. Bypasses tenant resolution conceptually (handler doesn't read ctx.data.tenant). Executes env.DB.prepare('SELECT 1').first() — D1's smallest valid roundtrip. On success: 200 { ok: true, db: 'ok', ts }. On exception: 500 { ok: false, db: 'fail', ts }. No commit hash today (would require build-time inject; relies on the SPA's static stamp at /meta for 'what's deployed').",
+      "decisions": [
+        {
+          "decision": "Run SELECT 1 against D1, not just confirm the worker is up",
+          "rationale": "Worker-up-but-DB-down is the realistic partial failure mode. A no-D1 health check would return 200 during a D1 outage and not alert. SELECT 1 is the cheapest possible probe that catches the real failure modes.",
+          "recommendation": "Don't add more checks (R2, Stripe, Resend) here — each is a graceful-degrade dependency, not a hard-down trigger. If R2 is down, the worker still serves; the synthetic monitor should treat R2-down differently from worker-down."
+        },
+        {
+          "decision": "500 on D1 failure, NOT 200 with fail flag",
+          "rationale": "Synthetic monitors (UptimeRobot, etc.) treat any non-200 as down. Returning 200 even when D1 is broken would silently disable monitoring. 500 is the truthful signal.",
+          "recommendation": "Keep the 500. The JSON body still has the structured 'db: fail' so a custom monitor can read details, but the status code is the load-bearing signal."
+        }
+      ],
+      "successCriteria": "- A curl reaches the endpoint without auth\n- D1 responsive → 200 with { ok: true, db: 'ok' }\n- D1 broken → 500 with { ok: false, db: 'fail' }\n- Response time is sub-100ms typical (one D1 roundtrip)\n- No tenant lookup needed",
+      "knownLimitations": [
+        "No commit hash in the response today — would require a build-time define plumbed through the Functions bundle; SPA's static commit stamp at /meta is the workaround",
+        "Doesn't probe R2 / Workers AI / Stripe / Resend; those are graceful-degrade dependencies and a unified health would lie about partial failures",
+        "Timestamp resolution is millisecond; clock skew between worker instances is bounded but theoretically the ts could be slightly stale"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-12",
+          "reason": "Endpoint shipped with the D1 probe + truthful status code."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Probe minimalism is stable."
         }
       ],
       "lastTransitionDate": "2026-05-23"
@@ -1504,6 +2807,56 @@
       "lastTransitionDate": "2026-05-23"
     },
     {
+      "featureKey": "feat-2026-067",
+      "title": "GET /api/meta/stats — the live half of the /meta scorecard",
+      "status": "frozen",
+      "domain": "marc-portal/showcase",
+      "tags": [
+        "showcase",
+        "scorecard",
+        "aggregate-only",
+        "loi-25-friendly",
+        "unauth"
+      ],
+      "componentFile": "functions/api/meta/stats.ts",
+      "liveUrl": null,
+      "problem": "The /meta page grades itself in public: how many features documented, what fraction frozen, what the practice's actual triage SLA hit rate looks like. The static half (feature count, frozen ratio) comes from src/data/lac-features.json at build time; the dynamic half (shipped count, median response hours, SLA compliance) needs live D1 data. This endpoint is that. Aggregate-only — never an email, never a body, just counts and median.",
+      "analysis": "GET only. Two queries: (1) COUNT sessions WHERE status='shipped' AND deleted_at IS NULL — the shipped count. (2) SELECT status_history FROM all sessions, parse each for the FIRST 'triage' → 'active' or 'triage' → 'rejected' transition; compute hours from session creation to that transition. Take the median, drop outliers above MAX_PLAUSIBLE_HOURS (24 * 365 = a year, defends against clock-skew or bad data). Returns { shippedCount, medianResponseHours, sampleSize, slaHours }. slaHours is the SLA_HOURS constant (72) that /me/intake copy promises; surfacing it here lets /meta compare the promise to the median.",
+      "decisions": [
+        {
+          "decision": "Compute median in-handler instead of SQL",
+          "rationale": "status_history is a JSON blob column (deliberate — see sessions/[id] feature.json's decision). SQL median over JSON would require JSON1 extension and complex unnesting. In-handler parsing is simpler, runs once per /meta page load, and stays maintainable. The dataset is bounded (every session ever, currently <100) so the compute cost is negligible.",
+          "recommendation": "Don't move to SQL aggregation unless the dataset grows past ~10k sessions, which is years away."
+        },
+        {
+          "decision": "Outlier filter at 24 * 365 hours",
+          "rationale": "Clock skew or data import errors could produce a session with an absurd response time (negative time, century-old timestamp). Capping the plausible range at 1 year prevents one bad row from dominating the median.",
+          "recommendation": "If a legitimate 'we paused for 6 months' case ever appears, raise the cap. Don't lower it — the goal is to defend against bad data, not slow responses."
+        }
+      ],
+      "successCriteria": "- Aggregate-only response — no PII\n- Shipped count + median triage response in hours\n- Sample size is included so a reader can judge confidence\n- SLA hours surfaced for comparison against the median\n- Median is null when sample size is zero (don't fake a number)\n- Outlier sessions don't dominate the median",
+      "knownLimitations": [
+        "Median is computed at request time, no caching — fine at current load",
+        "Status history parsing depends on the JSON blob schema; a future status-history table migration would require updating this handler too",
+        "Outlier cap is hardcoded; if a legitimate long-paused session occurs, it'd silently get excluded from the median"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-15",
+          "reason": "Endpoint shipped with the live scorecard math."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Median computation + outlier filter stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
       "featureKey": "feat-2026-050",
       "title": "POST /api/payments/checkout — mint a Stripe Checkout session",
       "status": "frozen",
@@ -1714,6 +3067,153 @@
           "to": "frozen",
           "date": "2026-05-23",
           "reason": "Code-first doc co-located. Webhook is load-bearing for payment reconciliation; behaviour stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-062",
+      "title": "GET /api/public/projects — unauth showcased-projects gallery feed",
+      "status": "frozen",
+      "domain": "marc-portal/showcase",
+      "tags": [
+        "showcase",
+        "unauth",
+        "projection-strip",
+        "loi-25-friendly"
+      ],
+      "componentFile": "functions/api/public/projects.ts",
+      "liveUrl": null,
+      "problem": "The home-page hero projects strip and the /projects gallery both need a list of admin-curated showcase entries — sessions with showcased_at set, pulling in their pinned current-build advancement for the iframe preview. The data is public by design but pulls from session rows that ALSO contain PII (visitor email, intake content). This handler is the projection that strips PII at the SQL level and returns only what the gallery needs.",
+      "analysis": "GET only. SELECT showcased sessions (showcased_at IS NOT NULL AND deleted_at IS NULL), JOIN their pinned current_build advancement when present. Project to ShowcaseRow: id, showcased_at, showcase_title, showcase_tagline, status, tier, current build_url + iframe_path + commit_sha. No email, no intake_json, no message bodies, no internal advancements. parseFlags is used to read the pinned-current-build flag from the advancement's flags JSON. Ordered newest-showcased first. No pagination — the showcase is small by intent (the practice doesn't ship 200 projects), and a curator-bounded list doesn't need infinite scroll.",
+      "decisions": [
+        {
+          "decision": "Strip PII at the SQL SELECT, not in the handler",
+          "rationale": "Same defense-in-depth pattern as /api/public/vouches. A future handler refactor that accidentally returns the full row should STILL not leak PII because the projection doesn't include those columns. TypeScript bound to ShowcaseRow catches anyone reaching for email.",
+          "recommendation": "When adding a new public field, add it to the SELECT explicitly. When adding a private field to sessions, NEVER add it here."
+        },
+        {
+          "decision": "No pagination",
+          "rationale": "The showcase is small (~10-30 entries over 3 years per the root feature.json's projections). Pagination adds client + server complexity for zero benefit at this scale. If the list ever grows past ~100, the client can trim for display; if it grows past ~500, revisit.",
+          "recommendation": "Don't pre-emptively paginate. The current trade-off (one round-trip for the full list) is fine."
+        }
+      ],
+      "successCriteria": "- An anon visitor can fetch the showcase list with no auth\n- The response carries zero PII (email, intake_json, message body) regardless of session row state\n- Pinned current-build advancement is included when set; null when not\n- Soft-deleted sessions never appear\n- Ordering is newest-showcased-first",
+      "knownLimitations": [
+        "Caching: no Cache-Control header set; CF Pages handles edge caching via its own rules. If a future need wants tighter cache control, set headers here",
+        "iframe sandbox attributes on the current_build URL are decided by the consumer (Home.tsx, Projects.tsx) — see AUDIT P1.9 for the deferred tighten-the-sandbox work",
+        "No tenant scoping in the query: tenant resolution happens in _middleware.ts before the handler; the session rows are already tenant-scoped via FK"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-12",
+          "reason": "Endpoint shipped with the PII-stripped projection."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Projection-strip + no-pagination patterns stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-064",
+      "title": "GET /api/public/sessions/:id/advancements — unauth share-link feed",
+      "status": "frozen",
+      "domain": "marc-portal/iterative",
+      "tags": [
+        "iterative",
+        "unauth",
+        "url-as-capability",
+        "default-private"
+      ],
+      "componentFile": "functions/api/public/sessions/[id]/advancements.ts",
+      "liveUrl": null,
+      "problem": "The /share/:id page is the URL-as-capability share view — anyone holding a session id can see the advancements admin flagged allowedForPublic for that session. This endpoint is its data-side: load the session, then return ONLY advancements with allowed_for_public=1. Session ids are 72-bit base64url tokens; guessing one is astronomically unlikely so the URL IS the access control. Default-private means nothing leaks unless admin explicitly opts in per-advancement.",
+      "analysis": "GET only. Validates the session id param; loadSession() returns the session or null. If session doesn't exist OR deleted_at IS NOT NULL, return 404 — consistent with /api/public/sessions/[id]/advancements returning 404 for soft-deleted sessions, preserves zero-knowledge about whether a given id corresponds to anything real. If session exists, listAdvancementsForSession() returns ordered advancements; the handler filters to those with allowed_for_public=1 (parseFlags on the flags JSON). Returns the public projection of each advancement: id, label, body, date, iframe_path, build_url, commit_sha. No internal flags, no admin notes.",
+      "decisions": [
+        {
+          "decision": "404 the recipient if no public advancements exist — don't differentiate 'no such session' from 'session has nothing public'",
+          "rationale": "Differentiating would leak the existence of sessions whose admin hasn't flagged anything public yet. A consistent 404 across both cases preserves zero-knowledge about session existence to anyone holding only an id. Mirrors /share/:id's expectations.",
+          "recommendation": "Keep the 404 generic."
+        },
+        {
+          "decision": "Default-private: no flag means no leak",
+          "rationale": "Every new advancement lands with allowed_for_public=0 unless admin explicitly opts in. This is the safer default — admin should ACT to publish, not REMEMBER to unpublish. Combined with the session-id-as-capability model, the only way an advancement reaches the public is admin's explicit per-row flag.",
+          "recommendation": "When adding new advancement fields, default-deny them too. A new field that's public by default would be a regression in this model."
+        }
+      ],
+      "successCriteria": "- Anon visitor with the session id sees only allowed_for_public=1 advancements\n- Internal advancements (work-in-progress notes admin hasn't published) NEVER leak\n- 404 is uniform across 'no such session' and 'session has zero public advancements'\n- Soft-deleted sessions return 404\n- Ordering matches the admin-side ordering",
+      "knownLimitations": [
+        "Session id is the only access control; a leaked URL is unrevokable short of clearing every advancement's allowed_for_public flag",
+        "No rate limit on this endpoint — public-by-design with high cost per request would be a vector; advancement reads are cheap so not a concern today",
+        "Iframe sandbox tightening (AUDIT P1.9 deferred) affects the consumer page, not this handler — it just returns URLs"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-12",
+          "reason": "Endpoint shipped paired with the /share/:id page; URL-as-capability + default-private flag model live."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. 404-uniformity and default-private behaviors stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-063",
+      "title": "GET /api/public/vouches — unauth approved-vouches feed",
+      "status": "frozen",
+      "domain": "marc-portal/showcase",
+      "tags": [
+        "showcase",
+        "unauth",
+        "projection-strip",
+        "session-filter"
+      ],
+      "componentFile": "functions/api/public/vouches.ts",
+      "liveUrl": null,
+      "problem": "The home-page social-proof block and the dedicated /vouches page both render approved testimonials. The vouches table also holds author_email for moderator follow-up; the public endpoint must strip that field at the projection level. Optional ?sessionId filter lets /share/:id surface vouches scoped to that specific project.",
+      "analysis": "GET only. SELECT FROM vouches WHERE status = 'approved' AND deleted_at IS NULL ORDER BY created_at DESC. ?sessionId=X filter adds AND session_id = ?. toPublicVouchRow (functions/_lib/vouches.ts) projects each row to PublicVouchRow — no author_email. Volume is bounded by moderation throughput (~50/year ceiling at this practice's scale), so no pagination. Public consumers: home, /vouches, /share/:id with session filter.",
+      "decisions": [
+        {
+          "decision": "Centralize projection in _lib/vouches.ts (toPublicVouchRow)",
+          "rationale": "Two consumers (this endpoint + future endpoints that surface vouches) need the same projection. Centralizing the function + the PublicVouchRow type means there's one place to change if the public shape needs adjustment, and the type system catches any new consumer trying to surface a private field.",
+          "recommendation": "Don't inline a projection in handlers. If a new public surface needs a different cut, add a sibling function in _lib/vouches.ts; keep them all in one file."
+        },
+        {
+          "decision": "?sessionId filter is optional; default returns all approved",
+          "rationale": "/share/:id needs scoped vouches (only this project's). The home + /vouches pages want everything. One endpoint with an optional filter is simpler than two endpoints with different defaults.",
+          "recommendation": "Don't add other filters (by relationship, by date range) here — those are display-time concerns. The client trims."
+        }
+      ],
+      "successCriteria": "- Anon visitor gets approved + not-deleted vouches\n- author_email never appears in the response (projection strip)\n- ?sessionId=X scopes to that session's vouches\n- Soft-deleted vouches and pending/rejected vouches are excluded\n- Newest-first ordering",
+      "knownLimitations": [
+        "No pagination — fine at current scale (single-curator moderation queue)",
+        "?sessionId is a string filter, not validated for format here; non-existent sessions return an empty array which is the correct UX (no leak)",
+        "Vouches table also holds anti-spam metadata (IP, rate-limit hits) that's intentionally not in PublicVouchRow"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-18",
+          "reason": "Endpoint shipped with the PII-stripped projection + optional sessionId filter."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Projection contract stable."
         }
       ],
       "lastTransitionDate": "2026-05-23"
@@ -2122,6 +3622,105 @@
       "lastTransitionDate": "2026-05-23"
     },
     {
+      "featureKey": "feat-2026-066",
+      "title": "PATCH /api/tenant/theme — operator-only theme JSON edits",
+      "status": "frozen",
+      "domain": "marc-portal/infrastructure",
+      "tags": [
+        "infrastructure",
+        "tenant",
+        "operator-only",
+        "csrf-protected",
+        "key-allowlist"
+      ],
+      "componentFile": "functions/api/tenant/theme.ts",
+      "liveUrl": null,
+      "problem": "Future white-labelled tenants need a way to set their own theme tokens (accent colour, eyebrow text, etc.) without a code change. PATCH /api/tenant/theme accepts a partial theme JSON, validates per-key length limits, and writes it back. The render path (_lib/tenant.ts themeToCssVars) sanitizes values into CSS custom properties so an XSS via theme is bounded — but the endpoint still rejects breakouts at the input boundary. Operator-or-owner-only.",
+      "analysis": "PATCH only. Auth: requireTenant(ctx) + currentEmail() must match tenant.owner_email OR isAdmin. CSRF gated by middleware. Body { theme: Partial<ThemeJSON> }. Validation: KEY_LIMITS is an exhaustive allowlist of ThemeJSON keys → max char length per value. Unknown keys are SILENTLY REJECTED (not 400) so a partial schema mismatch between client and server doesn't fail noisy. Each value is also string-typed before storage. The full updated theme is UPSERTed; on success returns the new theme back.",
+      "decisions": [
+        {
+          "decision": "Silent reject of unknown keys instead of 400",
+          "rationale": "A future client could send keys the server doesn't yet know about (during a deploy window). Returning 400 would break the client until the deploy completes; silently dropping unknown keys preserves the known-key writes. The trade-off is debuggability: a misspelled key from a real user is silently ignored. Mitigation: the operator UI mirrors KEY_LIMITS so misspellings are caught client-side.",
+          "recommendation": "Don't 400 on unknown keys. If a future need wants strict-schema enforcement, add it as opt-in (?strict=true) so legacy clients don't break."
+        },
+        {
+          "decision": "Per-key max length, not a per-row size cap",
+          "rationale": "Theme JSON is a structured record, not free text. Each key has a real-world limit (e.g. CSS color value is short, eyebrow text is a phrase). Per-key limits catch a hostile input where one field is enormous and another is normal-sized.",
+          "recommendation": "When adding a new theme key, set its limit thoughtfully — too high invites abuse, too low is annoying."
+        }
+      ],
+      "successCriteria": "- Only operator OR tenant.owner_email can PATCH\n- CSRF gate enforced via middleware\n- Per-key length limits reject oversized values\n- Unknown keys are silently dropped, not 400\n- The render-side (themeToCssVars) sanitizes for CSS injection\n- Response carries the full updated theme",
+      "knownLimitations": [
+        "Silent unknown-key drop means a typo is hard to diagnose; the operator UI mitigates",
+        "themeToCssVars sanitization is the load-bearing render-time guard — never bypass it when surfacing theme values into HTML",
+        "Theme history isn't versioned; an overwrite is permanent. Acceptable for current single-operator practice",
+        "No way to revert via this endpoint to a 'default theme' state explicitly — submit the default values yourself"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-10",
+          "reason": "Endpoint shipped with KEY_LIMITS allowlist + operator-or-owner gate."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Validation + write-back pattern stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-065",
+      "title": "GET /api/tenant — public tenant identity for the SPA",
+      "status": "frozen",
+      "domain": "marc-portal/infrastructure",
+      "tags": [
+        "infrastructure",
+        "tenant",
+        "unauth",
+        "spa-bootstrap"
+      ],
+      "componentFile": "functions/api/tenant.ts",
+      "liveUrl": null,
+      "problem": "The SPA needs to know WHO the current host is — the tenant's display name, theme tokens, owner email, and whether the signed-in viewer is an operator. Resolving by Host happens centrally in _middleware.ts; this endpoint just returns that result as a JSON payload the SPA can read on mount. One endpoint serves both the marc-portal canonical host and any future white-labelled tenant.",
+      "analysis": "GET only. ctx.data.tenant is attached by the middleware; this handler returns a public projection (TenantPublic) — id, display name, theme JSON, owner_email (for sign-in UX), operator role determination. If the request reached this handler, the tenant exists (middleware would have 404'd unknown hosts already). For the legacy pre-migration window, ctx.data.tenant may be null; the handler returns a default 'unknown tenant' shape that the SPA can render gracefully.",
+      "decisions": [
+        {
+          "decision": "Public projection (TenantPublic) — no secrets",
+          "rationale": "The SPA needs the public-facing fields. Anything secret (Stripe keys, internal flags) lives only in env or in tenant rows the SPA never sees. TenantPublic is the contract; new fields earn their place via this projection only.",
+          "recommendation": "When adding tenant fields, default them to private. Surface only if the SPA genuinely needs them."
+        },
+        {
+          "decision": "Return a default shape when middleware passed through tenantless",
+          "rationale": "Pre-migration safety net. The middleware lets requests flow through if the tenant_domains table doesn't exist yet; this handler's response stays usable instead of 500'ing. Once 0002 is universally applied this branch is dead but harmless.",
+          "recommendation": "Don't remove the null-branch. It's the safety net for the same reason the middleware's branch exists."
+        }
+      ],
+      "successCriteria": "- The SPA can fetch tenant identity on mount in one request\n- Unknown hosts never reach this handler (middleware 404s first)\n- Pre-migration tenantless requests get a usable default shape\n- TenantPublic projection never carries secrets\n- A signed-in operator gets their role flag set in the response",
+      "knownLimitations": [
+        "No caching at this handler; CF Pages edge caching handles it. SPA also caches via useTenant() context",
+        "TenantPublic shape evolves carefully — any consumer in the SPA that uses a field must check for its presence (TS optional) to handle older deploys"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-09",
+          "reason": "Endpoint shipped with TenantPublic projection."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Public projection contract stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
       "featureKey": "feat-2026-061",
       "title": "POST /api/vouches — anonymous vouch submission, IP- and email-rate-limited",
       "status": "frozen",
@@ -2180,6 +3779,219 @@
           "to": "frozen",
           "date": "2026-05-23",
           "reason": "Code-first doc co-located. Open submission + tight rate limits + URL protocol check all stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-071",
+      "title": "GET /og/certificate/:id — auth-gated handoff certificate PNG",
+      "status": "frozen",
+      "domain": "marc-portal/handoff",
+      "tags": [
+        "handoff",
+        "auth-gated",
+        "workers-og",
+        "keepsake",
+        "text-only"
+      ],
+      "componentFile": "functions/og/certificate/[id].ts",
+      "liveUrl": null,
+      "problem": "A shipped session deserves a keepsake — the 'certificat de passation' the visitor (or buyer) can download and keep as the artifact of ownership. Renders project + date + transferred-assets summary + the v1.0-handoff tag on a 1000×1400 portrait PNG. Auth-gated (unlike the share OG card) because the certificate carries the visitor's name; only the session owner or admin may fetch it. Deliberately text-only to keep satori's CPU cost well clear of the worker's CPU ceiling.",
+      "analysis": "GET only. Auth: currentEmail() + canAccessSession() (visitor self OR admin). loadSession; if missing or not the visitor's, 404. Render via workers-og's ImageResponse at 1000×1400 portrait (suited for printing on letter/A4). Text-only by design — no embedded images, no decorative SVG paths — so satori's render stays fast and CPU-cheap. The handoff date is from the session row's shipped_at; the assets line lists what was transferred (URL, GitHub repo, 1Password vault). ?lang=en swaps copy; default is FR. ?debug=1 returns the resolved fields as JSON. captureWorkerException wraps render failures; no static fallback here (the certificate is personalised — a generic substitute would be misleading), so a render failure returns 500 with a useful error body.",
+      "decisions": [
+        {
+          "decision": "Auth-gated; no public certificate URL",
+          "rationale": "The certificate carries the visitor's name and transfer details. A public URL would let anyone with the session id download personal data. Same authorisation as the session itself — visitor self OR admin.",
+          "recommendation": "Don't make this public. If a future need wants a visitor-shareable proof, generate a different artifact (e.g. a redacted version with only the project URL)."
+        },
+        {
+          "decision": "Text-only render, no embedded images",
+          "rationale": "satori on CF Workers has a tight CPU budget — complex layouts with image rendering trigger the 1102 error (CPU exceeded). A text-only layout renders well within budget; the certificate looks professional without imagery (typography does the visual work).",
+          "recommendation": "Don't add embedded images. If a future need wants a logo, evaluate satori's actual CPU cost with the change; the worker CPU limit is a hard ceiling, not a recommendation."
+        },
+        {
+          "decision": "500 on render failure, NOT static fallback",
+          "rationale": "The share OG card falls back to a static image because a 'preview is generic' is acceptable. A handoff certificate is personalised — a generic substitute would be misleading and undermine the keepsake value. A 500 with a clear error body lets the UI render 'certificate temporarily unavailable, retry' instead of handing the visitor a wrong document.",
+          "recommendation": "Keep the 500-not-fallback. If failure rate is high, fix the root cause (font, layout); never serve the wrong certificate."
+        }
+      ],
+      "successCriteria": "- A signed-in visitor (or admin) can download their certificate at /og/certificate/<id>\n- Anon visitors and other-session visitors get 403 (or 404 to preserve session-existence privacy)\n- Render is text-only, well within satori's CF Worker CPU budget\n- ?lang=en swaps copy\n- ?debug=1 returns resolved fields\n- Render failure returns 500 with a useful error, NOT a generic fallback",
+      "knownLimitations": [
+        "No static fallback by design; a transient render failure shows 500 to the visitor",
+        "Text-only means no logo on the certificate; if branding ever needs visual marks, evaluate satori CPU carefully",
+        "Worker CPU limit (50ms typical) is the hard ceiling; complex content additions could trip 1102 errors. Test render time after layout changes",
+        "Portrait orientation (1000×1400) is good for letter/A4 print but unusual for social previews — that's fine, this isn't a social card",
+        "The visitor's name comes from session metadata; a session without a name renders blank in that field"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-20",
+          "reason": "Endpoint shipped with auth gate + text-only certificate layout + bilingual support."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Auth gate + no-fallback decision stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-070",
+      "title": "GET /og/home — dynamic OG card for the home page",
+      "status": "frozen",
+      "domain": "marc-portal/og",
+      "tags": [
+        "og",
+        "workers-og",
+        "editorial",
+        "live-stats",
+        "graceful-fallback"
+      ],
+      "componentFile": "functions/og/home.ts",
+      "liveUrl": null,
+      "problem": "The home page's social unfurl should reflect the practice's actual state — shipped count, currently-active project's title — not a static logo. /og/home is the dynamic version: editorial layout (cream paper, mono eyebrow, trio headline, sage accent), live stats footer pulled from D1 at request time. FR by default, ?lang=en for the English variant.",
+      "analysis": "GET only, unauth. Pulls two live numbers: shippedCount (COUNT sessions WHERE status='shipped') and activeTitle (the showcase_title of the currently-active session if any). Renders via workers-og's ImageResponse at 1200×630 PNG. ?lang=en swaps the dictionary; default is FR. Same render-with-fallback pattern as /og/share/:id — anything broken falls back to /og-image.png (FR) or /og-image-en.png (EN). ?debug=1 returns JSON of resolved fields; ?debug=render returns satori's actual error message on a failed render (deeper diagnostics than debug=1).",
+      "decisions": [
+        {
+          "decision": "Pull live stats at render time, not from a precomputed manifest",
+          "rationale": "Pre-rendering the home OG card means recomputing every shipped-count change; the practice ships rarely but every ship would invalidate the cache. Pulling at request time + caching at the edge per unique URL is cheaper to maintain and stays current. The two D1 queries (count + active title) are cheap.",
+          "recommendation": "Don't precompute. If a future need wants the active project's iframe preview composited in (image work), revisit — but the current 'numbers footer' is exactly the right amount of liveness."
+        },
+        {
+          "decision": "Two debug modes (?debug=1 + ?debug=render)",
+          "rationale": "When the OG endpoint is broken, you need to know WHICH layer broke. ?debug=1 (resolved fields) verifies the handler is reached and the D1 read worked. ?debug=render captures satori's actual error message — needed when the field load works but the render fails (font missing, layout breaks satori's parser). Two modes is cheap; one composite mode would conflate the layers.",
+          "recommendation": "Mirror these in any new OG endpoint. RUNBOOK § OG triage assumes their presence."
+        }
+      ],
+      "successCriteria": "- A scraper requesting /og/home gets the FR editorial card by default\n- ?lang=en serves the EN editorial card\n- Live shippedCount + activeTitle are reflected in the footer\n- Render exceptions fall back to /og-image.png or /og-image-en.png\n- ?debug=1 and ?debug=render both return useful diagnostics",
+      "knownLimitations": [
+        "Two distinct languages means two cache entries (FR + EN); not a problem at this scale",
+        "activeTitle uses showcase_title; if a session is active but not showcased, the footer renders generic copy",
+        "The editorial layout is hand-built in satori JSX inside the handler; complex layout changes require touching this file"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-15",
+          "reason": "Endpoint shipped with editorial layout + live stats footer + bilingual support."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Live-stats + fallback pattern stable."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-072",
+      "title": "GET /og/ping — diagnostic probe for the OG renderer",
+      "status": "frozen",
+      "domain": "marc-portal/og",
+      "tags": [
+        "og",
+        "diagnostic",
+        "uptime",
+        "unauth"
+      ],
+      "componentFile": "functions/og/ping.ts",
+      "liveUrl": null,
+      "problem": "When /og/share/:id or /og/home misbehaves, the FIRST question is 'is the functions/og/ tree even being picked up at deploy?'. A 404 there could mean Pages dropped the bundle, the bundle size exceeded the limit, or _routes.json drifted. /og/ping is the answer: plain-text 'og-ok' if reachable, JSON probe of font asset state if requested. Smaller, faster, and disjoint from the satori render path.",
+      "analysis": "GET only. Default returns text/plain 'og-ok' with cache-control no-store (so a probe always hits the function). ?fonts=1 returns JSON: a per-font load result (ok + size + content-type per file in functions/_lib/og-fonts.ts's probe list). Returns 200 if all fonts load, 503 if any failed. Used during deploy verification and RUNBOOK § OG triage to isolate 'the function is reachable' from 'the render pipeline works'.",
+      "decisions": [
+        {
+          "decision": "Plain text 'og-ok' as the default response, not JSON",
+          "rationale": "Plain text is the smallest possible signal that the function is alive. JSON or HTML would imply we're testing something else (parser, framework). The ASCII string is unambiguous — a curl pipe to grep just works.",
+          "recommendation": "Don't elaborate the default response. If new diagnostics are needed, add another ?flag mode."
+        },
+        {
+          "decision": "Separate ?fonts=1 mode, not always-on",
+          "rationale": "Font probe loads every TTF/OTF, which takes ~50ms cold. Doing it on every /og/ping would slow down the basic reachability check. Opt-in via the query param keeps the basic probe instant and surfaces detailed font state only when asked.",
+          "recommendation": "When adding another probe mode (e.g. ?cache=1), follow the same opt-in pattern."
+        }
+      ],
+      "successCriteria": "- /og/ping returns 200 + 'og-ok' as plain text\n- /og/ping?fonts=1 returns 200 + JSON when all fonts load; 503 when any fail\n- Cache-control is no-store so probes always reach the function\n- Disjoint from the satori render path — works even when satori is broken",
+      "knownLimitations": [
+        "?fonts=1 loads all fonts; ~50ms cold. Not suitable for high-frequency uptime monitoring",
+        "Doesn't probe the satori render itself — that's intentional, would require rendering a test image which has its own failure surface",
+        "If the worker is broken before reaching this handler (e.g. cold-start crash), the response will be CF's generic 5xx page rather than 'og-ok'; that's still useful signal"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-14",
+          "reason": "Diagnostic endpoint shipped alongside the OG renderer."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Two-mode probe stable; RUNBOOK depends on it."
+        }
+      ],
+      "lastTransitionDate": "2026-05-23"
+    },
+    {
+      "featureKey": "feat-2026-069",
+      "title": "GET /og/share/:id — dynamic OG card for the share-link surface",
+      "status": "frozen",
+      "domain": "marc-portal/og",
+      "tags": [
+        "og",
+        "workers-og",
+        "satori",
+        "edge-render",
+        "graceful-fallback"
+      ],
+      "componentFile": "functions/og/share/[id].ts",
+      "liveUrl": null,
+      "problem": "When someone shares a /share/:id URL on Slack/iMessage/LinkedIn/etc, the unfurl preview needs a personalised card — project title, tagline, tier, status — instead of a generic site image. Generated at edge-request time via workers-og (satori + resvg WASM) so the card reflects the live session state without a pre-render step. Falls back to the static /og-image.png if anything in the render path fails — the share URL still works, the preview just isn't personalised.",
+      "analysis": "GET only, unauth. loadSession by :id; if missing or not showcased, fall back to a 302 → /og-image.png. Otherwise: build OgFields { title, tagline, tier, status } from the session row, load fonts via loadOgFonts (functions/_lib/og-fonts.ts), render through workers-og's ImageResponse. PNG output is 1200×630 (the OG spec sweet spot Slack/iMessage prefer over SVG). Aggressive edge caching headers since the underlying showcase title rarely changes. ?debug=1 returns the resolved fields as text/plain JSON — useful for verifying reachability without bootstrapping satori. captureWorkerException on errors so Sentry sees rendering failures; fallback still serves so the visitor experience never breaks.",
+      "decisions": [
+        {
+          "decision": "PNG output, not SVG",
+          "rationale": "Slack and iMessage's OG preview implementations explicitly refuse SVG (Twitter accepts it). PNG works everywhere. The cost is the resvg WASM render step at the edge, which adds ~150ms per cold cache hit; cached responses are instant.",
+          "recommendation": "Don't switch to SVG. If a future fix wants smaller payloads, evaluate WebP — both Slack and iMessage accept it."
+        },
+        {
+          "decision": "Fall back to static /og-image.png on ANY render failure",
+          "rationale": "A failed dynamic OG card shouldn't break the share UX. The static fallback is generic but works; the share URL still resolves to the real /share/:id page. captureWorkerException reports to Sentry so the failure is visible operationally, not silent.",
+          "recommendation": "Keep the fallback. If failures spike, fix the root cause (font loading, satori bug); don't ever 500 to the unfurl scraper."
+        },
+        {
+          "decision": "?debug=1 returns plain text instead of PNG",
+          "rationale": "When debugging an unreachable or misconfigured endpoint, the FIRST thing to verify is 'is the handler reached at all?'. A debug mode that returns the resolved fields as text lets a curl distinguish 'function is firing, just rendering wrong' from 'function never reached'. Same shape mirrored in /og/home and /og/certificate/:id.",
+          "recommendation": "Don't remove the debug mode. It's how RUNBOOK § OG triage starts."
+        }
+      ],
+      "successCriteria": "- A scraper requesting /og/share/<live-id> gets a personalised PNG within ~150ms cold\n- A missing/unshowcased session falls back to the static /og-image.png\n- ?debug=1 returns the resolved fields as JSON\n- Render exceptions are captured to Sentry without breaking the preview UX\n- PNG dimensions are 1200×630",
+      "knownLimitations": [
+        "satori font support is limited; new font files must go in functions/_lib/og-fonts.ts and be loadable as TTF/OTF",
+        "PNG render adds ~150ms to cold-cache hits; warmed cache is instant",
+        "Fallback to static og-image.png means a broken render is silent to the user; Sentry capture is the only signal",
+        "The id is the session id; a typo in the URL falls back gracefully — no leak of session existence",
+        "Edge cache TTL is set generously; a rapid title change won't propagate immediately to social scrapers"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-14",
+          "reason": "Endpoint shipped with workers-og pipeline + static fallback + debug mode."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Render-with-fallback pattern stable."
         }
       ],
       "lastTransitionDate": "2026-05-23"
@@ -2717,5 +4529,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-23T23:14:19.284Z"
+  "generatedAt": "2026-05-24T00:22:31.704Z"
 }

@@ -1,0 +1,67 @@
+{
+  "featureKey": "feat-2026-088",
+  "title": "How it works — home-page primer with drill-card to /parcours",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/home-section",
+  "componentFile": "src/components/HowItWorks.tsx",
+  "problem": "Visitors arriving at the home page need a fast 'how does this work?' answer before they're willing to read pricing or send an intake. HowItWorks is the home-page primer — short, no specifics about workflow, just the practice's shape. A HomeDrillCard at the bottom links to /parcours (the full 12-step Journey page) for visitors who want more.",
+  "tags": ["home-section", "primer", "drill-card", "neutral-colour"],
+  "analysis": "Short copy block + a HomeDrillCard pointing at /parcours. Feature colour is intentionally NEUTRAL (HOME_SECTION_FEATURE['how'] is undefined) because 'how it works' crosses every feature — it'd be wrong to dot it with one feature's colour. The neutral hollow dot is rendered via FeatureDot's undefined-handling. Copy lives in DICT[lang].how.",
+  "decisions": [
+    {
+      "decision": "Neutral feature colour (undefined), not a specific feature",
+      "rationale": "How-it-works describes the WHOLE practice; pinning it to one feature would mislead the visitor about which colour represents what. The neutral hollow dot is the deliberate visual signal that this section bridges every feature.",
+      "recommendation": "When adding a new home section, decide on its feature deliberately. Most sections should pick one; meta-explainer sections should pick undefined.",
+      "date": "2026-05-07"
+    },
+    {
+      "decision": "Short primer + drill-card, not a full walkthrough on home",
+      "rationale": "Home page is sequence; each section answers one visitor question. 'How does this work?' gets a short answer here + a deeper read available behind a click. Putting the full 12-step walkthrough on home would bury other sections.",
+      "recommendation": "Keep the primer short. If new content emerges, add it to /parcours, not here.",
+      "date": "2026-05-07"
+    }
+  ],
+  "successCriteria": "- Renders short primer + drill-card to /parcours\n- Feature dot is neutral (undefined feature)\n- Bilingual at full parity",
+  "implementation": "src/components/HowItWorks.tsx — DICT[lang].how. HomeDrillCard component renders the link with the right chrome. cssVars helper if any per-card colours are needed.",
+  "userGuide": "Edit copy via DICT.fr.how / DICT.en.how. Drill-card target is hardcoded; if /parcours ever moves, update here too.",
+  "knownLimitations": [
+    "Primer copy is hardcoded; if the practice's shape changes, edit DICT",
+    "Drill-card style is shared with FeaturedProjects/Testimonials' HomeDrillCard; restyle there to change here"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-07",
+      "reason": "Component shipped with primer + drill-card."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Neutral-colour decision stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P4 component sweep."
+    }
+  ],
+  "annotations": []
+}

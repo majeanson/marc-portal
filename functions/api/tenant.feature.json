@@ -1,0 +1,67 @@
+{
+  "featureKey": "feat-2026-065",
+  "title": "GET /api/tenant — public tenant identity for the SPA",
+  "status": "frozen",
+  "schemaVersion": 1,
+  "domain": "marc-portal/infrastructure",
+  "componentFile": "functions/api/tenant.ts",
+  "problem": "The SPA needs to know WHO the current host is — the tenant's display name, theme tokens, owner email, and whether the signed-in viewer is an operator. Resolving by Host happens centrally in _middleware.ts; this endpoint just returns that result as a JSON payload the SPA can read on mount. One endpoint serves both the marc-portal canonical host and any future white-labelled tenant.",
+  "tags": ["infrastructure", "tenant", "unauth", "spa-bootstrap"],
+  "analysis": "GET only. ctx.data.tenant is attached by the middleware; this handler returns a public projection (TenantPublic) — id, display name, theme JSON, owner_email (for sign-in UX), operator role determination. If the request reached this handler, the tenant exists (middleware would have 404'd unknown hosts already). For the legacy pre-migration window, ctx.data.tenant may be null; the handler returns a default 'unknown tenant' shape that the SPA can render gracefully.",
+  "decisions": [
+    {
+      "decision": "Public projection (TenantPublic) — no secrets",
+      "rationale": "The SPA needs the public-facing fields. Anything secret (Stripe keys, internal flags) lives only in env or in tenant rows the SPA never sees. TenantPublic is the contract; new fields earn their place via this projection only.",
+      "recommendation": "When adding tenant fields, default them to private. Surface only if the SPA genuinely needs them.",
+      "date": "2026-05-09"
+    },
+    {
+      "decision": "Return a default shape when middleware passed through tenantless",
+      "rationale": "Pre-migration safety net. The middleware lets requests flow through if the tenant_domains table doesn't exist yet; this handler's response stays usable instead of 500'ing. Once 0002 is universally applied this branch is dead but harmless.",
+      "recommendation": "Don't remove the null-branch. It's the safety net for the same reason the middleware's branch exists.",
+      "date": "2026-05-09"
+    }
+  ],
+  "successCriteria": "- The SPA can fetch tenant identity on mount in one request\n- Unknown hosts never reach this handler (middleware 404s first)\n- Pre-migration tenantless requests get a usable default shape\n- TenantPublic projection never carries secrets\n- A signed-in operator gets their role flag set in the response",
+  "implementation": "functions/api/tenant.ts — single onRequestGet. Reads ctx.data.tenant; projects to TenantPublic. Determines operator role from email match + ADMIN_EMAILS env or tenant.owner_email match. No D1 hit here — middleware did the resolution.",
+  "userGuide": "Consumed by src/lib/tenantContext.tsx on mount. To preview: GET http://localhost:8788/api/tenant — Host header determines what's returned. To add a tenant for testing locally: insert into tenant_domains.",
+  "knownLimitations": [
+    "No caching at this handler; CF Pages edge caching handles it. SPA also caches via useTenant() context",
+    "TenantPublic shape evolves carefully — any consumer in the SPA that uses a field must check for its presence (TS optional) to handle older deploys"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-09",
+      "reason": "Endpoint shipped with TenantPublic projection."
+    },
+    {
+      "from": "active",
+      "to": "frozen",
+      "date": "2026-05-23",
+      "reason": "Code-first doc co-located. Public projection contract stable."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-23",
+  "revisions": [
+    {
+      "date": "2026-05-23",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — P3 public-API sweep."
+    }
+  ],
+  "annotations": []
+}
