@@ -6,12 +6,7 @@
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/About.tsx",
   "problem": "The home page sells a HUMAN solo Québécois dev — the visitor needs to see who they're working with. About is the home-page introduction block: portrait + short bio + GitHub link. Portrait gracefully degrades to text-only if /marc.jpg ever 404s (onError handler hides the figure).",
-  "tags": [
-    "home-section",
-    "about",
-    "portrait",
-    "graceful-degrade"
-  ],
+  "tags": ["home-section", "about", "portrait", "graceful-degrade"],
   "analysis": "Renders DICT[lang].about copy. /marc.jpg is the portrait; <img onError> hides the figure so a 404 doesn't render a broken-image icon. GITHUB_URL is hardcoded. CrossFeatureLink at the bottom routes to /parcours for more depth. Feature colour is HOME_SECTION_FEATURE['about'] = 'meta' (the backstage feature) — about-the-practice is meta-tinted.",
   "decisions": [
     {

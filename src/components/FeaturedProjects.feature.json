@@ -6,13 +6,7 @@
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/FeaturedProjects.tsx",
   "problem": "The most persuasive answer to 'is this a real practice?' is showing shipped work. FeaturedProjects is the home-page strip: top entries from the public showcase, each with a live iframe preview, drilling into /projects for the full gallery. Self-hides when the showcase is empty (early-practice state) so the home page doesn't render a half-built section.",
-  "tags": [
-    "home-section",
-    "showcase",
-    "iframe-preview",
-    "self-hiding",
-    "view-transitions"
-  ],
+  "tags": ["home-section", "showcase", "iframe-preview", "self-hiding", "view-transitions"],
   "analysis": "GET /api/public/projects on mount. Renders the top N as ProjectCardPreview cards — each shows the showcase_title + tagline + an iframe of the current build URL (or a static placeholder if iframe_path is absent). HomeDrillCard at the bottom routes to /projects for the full gallery. useViewTransitionState from react-router-dom enables a smooth view transition into /projects on click. Returns null when the fetch returns zero rows — no empty-state copy, no skeleton; the section just doesn't exist for empty practices.",
   "decisions": [
     {

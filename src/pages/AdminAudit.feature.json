@@ -6,12 +6,7 @@
   "domain": "marc-portal/admin",
   "componentFile": "src/pages/AdminAudit.tsx",
   "problem": "Operator-significant actions (tenant provisioning, theme edits, status freezes, etc.) need a trail. AdminAudit reads /api/admin/audit and renders the audit_log table as a reverse-chronological feed. Read-only — append-only is the contract; nothing here can edit history. Client-side actor + action substring filters help narrow down without server-side date-range queries (deferred — small log size).",
-  "tags": [
-    "admin",
-    "audit-log",
-    "read-only",
-    "client-side-filter"
-  ],
+  "tags": ["admin", "audit-log", "read-only", "client-side-filter"],
   "analysis": "GET /api/admin/audit on mount; returns recent audit_log entries (server-side limit; client paginates if more). Each row has id + ts + actor_email + tenant_id + action string + optional payload JSON. Renders newest first. Two filter inputs: actor substring + action substring; match-count badge updates as user types. Clear-filters button. No edit affordance — history is append-only.",
   "decisions": [
     {

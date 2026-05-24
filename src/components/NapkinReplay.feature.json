@@ -6,13 +6,7 @@
   "domain": "marc-portal/intake",
   "componentFile": "src/components/NapkinReplay.tsx",
   "problem": "An intake's napkin sketch (Excalidraw scene) is most affecting when seen drawn out, not static. NapkinReplay takes a saved scene and replays its elements in order over a fixed total wall-clock window — so a 6-stroke sketch and a 60-stroke sketch both finish in the same time. The total window is hand-tuned; element pacing adapts to fit. Lazy-loads Excalidraw (heavy ~600KB) only when the panel is opened.",
-  "tags": [
-    "intake",
-    "excalidraw",
-    "replay",
-    "lazy-loaded",
-    "fixed-window"
-  ],
+  "tags": ["intake", "excalidraw", "replay", "lazy-loaded", "fixed-window"],
   "analysis": "Props: napkin scene JSON. Lazy-imports SketchCanvas (which itself lazy-imports Excalidraw). Total replay window is a constant; element count drives per-element pacing (totalMs / elementCount = perElement). On mount of the canvas, starts a setInterval that progressively reveals elements via Excalidraw's updateScene API. Pause/resume controls + replay-from-start. Replay runs once by default; user can re-replay.",
   "decisions": [
     {

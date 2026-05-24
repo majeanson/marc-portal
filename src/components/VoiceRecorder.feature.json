@@ -6,13 +6,7 @@
   "domain": "marc-portal/intake",
   "componentFile": "src/components/VoiceRecorder.tsx",
   "problem": "Both the intake form and the session thread want voice-note capture: tradespeople prefer speaking to typing. The two contexts have different consent wording (intake clips are transcribed-and-discarded; session clips are retained) and different confirm-button labels — so the recorder is context-agnostic. Caller supplies the copy; this component only knows how to capture audio, show a preview, and hand the blob back.",
-  "tags": [
-    "intake",
-    "engagement",
-    "mic-capture",
-    "context-agnostic",
-    "shared-component"
-  ],
+  "tags": ["intake", "engagement", "mic-capture", "context-agnostic", "shared-component"],
   "analysis": "MediaRecorder API; navigator.mediaDevices.getUserMedia for stream. State machine: idle → recording → preview → confirmed (or cancelled back to idle). Records to a Blob via MediaRecorder's dataavailable event. Preview offers playback before confirm. onConfirm(blob) handed to caller. Cleanup releases the mic track on unmount or cancel. Permission prompt the FIRST time; subsequent uses skip the prompt on the same origin.",
   "decisions": [
     {

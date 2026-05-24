@@ -6,12 +6,7 @@
   "domain": "marc-portal/admin",
   "componentFile": "functions/api/admin/audit.ts",
   "problem": "AdminAudit needs a feed of recent audit_log entries; this endpoint serves that. Operator-only, returns the most recent entries ordered ts DESC. Tenant-scoped via requireTenant — audit_log is per-tenant so a fleet admin doesn't see another tenant's actions.",
-  "tags": [
-    "admin",
-    "audit-log",
-    "operator-gated",
-    "tenant-scoped"
-  ],
+  "tags": ["admin", "audit-log", "operator-gated", "tenant-scoped"],
   "analysis": "GET only. currentEmail → unauthorized if missing. isAdmin → forbidden if not operator. requireTenant → ctx.data.tenant or 500. SELECT FROM audit_log WHERE tenant_id = ? ORDER BY ts DESC LIMIT N (N defined at top of file, currently 200). Returns array of AuditRow. No filter params today; AdminAudit does the filtering client-side.",
   "decisions": [
     {

@@ -6,13 +6,7 @@
   "domain": "marc-portal/handoff",
   "componentFile": "functions/og/certificate/[id].ts",
   "problem": "A shipped session deserves a keepsake — the 'certificat de passation' the visitor (or buyer) can download and keep as the artifact of ownership. Renders project + date + transferred-assets summary + the v1.0-handoff tag on a 1000×1400 portrait PNG. Auth-gated (unlike the share OG card) because the certificate carries the visitor's name; only the session owner or admin may fetch it. Deliberately text-only to keep satori's CPU cost well clear of the worker's CPU ceiling.",
-  "tags": [
-    "handoff",
-    "auth-gated",
-    "workers-og",
-    "keepsake",
-    "text-only"
-  ],
+  "tags": ["handoff", "auth-gated", "workers-og", "keepsake", "text-only"],
   "analysis": "GET only. Auth: currentEmail() + canAccessSession() (visitor self OR admin). loadSession; if missing or not the visitor's, 404. Render via workers-og's ImageResponse at 1000×1400 portrait (suited for printing on letter/A4). Text-only by design — no embedded images, no decorative SVG paths — so satori's render stays fast and CPU-cheap. The handoff date is from the session row's shipped_at; the assets line lists what was transferred (URL, GitHub repo, 1Password vault). ?lang=en swaps copy; default is FR. ?debug=1 returns the resolved fields as JSON. captureWorkerException wraps render failures; no static fallback here (the certificate is personalised — a generic substitute would be misleading), so a render failure returns 500 with a useful error body.",
   "decisions": [
     {

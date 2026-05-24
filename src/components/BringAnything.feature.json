@@ -6,11 +6,7 @@
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/BringAnything.tsx",
   "problem": "The VibeFilter section ('je fais / je fais pas') answers the 'is this for me?' question with explicit do/don't lists. A side effect: a hesitant visitor who sees an item they're unsure about on the 'don't' side may self-filter out incorrectly. BringAnything sits IMMEDIATELY after VibeFilter to neutralize that self-filter — Marc's framing is 'I want every idea to come in; the triage is my job, not the visitor's.' The examples are aspirational, not historical, since the practice hasn't built a long history yet.",
-  "tags": [
-    "home-section",
-    "anti-self-filter",
-    "intake-feature"
-  ],
+  "tags": ["home-section", "anti-self-filter", "intake-feature"],
   "analysis": "DICT[lang].bringAnything content block. Sits right after VibeFilter in Home.tsx render order, by design — its job is to undo the over-filter the vibe section can cause. Examples are aspirational ('things I'd happily take') not 'projects I have shipped'. Feature-coloured as 'intake' (HOME_SECTION_FEATURE['bring-anything']) since it pushes the visitor toward the intake form.",
   "decisions": [
     {

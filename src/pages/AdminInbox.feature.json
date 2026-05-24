@@ -6,12 +6,7 @@
   "domain": "marc-portal/admin",
   "componentFile": "src/pages/AdminInbox.tsx",
   "problem": "Marc needs a single page that lists every session (every status, every visitor) sorted by what needs attention first. AdminInbox is that. Reads /api/sessions (admin scope), groups by status, sorts within groups by SLA pressure (oldest triage at the top), and surfaces enough metadata per row to triage without opening each session. Clicking a row navigates to /admin/inbox/:id which is the SessionPage in admin mode.",
-  "tags": [
-    "admin",
-    "inbox",
-    "triage",
-    "sla-pressure"
-  ],
+  "tags": ["admin", "inbox", "triage", "sla-pressure"],
   "analysis": "GET /api/sessions on mount; admin scope returns every non-deleted session. Group client-side by status (triage, active, etc.), sort within each group by SLA pressure (computeSla from src/lib/format.ts — hours since creation vs. the 72h SLA constant). Each row shows: visitor email + first-name, problem type label, status pill, time since creation, SLA badge (green/amber/red). Click → navigate to /admin/inbox/:id which reuses SessionPage in operator mode.",
   "decisions": [
     {

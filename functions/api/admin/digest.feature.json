@@ -6,13 +6,7 @@
   "domain": "marc-portal/admin",
   "componentFile": "functions/api/admin/digest.ts",
   "problem": "Pages Functions don't have scheduled triggers natively. A free external cron (cron-job.org, a CF Workers scheduled trigger in a separate worker) hits this endpoint once a day to compile a digest email: any triage rows over 48h old + any unresolved admin_alerts (Stripe-notification fallbacks from the webhook's maybeNotifyAdmin). Marc's daily operational alarm without paying for a hosted scheduler.",
-  "tags": [
-    "admin",
-    "cron",
-    "digest",
-    "out-of-band-auth",
-    "csrf-exempt"
-  ],
+  "tags": ["admin", "cron", "digest", "out-of-band-auth", "csrf-exempt"],
   "analysis": "POST only. Auth: requires X-Digest-Token header matching env.DIGEST_TOKEN — out-of-band so no human cookie is required (a cron job posts without a browser). CSRF-exempt in middleware. Idempotent — calling twice in the same hour just sends two emails (acceptable; the external cron typically fires once daily). Body: query D1 for triage sessions WHERE updated_at < now() - 48h AND deleted_at IS NULL; query admin_alerts WHERE resolved_at IS NULL. Build the email; send via Resend to primaryAdminEmail (functions/_lib/sessions.ts) in the right lang (getLang(adminEmail)). 200 ok on send, 500 on Resend failure.",
   "decisions": [
     {

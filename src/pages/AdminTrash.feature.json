@@ -6,12 +6,7 @@
   "domain": "marc-portal/admin",
   "componentFile": "src/pages/AdminTrash.tsx",
   "problem": "Sessions soft-delete via DELETE /api/sessions/:id; the row stays in D1 with deleted_at set. AdminTrash is the recovery surface — lists soft-deleted sessions, shows when each was deleted and by whom, and offers a one-click restore. Without this, recovering an accidentally-deleted session would require SQL access.",
-  "tags": [
-    "admin",
-    "soft-delete",
-    "restore",
-    "recovery"
-  ],
+  "tags": ["admin", "soft-delete", "restore", "recovery"],
   "analysis": "GET /api/sessions?deleted=true (admin-only opt-in flag) on mount; returns ONLY rows with deleted_at IS NOT NULL. Each row shows: visitor email, problem type, original status (last value before delete), when deleted, who deleted (self vs admin). Restore button → PATCH /api/sessions/:id with { restore: true } which clears deleted_at and resets status to 'triage' (the safest restoration target — admin decides next move from there).",
   "decisions": [
     {

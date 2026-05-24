@@ -6,13 +6,7 @@
   "domain": "marc-portal/admin",
   "componentFile": "functions/api/admin/test-emails.ts",
   "problem": "The portal sends ~12 distinct email types (magic link, status changes, message notifications, payment confirmations, digest, etc.). Each has its own template, voice, lang variant. Without a fire-everything diagnostic, the operator only sees an email type by actually walking the matching user flow — slow, hard to QA changes, easy to miss a regression. /api/admin/test-emails fires one of every type at the signed-in admin's address with synthetic sample data. Zero production rows read or touched.",
-  "tags": [
-    "admin",
-    "deliverability",
-    "diagnostic",
-    "synthetic-data",
-    "rate-paced"
-  ],
+  "tags": ["admin", "deliverability", "diagnostic", "synthetic-data", "rate-paced"],
   "analysis": "POST only. Operator gate (currentEmail + isAdmin). CSRF enforced by middleware. Iterates a defined list of email types, calls each one with synthetic sample data hardcoded in the handler. Pacing: ~600ms sleep between sends to stay under Resend's 2 req/s free-tier rate. Total: 12 sends × 600ms = ~7s, well under Pages Functions' 30s wall-time budget. Returns 200 { sent: [...types] } on success.",
   "decisions": [
     {

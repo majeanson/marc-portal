@@ -6,12 +6,7 @@
   "domain": "marc-portal/showcase",
   "componentFile": "functions/api/public/projects.ts",
   "problem": "The home-page hero projects strip and the /projects gallery both need a list of admin-curated showcase entries — sessions with showcased_at set, pulling in their pinned current-build advancement for the iframe preview. The data is public by design but pulls from session rows that ALSO contain PII (visitor email, intake content). This handler is the projection that strips PII at the SQL level and returns only what the gallery needs.",
-  "tags": [
-    "showcase",
-    "unauth",
-    "projection-strip",
-    "loi-25-friendly"
-  ],
+  "tags": ["showcase", "unauth", "projection-strip", "loi-25-friendly"],
   "analysis": "GET only. SELECT showcased sessions (showcased_at IS NOT NULL AND deleted_at IS NULL), JOIN their pinned current_build advancement when present. Project to ShowcaseRow: id, showcased_at, showcase_title, showcase_tagline, status, tier, current build_url + iframe_path + commit_sha. No email, no intake_json, no message bodies, no internal advancements. parseFlags is used to read the pinned-current-build flag from the advancement's flags JSON. Ordered newest-showcased first. No pagination — the showcase is small by intent (the practice doesn't ship 200 projects), and a curator-bounded list doesn't need infinite scroll.",
   "decisions": [
     {

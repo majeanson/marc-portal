@@ -6,13 +6,7 @@
   "domain": "marc-portal/showcase",
   "componentFile": "functions/api/meta/stats.ts",
   "problem": "The /meta page grades itself in public: how many features documented, what fraction frozen, what the practice's actual triage SLA hit rate looks like. The static half (feature count, frozen ratio) comes from src/data/lac-features.json at build time; the dynamic half (shipped count, median response hours, SLA compliance) needs live D1 data. This endpoint is that. Aggregate-only — never an email, never a body, just counts and median.",
-  "tags": [
-    "showcase",
-    "scorecard",
-    "aggregate-only",
-    "loi-25-friendly",
-    "unauth"
-  ],
+  "tags": ["showcase", "scorecard", "aggregate-only", "loi-25-friendly", "unauth"],
   "analysis": "GET only. Two queries: (1) COUNT sessions WHERE status='shipped' AND deleted_at IS NULL — the shipped count. (2) SELECT status_history FROM all sessions, parse each for the FIRST 'triage' → 'active' or 'triage' → 'rejected' transition; compute hours from session creation to that transition. Take the median, drop outliers above MAX_PLAUSIBLE_HOURS (24 * 365 = a year, defends against clock-skew or bad data). Returns { shippedCount, medianResponseHours, sampleSize, slaHours }. slaHours is the SLA_HOURS constant (72) that /me/intake copy promises; surfacing it here lets /meta compare the promise to the median.",
   "decisions": [
     {

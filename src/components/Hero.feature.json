@@ -6,13 +6,7 @@
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/Hero.tsx",
   "problem": "The Hero is the home page's magazine cover — the visitor's first paragraph of contact with the practice. It carries the offer headline, a live capacity readout (1 active + 1 in triage = open or paused), a HeroShippedProject card linking to the latest showcased work, and a clock-aware greeting (late-night gets a dry 'encore là?' because most honest traffic happens after 22h). Capacity is fetched from /api/capacity at request time — visitor sees the truth, not a marketing claim.",
-  "tags": [
-    "home-section",
-    "hero",
-    "live-capacity",
-    "clock-aware",
-    "shipped-feed"
-  ],
+  "tags": ["home-section", "hero", "live-capacity", "clock-aware", "shipped-feed"],
   "analysis": "Renders DICT[lang].hero copy. Two live data sources fetched on mount: getCapacityLive (returns the current 1+1 cap state for the badge) and listPublicProjects (top 1 for HeroShippedProject). Clock-aware greeting via pickSalut(lang) — reads visitor's local clock and picks the right greeting (morning / day / evening / late-night). Late-night gets the dry Québécois 'encore là?' which is the anti-AI-tells anchor — no AI would write that line. Feature colour is undefined (Hero crosses every feature).",
   "decisions": [
     {

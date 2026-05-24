@@ -6,13 +6,7 @@
   "domain": "marc-portal/iterative",
   "componentFile": "src/components/TimeTravelScrubber.tsx",
   "problem": "On /share/:id, the recipient should be able to step through a session's build advancements — not just see the latest. TimeTravelScrubber takes an ordered array of public advancements and presents play/pause + step controls + an iframe embedding each step's build URL. Arrow keys step, Space toggles play. ?step=N URL param deep-links to a specific moment, so a shareable URL can point at 'the state right after the napkin sketch landed'.",
-  "tags": [
-    "iterative",
-    "scrubber",
-    "keyboard-nav",
-    "deep-link",
-    "iframe"
-  ],
+  "tags": ["iterative", "scrubber", "keyboard-nav", "deep-link", "iframe"],
   "analysis": "Props: items (array of PublicAdvancementRow). Renders the iframe of the current step's build URL with metadata (label + date + step N of M). Controls: prev/next/play/pause buttons + arrow-key + Space handler. PLAY_INTERVAL_MS = 3500 (per-step pacing on play). STEP_PARAM = 'step' for URL deep-linking; readStepFromUrl clamps to [0, max] so a malformed ?step= falls to a valid index. Replaces idx in the URL via history.replaceState on every change so a shared URL captures the current scrub position. Keyboard handler is window-level and gates on focus-inside-scrubber-root (no global capture). aria-describedby ties a visible mono-pill keyboard hint to the section.",
   "decisions": [
     {

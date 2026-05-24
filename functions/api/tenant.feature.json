@@ -6,12 +6,7 @@
   "domain": "marc-portal/infrastructure",
   "componentFile": "functions/api/tenant.ts",
   "problem": "The SPA needs to know WHO the current host is — the tenant's display name, theme tokens, owner email, and whether the signed-in viewer is an operator. Resolving by Host happens centrally in _middleware.ts; this endpoint just returns that result as a JSON payload the SPA can read on mount. One endpoint serves both the marc-portal canonical host and any future white-labelled tenant.",
-  "tags": [
-    "infrastructure",
-    "tenant",
-    "unauth",
-    "spa-bootstrap"
-  ],
+  "tags": ["infrastructure", "tenant", "unauth", "spa-bootstrap"],
   "analysis": "GET only. ctx.data.tenant is attached by the middleware; this handler returns a public projection (TenantPublic) — id, display name, theme JSON, owner_email (for sign-in UX), operator role determination. If the request reached this handler, the tenant exists (middleware would have 404'd unknown hosts already). For the legacy pre-migration window, ctx.data.tenant may be null; the handler returns a default 'unknown tenant' shape that the SPA can render gracefully.",
   "decisions": [
     {

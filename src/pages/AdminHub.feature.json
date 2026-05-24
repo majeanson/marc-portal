@@ -6,12 +6,7 @@
   "domain": "marc-portal/admin",
   "componentFile": "src/pages/AdminHub.tsx",
   "problem": "An operator hitting /admin needs to see what state the practice is in at a glance — pending triage count, active session, due-soon checks, recent audit activity — and then click through to the right tool. AdminHub is that index page. Mounted as the /admin/index route, it groups every admin surface + external dashboard (Stripe, Resend, CF) into scannable tiles, with live counters where possible. The same grouping definitions feed the /carte map's Admin layer so the two views stay in sync.",
-  "tags": [
-    "admin",
-    "console",
-    "tile-layout",
-    "live-counters"
-  ],
+  "tags": ["admin", "console", "tile-layout", "live-counters"],
   "analysis": "Reads /api/sessions (admin sees all) on mount to compute live counters: pending triage count, active session title + age, custodian past-due count. Tiles are grouped by purpose (Sessions, Vouches, Payments, Observability, External) using HUB_SECTIONS defined in src/lib/admin/hubSections.ts — single source so /carte's Admin layer can render the same grouping. Each tile is a labeled link + optional badge (e.g. red dot for past-due, count for pending queue). External tiles link out to Stripe Dashboard, Resend, CF Pages — not embedded, deliberately, since each surface has its own auth.",
   "decisions": [
     {
