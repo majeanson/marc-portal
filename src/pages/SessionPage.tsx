@@ -35,7 +35,6 @@ import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSche
 import { computeSla, formatDateTime, formatRelativeWindow } from '../lib/format'
 import { markSeen } from '../lib/unread'
 import {
-  attachmentUrl,
   deleteAttachment,
   formatFileSize,
   uploadAttachment,
@@ -45,23 +44,19 @@ import {
 } from '../lib/attachmentsApi'
 import type { ExcalidrawAPI, NapkinScene } from '../lib/napkin'
 import type { VoiceNapkin } from '../lib/intakeMediaApi'
-import { NapkinReplay } from '../components/NapkinReplay'
 import { VoiceRecorder } from '../components/VoiceRecorder'
+import { AttachmentTile } from '../components/session/AttachmentTile'
+import { DeclinePanel } from '../components/session/DeclinePanel'
+import { NapkinArc } from '../components/session/NapkinArc'
+import type { ParsedNapkin } from '../components/session/NapkinSection'
+import { Tier3SplitInput } from '../components/session/Tier3SplitInput'
+import { Tier4AmountInput } from '../components/session/Tier4AmountInput'
 
 // Excalidraw is ~600 KB — the compose-box sketch surface stays behind
 // React.lazy so a thread the visitor never sketches into doesn't pay for it.
 const SketchCanvas = lazy(() =>
   import('../components/SketchCanvas').then((m) => ({ default: m.SketchCanvas })),
 )
-
-interface ParsedNapkin {
-  png: string
-  text: string
-  savedAt: string
-  /** Editable Excalidraw scene, present on intakes submitted after the napkin
-   * was folded into the form. Older sessions only have the flat PNG. */
-  scene?: NapkinScene
-}
 
 interface ParsedIntake {
   type: ProblemType
@@ -907,7 +902,6 @@ export function SessionPage({ lang }: { lang: Lang }) {
                   // (post-save, post-409 reload). Avoids an effect+setState
                   // pattern the lint rule rejects.
                   key={String(session.tier4_amount_cents ?? '')}
-                  lang={lang}
                   copy={t}
                   cents={session.tier4_amount_cents}
                   onSave={onTier4AmountChange}
@@ -915,12 +909,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
               )}
 
               {isAdmin && session.tier === 3 && (
-                <Tier3SplitInput
-                  lang={lang}
-                  copy={t}
-                  split={session.tier3_split}
-                  onSave={onTier3SplitChange}
-                />
+                <Tier3SplitInput copy={t} split={session.tier3_split} onSave={onTier3SplitChange} />
               )}
 
               <SessionWhatsNext session={session} summary={summary} isAdmin={isAdmin} lang={lang} />
@@ -983,7 +972,13 @@ export function SessionPage({ lang }: { lang: Lang }) {
 
             {/* The generous no — a rejected session is not a dead end. */}
             {session.status === 'rejected' && (
-              <DeclinePanel session={session} lang={lang} isAdmin={isAdmin} onSaved={setSession} />
+              <DeclinePanel
+                session={session}
+                lang={lang}
+                copy={t}
+                isAdmin={isAdmin}
+                onSaved={setSession}
+              />
             )}
 
             {/* The napkin as the through-line — pinned high on the session,
@@ -992,6 +987,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
             {parsed?.napkin && (
               <NapkinArc
                 lang={lang}
+                copy={t}
                 napkin={parsed.napkin}
                 session={session}
                 currentBuild={currentBuild}
@@ -1431,508 +1427,6 @@ export function SessionPage({ lang }: { lang: Lang }) {
         </article>
       </main>
       <Footer lang={lang} />
-    </div>
-  )
-}
-
-/**
- * One sketch attachment in a thread. The editable Excalidraw scene is fetched
- * on demand (the ~600 KB canvas chunk + the network round-trip only land when
- * a visitor actually opens it) and rendered through <NapkinReplay>, so a
- * message sketch is pan/zoomable and replays stroke-by-stroke like the intake
- * napkin does.
- */
-function SketchAttachment({
-  att,
-  sessionId,
-  lang,
-}: {
-  att: AttachmentRow
-  sessionId: string
-  lang: Lang
-}) {
-  const tm = DICT[lang].media.thread
-  const [open, setOpen] = useState(false)
-  const [scene, setScene] = useState<NapkinScene | null>(null)
-  const [failed, setFailed] = useState(false)
-
-  const reveal = async () => {
-    setOpen(true)
-    if (scene || failed) return
-    try {
-      const res = await fetch(attachmentUrl(sessionId, att.id), { credentials: 'same-origin' })
-      if (!res.ok) {
-        setFailed(true)
-        return
-      }
-      const json = (await res.json()) as { elements?: unknown }
-      if (json && Array.isArray(json.elements)) setScene({ elements: json.elements })
-      else setFailed(true)
-    } catch {
-      setFailed(true)
-    }
-  }
-
-  return (
-    <li className="thread__attach-tile thread__attach-tile--sketch">
-      <div className="thread__sketch-head">
-        <span className="mono thread__sketch-label">✎ {tm.sketchLabel}</span>
-        <button
-          type="button"
-          className="link-btn mono"
-          onClick={open ? () => setOpen(false) : reveal}
-        >
-          {open ? tm.sketchClose : tm.sketchOpen}
-        </button>
-      </div>
-      {open && scene && <NapkinReplay lang={lang} scene={scene} />}
-      {open && !scene && !failed && (
-        <div className="napkin__loading mono">{DICT[lang].napkin.loadingCanvas}</div>
-      )}
-      {open && failed && <p className="mono thread__transcript-pending">—</p>}
-    </li>
-  )
-}
-
-function AttachmentTile({
-  att,
-  sessionId,
-  lang,
-  openLabel,
-}: {
-  att: AttachmentRow
-  sessionId: string
-  lang: Lang
-  openLabel: string
-}) {
-  const url = attachmentUrl(sessionId, att.id)
-  const tm = DICT[lang].media.thread
-
-  // Voice note — an inline player plus the edge transcript (collapsed; Marc
-  // reads to scan, listens when a session is borderline).
-  if (att.kind === 'voice') {
-    return (
-      <li className="thread__attach-tile thread__attach-tile--voice">
-        <div className="thread__voice">
-          <span className="mono thread__voice-label">🎙 {tm.voiceLabel}</span>
-          {/* No caption track for a visitor-recorded clip — the edge transcript
-              rendered just below is the accessible text equivalent. */}
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          <audio className="thread__voice-player" src={url} controls preload="metadata" />
-        </div>
-        {att.transcript ? (
-          <details className="thread__transcript">
-            <summary className="mono thread__transcript-label">{tm.transcriptLabel}</summary>
-            <p className="thread__transcript-text">{att.transcript}</p>
-          </details>
-        ) : (
-          <p className="mono thread__transcript-pending">{tm.transcriptPending}</p>
-        )}
-      </li>
-    )
-  }
-
-  if (att.kind === 'sketch') {
-    return <SketchAttachment att={att} sessionId={sessionId} lang={lang} />
-  }
-
-  const isImage = att.content_type.startsWith('image/')
-  if (isImage) {
-    return (
-      <li className="thread__attach-tile thread__attach-tile--image">
-        <a href={url} target="_blank" rel="noopener noreferrer" aria-label={att.filename}>
-          <img src={url} alt={att.filename} loading="lazy" />
-        </a>
-        <div className="thread__attach-caption mono">
-          {att.filename} · {formatFileSize(att.size)}
-        </div>
-      </li>
-    )
-  }
-  return (
-    <li className="thread__attach-tile thread__attach-tile--file">
-      <a href={url} target="_blank" rel="noopener noreferrer" download={att.filename}>
-        <span className="thread__attach-icon" aria-hidden="true">
-          ⎙
-        </span>
-        <span className="thread__attach-info">
-          <span className="thread__attach-filename">{att.filename}</span>
-          <span className="mono thread__attach-meta">
-            {att.content_type} · {formatFileSize(att.size)}
-          </span>
-        </span>
-        <span className="mono thread__attach-open">{openLabel} →</span>
-      </a>
-    </li>
-  )
-}
-
-/**
- * Renders the visitor's napkin sketch (if attached at intake time) inside the
- * SessionPage intake panel. The PNG sits at full width — Marc reviews it the
- * same way he'd read the prose. Click "View sketch" to open the PNG full-size
- * in a new tab; right-click → "Save image as…" to download.
- *
- * Intakes submitted after the napkin was folded into the form also carry the
- * editable Excalidraw scene — "Open the interactive sketch" swaps the flat PNG
- * for a pan/zoomable canvas (<NapkinReplay>) that can also play the drawing
- * back stroke by stroke. The ~600 KB Excalidraw chunk only loads on that click.
- */
-function NapkinSection({ lang, napkin }: { lang: Lang; napkin: ParsedNapkin }) {
-  const t = DICT[lang].napkin
-  const hasScene = !!napkin.scene && napkin.scene.elements.length > 0
-  const [sceneOpen, setSceneOpen] = useState(false)
-  return (
-    <div className="session-napkin">
-      <div className="session-napkin__head">
-        <span className="section__eyebrow">{t.eyebrow}</span>
-        <div className="session-napkin__actions">
-          {hasScene && (
-            <button
-              type="button"
-              className="mono session-napkin__toggle"
-              onClick={() => setSceneOpen((open) => !open)}
-            >
-              {sceneOpen ? t.sceneHide : t.sceneOpen}
-            </button>
-          )}
-          <a
-            className="mono session-napkin__open"
-            href={napkin.png}
-            target="_blank"
-            rel="noreferrer"
-            download={`napkin-${napkin.savedAt.slice(0, 10) || 'sketch'}.png`}
-          >
-            {t.pillView} ↗
-          </a>
-        </div>
-      </div>
-      {napkin.text && <p className="session-napkin__caption">{napkin.text}</p>}
-      <div className="session-napkin__frame">
-        {sceneOpen && napkin.scene ? (
-          <NapkinReplay lang={lang} scene={napkin.scene} />
-        ) : (
-          <img
-            src={napkin.png}
-            alt={napkin.text || 'Napkin sketch'}
-            className="session-napkin__img"
-          />
-        )}
-      </div>
-    </div>
-  )
-}
-
-/**
- * The napkin as the through-line. Pinned high on the session so the sketch
- * the visitor arrived with stays present the whole way through. Once the
- * session ships it completes into a from-sketch-to-shipped pairing — the
- * first scribble beside what it became, a small keepsake of the arc.
- */
-function NapkinArc({
-  lang,
-  napkin,
-  session,
-  currentBuild,
-}: {
-  lang: Lang
-  napkin: ParsedNapkin
-  session: SessionRow
-  currentBuild: AdvancementRow | null
-}) {
-  const t = COPY[lang]
-  const shipped = session.status === 'shipped'
-  const buildHref = currentBuild?.build_url
-    ? `${currentBuild.build_url}${currentBuild.iframe_path ?? ''}`
-    : null
-  return (
-    <section
-      className="intake__step session-frame__panel session-arc"
-      data-shipped={shipped || undefined}
-    >
-      <h2>{shipped ? t.arcShippedHeading : t.arcPinnedHeading}</h2>
-      <div className="session-arc__pair">
-        <div className="session-arc__col">
-          {shipped && <span className="mono session-arc__col-label">{t.arcSketchLabel}</span>}
-          <NapkinSection lang={lang} napkin={napkin} />
-        </div>
-        {shipped && (
-          <>
-            <div className="session-arc__arrow" aria-hidden="true">
-              →
-            </div>
-            <div className="session-arc__col session-arc__col--shipped">
-              <span className="mono session-arc__col-label">{t.arcShippedLabel}</span>
-              <div className="session-arc__shipped">
-                <h3 className="session-arc__shipped-title">
-                  {session.showcase_title?.trim() || t.arcShippedFallback}
-                </h3>
-                {session.showcase_tagline?.trim() && (
-                  <p className="session-arc__shipped-tagline">{session.showcase_tagline}</p>
-                )}
-                {buildHref && (
-                  <a
-                    className="mono session-arc__shipped-link"
-                    href={buildHref}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {t.arcViewLive}
-                  </a>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </section>
-  )
-}
-
-/**
- * The "generous no" — shown when a session is `rejected`. A decline isn't a
- * dead end: the visitor sees Marc's tailored note (if he wrote one) framed
- * by standing pointers — the free Tier 0 tools, the always-open door to a
- * fresh request. Admin sees the same panel plus an editor for the note.
- */
-function DeclinePanel({
-  session,
-  lang,
-  isAdmin,
-  onSaved,
-}: {
-  session: SessionRow
-  lang: Lang
-  isAdmin: boolean
-  onSaved: (s: SessionRow) => void
-}) {
-  const t = COPY[lang]
-  const langPrefix = lang === 'en' ? '/en' : ''
-  const [draft, setDraft] = useState(session.decline_note ?? '')
-  const [saving, setSaving] = useState(false)
-  const note = session.decline_note?.trim()
-
-  const save = async () => {
-    setSaving(true)
-    try {
-      const r = await patchSession(session.id, {
-        declineNote: draft.trim() || null,
-        ifUpdatedAt: session.updated_at,
-      })
-      onSaved(r.session)
-    } catch {
-      // Leave the draft in place so the operator can retry.
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <section className="intake__step session-frame__panel decline-panel">
-      <h2>{t.declineHeading}</h2>
-      {note ? (
-        <blockquote className="decline-panel__note">
-          <span className="mono decline-panel__note-from">{t.declineNoteFrom}</span>
-          <p>{note}</p>
-        </blockquote>
-      ) : (
-        <p className="decline-panel__lead">{t.declineLead}</p>
-      )}
-
-      <div className="decline-panel__pointers">
-        <span className="mono decline-panel__pointers-heading">{t.declinePointersHeading}</span>
-        <div className="decline-panel__pointer">
-          <p>{t.declinePointerTier0}</p>
-          <a className="decline-panel__pointer-link" href={`${langPrefix}/tier-0`}>
-            {t.declinePointerTier0Link}
-          </a>
-        </div>
-        <div className="decline-panel__pointer">
-          <p>{t.declinePointerIntake}</p>
-          <a className="decline-panel__pointer-link" href={`${langPrefix}/intake`}>
-            {t.declinePointerIntakeLink}
-          </a>
-        </div>
-      </div>
-
-      {isAdmin && (
-        <div className="decline-panel__editor">
-          <label className="mono decline-panel__editor-label" htmlFor="decline-note">
-            {t.declineNoteEditorLabel}
-          </label>
-          {!note && <p className="mono decline-panel__editor-empty">{t.declineNoteEmpty}</p>}
-          <textarea
-            id="decline-note"
-            className="field__input decline-panel__textarea"
-            rows={5}
-            value={draft}
-            placeholder={t.declineNoteEditorPlaceholder}
-            onChange={(e) => setDraft(e.target.value)}
-          />
-          <button
-            type="button"
-            className="link-btn mono"
-            onClick={save}
-            disabled={saving || draft.trim() === (session.decline_note ?? '').trim()}
-          >
-            {saving ? t.declineNoteSaving : t.declineNoteSave}
-          </button>
-        </div>
-      )}
-    </section>
-  )
-}
-
-/**
- * Admin-only input for the Tier 4 quoted amount. Local state tracks the
- * draft (in dollars, as the admin types); commit on Save translates to cents
- * and PATCHes. Clear sends null which both removes the value AND hides the
- * visitor's "Pay (quoted)" button.
- *
- * Validation: 100..100000 dollars (matches server-side cents range). Invalid
- * input shows an inline error and keeps the draft.
- */
-function Tier4AmountInput({
-  lang: _lang,
-  copy,
-  cents,
-  onSave,
-}: {
-  lang: Lang
-  copy: (typeof COPY)[Lang]
-  cents: number | null
-  onSave: (cents: number | null) => Promise<void>
-}) {
-  // Parent passes key={String(cents)} so when the persisted value changes
-  // (post-save, post-409 reload), React unmounts and this state re-initializes
-  // from the new prop — no effect+setState dance.
-  const initial = cents != null ? String(Math.round(cents / 100)) : ''
-  const [draft, setDraft] = useState(initial)
-  const [error, setError] = useState(false)
-  const [saving, setSaving] = useState(false)
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const trimmed = draft.trim()
-    if (trimmed === '') {
-      // Empty submit = clear (same as the dedicated Clear button).
-      setSaving(true)
-      await onSave(null)
-      setSaving(false)
-      return
-    }
-    const dollars = Number(trimmed)
-    if (
-      !Number.isFinite(dollars) ||
-      !Number.isInteger(dollars) ||
-      dollars < 100 ||
-      dollars > 100_000
-    ) {
-      setError(true)
-      return
-    }
-    setError(false)
-    setSaving(true)
-    await onSave(dollars * 100)
-    setSaving(false)
-  }
-
-  const onClear = async () => {
-    setSaving(true)
-    setDraft('')
-    await onSave(null)
-    setSaving(false)
-  }
-
-  return (
-    <form className="session-frame__tier3" onSubmit={onSubmit}>
-      <label className="field__label">
-        {copy.tier4AmountLabel}
-        <div className="session-frame__tier3-row">
-          <span className="session-frame__tier3-prefix mono">$</span>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={100}
-            max={100000}
-            step={1}
-            value={draft}
-            placeholder={copy.tier4AmountPlaceholder}
-            onChange={(e) => {
-              setDraft(e.target.value)
-              if (error) setError(false)
-            }}
-            disabled={saving}
-            className="session-frame__tier3-input mono"
-          />
-          <button
-            type="submit"
-            className="link-btn mono"
-            disabled={saving || draft.trim() === initial}
-          >
-            {copy.tier4AmountSave}
-          </button>
-          {cents != null && (
-            <button type="button" className="link-btn mono" onClick={onClear} disabled={saving}>
-              {copy.tier4AmountClear}
-            </button>
-          )}
-        </div>
-      </label>
-      <p className="field__hint session-frame__strip-hint">
-        {error ? copy.tier4AmountInvalid : copy.tier4AmountHint}
-      </p>
-    </form>
-  )
-}
-
-/**
- * Admin-only Tier-3 installment-split picker. Two pills: 50/50 or 40/40/20.
- * NULL (not chosen) renders with neither pill active — checkout.ts defaults
- * to 50/50 in that case.
- */
-function Tier3SplitInput({
-  lang: _lang,
-  copy,
-  split,
-  onSave,
-}: {
-  lang: Lang
-  copy: (typeof COPY)[Lang]
-  split: string | null
-  onSave: (split: '50-50' | '40-40-20' | null) => Promise<void>
-}) {
-  const [saving, setSaving] = useState(false)
-  const pick = async (next: '50-50' | '40-40-20') => {
-    if (saving || split === next) return
-    setSaving(true)
-    await onSave(next)
-    setSaving(false)
-  }
-  return (
-    <div className="session-frame__tier3">
-      <div className="field__label">{copy.tier3SplitLabel}</div>
-      <div className="session-frame__tier3-row">
-        <button
-          type="button"
-          className="link-btn mono"
-          onClick={() => pick('50-50')}
-          disabled={saving || split === '50-50'}
-          aria-pressed={split === '50-50'}
-        >
-          {copy.tier3Split5050}
-        </button>
-        <button
-          type="button"
-          className="link-btn mono"
-          onClick={() => pick('40-40-20')}
-          disabled={saving || split === '40-40-20'}
-          aria-pressed={split === '40-40-20'}
-        >
-          {copy.tier3Split404020}
-        </button>
-      </div>
-      <p className="field__hint session-frame__strip-hint">{copy.tier3SplitHint}</p>
     </div>
   )
 }
