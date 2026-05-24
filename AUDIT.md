@@ -105,20 +105,23 @@
   exclusion, session SELECT projection, submitIntake split/failure cases.
 
 ### Attachment uploads (legacy file path)
-- ⬜ **P1.10** — `kind='file'` thread-attachment upload path uses a
+- ⏭ **P1.10** — `kind='file'` thread-attachment upload path uses a
   hand-constructed `ReadableStream` (returned by `verifyMagicBytes`) and
   passes it to `R2Bucket.put` without a content-length. Surfaced by the
   napkin-upload e2e backend spec on 2026-05-24: Miniflare's R2 emulator
   hard-rejects with `TypeError: Provided readable stream must have a
-  known length`. Production Workers R2 has been forgiving in practice
-  (no incident report), but the bug is real and the same shape that
-  fixed napkin in P1.8 fixes file too — route the file branch through
-  the buffered path (same as voice/sketch/napkin). Defer-with-rationale
-  rather than fix in the P1.8 review window because (a) it changes the
-  production hot path for an existing working feature, and (b) the
-  per-file ceiling (10 MB) keeps buffering memory-safe. Reopen when
-  next touching the attachments handler for another reason, OR if a
-  prod incident report shows file uploads silently failing.
+  known length`. **Production Workers R2 accepts it** — Marc confirmed
+  on 2026-05-24 that real attachments land via the existing UI. So this
+  is a Miniflare-vs-prod environment difference, not a prod bug. The
+  e2e backend harness can't exercise the file-upload path until either
+  (a) the handler is routed through the buffered branch (same shape as
+  P1.8's napkin fix — voice / sketch / napkin all buffer), or (b) the
+  stream is wrapped in a `FixedLengthStream(file.size)` so Miniflare
+  also sees a known length. **Deferred** — no prod impact, the e2e gap
+  is the only real cost, and the next time the attachments handler is
+  touched for another reason is the right window to fold this in.
+  Reopen if a prod incident ever shows file uploads silently failing,
+  or if we want e2e backend coverage for the file path.
 
 ### Iframe sandbox
 - ⏭ **P1.9** — Drop `allow-same-origin` from iframe sandboxes. **Deferred with
