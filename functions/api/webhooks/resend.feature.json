@@ -82,7 +82,9 @@
         "knownLimitations",
         "tags"
       ],
-      "reason": "Initial author for the new webhook endpoint (AUDIT P1.2 code-only landing)."
+      "reason": "Initial author for the new webhook endpoint (AUDIT P1.2 code-only landing).",
+      "commit": "73dc0b4",
+      "buildUrl": "https://a9464fd2.marc-portal.pages.dev"
     }
   ],
   "annotations": []
