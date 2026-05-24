@@ -133,6 +133,20 @@ interface UserPrefRowMock {
   updated_at: number
 }
 
+interface EmailOutboxRowMock {
+  id: string
+  to_email: string
+  subject: string
+  html: string
+  text_body: string
+  kind: string
+  created_at: number
+  attempts: number
+  last_attempt: number | null
+  last_error: string | null
+  sent_at: number | null
+}
+
 export class D1Mock {
   sessions = new Map<string, SessionRowMock>()
   messages = new Map<string, MessageRowMock>()
@@ -144,6 +158,7 @@ export class D1Mock {
   admin_alerts = new Map<string, AdminAlertRowMock>()
   vouches = new Map<string, VouchRowMock>()
   user_prefs = new Map<string, UserPrefRowMock>()
+  email_outbox = new Map<string, EmailOutboxRowMock>()
 
   prepare(sql: string): MockPreparedStatement {
     return new MockPreparedStatement(this, sql, [])
@@ -649,6 +664,36 @@ class MockPreparedStatement {
       const row = this.db.user_prefs.get((a[0] as string).toLowerCase())
       if (!row) return []
       return [{ lang: row.lang, first_name: row.first_name }]
+    }
+
+    // SELECT pending email_outbox rows for the sweeper
+    if (
+      sql.includes('FROM email_outbox') &&
+      sql.includes('sent_at IS NULL') &&
+      sql.includes('attempts <') &&
+      sql.includes('ORDER BY created_at')
+    ) {
+      const maxAttempts = a[0] as number
+      const limit = a[1] as number
+      const rows = [...this.db.email_outbox.values()]
+        .filter((r) => r.sent_at === null && r.attempts < maxAttempts)
+        .sort((x, y) => x.created_at - y.created_at)
+        .slice(0, limit)
+      return rows.map((r) => ({
+        id: r.id,
+        to_email: r.to_email,
+        subject: r.subject,
+        html: r.html,
+        text_body: r.text_body,
+        kind: r.kind,
+        attempts: r.attempts,
+      }))
+    }
+
+    // SELECT last_attempt FROM email_outbox WHERE id = ?
+    if (sql.includes('SELECT last_attempt FROM email_outbox WHERE id = ?')) {
+      const r = this.db.email_outbox.get(a[0] as string)
+      return r ? [{ last_attempt: r.last_attempt }] : []
     }
 
     // Fallback: SELECT intake_json FROM sessions WHERE email = ? AND deleted_at IS NULL
@@ -1245,6 +1290,53 @@ class MockPreparedStatement {
         updated_at: a[2] as number,
       })
       return 1
+    }
+
+    // INSERT INTO email_outbox (...)
+    //   (id, to_email, subject, html, text_body, kind, created_at,
+    //    attempts=1, last_attempt, last_error, sent_at=NULL)
+    if (sql.startsWith('INSERT INTO email_outbox')) {
+      const id = a[0] as string
+      this.db.email_outbox.set(id, {
+        id,
+        to_email: a[1] as string,
+        subject: a[2] as string,
+        html: a[3] as string,
+        text_body: a[4] as string,
+        kind: a[5] as string,
+        created_at: a[6] as number,
+        attempts: 1,
+        last_attempt: a[7] as number,
+        last_error: a[8] as string,
+        sent_at: null,
+      })
+      return 1
+    }
+
+    // UPDATE email_outbox SET sent_at = ?, last_attempt = ? WHERE id = ?
+    if (sql.startsWith('UPDATE email_outbox SET sent_at = ?, last_attempt = ?')) {
+      const id = a[2] as string
+      const r = this.db.email_outbox.get(id)
+      if (r) {
+        r.sent_at = a[0] as number
+        r.last_attempt = a[1] as number
+      }
+      return r ? 1 : 0
+    }
+
+    // UPDATE email_outbox SET attempts = attempts + 1, last_attempt = ?, last_error = ?
+    if (
+      sql.startsWith('UPDATE email_outbox SET attempts = attempts + 1') &&
+      sql.includes('last_attempt')
+    ) {
+      const id = a[2] as string
+      const r = this.db.email_outbox.get(id)
+      if (r) {
+        r.attempts += 1
+        r.last_attempt = a[0] as number
+        r.last_error = a[1] as string
+      }
+      return r ? 1 : 0
     }
 
     // INSERT OR IGNORE INTO user_prefs (email, lang, updated_at) VALUES (?, ?, ?)

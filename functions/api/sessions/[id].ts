@@ -388,6 +388,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
       statusChanged.to,
       origin,
       visitorPrefLang,
+      env.DB, // durable (AUDIT P1.3)
     )
   }
   // Visitor edited their own intake → notify Marc. Admin self-editing on
@@ -454,6 +455,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
         origin,
         visitorPrefLang,
         isLateQuote,
+        env.DB, // durable (AUDIT P1.3)
       )
     }
   }
@@ -498,6 +500,7 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params
       origin,
       visitorPrefLang,
       'visitor',
+      env.DB, // durable (AUDIT P1.3) — visitor-side path only
     )
   } else {
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)

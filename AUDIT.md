@@ -23,13 +23,20 @@
   reputation is shared. Highest-leverage item once DNS access is available.
 - ⚠ **P1.2** — Resend bounce/complaint webhooks (depends on P1.1). Without a
   verified domain there's no useful bounce signal.
-- ⏭ **P1.3** — Resend send-failure outbox. **Deferred.** Today `send()`
-  returns false / `console.error`s on failures. Building a proper retry
-  outbox is its own commit: migration for `email_outbox` table, a writer
-  on every send-site, a sweeper on the digest cron. Pragmatic for an
-  app at this scale: addresses can request a fresh magic link any time;
-  the visitor-facing impact of a Resend hiccup is short-lived. Revisit
-  if/when an outage actually loses a load-bearing message.
+- ✅ **P1.3** — Resend send-failure outbox shipped. `email_outbox` table
+  (migration 0026), durable opt-in via a new optional `outboxDb` arg on
+  the 5 load-bearing send-sites (tier-assigned, refund-notice,
+  installment-cleared, status-change, visitor-withdrawal). Magic-link is
+  intentionally non-durable — it's re-requestable any time. When Resend
+  fails (HTTP or thrown), the rendered email is persisted with
+  `attempts=1`; the daily digest cron sweeps pending rows with
+  exponential backoff (2^N minutes, capped at 1h) and an
+  `OUTBOX_MAX_ATTEMPTS=5` ceiling so a permanently-bad row eventually
+  stops looping. The sweeper logs per-run counters (retried / delivered
+  / failed) so the digest's own log line surfaces outbox state.
+  9 new tests cover the writer (success no-op, 502 enqueue, no-durable-no-op,
+  tier-assigned kind) and the sweeper (retry happy path, attempts bump on
+  failure, backoff skip, max-attempts ceiling, empty outbox).
 
 ### Auth / session safety
 - ✅ **P1.4** — CSRF double-submit cookie. Server (`functions/_lib/auth.ts`)

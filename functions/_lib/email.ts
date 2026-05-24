@@ -3,6 +3,14 @@
 // outage doesn't 500 user-facing endpoints — the underlying mutation
 // (magic-link token stored, message persisted, etc.) succeeds either way.
 //
+// Durable sends (AUDIT P1.3): a subset of notices — tier-assigned, refund,
+// installment-cleared, status-change, withdrawal — pass `outboxDb` so that
+// a Resend failure persists the rendered email into the `email_outbox`
+// table. The daily digest cron (digest.ts) sweeps and retries pending rows
+// until they deliver or hit `OUTBOX_MAX_ATTEMPTS`. Magic-link and
+// admin-internal nudges stay non-durable (re-requestable / visible in the
+// admin UI).
+//
 // Voice & visual:
 //   - Warm, terse, written in Marc's own voice ("Bonjour", "Tu", small
 //     signature, "— Marc, depuis Montréal").
@@ -49,7 +57,31 @@ interface ResendPayload {
   text: string
 }
 
-async function send(apiKey: string, payload: ResendPayload): Promise<boolean> {
+/** Maximum retry attempts before the sweeper gives up. Past this, the row
+ *  stays in email_outbox with `attempts >= MAX` and the digest stops
+ *  picking it up — surface via D1 queries when investigating. */
+export const OUTBOX_MAX_ATTEMPTS = 5
+
+/** Outbox kinds — one label per durable send-site. Used for triage queries
+ *  ("which template failed?") and for the digest summary. Not a foreign key. */
+export type OutboxKind =
+  | 'tier-assigned'
+  | 'refund-notice'
+  | 'installment-cleared'
+  | 'status-change'
+  | 'withdrawal-visitor'
+
+interface OutboxContext {
+  db: D1Database
+  kind: OutboxKind
+}
+
+async function send(
+  apiKey: string,
+  payload: ResendPayload,
+  outbox?: OutboxContext,
+): Promise<boolean> {
+  let lastError: string | null = null
   try {
     const res = await fetch(RESEND_URL, {
       method: 'POST',
@@ -60,13 +92,154 @@ async function send(apiKey: string, payload: ResendPayload): Promise<boolean> {
       body: JSON.stringify(payload),
     })
     if (!res.ok) {
-      console.error('resend send failed', res.status, await res.text())
-      return false
+      lastError = `${res.status}: ${(await res.text()).slice(0, 200)}`
+      console.error('resend send failed', lastError)
+    } else {
+      return true
     }
-    return true
   } catch (err) {
+    lastError = String(err).slice(0, 200)
     console.error('resend send threw', err)
-    return false
+  }
+  // Resend failed (HTTP or threw). For durable sends, persist the rendered
+  // payload into the outbox so the digest sweeper can retry. Best-effort:
+  // if the outbox write itself fails, we'd already-logged the original
+  // Resend error, so just log + return false.
+  if (outbox) {
+    try {
+      await enqueueForRetry(outbox.db, outbox.kind, payload, lastError ?? 'unknown')
+    } catch (queueErr) {
+      console.error('outbox enqueue failed (continuing)', queueErr)
+    }
+  }
+  return false
+}
+
+/** Persist a rendered email into the outbox. Caller has already failed
+ *  one Resend send — we record that as `attempts = 1` so the cap is honest. */
+async function enqueueForRetry(
+  db: D1Database,
+  kind: OutboxKind,
+  payload: ResendPayload,
+  lastError: string,
+): Promise<void> {
+  const id = `eob_${crypto.randomUUID().slice(0, 16)}`
+  const now = Math.floor(Date.now() / 1000)
+  await db
+    .prepare(
+      `INSERT INTO email_outbox
+        (id, to_email, subject, html, text_body, kind, created_at,
+         attempts, last_attempt, last_error, sent_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
+    )
+    .bind(id, payload.to, payload.subject, payload.html, payload.text, kind, now, now, lastError)
+    .run()
+}
+
+/** Pending row shape for the sweeper. Mirrors the email_outbox schema. */
+interface OutboxPendingRow {
+  id: string
+  to_email: string
+  subject: string
+  html: string
+  text_body: string
+  kind: string
+  attempts: number
+}
+
+/**
+ * Sweep the outbox. Called from the daily digest cron. For each pending
+ * row whose attempts are below the ceiling, retry the Resend POST. Mark
+ * sent_at on success; bump attempts + record last_error on failure. Bounded
+ * per-call: only pulls up to `batch` rows so a backed-up outbox doesn't
+ * blow the cron's runtime budget.
+ *
+ * Backoff: a row with N attempts is skipped until at least 2^N minutes
+ * have passed since `last_attempt` (1 → 2m, 2 → 4m, 3 → 8m, … cap at the
+ * cron's daily cadence anyway). Keeps a transient Resend hiccup from
+ * burning all attempts in the same minute.
+ */
+export async function sweepEmailOutbox(
+  apiKey: string,
+  db: D1Database,
+  now: number,
+  batch = 25,
+): Promise<{ retried: number; delivered: number; failed: number }> {
+  const rows = await db
+    .prepare(
+      `SELECT id, to_email, subject, html, text_body, kind, attempts
+       FROM email_outbox
+       WHERE sent_at IS NULL AND attempts < ?
+       ORDER BY created_at ASC
+       LIMIT ?`,
+    )
+    .bind(OUTBOX_MAX_ATTEMPTS, batch)
+    .all<OutboxPendingRow>()
+  const pending = rows.results ?? []
+  let retried = 0
+  let delivered = 0
+  let failed = 0
+  for (const row of pending) {
+    // Exponential backoff — skip this iteration if we tried too recently.
+    const minWait = Math.min(2 ** row.attempts * 60, 3600)
+    const lastAttempt = await db
+      .prepare(`SELECT last_attempt FROM email_outbox WHERE id = ?`)
+      .bind(row.id)
+      .first<{ last_attempt: number | null }>()
+    if (lastAttempt?.last_attempt != null && now - lastAttempt.last_attempt < minWait) {
+      continue
+    }
+    retried++
+    const ok = await sendRaw(apiKey, {
+      from: RESEND_FROM,
+      to: row.to_email,
+      subject: row.subject,
+      html: row.html,
+      text: row.text_body,
+    })
+    if (ok.delivered) {
+      await db
+        .prepare(`UPDATE email_outbox SET sent_at = ?, last_attempt = ? WHERE id = ?`)
+        .bind(now, now, row.id)
+        .run()
+      delivered++
+    } else {
+      await db
+        .prepare(
+          `UPDATE email_outbox
+           SET attempts = attempts + 1, last_attempt = ?, last_error = ?
+           WHERE id = ?`,
+        )
+        .bind(now, ok.error ?? 'unknown', row.id)
+        .run()
+      failed++
+    }
+  }
+  return { retried, delivered, failed }
+}
+
+/** Pure Resend POST without outbox side-effects. Used by the sweeper —
+ *  the row is already in the outbox; we just want to try delivery and
+ *  report success/failure separately. */
+async function sendRaw(
+  apiKey: string,
+  payload: ResendPayload,
+): Promise<{ delivered: boolean; error?: string }> {
+  try {
+    const res = await fetch(RESEND_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      return { delivered: false, error: `${res.status}: ${(await res.text()).slice(0, 200)}` }
+    }
+    return { delivered: true }
+  } catch (err) {
+    return { delivered: false, error: String(err).slice(0, 200) }
   }
 }
 
@@ -401,6 +574,7 @@ export async function sendStatusChangeNotification(
   toStatus: string,
   origin: string,
   lang: Lang,
+  outboxDb?: D1Database,
 ): Promise<boolean> {
   const url = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const fromLabel = statusLabel(fromStatus, lang)
@@ -422,7 +596,11 @@ export async function sendStatusChangeNotification(
     cta: { href: url, label: lang === 'fr' ? 'Voir ma session' : 'Open my session' },
     altLink: url,
   })
-  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+  return send(
+    apiKey,
+    { from: RESEND_FROM, to: visitorEmail, subject, html, text },
+    outboxDb ? { db: outboxDb, kind: 'status-change' } : undefined,
+  )
 }
 
 // =============================================================================
@@ -474,6 +652,7 @@ export async function sendWithdrawalNotification(
   origin: string,
   lang: Lang,
   audience: 'admin' | 'visitor',
+  outboxDb?: D1Database,
 ): Promise<boolean> {
   // Subjects: admin side is generic (no email leak on lock screen); visitor
   // side is already non-identifying.
@@ -527,7 +706,13 @@ export async function sendWithdrawalNotification(
     },
     signoff: audience === 'admin' ? 'system' : 'marc',
   })
-  return send(apiKey, { from: RESEND_FROM, to: toEmail, subject, html, text })
+  // Only the visitor-facing path is durable — the admin-side is internal
+  // (the row stays in /admin/inbox trash; Marc sees it on next visit).
+  return send(
+    apiKey,
+    { from: RESEND_FROM, to: toEmail, subject, html, text },
+    outboxDb && audience === 'visitor' ? { db: outboxDb, kind: 'withdrawal-visitor' } : undefined,
+  )
 }
 
 // =============================================================================
@@ -542,6 +727,7 @@ export async function sendInstallmentClearedPrompt(
   totalOf: number,
   origin: string,
   lang: Lang,
+  outboxDb?: D1Database,
 ): Promise<boolean> {
   const sessionUrl = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const remaining = totalOf - paidIndex
@@ -567,7 +753,11 @@ export async function sendInstallmentClearedPrompt(
     cta: { href: sessionUrl, label: lang === 'fr' ? 'Ouvrir ma session' : 'Open my session' },
     altLink: sessionUrl,
   })
-  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+  return send(
+    apiKey,
+    { from: RESEND_FROM, to: visitorEmail, subject, html, text },
+    outboxDb ? { db: outboxDb, kind: 'installment-cleared' } : undefined,
+  )
 }
 
 // =============================================================================
@@ -586,6 +776,7 @@ export async function sendTierAssignedNotification(
    *  session was already active. Lets the subject read "Quote ready" rather
    *  than "Marc accepted." */
   isLateQuote: boolean = false,
+  outboxDb?: D1Database,
 ): Promise<boolean> {
   const sessionUrl = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const priceLine = amountCadCents != null ? formatCadCents(amountCadCents, lang) : null
@@ -735,7 +926,11 @@ export async function sendTierAssignedNotification(
     cta: { href: sessionUrl, label: lang === 'fr' ? 'Ouvrir ma session' : 'Open my session' },
     altLink: sessionUrl,
   })
-  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+  return send(
+    apiKey,
+    { from: RESEND_FROM, to: visitorEmail, subject, html, text },
+    outboxDb ? { db: outboxDb, kind: 'tier-assigned' } : undefined,
+  )
 }
 
 // =============================================================================
@@ -880,6 +1075,7 @@ export async function sendRefundNotice(
   totalCents: number,
   origin: string,
   lang: Lang,
+  outboxDb?: D1Database,
 ): Promise<boolean> {
   const meUrl = `${origin}${lang === 'en' ? '/en' : ''}/me`
   const refundedFormatted = formatCadCents(refundedCents, lang)
@@ -919,7 +1115,11 @@ export async function sendRefundNotice(
     cta: { href: meUrl, label: lang === 'fr' ? 'Ouvrir Mes paiements' : 'Open My payments' },
     altLink: meUrl,
   })
-  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+  return send(
+    apiKey,
+    { from: RESEND_FROM, to: visitorEmail, subject, html, text },
+    outboxDb ? { db: outboxDb, kind: 'refund-notice' } : undefined,
+  )
 }
 
 // =============================================================================

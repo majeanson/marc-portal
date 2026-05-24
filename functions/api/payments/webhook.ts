@@ -204,6 +204,8 @@ async function handleCheckoutCompleted(env: Env, obj: StripeObject, origin: stri
           of,
           origin,
           lang,
+          env.DB, // durable: a visitor whose installment cleared but who
+          //         never hears about it has no obvious recovery path.
         )
       }
     }
@@ -401,6 +403,8 @@ async function handleChargeRefunded(env: Env, request: Request, obj: StripeObjec
           row.amount_cents,
           origin,
           lang,
+          env.DB, // durable: Stripe sends its own receipt but the
+          //         portal's status change MUST reach the visitor.
         )
       } catch (err) {
         // Notification failure is non-fatal — the DB has already absorbed

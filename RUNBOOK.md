@@ -1051,6 +1051,83 @@ visitor-driven redo. Carrying the data URL forward in a
 client-side retry queue is the next step if Sentry events start
 clustering; until then, the redo-from-draft path is enough.
 
+## 15. Email outbox — durable send not delivered
+
+**Symptoms:** Daily digest log says `outbox sweep — retried N, delivered M,
+failed K` with K trending upward over multiple days, OR a visitor reports
+they never got a tier-assigned / refund / installment-cleared email.
+
+### What happens (system behavior)
+
+Five durable notices write to `email_outbox` when Resend fails at the
+moment of send:
+
+- `tier-assigned` (PATCH /api/sessions/:id with tier set)
+- `refund-notice` (charge.refunded webhook)
+- `installment-cleared` (checkout.session.completed for a build leg)
+- `status-change` (PATCH /api/sessions/:id status transition)
+- `withdrawal-visitor` (DELETE /api/sessions/:id by admin, visitor side)
+
+Magic-link, admin-internal nudges, and the vouch-moderation ping are NOT
+durable — they're either re-requestable (magic-link) or visible in the
+admin UI on next visit (the rest).
+
+The daily digest cron (`POST /api/admin/digest`) calls
+`sweepEmailOutbox()` which:
+
+1. Reads up to 25 pending rows where `attempts < 5`, oldest first.
+2. For each, applies exponential backoff: skip if
+   `now - last_attempt < 2^attempts * 60` (capped at 1h).
+3. Calls Resend directly. On 2xx → set `sent_at`. On 5xx / network throw →
+   bump `attempts`, set `last_attempt`, capture `last_error`.
+4. Stops looking at a row once `attempts >= 5` — the row stays in the
+   table for an operator to inspect / decide.
+
+### Step-by-step — stuck row
+
+1. **Find stuck rows:**
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "SELECT id, to_email, kind, attempts, last_error, created_at
+      FROM email_outbox
+      WHERE sent_at IS NULL AND attempts >= 5
+      ORDER BY created_at"
+   ```
+
+2. **Diagnose `last_error`:**
+   - `403: marcportal.com domain not verified` → DNS still pending or
+     Resend domain status flipped back. See P1.1 in `AUDIT.md`.
+   - `429: too many requests` → Resend free-tier daily cap (100/day) was
+     hit. Wait until midnight UTC; the next digest sweep retries.
+   - `5xx: …` → Resend platform incident; check Resend's status page.
+
+3. **Force a single retry** (after fixing the upstream cause):
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "UPDATE email_outbox SET attempts = 0, last_error = NULL
+      WHERE id = '<eob_id>'"
+   ```
+   Next digest run will pick it up. The 25-row batch is the throttle —
+   no need to reset many rows at once.
+
+4. **Triage by kind:**
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "SELECT kind, COUNT(*) as n
+      FROM email_outbox WHERE sent_at IS NULL
+      GROUP BY kind"
+   ```
+   A spike concentrated in one `kind` points at a template-specific
+   issue. Spread across kinds points at Resend itself.
+
+### Why we cap at 5 attempts
+
+A row that fails 5 times across 5 different days has hit something
+structural (bad address, account suspended, banned content). The sweeper
+backing off is correct behavior — we don't want a digest that takes 30
+minutes to process a stuck queue. A manual reset (step 3) is the escape
+hatch; in practice this should fire rarely.
+
 ## Payments setup (one-time) — Stripe
 
 Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card

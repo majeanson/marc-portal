@@ -19,6 +19,7 @@ import { primaryAdminEmail } from '../../_lib/sessions'
 import type { SessionRow } from '../../_lib/sessions'
 import { ok, serverError, unauthorized } from '../../_lib/json'
 import { getLang } from '../../_lib/userPrefs'
+import { sweepEmailOutbox } from '../../_lib/email'
 
 interface DigestEnv extends Env {
   DIGEST_TOKEN?: string
@@ -160,6 +161,24 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     }
   } catch (err) {
     console.warn('digest: attachment cleanup failed (continuing)', err)
+  }
+
+  // Piggyback housekeeping #3: sweep the email outbox (AUDIT P1.3). Durable
+  // notices (tier-assigned, refund, installment-cleared, status-change,
+  // visitor-withdrawal) write to `email_outbox` when Resend fails at the
+  // moment of send. Retry pending rows here with exponential backoff; mark
+  // delivered on success, bump attempts otherwise. The OUTBOX_MAX_ATTEMPTS
+  // ceiling stops a permanently-bad row from looping. Errors don't fail
+  // the triage digest — outbox is secondary.
+  try {
+    const r = await sweepEmailOutbox(env.RESEND_API_KEY, env.DB, now)
+    if (r.retried > 0) {
+      console.log(
+        `digest: outbox sweep — retried ${r.retried}, delivered ${r.delivered}, failed ${r.failed}`,
+      )
+    }
+  } catch (err) {
+    console.warn('digest: outbox sweep failed (continuing)', err)
   }
 
   let rows: SessionRow[] = []
