@@ -22,6 +22,7 @@ import { exportMyData, downloadJson, type ExportBundle } from '../lib/export'
 import { formatDate } from '../lib/format'
 import type { ProblemType } from '../lib/intakeSchemas'
 import type { SessionStatus } from '../lib/sessionsApi'
+import { attachmentUrl } from '../lib/attachmentsApi'
 
 interface ParsedIntake {
   type: ProblemType
@@ -234,6 +235,15 @@ export function MyData({ lang }: { lang: Lang }) {
 
       {bundle.sessions.map(({ session, messages }) => {
         const intake = parseIntake(session.intake_json)
+        // P1.8: napkin PNG lives in R2 for sessions submitted after the
+        // migration, with intake_json.napkin.png empty. Resolve to the
+        // attachment URL when that's the case; legacy sessions still carry
+        // the inline data URL and pass through unchanged.
+        const napkinPng =
+          intake?.napkin?.png ||
+          (session.napkin_attachment_id
+            ? attachmentUrl(session.id, session.napkin_attachment_id)
+            : null)
         const title = session.showcase_title?.trim() || `Session ${session.id.slice(0, 8)}`
         return (
           <section key={session.id} className="mydata__entry">
@@ -263,10 +273,10 @@ export function MyData({ lang }: { lang: Lang }) {
               <p className="mydata__muted">{t.intakeUnavailable}</p>
             )}
 
-            {intake?.napkin?.png && (
+            {napkinPng && intake?.napkin && (
               <figure className="mydata__napkin">
                 <figcaption className="mono">{t.napkinHeading}</figcaption>
-                <img src={intake.napkin.png} alt={t.napkinHeading} />
+                <img src={napkinPng} alt={t.napkinHeading} />
               </figure>
             )}
 

@@ -166,15 +166,19 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
   // Piggyback housekeeping #3: sweep the email outbox (AUDIT P1.3). Durable
   // notices (tier-assigned, refund, installment-cleared, status-change,
   // visitor-withdrawal) write to `email_outbox` when Resend fails at the
-  // moment of send. Retry pending rows here with exponential backoff; mark
-  // delivered on success, bump attempts otherwise. The OUTBOX_MAX_ATTEMPTS
-  // ceiling stops a permanently-bad row from looping. Errors don't fail
-  // the triage digest — outbox is secondary.
+  // moment of send. The sweeper does three things: retry pending rows,
+  // alert Marc on rows that JUST hit OUTBOX_MAX_ATTEMPTS (stuck queue),
+  // and prune delivered rows past OUTBOX_DELIVERED_TTL_SECONDS. Errors
+  // don't fail the triage digest — outbox is secondary.
   try {
-    const r = await sweepEmailOutbox(env.RESEND_API_KEY, env.DB, now)
-    if (r.retried > 0) {
+    const marc = primaryAdminEmail(env.ADMIN_EMAILS)
+    const marcLang = marc ? await getLang(env.DB, marc) : 'fr'
+    const origin = new URL(request.url).origin
+    const r = await sweepEmailOutbox(env.RESEND_API_KEY, env.DB, now, marc, origin, marcLang)
+    if (r.retried > 0 || r.alerted > 0 || r.pruned > 0) {
       console.log(
-        `digest: outbox sweep — retried ${r.retried}, delivered ${r.delivered}, failed ${r.failed}`,
+        `digest: outbox sweep — retried ${r.retried}, delivered ${r.delivered}, ` +
+          `failed ${r.failed}, alerted ${r.alerted}, pruned ${r.pruned}`,
       )
     }
   } catch (err) {

@@ -1349,6 +1349,23 @@ class MockPreparedStatement {
       return r ? 1 : 0
     }
 
+    // DELETE FROM email_outbox WHERE sent_at IS NOT NULL AND sent_at < ?
+    if (
+      sql.startsWith('DELETE FROM email_outbox') &&
+      sql.includes('sent_at IS NOT NULL') &&
+      sql.includes('sent_at <')
+    ) {
+      const cutoff = a[0] as number
+      let n = 0
+      for (const [k, v] of this.db.email_outbox) {
+        if (v.sent_at !== null && v.sent_at < cutoff) {
+          this.db.email_outbox.delete(k)
+          n++
+        }
+      }
+      return n
+    }
+
     // INSERT INTO email_events (id, to_email, type, subtype, payload, received_at)
     if (sql.startsWith('INSERT INTO email_events')) {
       const id = a[0] as string

@@ -127,8 +127,15 @@ describe('sweepEmailOutbox — sweeper', () => {
       last_error: '502: bad gateway',
       sent_at: null,
     })
-    const out = await sweepEmailOutbox('rk_test', db as unknown as D1Database, 99_999)
-    expect(out).toEqual({ retried: 1, delivered: 1, failed: 0 })
+    const out = await sweepEmailOutbox(
+      'rk_test',
+      db as unknown as D1Database,
+      99_999,
+      'marc@x.com',
+      'https://marcportal.com',
+      'fr',
+    )
+    expect(out).toMatchObject({ retried: 1, delivered: 1, failed: 0, alerted: 0 })
     expect(db.email_outbox.get('eob_1')?.sent_at).toBe(99_999)
   })
 
@@ -148,7 +155,14 @@ describe('sweepEmailOutbox — sweeper', () => {
       last_error: 'prior',
       sent_at: null,
     })
-    await sweepEmailOutbox('rk_test', db as unknown as D1Database, 99_999)
+    await sweepEmailOutbox(
+      'rk_test',
+      db as unknown as D1Database,
+      99_999,
+      'marc@x.com',
+      'https://marcportal.com',
+      'fr',
+    )
     const r = db.email_outbox.get('eob_1')!
     expect(r.attempts).toBe(2)
     expect(r.sent_at).toBeNull()
@@ -173,8 +187,15 @@ describe('sweepEmailOutbox — sweeper', () => {
       last_error: 'transient',
       sent_at: null,
     })
-    const out = await sweepEmailOutbox('rk_test', db as unknown as D1Database, 1100)
-    expect(out).toEqual({ retried: 0, delivered: 0, failed: 0 })
+    const out = await sweepEmailOutbox(
+      'rk_test',
+      db as unknown as D1Database,
+      1100,
+      'marc@x.com',
+      'https://marcportal.com',
+      'fr',
+    )
+    expect(out).toMatchObject({ retried: 0, delivered: 0, failed: 0 })
     expect(db.email_outbox.get('eob_1')?.sent_at).toBeNull()
   })
 
@@ -194,7 +215,14 @@ describe('sweepEmailOutbox — sweeper', () => {
       last_error: 'too many tries',
       sent_at: null,
     })
-    const out = await sweepEmailOutbox('rk_test', db as unknown as D1Database, 99_999)
+    const out = await sweepEmailOutbox(
+      'rk_test',
+      db as unknown as D1Database,
+      99_999,
+      'marc@x.com',
+      'https://marcportal.com',
+      'fr',
+    )
     expect(out.retried).toBe(0)
     // Row stays in the table for an operator to inspect; sweeper just leaves
     // it alone.
@@ -204,7 +232,145 @@ describe('sweepEmailOutbox — sweeper', () => {
   it('returns zero counters when the outbox is empty', async () => {
     mockResend(200, '{}')
     const db = new D1Mock()
-    const out = await sweepEmailOutbox('rk_test', db as unknown as D1Database, 99_999)
-    expect(out).toEqual({ retried: 0, delivered: 0, failed: 0 })
+    const out = await sweepEmailOutbox(
+      'rk_test',
+      db as unknown as D1Database,
+      99_999,
+      'marc@x.com',
+      'https://marcportal.com',
+      'fr',
+    )
+    expect(out).toMatchObject({ retried: 0, delivered: 0, failed: 0, alerted: 0, pruned: 0 })
+  })
+
+  it('alerts the admin when a row JUST hits OUTBOX_MAX_ATTEMPTS', async () => {
+    // Resend stays 500; the row's attempt count goes from MAX-1 to MAX in
+    // this sweep, triggering one consolidated admin alert.
+    mockResend(500, 'still down')
+    const db = new D1Mock()
+    db.email_outbox.set('eob_almost', {
+      id: 'eob_almost',
+      to_email: 'v@x.com',
+      subject: 's',
+      html: '',
+      text_body: '',
+      kind: 'refund-notice',
+      created_at: 100,
+      attempts: OUTBOX_MAX_ATTEMPTS - 1,
+      last_attempt: 100,
+      last_error: 'prior',
+      sent_at: null,
+    })
+    const out = await sweepEmailOutbox(
+      'rk_test',
+      db as unknown as D1Database,
+      99_999,
+      'marc@x.com',
+      'https://marcportal.com',
+      'fr',
+    )
+    expect(out.failed).toBe(1)
+    expect(out.alerted).toBe(1)
+    // Next sweep finds the row at attempts === MAX and skips it (no second
+    // alert for the same stuck row).
+    const out2 = await sweepEmailOutbox(
+      'rk_test',
+      db as unknown as D1Database,
+      999_999,
+      'marc@x.com',
+      'https://marcportal.com',
+      'fr',
+    )
+    expect(out2.retried).toBe(0)
+    expect(out2.alerted).toBe(0)
+  })
+
+  it("does NOT alert when there's no admin email configured (best-effort guard)", async () => {
+    mockResend(500, 'down')
+    const db = new D1Mock()
+    db.email_outbox.set('eob_almost', {
+      id: 'eob_almost',
+      to_email: 'v@x.com',
+      subject: 's',
+      html: '',
+      text_body: '',
+      kind: 'refund-notice',
+      created_at: 100,
+      attempts: OUTBOX_MAX_ATTEMPTS - 1,
+      last_attempt: 100,
+      last_error: 'prior',
+      sent_at: null,
+    })
+    const out = await sweepEmailOutbox(
+      'rk_test',
+      db as unknown as D1Database,
+      99_999,
+      null, // no admin
+      'https://marcportal.com',
+      'fr',
+    )
+    expect(out.failed).toBe(1)
+    expect(out.alerted).toBe(0)
+  })
+
+  it('prunes delivered rows past the TTL', async () => {
+    mockResend(200, '{}')
+    const db = new D1Mock()
+    const TTL = 30 * 86_400
+    const now = 10_000_000
+    const tooOld = now - TTL - 100 // strictly past the cutoff
+    const recent = now - 60 // well inside the TTL window
+    db.email_outbox.set('old_delivered', {
+      id: 'old_delivered',
+      to_email: 'v@x.com',
+      subject: 's',
+      html: '',
+      text_body: '',
+      kind: 'refund-notice',
+      created_at: tooOld,
+      attempts: 1,
+      last_attempt: tooOld,
+      last_error: null,
+      sent_at: tooOld,
+    })
+    db.email_outbox.set('recent_delivered', {
+      id: 'recent_delivered',
+      to_email: 'v@x.com',
+      subject: 's',
+      html: '',
+      text_body: '',
+      kind: 'refund-notice',
+      created_at: recent,
+      attempts: 1,
+      last_attempt: recent,
+      last_error: null,
+      sent_at: recent,
+    })
+    db.email_outbox.set('still_pending', {
+      id: 'still_pending',
+      to_email: 'v@x.com',
+      subject: 's',
+      html: '',
+      text_body: '',
+      kind: 'refund-notice',
+      created_at: tooOld,
+      attempts: 1,
+      last_attempt: tooOld,
+      last_error: 'pending',
+      sent_at: null,
+    })
+    const out = await sweepEmailOutbox(
+      'rk_test',
+      db as unknown as D1Database,
+      now,
+      'marc@x.com',
+      'https://marcportal.com',
+      'fr',
+    )
+    expect(out.pruned).toBe(1)
+    expect(db.email_outbox.has('old_delivered')).toBe(false)
+    expect(db.email_outbox.has('recent_delivered')).toBe(true)
+    // Pending rows are never pruned regardless of age — only delivered ones.
+    expect(db.email_outbox.has('still_pending')).toBe(true)
   })
 })

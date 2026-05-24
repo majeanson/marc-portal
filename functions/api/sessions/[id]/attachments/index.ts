@@ -157,14 +157,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   const now = Math.floor(Date.now() / 1000)
 
   // Body destined for R2 — a stream for files, an ArrayBuffer for the
-  // voice/sketch paths (which must read the whole payload anyway).
+  // voice / sketch / napkin paths (which buffer because R2.put on a
+  // hand-constructed ReadableStream requires a known content-length;
+  // Miniflare's R2 emulator hard-rejects it without one and Workers R2 is
+  // only lenient on streams that came straight from a request body, not on
+  // the wrapped streams the magic-byte verifier returns).
   let r2Body: ReadableStream | ArrayBuffer
   let transcript: string | null = null
 
-  // Streamed path: file uploads + napkin PNGs. Both are binary blobs we
-  // want straight to R2 without buffering in worker memory. The magic-byte
-  // check rewraps the stream so the upload still works.
-  if (kind === 'file' || kind === 'napkin') {
+  if (kind === 'file') {
+    // Streamed path: thread-attached file uploads stay memory-thin.
     // Magic-byte check on a streamed file: refuse a payload whose first bytes
     // don't match the declared Content-Type for the high-value classes. The
     // client-supplied MIME isn't trusted. Returns a fresh stream (the original
@@ -175,7 +177,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     }
     r2Body = magic.stream
   } else {
-    // voice + sketch: buffer the upload, then inspect it.
+    // voice + sketch + napkin: buffer the upload, then inspect it.
     const buffer = await new Response(file.stream()).arrayBuffer()
     const bytes = new Uint8Array(buffer)
     if (!verifyMagicBytesBuffer(file.type, bytes)) {

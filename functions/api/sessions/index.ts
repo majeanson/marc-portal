@@ -89,14 +89,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       typeof body.intakeJson === 'string' ? body.intakeJson : JSON.stringify(body.intakeJson)
   }
 
-  // Defensive size cap on the serialized intake. The PNG snapshot of the
-  // napkin sketch was the only field that could grow large; after P1.8 it
+  // Defensive size cap on the serialized intake. After P1.8 the napkin PNG
   // lives in R2 (uploaded as a separate kind='napkin' attachment by the
-  // intake client), and only the editable scene JSON + caption + form
-  // answers remain inline. 256 KB is comfortable headroom for a busy
-  // Excalidraw scene; a real intake is well under 50 KB. The cap survives
-  // as defense-in-depth against a misbehaving client pasting back a PNG.
-  const MAX_INTAKE_BYTES = 256 * 1024
+  // intake client), so a "real" intake from the current client is well
+  // under 50 KB. We KEEP the 1 MB cap deliberately — a visitor who had the
+  // pre-P1.8 intake page open in a stale tab and submits after the deploy
+  // would still POST the PNG inline. Tightening here would 400 them.
+  // Future tightening to ~256 KB is safe once we're confident no
+  // pre-P1.8 client cache is still in flight (typical window: a few days).
+  const MAX_INTAKE_BYTES = 1024 * 1024
   if (intakeJson && intakeJson.length > MAX_INTAKE_BYTES) {
     return badRequest('intake payload too large')
   }

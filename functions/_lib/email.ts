@@ -147,24 +147,49 @@ interface OutboxPendingRow {
   attempts: number
 }
 
+/** How long delivered rows linger before the prune sweeps them. 30 days is
+ *  long enough for an operator to investigate an after-the-fact "did this
+ *  email ever land?" question, short enough that the table doesn't grow
+ *  monotonically. */
+export const OUTBOX_DELIVERED_TTL_SECONDS = 30 * 86_400
+
 /**
- * Sweep the outbox. Called from the daily digest cron. For each pending
- * row whose attempts are below the ceiling, retry the Resend POST. Mark
- * sent_at on success; bump attempts + record last_error on failure. Bounded
- * per-call: only pulls up to `batch` rows so a backed-up outbox doesn't
- * blow the cron's runtime budget.
+ * Sweep the outbox. Called from the daily digest cron. Three things happen:
  *
- * Backoff: a row with N attempts is skipped until at least 2^N minutes
- * have passed since `last_attempt` (1 → 2m, 2 → 4m, 3 → 8m, … cap at the
- * cron's daily cadence anyway). Keeps a transient Resend hiccup from
- * burning all attempts in the same minute.
+ *   1. RETRY: for each pending row whose attempts are below the ceiling,
+ *      retry the Resend POST. Mark sent_at on success; bump attempts +
+ *      record last_error on failure. Bounded by `batch` so a backed-up
+ *      outbox doesn't blow the cron's runtime budget.
+ *
+ *   2. ALERT: any rows whose attempts have JUST hit OUTBOX_MAX_ATTEMPTS
+ *      this sweep are bubbled to the operator via `sendAdminAlert` — the
+ *      DB has the failure record, but a stuck row is silent without a
+ *      pager. The alert fires once per row (the next sweep skips it).
+ *
+ *   3. PRUNE: delivered rows older than OUTBOX_DELIVERED_TTL_SECONDS get
+ *      DELETEd. The forensic value of a delivered row decays fast — once
+ *      a month is enough.
+ *
+ * Backoff knob exists for future scenarios where the sweeper runs more
+ * than once a day. At the current daily cadence the wait condition is
+ * always satisfied (>86,400 s elapsed); the math survives as
+ * defense-in-depth.
  */
 export async function sweepEmailOutbox(
   apiKey: string,
   db: D1Database,
   now: number,
+  marcEmail: string | null,
+  origin: string,
+  marcLang: Lang,
   batch = 25,
-): Promise<{ retried: number; delivered: number; failed: number }> {
+): Promise<{
+  retried: number
+  delivered: number
+  failed: number
+  alerted: number
+  pruned: number
+}> {
   const rows = await db
     .prepare(
       `SELECT id, to_email, subject, html, text_body, kind, attempts
@@ -179,6 +204,7 @@ export async function sweepEmailOutbox(
   let retried = 0
   let delivered = 0
   let failed = 0
+  const justCappedRows: Array<{ id: string; kind: string; to: string; error: string }> = []
   for (const row of pending) {
     // Exponential backoff — skip this iteration if we tried too recently.
     const minWait = Math.min(2 ** row.attempts * 60, 3600)
@@ -204,6 +230,7 @@ export async function sweepEmailOutbox(
         .run()
       delivered++
     } else {
+      const nextAttempts = row.attempts + 1
       await db
         .prepare(
           `UPDATE email_outbox
@@ -213,9 +240,58 @@ export async function sweepEmailOutbox(
         .bind(now, ok.error ?? 'unknown', row.id)
         .run()
       failed++
+      // Collect rows that JUST hit the ceiling on this sweep so we can fire
+      // one consolidated admin alert outside the per-row loop.
+      if (nextAttempts >= OUTBOX_MAX_ATTEMPTS) {
+        justCappedRows.push({
+          id: row.id,
+          kind: row.kind,
+          to: row.to_email,
+          error: ok.error ?? 'unknown',
+        })
+      }
     }
   }
-  return { retried, delivered, failed }
+
+  let alerted = 0
+  if (justCappedRows.length > 0 && marcEmail) {
+    // One alert per sweep, listing every freshly-capped row. Keeps the
+    // operator's inbox quiet when a single Resend incident caps many rows
+    // at once. Best-effort — sendAdminAlert itself is non-durable (no
+    // outboxDb passed) to avoid the recursive "the stuck-row alert got
+    // stuck too" loop. We count the rows in `alerted` regardless of
+    // whether the alert send itself succeeded; the failure mode is the
+    // same Resend incident that capped the rows in the first place, and
+    // the DB row preserves the full failure history independently.
+    const lines = justCappedRows
+      .map((r) => `• ${r.kind} → ${r.to} (id ${r.id}): ${r.error}`)
+      .join('\n')
+    const body =
+      marcLang === 'fr'
+        ? `${justCappedRows.length} courriel(s) durable(s) ont épuisé les ${OUTBOX_MAX_ATTEMPTS} tentatives de relance et restent non livrés :\n\n${lines}\n\nDétails dans la table email_outbox.`
+        : `${justCappedRows.length} durable email(s) hit the ${OUTBOX_MAX_ATTEMPTS}-attempt ceiling and are now stuck:\n\n${lines}\n\nDetails in the email_outbox table.`
+    await sendAdminAlert(apiKey, marcEmail, origin, body, marcLang)
+    alerted = justCappedRows.length
+  }
+
+  // TTL prune of delivered rows. Bounded by the same `LIMIT` shape so a
+  // backlog doesn't blow the cron runtime; the next sweep gets the rest.
+  let pruned = 0
+  try {
+    const cutoff = now - OUTBOX_DELIVERED_TTL_SECONDS
+    const res = await db
+      .prepare(
+        `DELETE FROM email_outbox
+         WHERE sent_at IS NOT NULL AND sent_at < ?`,
+      )
+      .bind(cutoff)
+      .run()
+    pruned = (res.meta as { changes?: number }).changes ?? 0
+  } catch (err) {
+    console.warn('outbox prune failed (continuing)', err)
+  }
+
+  return { retried, delivered, failed, alerted, pruned }
 }
 
 /** Pure Resend POST without outbox side-effects. Used by the sweeper —

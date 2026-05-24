@@ -1,0 +1,68 @@
+{
+  "featureKey": "feat-2026-095",
+  "title": "submitIntake — two-phase intake submit orchestrator (session POST + napkin upload)",
+  "status": "active",
+  "schemaVersion": 1,
+  "domain": "marc-portal/intake",
+  "componentFile": "src/lib/submitIntake.ts",
+  "problem": "Pre-P1.8 the intake submit was one POST: intake_json carried the whole payload, including the napkin PNG as a base64 data URL. That worked while sketches were tiny but blew the intake size cap as soon as visitors drew busier napkins, and was the wrong shape regardless (a multi-MB blob doesn't belong in a JSON column). After P1.8 the PNG lives as a separate kind='napkin' R2-backed attachment, but the intake client now has TWO ordered POSTs to coordinate: POST /api/sessions to create the row, then POST /api/sessions/:id/attachments?kind=napkin to upload the snapshot. This helper hides that ordering from the call sites (Intake.tsx signed-in submit + MePortal.tsx post-magic-link finalize) and standardizes the failure shape — a napkin upload failure does NOT abort the submit (the session is the load-bearing part), it returns alongside the session row so the caller can log to Sentry and proceed.",
+  "tags": ["intake", "orchestrator", "two-phase-submit", "napkin", "graceful-degrade"],
+  "analysis": "Pure async helper. splitNapkinPng() walks the intake payload, finds napkin.png (a data URL), pulls it out into a separate variable, and returns the payload-without-png alongside it (the scene + caption + savedAt stay on the napkin object). When no napkin is present, or png is already a URL (resumed flow), the splitter returns the payload unchanged with napkinPng=null. The orchestrator: calls createSession with payloadSansPng; on success, if napkinPng is set, calls uploadNapkin (which converts the data URL to a Blob via fetch(dataUrl) and POSTs multipart). The return shape is { session, napkinUploadError? }: a session POST failure throws (caller handles), a napkin-upload failure resolves with the session + the error string. A 409 from the napkin upload is treated as silent success — the only way to hit that is a resumed submit where the napkin is already there.",
+  "decisions": [
+    {
+      "decision": "Napkin failure does not abort the submit",
+      "rationale": "The session record is the load-bearing primitive. A visitor whose session was created but whose napkin upload failed (transient R2 hiccup, malformed PNG, per-session quota) is still in a recoverable state — they can re-draw and re-upload via a future session-view affordance, or via re-submission. Aborting the whole submit on a napkin failure would mean losing the session row + the visitor's typed answers for a cosmetic-tier asset.",
+      "recommendation": "If a future product decision makes the napkin load-bearing (e.g. mandatory for certain problem types), the abort behavior moves here, not into the caller — keep the failure-shape decision in one place.",
+      "date": "2026-05-24"
+    },
+    {
+      "decision": "Treat 409 from napkin upload as silent success",
+      "rationale": "The only way to legitimately hit 409 (one-per-session) on the napkin endpoint is a resumed/double-clicked submit where the napkin is already attached. The session POST is idempotent at the visitor level (a fresh submit gets a new session id), so 409 here ALWAYS means 'this exact session already has its napkin' — not an error worth surfacing.",
+      "recommendation": "Don't widen this to other 4xx codes. 415 (wrong content-type) or 413 (too big) ARE worth bubbling to the caller for a human-facing message.",
+      "date": "2026-05-24"
+    },
+    {
+      "decision": "Strip png from the napkin object, leave scene + caption + savedAt",
+      "rationale": "The editable Excalidraw scene is small (a few hundred KB max) and worth keeping inline in intake_json so SessionPage can re-open the canvas without a second round-trip. Only the PNG is heavyweight enough to deserve R2; the scene is the source of truth, the PNG is its snapshot.",
+      "recommendation": "If the scene ever grows enough to bust the intake cap on its own, the same split-pattern applies: move it to R2 as kind='sketch-scene' and leave only the metadata inline.",
+      "date": "2026-05-24"
+    }
+  ],
+  "successCriteria": "- Strips napkin.png from intakeJson before the session POST (the request never carries the data URL)\n- Session POST failure throws ApiError, caller handles capacity 409 / network etc.\n- Napkin upload failure resolves with { session, napkinUploadError } — does NOT throw\n- 409 from napkin upload is silent success\n- No-napkin and already-a-URL payloads round-trip unchanged",
+  "implementation": "src/lib/submitIntake.ts. Two helpers: submitIntake (the orchestrator) and splitNapkinPng (the payload walker, private). Consumers: src/pages/Intake.tsx (signed-in submit path) + src/pages/MePortal.tsx (post-magic-link finalize). Both call sites log napkinUploadError via captureException (src/lib/sentry.ts) but do not surface it to the visitor in v1. Tests: src/lib/submitIntake.test.ts — 6 cases covering payload splitting, no-napkin passthrough, resumed-flow no-op, session-POST throw, napkin-upload-failure shape, 409 silent success.",
+  "userGuide": "Callers replace `createSession(intakePayload)` with `submitIntake(intakePayload)`. The return shape adds an optional `napkinUploadError` field — when present, the session is still good; log + proceed. The visitor sees confirmation as normal. Recovery for a napkin-upload failure: the visitor can re-edit the session from /session/:id (a future re-upload affordance) or re-submit the intake fresh. See RUNBOOK §14 for napkin-missing triage.",
+  "knownLimitations": [
+    "No automatic retry on napkin upload failure — the failure modes that actually fire (R2 outage, magic-byte rejection, per-session quota) aren't helped by client-side retry. The redo-from-draft path is the recovery story",
+    "Visitor sees no in-app notice when the napkin upload silently fails; only Sentry sees it. A future affordance on the session view would close this",
+    "The data URL → Blob conversion uses fetch(dataUrl), which silently returns an empty blob for malformed data URLs. The server then 400s on the empty file; surfaced as napkinUploadError",
+    "splitNapkinPng is naive about deeply nested napkin shapes — assumes the top-level intakePayload.napkin.png path"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-24",
+      "reason": "Shipped with AUDIT P1.8 — the two-phase submit pattern is in production from day 1. Stays active until the first wave of real intakes validates the failure-shape rationale; needs a re-freeze once the napkin retry UX (if any) is wired."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-24",
+  "revisions": [
+    {
+      "date": "2026-05-24",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "decisions",
+        "successCriteria",
+        "implementation",
+        "userGuide",
+        "knownLimitations",
+        "tags"
+      ],
+      "reason": "Initial author — co-located doc for the new orchestrator helper introduced by AUDIT P1.8."
+    }
+  ],
+  "annotations": []
+}

@@ -778,6 +778,15 @@
       ],
       "adminOnly": false,
       "file": "functions/api/vouches.ts"
+    },
+    {
+      "id": "api.webhooks.resend",
+      "path": "/api/webhooks/resend",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/webhooks/resend.ts"
     }
   ],
   "tables": [
@@ -795,6 +804,16 @@
       "id": "table.audit_log",
       "name": "audit_log",
       "firstMigration": "0002_tenants.sql"
+    },
+    {
+      "id": "table.email_events",
+      "name": "email_events",
+      "firstMigration": "0027_email_events.sql"
+    },
+    {
+      "id": "table.email_outbox",
+      "name": "email_outbox",
+      "firstMigration": "0026_email_outbox.sql"
     },
     {
       "id": "table.intake_drafts",
