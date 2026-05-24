@@ -326,6 +326,70 @@
       "lastTransitionDate": "2026-05-24"
     },
     {
+      "featureKey": "feat-2026-094",
+      "title": "POST /api/webhooks/resend — bounce/complaint events from Resend",
+      "status": "active",
+      "domain": "marc-portal/email",
+      "tags": [
+        "email",
+        "resend",
+        "webhook",
+        "svix-signature",
+        "csrf-exempt",
+        "graceful-degrade",
+        "audit-p1.2"
+      ],
+      "componentFile": "functions/api/webhooks/resend.ts",
+      "liveUrl": null,
+      "problem": "Resend fires webhooks when a recipient's mail server tells it something meaningful about a previously-delivered message: hard bounce, soft bounce, spam complaint, scheduled-delivery delayed, etc. Without ingesting these we keep sending magic-link / tier-assigned / refund emails to addresses the rest of the internet has decided are dead — burning sender reputation along the way. This handler is the ingest endpoint: it verifies Resend's Svix-style signature, dedupes via the shared webhook_events table, and writes a row per bounce/complaint/delivered/delayed/opened/clicked into email_events. Code-only landing: P1.1 (custom-domain DNS) gates real events flowing in, so the handler stays inert (503 while RESEND_WEBHOOK_SECRET is unset).",
+      "analysis": "POST only. Auth: Svix-style HMAC-SHA-256 over `${svix-id}.${svix-timestamp}.${raw-body}` using RESEND_WEBHOOK_SECRET (whsec_ prefix stripped if present). 5-minute timestamp tolerance to prevent replay. Constant-time signature compare. Header `svix-signature` is a space-separated list of `<version>,<sig>` pairs — accept on any v1 match (rotated keys). CSRF-exempt in middleware. Idempotency: INSERT OR IGNORE into webhook_events keyed on the Svix event id; duplicate returns 200 + duplicate=true with no email_events row. Informational `email.sent` is accepted (dedupe row) but dropped (no email_events row). Anything in INGEST_TYPES (delivered, delivery_delayed, bounced, complained, opened, clicked) writes a row carrying the recipient + type + subtype (bounce_type / reason / subtype field extracted from the data payload) + raw payload TEXT (truncated to 16KB defensively). 503 when secret unset, 401 on signature mismatch, 200 on every other outcome so Resend doesn't retry into backoff.",
+      "decisions": [
+        {
+          "decision": "Land the handler before activation (DNS-blocked) instead of waiting",
+          "rationale": "The handler is the longest part of the work; DNS records + dashboard secret deploy are 5 minutes total once DNS access is available. Shipping inert lets the activation be a single-sitting flip without a code change. The 503 shape while RESEND_WEBHOOK_SECRET is unset means a stray request in the meantime is a non-event.",
+          "recommendation": "If Resend ever changes its webhook signing scheme away from Svix, the verifier is the only piece to swap — the dedupe + ingest + 503-graceful-degrade structure stays."
+        },
+        {
+          "decision": "Reuse webhook_events table for dedupe instead of a per-source table",
+          "rationale": "Stripe events are evt_..., Resend events are msg_... — no namespace collision in practice. One table = one INSERT OR IGNORE pattern that future webhook sources (CF Email Routing, support inbox?) plug into without schema work.",
+          "recommendation": "If a third webhook source ever shares an id namespace with one of these, add a 'source' column. Not worth doing pre-emptively."
+        },
+        {
+          "decision": "Persist the raw payload TEXT, not just a structured projection",
+          "rationale": "Resend's payload shape varies per event type and per version; modeling every field at the schema level would mean migration on every Resend release-note bump. Keep `type`, `subtype`, `to_email`, `received_at` as queryable columns (the dimensions an operator actually filters on) and stash the rest as TEXT for forensics. ~1 KB per row.",
+          "recommendation": "If a specific field becomes load-bearing (e.g. bounce category drives an automatic suppression-list update), promote it to a column then. Premature normalization is the trap."
+        },
+        {
+          "decision": "Drop email.sent events without an email_events row",
+          "rationale": "email.sent is just Resend confirming the API call landed — which we already know from send()'s success return. Storing a row per outbound email would inflate the table for zero forensic value; the durable email_outbox table already records the rows that mattered to begin with.",
+          "recommendation": "If we ever want a full outbound-mail audit trail, that's a separate table (mail_log), not this one."
+        }
+      ],
+      "successCriteria": "- 503 when RESEND_WEBHOOK_SECRET unset (graceful degrade)\n- 401 on signature mismatch (Resend will not retry)\n- 200 + dedupe on duplicate event ids (Resend retry storm absorbed)\n- 200 + email_events row written on bounce/complaint/delivered/delayed/opened/clicked\n- 200 + ignored=true for informational email.sent (no row)\n- Payload TEXT truncated to 16KB defensively\n- Svix timestamp tolerance window enforced (5 minutes) — replay attack rejected\n- Rotated multi-sig header accepted via any-match",
+      "knownLimitations": [
+        "Dormant until P1.1 (custom-domain DNS) is configured — no real events flow before then",
+        "No automatic suppression of bouncing addresses at send time yet; future work once real bounce data accumulates",
+        "Svix signature scheme is hard-coded; a future Resend rework to a different signer would need code change in resendWebhook.ts",
+        "Subtype extraction is naive — checks bounce_type / reason / subtype keys. New event types with different subtype fields land NULL until added",
+        "email.sent dedupes (occupies a webhook_events row) but doesn't write to email_events; minor wastage on the dedupe table"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "draft",
+          "date": "2026-05-24",
+          "reason": "Code-only landing. Stays draft until P1.1 DNS is live and the first real event ingests successfully — at which point it advances to active."
+        },
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-24",
+          "reason": "P1.1 confirmed already done (domain verified 2026-05-16). RESEND_WEBHOOK_SECRET deployed via wrangler pages secret put; webhook endpoint configured on Resend Dashboard. Awaiting first real ingest to advance to frozen."
+        }
+      ],
+      "lastTransitionDate": "2026-05-24"
+    },
+    {
       "featureKey": "feat-2026-024",
       "title": "Handoff ritual — two ownership modes and a public checklist",
       "status": "active",
@@ -470,64 +534,6 @@
         }
       ],
       "lastTransitionDate": "2026-05-21"
-    },
-    {
-      "featureKey": "feat-2026-094",
-      "title": "POST /api/webhooks/resend — bounce/complaint events from Resend",
-      "status": "draft",
-      "domain": "marc-portal/email",
-      "tags": [
-        "email",
-        "resend",
-        "webhook",
-        "svix-signature",
-        "csrf-exempt",
-        "graceful-degrade",
-        "audit-p1.2"
-      ],
-      "componentFile": "functions/api/webhooks/resend.ts",
-      "liveUrl": null,
-      "problem": "Resend fires webhooks when a recipient's mail server tells it something meaningful about a previously-delivered message: hard bounce, soft bounce, spam complaint, scheduled-delivery delayed, etc. Without ingesting these we keep sending magic-link / tier-assigned / refund emails to addresses the rest of the internet has decided are dead — burning sender reputation along the way. This handler is the ingest endpoint: it verifies Resend's Svix-style signature, dedupes via the shared webhook_events table, and writes a row per bounce/complaint/delivered/delayed/opened/clicked into email_events. Code-only landing: P1.1 (custom-domain DNS) gates real events flowing in, so the handler stays inert (503 while RESEND_WEBHOOK_SECRET is unset).",
-      "analysis": "POST only. Auth: Svix-style HMAC-SHA-256 over `${svix-id}.${svix-timestamp}.${raw-body}` using RESEND_WEBHOOK_SECRET (whsec_ prefix stripped if present). 5-minute timestamp tolerance to prevent replay. Constant-time signature compare. Header `svix-signature` is a space-separated list of `<version>,<sig>` pairs — accept on any v1 match (rotated keys). CSRF-exempt in middleware. Idempotency: INSERT OR IGNORE into webhook_events keyed on the Svix event id; duplicate returns 200 + duplicate=true with no email_events row. Informational `email.sent` is accepted (dedupe row) but dropped (no email_events row). Anything in INGEST_TYPES (delivered, delivery_delayed, bounced, complained, opened, clicked) writes a row carrying the recipient + type + subtype (bounce_type / reason / subtype field extracted from the data payload) + raw payload TEXT (truncated to 16KB defensively). 503 when secret unset, 401 on signature mismatch, 200 on every other outcome so Resend doesn't retry into backoff.",
-      "decisions": [
-        {
-          "decision": "Land the handler before activation (DNS-blocked) instead of waiting",
-          "rationale": "The handler is the longest part of the work; DNS records + dashboard secret deploy are 5 minutes total once DNS access is available. Shipping inert lets the activation be a single-sitting flip without a code change. The 503 shape while RESEND_WEBHOOK_SECRET is unset means a stray request in the meantime is a non-event.",
-          "recommendation": "If Resend ever changes its webhook signing scheme away from Svix, the verifier is the only piece to swap — the dedupe + ingest + 503-graceful-degrade structure stays."
-        },
-        {
-          "decision": "Reuse webhook_events table for dedupe instead of a per-source table",
-          "rationale": "Stripe events are evt_..., Resend events are msg_... — no namespace collision in practice. One table = one INSERT OR IGNORE pattern that future webhook sources (CF Email Routing, support inbox?) plug into without schema work.",
-          "recommendation": "If a third webhook source ever shares an id namespace with one of these, add a 'source' column. Not worth doing pre-emptively."
-        },
-        {
-          "decision": "Persist the raw payload TEXT, not just a structured projection",
-          "rationale": "Resend's payload shape varies per event type and per version; modeling every field at the schema level would mean migration on every Resend release-note bump. Keep `type`, `subtype`, `to_email`, `received_at` as queryable columns (the dimensions an operator actually filters on) and stash the rest as TEXT for forensics. ~1 KB per row.",
-          "recommendation": "If a specific field becomes load-bearing (e.g. bounce category drives an automatic suppression-list update), promote it to a column then. Premature normalization is the trap."
-        },
-        {
-          "decision": "Drop email.sent events without an email_events row",
-          "rationale": "email.sent is just Resend confirming the API call landed — which we already know from send()'s success return. Storing a row per outbound email would inflate the table for zero forensic value; the durable email_outbox table already records the rows that mattered to begin with.",
-          "recommendation": "If we ever want a full outbound-mail audit trail, that's a separate table (mail_log), not this one."
-        }
-      ],
-      "successCriteria": "- 503 when RESEND_WEBHOOK_SECRET unset (graceful degrade)\n- 401 on signature mismatch (Resend will not retry)\n- 200 + dedupe on duplicate event ids (Resend retry storm absorbed)\n- 200 + email_events row written on bounce/complaint/delivered/delayed/opened/clicked\n- 200 + ignored=true for informational email.sent (no row)\n- Payload TEXT truncated to 16KB defensively\n- Svix timestamp tolerance window enforced (5 minutes) — replay attack rejected\n- Rotated multi-sig header accepted via any-match",
-      "knownLimitations": [
-        "Dormant until P1.1 (custom-domain DNS) is configured — no real events flow before then",
-        "No automatic suppression of bouncing addresses at send time yet; future work once real bounce data accumulates",
-        "Svix signature scheme is hard-coded; a future Resend rework to a different signer would need code change in resendWebhook.ts",
-        "Subtype extraction is naive — checks bounce_type / reason / subtype keys. New event types with different subtype fields land NULL until added",
-        "email.sent dedupes (occupies a webhook_events row) but doesn't write to email_events; minor wastage on the dedupe table"
-      ],
-      "statusHistory": [
-        {
-          "from": "draft",
-          "to": "draft",
-          "date": "2026-05-24",
-          "reason": "Code-only landing. Stays draft until P1.1 DNS is live and the first real event ingests successfully — at which point it advances to active."
-        }
-      ],
-      "lastTransitionDate": "2026-05-24"
     },
     {
       "featureKey": "feat-2026-089",
@@ -4690,5 +4696,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-24T18:35:23.776Z"
+  "generatedAt": "2026-05-24T18:58:26.256Z"
 }

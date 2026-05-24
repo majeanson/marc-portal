@@ -1,7 +1,7 @@
 {
   "featureKey": "feat-2026-094",
   "title": "POST /api/webhooks/resend — bounce/complaint events from Resend",
-  "status": "draft",
+  "status": "active",
   "schemaVersion": 1,
   "domain": "marc-portal/email",
   "componentFile": "functions/api/webhooks/resend.ts",
@@ -58,6 +58,12 @@
       "to": "draft",
       "date": "2026-05-24",
       "reason": "Code-only landing. Stays draft until P1.1 DNS is live and the first real event ingests successfully — at which point it advances to active."
+    },
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-24",
+      "reason": "P1.1 confirmed already done (domain verified 2026-05-16). RESEND_WEBHOOK_SECRET deployed via wrangler pages secret put; webhook endpoint configured on Resend Dashboard. Awaiting first real ingest to advance to frozen."
     }
   ],
   "lastVerifiedDate": "2026-05-24",
