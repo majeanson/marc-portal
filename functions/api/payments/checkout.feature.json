@@ -6,7 +6,13 @@
   "domain": "marc-portal/payments",
   "componentFile": "functions/api/payments/checkout.ts",
   "problem": "When the client clicks 'pay' on a session in pricing status, this endpoint mints a Stripe Checkout URL the browser redirects to. Stripe takes it from there (card form, 3DS, etc.) and pings /api/payments/webhook on completion. Three kinds: 'build' (next unpaid installment of the session's tier 1–4), 'scoping' ($250 scoping report, credited to leg 1), 'custodian' (annual subscription, Watch or Care plan). The server owns all pricing math — the client never sends an amount or a leg index, only the kind. That's the load-bearing property: any pricing change is one server-side update.",
-  "tags": ["payments", "stripe", "checkout", "server-side-pricing", "graceful-degrade"],
+  "tags": [
+    "payments",
+    "stripe",
+    "checkout",
+    "server-side-pricing",
+    "graceful-degrade"
+  ],
   "analysis": "POST handler taking { sessionId, kind, custodianPlan?, lang?, amountCadOverride? }. Auth: canAccessSession() (visitor self or admin). Pricing: buildInstallmentPlan() (functions/_lib/pricing.ts) reads the session's tier and the paid rows, computes the next unpaid leg + its amount with scoping credit applied. For 'custodian' kind, it picks the right Stripe Price ID from STRIPE_CUSTODIAN_WATCH_PRICE / _CARE_PRICE env vars. For 'scoping', uses CUSTODIAN_CENTS (the canonical $250 in CAD cents). amountCadOverride is admin-only and bypasses the plan computation for one-off cases. Inserts a payments row with status='pending' before calling Stripe; returns { url, paymentId } so the client knows which payment row the eventual webhook will resolve. STRIPE_SECRET_KEY guard: if unset, returns 503 with a clear message (graceful-degrade pattern). Same shape for missing custodian Price IDs.",
   "decisions": [
     {
@@ -101,8 +107,15 @@
     {
       "date": "2026-05-24",
       "author": "marc+claude",
-      "fields_changed": ["status", "decisions", "knownLimitations", "statusHistory"],
-      "reason": "Community-pricing flag (sessions.community_discount). 20% off build tiers 1-4 only; scoping + custodian unaffected. Operator-applied; frozen after first paid leg via atomic NOT EXISTS guard in PATCH /api/sessions/:id."
+      "fields_changed": [
+        "status",
+        "decisions",
+        "knownLimitations",
+        "statusHistory"
+      ],
+      "reason": "Community-pricing flag (sessions.community_discount). 20% off build tiers 1-4 only; scoping + custodian unaffected. Operator-applied; frozen after first paid leg via atomic NOT EXISTS guard in PATCH /api/sessions/:id.",
+      "commit": "aaf4c9f",
+      "buildUrl": "https://fb5267fc.marc-portal.pages.dev"
     }
   ],
   "annotations": []
