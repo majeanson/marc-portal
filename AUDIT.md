@@ -18,13 +18,15 @@
 ## P1 — High impact, do first
 
 ### Email / deliverability
-- ⚠ **P1.1** — Custom Resend sender domain. Code is ready: the `RESEND_FROM`
-  constant in `functions/_lib/email.ts` is already `noreply@marcportal.com`
-  with the 4-record DNS set documented in the file's header comment.
-  Currently DNS-blocked at the operator level — the records have not been
-  added to Cloudflare DNS yet, so every send via this FROM 403s with
-  "domain not verified". Activation steps in RUNBOOK §16 (one-time DNS +
-  Resend Dashboard verify; ~10 minutes including propagation wait).
+- ✅ **P1.1** — Custom Resend sender domain `marcportal.com` is verified
+  on the Resend Dashboard as of 2026-05-16 (confirmed by Marc 2026-05-24
+  via the Domains screenshot). The 4 DNS records (DKIM TXT, MX, SPF TXT,
+  DMARC TXT) are live in Cloudflare DNS. Every send via the existing
+  `RESEND_FROM = 'Marc <noreply@marcportal.com>'` constant has been
+  delivering since then — no shared-reputation drag from
+  `onboarding@resend.dev`. The "temporary fallback" guidance in
+  `functions/_lib/email.ts`'s header comment is now historical; remove on
+  next touch.
 - ⚠ **P1.2** — Resend bounce/complaint webhook handler shipped at
   `POST /api/webhooks/resend`. Code-only landing: signature verification
   (Svix-style HMAC-SHA-256, `whsec_` prefix accepted), idempotency via the
