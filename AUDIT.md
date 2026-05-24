@@ -105,23 +105,18 @@
   exclusion, session SELECT projection, submitIntake split/failure cases.
 
 ### Attachment uploads (legacy file path)
-- ⏭ **P1.10** — `kind='file'` thread-attachment upload path uses a
-  hand-constructed `ReadableStream` (returned by `verifyMagicBytes`) and
-  passes it to `R2Bucket.put` without a content-length. Surfaced by the
-  napkin-upload e2e backend spec on 2026-05-24: Miniflare's R2 emulator
-  hard-rejects with `TypeError: Provided readable stream must have a
-  known length`. **Production Workers R2 accepts it** — Marc confirmed
-  on 2026-05-24 that real attachments land via the existing UI. So this
-  is a Miniflare-vs-prod environment difference, not a prod bug. The
-  e2e backend harness can't exercise the file-upload path until either
-  (a) the handler is routed through the buffered branch (same shape as
-  P1.8's napkin fix — voice / sketch / napkin all buffer), or (b) the
-  stream is wrapped in a `FixedLengthStream(file.size)` so Miniflare
-  also sees a known length. **Deferred** — no prod impact, the e2e gap
-  is the only real cost, and the next time the attachments handler is
-  touched for another reason is the right window to fold this in.
-  Reopen if a prod incident ever shows file uploads silently failing,
-  or if we want e2e backend coverage for the file path.
+- ✅ **P1.10** — All four attachment kinds (file / voice / sketch /
+  napkin) now use a single buffered code path: read the full body into
+  an ArrayBuffer, magic-byte check the bytes, run any kind-specific
+  validation, R2.put the buffer. Eliminates the streaming-vs-buffered
+  fork and the divergent-environment behavior between Miniflare R2
+  (strict on streams without known length) and Workers R2 (lenient).
+  Memory still bounded by per-kind size cap (10 MB for file). The
+  streaming `verifyMagicBytes` helper is dead code now; left in
+  `_lib/attachments.ts` as a possible future tool but not exported
+  into the handler. E2e backend file-upload coverage restored as a
+  side-effect — the previously-skipped "bare image/png lands as
+  kind=file" spec is back in `napkin-upload.spec.ts` and green.
 
 ### Iframe sandbox
 - ⏭ **P1.9** — Drop `allow-same-origin` from iframe sandboxes. **Deferred with

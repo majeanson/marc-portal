@@ -45,7 +45,6 @@ import {
   r2KeyFor,
   safeFilename,
   totalAttachmentBytesForSession,
-  verifyMagicBytes,
   verifyMagicBytesBuffer,
   type AttachmentKind,
   type AttachmentRow,
@@ -156,53 +155,40 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   const filename = safeFilename(file.name)
   const now = Math.floor(Date.now() / 1000)
 
-  // Body destined for R2 — a stream for files, an ArrayBuffer for the
-  // voice / sketch / napkin paths (which buffer because R2.put on a
-  // hand-constructed ReadableStream requires a known content-length;
-  // Miniflare's R2 emulator hard-rejects it without one and Workers R2 is
-  // only lenient on streams that came straight from a request body, not on
-  // the wrapped streams the magic-byte verifier returns).
-  let r2Body: ReadableStream | ArrayBuffer
-  let transcript: string | null = null
-
-  if (kind === 'file') {
-    // Streamed path: thread-attached file uploads stay memory-thin.
-    // Magic-byte check on a streamed file: refuse a payload whose first bytes
-    // don't match the declared Content-Type for the high-value classes. The
-    // client-supplied MIME isn't trusted. Returns a fresh stream (the original
-    // was consumed during inspection) — we MUST use it for the R2 write.
-    const magic = await verifyMagicBytes(file)
-    if (!magic.ok || !magic.stream) {
-      return unsupportedMediaType('file contents do not match declared type')
-    }
-    r2Body = magic.stream
-  } else {
-    // voice + sketch + napkin: buffer the upload, then inspect it.
-    const buffer = await new Response(file.stream()).arrayBuffer()
-    const bytes = new Uint8Array(buffer)
-    if (!verifyMagicBytesBuffer(file.type, bytes)) {
-      return unsupportedMediaType('file contents do not match declared type')
-    }
-    if (kind === 'sketch') {
-      // A sketch must be a JSON object carrying an `elements` array — the
-      // shape SketchCanvas / NapkinReplay hydrate from. Anything else is a
-      // malformed or hostile payload.
-      try {
-        const parsed = JSON.parse(new TextDecoder().decode(bytes)) as { elements?: unknown }
-        if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.elements)) {
-          return badRequest('sketch must be a JSON scene with an elements array')
-        }
-      } catch {
-        return badRequest('sketch is not valid JSON')
-      }
-    }
-    if (kind === 'voice') {
-      // Transcribe at the edge. Best-effort: a null transcript (Workers AI
-      // off, or Whisper hiccup) still leaves a playable voice note.
-      transcript = await transcribeAudio(env, buffer)
-    }
-    r2Body = buffer
+  // One shape for all four kinds: buffer the upload into an ArrayBuffer,
+  // magic-byte check the bytes, run any kind-specific validation, then
+  // R2.put the buffer. R2 needs a known content-length, and a buffer
+  // gives that for free. Memory is bounded by the per-kind size cap
+  // (10 MB for file, lower for the others) — well inside the 128 MB
+  // Worker budget. The previous streaming variant for `kind='file'`
+  // worked in production (Workers R2 was lenient on the magic-byte
+  // verifier's wrapped stream) but failed under Miniflare's stricter
+  // emulator — see AUDIT P1.10.
+  const buffer = await new Response(file.stream()).arrayBuffer()
+  const bytes = new Uint8Array(buffer)
+  if (!verifyMagicBytesBuffer(file.type, bytes)) {
+    return unsupportedMediaType('file contents do not match declared type')
   }
+  if (kind === 'sketch') {
+    // A sketch must be a JSON object carrying an `elements` array — the
+    // shape SketchCanvas / NapkinReplay hydrate from. Anything else is a
+    // malformed or hostile payload.
+    try {
+      const parsed = JSON.parse(new TextDecoder().decode(bytes)) as { elements?: unknown }
+      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.elements)) {
+        return badRequest('sketch must be a JSON scene with an elements array')
+      }
+    } catch {
+      return badRequest('sketch is not valid JSON')
+    }
+  }
+  let transcript: string | null = null
+  if (kind === 'voice') {
+    // Transcribe at the edge. Best-effort: a null transcript (Workers AI
+    // off, or Whisper hiccup) still leaves a playable voice note.
+    transcript = await transcribeAudio(env, buffer)
+  }
+  const r2Body: ArrayBuffer = buffer
 
   // Stream/put to R2.
   await env.MEDIA.put(r2Key, r2Body, {

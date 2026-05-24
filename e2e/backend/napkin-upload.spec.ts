@@ -142,30 +142,31 @@ test.describe('napkin upload — ?kind=napkin branch', () => {
     expect(j.error).toMatch(/napkin already exists/)
   })
 
-  test('napkin_attachment_id stays null on a session with no napkin', async () => {
-    // Sanity check on the correlated subquery: a session with no kind='napkin'
-    // attachment reports napkin_attachment_id as null. Mirrors the unit test
-    // in functions/_lib/sessions.test.ts but against real D1 — proves the
-    // subquery actually fires on the live SELECT, not just the mock.
-    //
-    // Originally this test also uploaded a kind='file' image/png to guard
-    // against accidental napkin election from a thread attachment, but the
-    // legacy 'file' upload path uses a hand-constructed ReadableStream
-    // (from the magic-byte rewrapper) that Miniflare's R2 emulator rejects
-    // for missing content-length. Production Workers R2 has been lenient on
-    // this; surfaced + tracked in AUDIT.md.
+  test('bare image/png (no ?kind) lands as kind=file, not napkin', async () => {
+    // Guard against accidental napkin election from a thread-attachment
+    // upload. The session view depends on this — napkin is reserved for
+    // intake submissions, never auto-elected from a generic PNG attachment.
     const sessionId = `sess_napkin_${randomBytes(6).toString('hex')}`
     seedSession({ id: sessionId, email: VISITOR_EMAIL, tier: 1, status: 'active' })
 
+    const r = await fetch(`${E2E_BASE_URL}/api/sessions/${sessionId}/attachments`, {
+      method: 'POST',
+      headers: multipartHeaders(VISITOR_EMAIL),
+      body: napkinForm(PNG_BYTES, 'image/png', 'photo.png'),
+    })
+    expect(r.status).toBe(200)
+    const body = (await r.json()) as { attachment: { kind: string } }
+    expect(body.attachment.kind).toBe('file')
+
+    // Session GET's napkin_attachment_id stays null — kind=file doesn't
+    // count toward the subquery's WHERE kind='napkin' filter.
     const sessionsResp = await fetch(`${E2E_BASE_URL}/api/sessions`, {
       headers: { Cookie: forgeAuthHeaders(VISITOR_EMAIL).Cookie },
     })
-    expect(sessionsResp.status).toBe(200)
     const sessions = (await sessionsResp.json()) as {
       sessions: Array<{ id: string; napkin_attachment_id: string | null }>
     }
     const ours = sessions.sessions.find((s) => s.id === sessionId)
-    expect(ours).toBeDefined()
     expect(ours?.napkin_attachment_id).toBeNull()
   })
 })
