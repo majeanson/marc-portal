@@ -46,6 +46,20 @@
   is hardcoded per-function (cleaner than the per-call outboxDb arg).
   17 new tests on the writer + suppression + Svix subtype extraction +
   unsubscribe handler.
+- ✅ **P1.12** — Napkin re-upload affordance on /session/:id. Closes the
+  UX gap from P1.8: the intake's napkin upload is best-effort (failures
+  log to Sentry but the visitor sees no signal), so a silent miss leaves
+  the session permanently without a napkin. The session view's
+  NapkinSection now exposes a "Refaire le croquis ↻" button (visitor-self
+  + admin) that lazy-loads the SketchCanvas hydrated with the existing
+  scene; save → exports a fresh PNG → POSTs to
+  `?kind=napkin&replace=true` (atomic delete-old + insert-new on the
+  server) → parent SessionPage re-fetches so the new attachment URL
+  renders. Server-side: extended the napkin POST handler with the
+  `replace=true` query param + napkinToReplace cleanup block. Tests:
+  2 new unit tests on the replace branch + a new e2e backend spec
+  (real wrangler + R2) confirming the swap is atomic and the old
+  attachment id 404s after replacement.
 - ⚠ **P1.2** — Resend bounce/complaint webhook handler shipped at
   `POST /api/webhooks/resend`. Code-only landing: signature verification
   (Svix-style HMAC-SHA-256, `whsec_` prefix accepted), idempotency via the

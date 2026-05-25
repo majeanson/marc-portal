@@ -275,6 +275,55 @@ describe('POST /api/sessions/:id/attachments?kind=napkin', () => {
     expect(body.attachment.kind).toBe('file')
   })
 
+  it('?kind=napkin&replace=true atomically swaps the napkin (old row + R2 deleted)', async () => {
+    // Seed an existing napkin first.
+    db.attachments.set('nap_old', {
+      id: 'nap_old',
+      session_id: SESSION_ID,
+      message_id: null,
+      uploaded_by: VISITOR_EMAIL,
+      filename: 'napkin.png',
+      content_type: 'image/png',
+      size: 1024,
+      r2_key: `sessions/${SESSION_ID}/nap_old`,
+      created_at: 1,
+      kind: 'napkin',
+    })
+    const req = makeFormDataRequest(
+      `https://x.test/api/sessions/${SESSION_ID}/attachments?kind=napkin&replace=true`,
+      PNG_BYTES,
+      'image/png',
+      'napkin-v2.png',
+    )
+    const res = await onRequestPost(makeCtx(makeEnv(), req))
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { attachment: { id: string; kind: string } }
+    expect(body.attachment.kind).toBe('napkin')
+    expect(body.attachment.id).not.toBe('nap_old') // fresh id
+
+    // Old row is gone, only the new one remains.
+    const napkinRows = [...db.attachments.values()].filter(
+      (a) => a.session_id === SESSION_ID && a.kind === 'napkin',
+    )
+    expect(napkinRows).toHaveLength(1)
+    expect(napkinRows[0]?.id).toBe(body.attachment.id)
+    expect(db.attachments.has('nap_old')).toBe(false)
+  })
+
+  it('?kind=napkin&replace=true on a session WITHOUT an existing napkin still works (idempotent)', async () => {
+    const req = makeFormDataRequest(
+      `https://x.test/api/sessions/${SESSION_ID}/attachments?kind=napkin&replace=true`,
+      PNG_BYTES,
+      'image/png',
+      'napkin.png',
+    )
+    const res = await onRequestPost(makeCtx(makeEnv(), req))
+    expect(res.status).toBe(200)
+    const rows = [...db.attachments.values()].filter((a) => a.session_id === SESSION_ID)
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.kind).toBe('napkin')
+  })
+
   it('401 when not signed in (auth gate still runs before the kind branch)', async () => {
     setAuthenticated(false)
     const req = makeFormDataRequest(

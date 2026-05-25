@@ -1075,6 +1075,19 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 napkin={parsed.napkin}
                 session={session}
                 currentBuild={currentBuild}
+                onNapkinReplaced={async () => {
+                  // After a successful re-upload, re-fetch the session so the
+                  // new napkin_attachment_id surfaces and NapkinSection
+                  // renders the new R2 URL. Failure is non-fatal — the upload
+                  // succeeded; only the local view is stale.
+                  if (!id) return
+                  try {
+                    const r = await getSession(id)
+                    setSession(r.session)
+                  } catch {
+                    // Stale state; visitor can reload the page.
+                  }
+                }}
               />
             )}
 

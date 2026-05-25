@@ -69,12 +69,17 @@ export async function uploadSketch(
  * upload is a real multipart payload — not a giant base64 string riding in
  * `intake_json`. See P1.8 in AUDIT.md.
  *
- * Throws ApiError (409) if a napkin already exists for the session; the
- * intake submit path treats this as a no-op (the napkin is already saved).
+ * `replace: true` swaps an existing napkin for the new one (atomic on the
+ * server side — old R2 object + DB row deleted only after the new upload
+ * succeeds). Use from the session view's re-upload affordance. Without
+ * `replace`, a second POST returns 409.
+ *
+ * Throws ApiError (409 without replace, 415 on wrong content-type, etc.).
  */
 export async function uploadNapkin(
   sessionId: string,
   pngDataUrl: string,
+  opts: { replace?: boolean } = {},
 ): Promise<{ attachment: AttachmentRow }> {
   // fetch() on a data URL synthesizes a Response we can read as a Blob —
   // saves writing the base64 decoder by hand.
@@ -83,7 +88,9 @@ export async function uploadNapkin(
   form.append('file', new File([blob], 'napkin.png', { type: 'image/png' }))
   // ?kind=napkin asks the server to treat this as THE napkin (one-per-session
   // guard, image/png enforcement, exempt from the orphan-attachment sweep).
-  return api(`/api/sessions/${encodeURIComponent(sessionId)}/attachments?kind=napkin`, {
+  // &replace=true is the re-upload path (delete old + insert new, atomic).
+  const query = opts.replace ? '?kind=napkin&replace=true' : '?kind=napkin'
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/attachments${query}`, {
     method: 'POST',
     formData: form,
   })

@@ -771,6 +771,16 @@
       "file": "functions/api/tenant/theme.ts"
     },
     {
+      "id": "api.unsubscribe",
+      "path": "/api/unsubscribe",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/unsubscribe.ts"
+    },
+    {
       "id": "api.vouches",
       "path": "/api/vouches",
       "methods": [

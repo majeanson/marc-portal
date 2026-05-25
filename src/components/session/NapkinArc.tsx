@@ -28,12 +28,17 @@ export function NapkinArc({
   napkin,
   session,
   currentBuild,
+  onNapkinReplaced,
 }: {
   lang: Lang
   copy: NapkinArcCopy
   napkin: ParsedNapkin
   session: SessionRow
   currentBuild: AdvancementRow | null
+  /** Bubbled into NapkinSection to enable the re-upload affordance.
+   *  Parent (SessionPage) re-fetches the session so the new napkin URL
+   *  renders. When omitted, NapkinSection hides the "redo" button. */
+  onNapkinReplaced?: () => void
 }) {
   const shipped = session.status === 'shipped'
   const buildHref = currentBuild?.build_url
@@ -48,7 +53,12 @@ export function NapkinArc({
       <div className="session-arc__pair">
         <div className="session-arc__col">
           {shipped && <span className="mono session-arc__col-label">{copy.arcSketchLabel}</span>}
-          <NapkinSection lang={lang} napkin={napkin} />
+          <NapkinSection
+            lang={lang}
+            napkin={napkin}
+            sessionId={session.id}
+            onReplaced={onNapkinReplaced}
+          />
         </div>
         {shipped && (
           <>

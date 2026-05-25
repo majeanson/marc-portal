@@ -112,23 +112,40 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
 
   // `?kind=napkin` opts into the intake-time napkin path: the PNG snapshot
   // of the visitor's Excalidraw sketch, attached at session-creation. The
-  // sniffer would otherwise classify image/png as `'file'` — napkin needs an
-  // explicit caller to mean "this is THE napkin, enforce one-per-session".
+  // sniffer would otherwise classify image/png as `'file'` — napkin needs
+  // an explicit caller to mean "this is THE napkin, enforce one-per-session".
   // Every other kind (file/voice/sketch) is derived from the content type.
+  //
+  // `&replace=true` is the re-upload path: if a napkin already exists, the
+  // old R2 object + DB row are deleted before the new one is inserted.
+  // Used by SessionPage's "re-upload sketch" affordance when the original
+  // intake upload silently failed (or the visitor wants to revise the
+  // sketch post-submit). Visitor-self can replace their own; admin can
+  // replace any session's napkin (operational).
   const url = new URL(request.url)
   const requestedKind = url.searchParams.get('kind')
+  const replaceExisting = url.searchParams.get('replace') === 'true'
   let kind: AttachmentKind
+  let napkinToReplace: { id: string; r2_key: string } | null = null
   if (requestedKind === 'napkin') {
     if (file.type !== 'image/png') {
       return unsupportedMediaType('napkin must be image/png')
     }
-    // One napkin per session — the intake serializes a single sketch. A
-    // re-submit / re-upload story doesn't exist in v1, so a second POST
-    // would silently shadow the first; refuse with 409 instead. The
-    // visitor can delete the existing one (admin-gated) if a redo is
-    // really needed.
     const existing = await findNapkinForSession(env.DB, id)
-    if (existing) return conflict('napkin already exists for this session')
+    if (existing) {
+      if (!replaceExisting) {
+        // Default: refuse a second napkin (one-per-session invariant).
+        // The intake submit path never hits this — it only POSTs once per
+        // session creation. A second POST without ?replace is a bug or a
+        // double-click.
+        return conflict('napkin already exists for this session')
+      }
+      // Replace path: stash the old ids so we can clean them up AFTER
+      // the new row + R2 object land. Doing this in the right order
+      // matters: if we deleted first and the new upload failed, the
+      // session would lose its napkin entirely.
+      napkinToReplace = { id: existing.id, r2_key: existing.r2_key }
+    }
     kind = 'napkin'
   } else if (requestedKind && requestedKind !== 'file') {
     return badRequest(`unknown kind: ${requestedKind}`)
@@ -208,6 +225,21 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     // Roll back the R2 object so we don't leak orphans on DB write failures.
     await env.MEDIA.delete(r2Key).catch(() => {})
     throw err
+  }
+
+  // Replace-path cleanup: now that the new napkin row + R2 object exist,
+  // delete the old ones. Best-effort on the R2 side — a failed delete
+  // leaves an orphan blob that the digest's orphan-sweep would normally
+  // catch, EXCEPT the sweep skips kind='napkin'. So we surface the failure
+  // in the log; a subsequent re-upload (or a session deletion) will clean
+  // it up via /api/me's R2 cascade.
+  if (napkinToReplace) {
+    try {
+      await env.MEDIA.delete(napkinToReplace.r2_key)
+    } catch (err) {
+      console.warn('napkin replace: r2 delete of old object failed', napkinToReplace.r2_key, err)
+    }
+    await env.DB.prepare(`DELETE FROM attachments WHERE id = ?`).bind(napkinToReplace.id).run()
   }
 
   const row: AttachmentRow = {

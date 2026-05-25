@@ -10910,6 +10910,62 @@ button.intake__progress-step:disabled {
   border-bottom-color: var(--accent);
   outline: none;
 }
+.session-napkin__edit {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: border-color 140ms ease;
+}
+.session-napkin__edit:hover,
+.session-napkin__edit:focus-visible {
+  border-bottom-color: var(--accent);
+  outline: none;
+}
+.session-napkin__edit-bar {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.session-napkin__edit-save,
+.session-napkin__edit-cancel {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+}
+.session-napkin__edit-save {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.session-napkin__edit-save:disabled,
+.session-napkin__edit-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.session-napkin__edit-cancel {
+  background: transparent;
+  color: var(--text-muted);
+}
+.session-napkin__edit-error {
+  margin: 8px 0 0;
+  color: #b85c1f;
+  font-size: 12px;
+}
 .session-napkin__caption {
   margin: 0 0 12px;
   color: var(--text);

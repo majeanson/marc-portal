@@ -169,4 +169,51 @@ test.describe('napkin upload — ?kind=napkin branch', () => {
     const ours = sessions.sessions.find((s) => s.id === sessionId)
     expect(ours?.napkin_attachment_id).toBeNull()
   })
+
+  test('?kind=napkin&replace=true swaps an existing napkin atomically', async () => {
+    // The re-upload affordance in NapkinSection (AUDIT P1.11) hits this
+    // path. Upload once, then re-upload with replace=true and confirm the
+    // session's napkin_attachment_id changed.
+    const sessionId = `sess_napkin_${randomBytes(6).toString('hex')}`
+    seedSession({ id: sessionId, email: VISITOR_EMAIL, tier: 1, status: 'active' })
+
+    const firstResp = await fetch(
+      `${E2E_BASE_URL}/api/sessions/${sessionId}/attachments?kind=napkin`,
+      {
+        method: 'POST',
+        headers: multipartHeaders(VISITOR_EMAIL),
+        body: napkinForm(PNG_BYTES, 'image/png', 'napkin-v1.png'),
+      },
+    )
+    expect(firstResp.status).toBe(200)
+    const first = (await firstResp.json()) as { attachment: { id: string } }
+
+    const replaceResp = await fetch(
+      `${E2E_BASE_URL}/api/sessions/${sessionId}/attachments?kind=napkin&replace=true`,
+      {
+        method: 'POST',
+        headers: multipartHeaders(VISITOR_EMAIL),
+        body: napkinForm(PNG_BYTES, 'image/png', 'napkin-v2.png'),
+      },
+    )
+    expect(replaceResp.status).toBe(200)
+    const second = (await replaceResp.json()) as { attachment: { id: string } }
+    expect(second.attachment.id).not.toBe(first.attachment.id)
+
+    const sessionsResp = await fetch(`${E2E_BASE_URL}/api/sessions`, {
+      headers: { Cookie: forgeAuthHeaders(VISITOR_EMAIL).Cookie },
+    })
+    const sessions = (await sessionsResp.json()) as {
+      sessions: Array<{ id: string; napkin_attachment_id: string | null }>
+    }
+    const ours = sessions.sessions.find((s) => s.id === sessionId)
+    expect(ours?.napkin_attachment_id).toBe(second.attachment.id)
+
+    // Old attachment id no longer fetchable — DB row + R2 object both gone.
+    const oldFetch = await fetch(
+      `${E2E_BASE_URL}/api/sessions/${sessionId}/attachments/${first.attachment.id}`,
+      { headers: { Cookie: forgeAuthHeaders(VISITOR_EMAIL).Cookie } },
+    )
+    expect(oldFetch.status).toBe(404)
+  })
 })
