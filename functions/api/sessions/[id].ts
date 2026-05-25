@@ -381,14 +381,13 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   if (statusChanged && fresh) {
     const visitorPrefLang = await getLang(env.DB, fresh.email)
     await sendStatusChangeNotification(
-      env.RESEND_API_KEY,
+      env,
       fresh.email,
       id,
       statusChanged.from,
       statusChanged.to,
       origin,
       visitorPrefLang,
-      env.DB, // durable (AUDIT P1.3)
     )
   }
   // Visitor edited their own intake → notify Marc. Admin self-editing on
@@ -397,14 +396,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     if (marc) {
       const marcLang = await getLang(env.DB, marc)
-      await sendIntakeEditedNotification(
-        env.RESEND_API_KEY,
-        marc,
-        fresh.email,
-        id,
-        origin,
-        marcLang,
-      )
+      await sendIntakeEditedNotification(env, marc, fresh.email, id, origin, marcLang)
     }
   }
 
@@ -414,7 +406,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     if (marc) {
       const marcLang = await getLang(env.DB, marc)
-      await sendAllYoursAckNotification(env.RESEND_API_KEY, marc, fresh.email, id, origin, marcLang)
+      await sendAllYoursAckNotification(env, marc, fresh.email, id, origin, marcLang)
     }
   }
 
@@ -447,7 +439,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
       const isLateQuote = t === 4 && tierAssigned !== 4 && tier4QuoteJustSet
       const visitorPrefLang = await getLang(env.DB, fresh.email)
       await sendTierAssignedNotification(
-        env.RESEND_API_KEY,
+        env,
         fresh.email,
         id,
         t,
@@ -455,7 +447,6 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
         origin,
         visitorPrefLang,
         isLateQuote,
-        env.DB, // durable (AUDIT P1.3)
       )
     }
   }
@@ -493,28 +484,19 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params
   if (admin && session.email !== email) {
     const visitorPrefLang = await getLang(env.DB, session.email)
     await sendWithdrawalNotification(
-      env.RESEND_API_KEY,
+      env,
       session.email,
       email,
       id,
       origin,
       visitorPrefLang,
       'visitor',
-      env.DB, // durable (AUDIT P1.3) — visitor-side path only
     )
   } else {
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     if (marc && marc.toLowerCase() !== email.toLowerCase()) {
       const marcLang = await getLang(env.DB, marc)
-      await sendWithdrawalNotification(
-        env.RESEND_API_KEY,
-        marc,
-        email,
-        id,
-        origin,
-        marcLang,
-        'admin',
-      )
+      await sendWithdrawalNotification(env, marc, email, id, origin, marcLang, 'admin')
     }
   }
 

@@ -60,7 +60,10 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   const lang: Lang = body.lang === 'en' ? 'en' : 'fr'
   const origin = new URL(ctx.request.url).origin
-  const apiKey = ctx.env.RESEND_API_KEY
+  // All public send fns now take `env` instead of raw apiKey; the env
+  // shape exposes DB + ADMIN_EMAILS + SESSION_SECRET that the suppression
+  // check + unsubscribe headers need.
+  const env = ctx.env
 
   // Synthetic identifiers — shaped like real ones (UUID-ish, plausible
   // names) so the rendered emails read like the production article.
@@ -86,13 +89,13 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
       ? 'Abonnement Custodian Care annulé pour sophie@exemple.ca — webhook customer.subscription.deleted reçu.'
       : 'Custodian Care subscription canceled for sophie@example.ca — received customer.subscription.deleted webhook.'
 
-  const tasks: Array<{ kind: string; run: () => Promise<boolean> }> = [
-    { kind: 'magic-link', run: () => sendMagicLink(apiKey, email, magicLinkUrl, lang) },
+  const tasks: Array<{ kind: string; run: () => Promise<{ ok: boolean }> }> = [
+    { kind: 'magic-link', run: () => sendMagicLink(env, email, magicLinkUrl, lang) },
     {
       kind: 'visitor-message',
       run: () =>
         sendVisitorMessageNotification(
-          apiKey,
+          env,
           email,
           sampleVisitor,
           sessionId,
@@ -103,49 +106,40 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     },
     {
       kind: 'marc-reply',
-      run: () => sendMarcMessageNotification(apiKey, email, sessionId, origin, marcPreview, lang),
+      run: () => sendMarcMessageNotification(env, email, sessionId, origin, marcPreview, lang),
     },
     {
       kind: 'status-change',
       run: () =>
-        sendStatusChangeNotification(apiKey, email, sessionId, 'triage', 'active', origin, lang),
+        sendStatusChangeNotification(env, email, sessionId, 'triage', 'active', origin, lang),
     },
     {
       kind: 'intake-edited',
-      run: () =>
-        sendIntakeEditedNotification(apiKey, email, sampleVisitor, sessionId, origin, lang),
+      run: () => sendIntakeEditedNotification(env, email, sampleVisitor, sessionId, origin, lang),
     },
     {
       kind: 'withdrawal-admin',
       run: () =>
-        sendWithdrawalNotification(apiKey, email, sampleVisitor, sessionId, origin, lang, 'admin'),
+        sendWithdrawalNotification(env, email, sampleVisitor, sessionId, origin, lang, 'admin'),
     },
     {
       kind: 'withdrawal-visitor',
       run: () =>
-        sendWithdrawalNotification(
-          apiKey,
-          email,
-          sampleVisitor,
-          sessionId,
-          origin,
-          lang,
-          'visitor',
-        ),
+        sendWithdrawalNotification(env, email, sampleVisitor, sessionId, origin, lang, 'visitor'),
     },
     {
       kind: 'installment-cleared',
-      run: () => sendInstallmentClearedPrompt(apiKey, email, sessionId, 1, 3, origin, lang),
+      run: () => sendInstallmentClearedPrompt(env, email, sessionId, 1, 3, origin, lang),
     },
     {
       kind: 'tier-assigned',
-      run: () => sendTierAssignedNotification(apiKey, email, sessionId, 2, 180000, origin, lang),
+      run: () => sendTierAssignedNotification(env, email, sessionId, 2, 180000, origin, lang),
     },
     {
       kind: 'new-vouch',
       run: () =>
         sendNewVouchNotification(
-          apiKey,
+          env,
           email,
           vouchId,
           sampleName,
@@ -158,15 +152,15 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     },
     {
       kind: 'admin-alert',
-      run: () => sendAdminAlert(apiKey, email, origin, alertBody, lang),
+      run: () => sendAdminAlert(env, email, origin, alertBody, lang),
     },
     {
       kind: 'all-yours-ack',
-      run: () => sendAllYoursAckNotification(apiKey, email, sampleVisitor, sessionId, origin, lang),
+      run: () => sendAllYoursAckNotification(env, email, sampleVisitor, sessionId, origin, lang),
     },
     {
       kind: 'refund-notice',
-      run: () => sendRefundNotice(apiKey, email, 30000, 60000, origin, lang),
+      run: () => sendRefundNotice(env, email, 30000, 60000, origin, lang),
     },
   ]
 
@@ -175,7 +169,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     const task = tasks[i]
     let delivered = false
     try {
-      delivered = await task.run()
+      delivered = (await task.run()).ok
     } catch {
       delivered = false
     }

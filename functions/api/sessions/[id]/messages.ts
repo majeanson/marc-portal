@@ -155,27 +155,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     if (marc) {
       const marcLang = await getLang(env.DB, marc)
-      await sendVisitorMessageNotification(
-        env.RESEND_API_KEY,
-        marc,
-        session.email,
-        id,
-        origin,
-        body,
-        marcLang,
-      )
+      await sendVisitorMessageNotification(env, marc, session.email, id, origin, body, marcLang)
     }
   } else {
     // author === 'marc' → email the visitor with the preview + link.
     const visitorPrefLang = await getLang(env.DB, session.email)
-    await sendMarcMessageNotification(
-      env.RESEND_API_KEY,
-      session.email,
-      id,
-      origin,
-      body,
-      visitorPrefLang,
-    )
+    await sendMarcMessageNotification(env, session.email, id, origin, body, visitorPrefLang)
   }
 
   const message: MessageRow & { attachments: AttachmentRow[] } = {

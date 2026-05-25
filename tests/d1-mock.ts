@@ -676,6 +676,30 @@ class MockPreparedStatement {
       return [{ lang: row.lang, first_name: row.first_name }]
     }
 
+    // SELECT type, subtype FROM email_events WHERE to_email = ? AND (
+    //   type IN ('email.complained', 'email.unsubscribed') OR
+    //   (type = 'email.bounced' AND subtype = 'permanent')
+    // ) ORDER BY received_at DESC LIMIT 1
+    // — the suppression check from functions/_lib/emailSuppression.ts.
+    if (
+      sql.includes('FROM email_events') &&
+      sql.includes('WHERE to_email = ?') &&
+      sql.includes("'email.complained'")
+    ) {
+      const targetEmail = (a[0] as string).toLowerCase()
+      const rows = [...this.db.email_events.values()]
+        .filter((r) => r.to_email.toLowerCase() === targetEmail)
+        .filter(
+          (r) =>
+            r.type === 'email.complained' ||
+            r.type === 'email.unsubscribed' ||
+            (r.type === 'email.bounced' && r.subtype === 'permanent'),
+        )
+        .sort((x, y) => y.received_at - x.received_at)
+      const first = rows[0]
+      return first ? [{ type: first.type, subtype: first.subtype }] : []
+    }
+
     // SELECT pending email_outbox rows for the sweeper
     if (
       sql.includes('FROM email_outbox') &&
@@ -1366,16 +1390,24 @@ class MockPreparedStatement {
       return n
     }
 
-    // INSERT INTO email_events (id, to_email, type, subtype, payload, received_at)
+    // INSERT INTO email_events — two known shapes:
+    //   (a) Webhook handler (functions/api/webhooks/resend.ts):
+    //       VALUES (?, ?, ?, ?, ?, ?) — all 6 columns bound.
+    //   (b) Unsubscribe handler / recordUnsubscribe:
+    //       VALUES (?, ?, 'email.unsubscribed', ?, ?, ?) — type literal, 5 binds.
+    //   Detect by scanning the SQL for the literal type string.
     if (sql.startsWith('INSERT INTO email_events')) {
       const id = a[0] as string
+      const typeIsLiteral = sql.includes("'email.unsubscribed'")
       this.db.email_events.set(id, {
         id,
         to_email: a[1] as string,
-        type: a[2] as string,
-        subtype: (a[3] as string | null) ?? null,
-        payload: a[4] as string,
-        received_at: a[5] as number,
+        type: typeIsLiteral ? 'email.unsubscribed' : (a[2] as string),
+        subtype: typeIsLiteral
+          ? ((a[2] as string | null) ?? null)
+          : ((a[3] as string | null) ?? null),
+        payload: typeIsLiteral ? (a[3] as string) : (a[4] as string),
+        received_at: typeIsLiteral ? (a[4] as number) : (a[5] as number),
       })
       return 1
     }

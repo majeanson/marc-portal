@@ -1220,6 +1220,86 @@ the code can ship now without breaking anything. The code paths are
 audited and tested; the activation is a single sitting whenever DNS
 access is available.
 
+## 17. Suppression list — visitor reports not getting emails
+
+**Symptoms:** Visitor messages saying "I never received the magic link"
+OR "the tier-assigned email never arrived." The address might be on the
+suppression list — meaning Resend told us at some point that the address
+hard-bounced, complained, or the visitor clicked one-click unsubscribe,
+and our send code is honoring that signal by skipping the send.
+
+### What happens (system behavior)
+
+Since P1.11, every send through `functions/_lib/email.ts` first calls
+`isAddressSuppressed` against the `email_events` table. If a matching
+row exists, the Resend POST is skipped entirely and the function returns
+`{ ok: false, suppressed: 'complaint' | 'unsubscribed' | 'hard-bounce' }`.
+Magic-link request handler bubbles the reason back to the SPA in the
+`/api/auth/request-link` response body for a future "try another
+address" hint.
+
+Admin emails (whoever is in `env.ADMIN_EMAILS`) are exempt from the check
+— Marc's own inbox can't be suppressed, otherwise admin alerts would
+silently stop.
+
+### Step-by-step — visitor says they're not getting mail
+
+1. **Check `email_events` for that address:**
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "SELECT id, type, subtype, received_at FROM email_events
+      WHERE to_email = LOWER('visitor@example.com')
+      ORDER BY received_at DESC"
+   ```
+   - `type='email.complained'` → they hit Gmail's "Report spam" at some
+     point. Talking to them out-of-band (different channel) is the only
+     polite path.
+   - `type='email.unsubscribed'` → they clicked the one-click unsubscribe.
+     Could be deliberate or accidental (e.g. Gmail's "Unsubscribe" button
+     is one tap, easy to misfire).
+   - `type='email.bounced', subtype='permanent'` → the mailbox truly
+     doesn't exist or was disabled. Address is invalid; ask for another.
+   - `type='email.bounced', subtype='transient'` → soft bounce (mailbox
+     full, greylisting). NOT suppressed — sends should still go through.
+     If they're not getting mail anyway, the issue is downstream of us.
+
+2. **If the suppression was wrong** (accidental click, recovered mailbox),
+   delete the suppression event:
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote --command \
+     "DELETE FROM email_events
+      WHERE to_email = LOWER('visitor@example.com')
+        AND type IN ('email.complained','email.unsubscribed')
+        OR (type='email.bounced' AND subtype='permanent')"
+   ```
+   The next send will go through. Consider a follow-up email from a
+   different channel to confirm the visitor actually wants to be
+   re-subscribed.
+
+3. **If there are no rows in `email_events`** for that address but they
+   say they're not getting mail, the issue isn't suppression. Check:
+   - Spam folder (Gmail aggressively bins anything that looks like
+     transactional mail from a new sender).
+   - Resend Dashboard → Emails → search by recipient — is Resend
+     reporting it as delivered, deferred, or bounced?
+   - Our outbox: `SELECT * FROM email_outbox WHERE to_email = '...' AND
+     sent_at IS NULL` — is the send queued but stuck?
+
+### Manual unsubscribe (operator-driven)
+
+If a visitor emails Marc directly asking to unsubscribe (rather than
+clicking the link):
+```bash
+npx wrangler d1 execute marc-portal-db --remote --command \
+  "INSERT INTO email_events (id, to_email, type, subtype, payload, received_at)
+   VALUES ('manual_$(date +%s)', LOWER('visitor@example.com'),
+           'email.unsubscribed', 'manual',
+           '{\"source\":\"operator-request\"}',
+           strftime('%s','now'))"
+```
+
+Same suppression as the one-click flow.
+
 ## Payments setup (one-time) — Stripe
 
 Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card

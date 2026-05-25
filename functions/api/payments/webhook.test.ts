@@ -20,10 +20,12 @@ vi.mock('../../_lib/stripe', async () => {
 })
 
 vi.mock('../../_lib/email', () => ({
-  sendInstallmentClearedPrompt: vi.fn().mockResolvedValue(true),
-  // sendAdminAlert resolves true by default so the "email delivered → skip
-  // admin_alerts" path is the default. Tests override per-case.
-  sendAdminAlert: vi.fn().mockResolvedValue(true),
+  // All public sends now return { ok: boolean, suppressed? } instead of
+  // a bare boolean — the caller checks `.ok`. Match the production shape.
+  sendInstallmentClearedPrompt: vi.fn().mockResolvedValue({ ok: true }),
+  // sendAdminAlert resolves { ok: true } by default so the "email delivered →
+  // skip admin_alerts" path is the default. Tests override per-case.
+  sendAdminAlert: vi.fn().mockResolvedValue({ ok: true }),
 }))
 
 import * as email from '../../_lib/email'
@@ -147,7 +149,9 @@ describe('POST /api/payments/webhook — build installment auto-prompt', () => {
 
     expect(email.sendInstallmentClearedPrompt).toHaveBeenCalledOnce()
     const call = (email.sendInstallmentClearedPrompt as ReturnType<typeof vi.fn>).mock.calls[0]
-    expect(call?.[0]).toBe('test-key') // apiKey
+    // Position 0 is now `env` (an object with RESEND_API_KEY + DB + …),
+    // not the raw apiKey string. The downstream positions stayed the same.
+    expect(call?.[0]).toMatchObject({ RESEND_API_KEY: 'test-key' })
     expect(call?.[1]).toBe('visitor@example.com')
     expect(call?.[2]).toBe(sessionId)
     expect(call?.[3]).toBe(1) // paidIndex
@@ -518,7 +522,7 @@ describe('POST /api/payments/webhook — admin_alerts fallback', () => {
       showcase_tagline: null,
       custodian_subscription_id: 'sub_xyz',
     })
-    ;(email.sendAdminAlert as ReturnType<typeof vi.fn>).mockResolvedValueOnce(false)
+    ;(email.sendAdminAlert as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: false })
 
     await onRequestPost({
       request: buildWebhookRequest({

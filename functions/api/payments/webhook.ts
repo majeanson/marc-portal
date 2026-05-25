@@ -196,17 +196,11 @@ async function handleCheckoutCompleted(env: Env, obj: StripeObject, origin: stri
         const explicit = await getLangExplicit(env.DB, session.email)
         const metaLang = obj.metadata?.lang
         const lang: 'fr' | 'en' = explicit ?? (isValidLang(metaLang) ? metaLang : 'fr')
-        await sendInstallmentClearedPrompt(
-          env.RESEND_API_KEY,
-          session.email,
-          sessionId,
-          idx,
-          of,
-          origin,
-          lang,
-          env.DB, // durable: a visitor whose installment cleared but who
-          //         never hears about it has no obvious recovery path.
-        )
+        // Durable: a visitor whose installment cleared but who never hears
+        // about it has no obvious recovery path. sendInstallmentClearedPrompt
+        // is hardcoded as 'installment-cleared' kind so the outbox catches
+        // any Resend hiccup automatically.
+        await sendInstallmentClearedPrompt(env, session.email, sessionId, idx, of, origin, lang)
       }
     }
   }
@@ -396,16 +390,10 @@ async function handleChargeRefunded(env: Env, request: Request, obj: StripeObjec
       try {
         const lang = await getLang(env.DB, visitor.email)
         const origin = new URL(request.url).origin
-        await sendRefundNotice(
-          env.RESEND_API_KEY,
-          visitor.email,
-          amountRefunded,
-          row.amount_cents,
-          origin,
-          lang,
-          env.DB, // durable: Stripe sends its own receipt but the
-          //         portal's status change MUST reach the visitor.
-        )
+        // Durable: Stripe sends its own receipt but the portal's status
+        // change MUST reach the visitor. sendRefundNotice is hardcoded as
+        // 'refund-notice' kind in the outbox.
+        await sendRefundNotice(env, visitor.email, amountRefunded, row.amount_cents, origin, lang)
       } catch (err) {
         // Notification failure is non-fatal — the DB has already absorbed
         // the refund. Logged so we can investigate, but the webhook still
@@ -432,7 +420,7 @@ async function maybeNotifyAdmin(env: Env, request: Request, body: string): Promi
     try {
       const lang = await getLang(env.DB, to)
       const origin = new URL(request.url).origin
-      emailDelivered = await sendAdminAlert(env.RESEND_API_KEY, to, origin, body, lang)
+      emailDelivered = (await sendAdminAlert(env, to, origin, body, lang)).ok
     } catch (err) {
       console.error('admin notify failed', err)
     }

@@ -1,3 +1,6 @@
+import { isAddressSuppressed } from './emailSuppression'
+import { signUnsubscribeToken, unsubscribeUrl } from './unsubscribe'
+
 // Resend wrapper + shared bilingual email shell. Free Resend tier: 100/day,
 // 3000/mo. Send errors are logged and swallowed so a transient Resend
 // outage doesn't 500 user-facing endpoints — the underlying mutation
@@ -55,6 +58,31 @@ interface ResendPayload {
   subject: string
   html: string
   text: string
+  /** Optional per-send headers passed straight to Resend. Used for
+   *  List-Unsubscribe + List-Unsubscribe-Post (RFC 8058 one-click). */
+  headers?: Record<string, string>
+}
+
+/** Subset of the worker Env that every send-site needs. Pulled here so
+ *  signatures don't carry a moving cast of (apiKey, db, adminEmails, secret).
+ *  Suppression check (consumes email_events), outbox enqueue, and
+ *  unsubscribe header signing all happen inside send() — callers pass `env`
+ *  and the right behavior fans out from the kind of email. */
+export interface EmailEnv {
+  RESEND_API_KEY: string
+  SESSION_SECRET: string
+  DB: D1Database
+  ADMIN_EMAILS: string
+}
+
+/** Send result shape. `ok` is true only when Resend accepted the send.
+ *  `suppressed` rides along when the address is on the suppression list
+ *  (hard bounce / complaint / unsubscribe) — the caller (typically the
+ *  magic-link request handler) uses it to surface a useful hint instead
+ *  of a silent successful-looking "magic link sent" UX. */
+export interface SendResult {
+  ok: boolean
+  suppressed?: 'complaint' | 'unsubscribed' | 'hard-bounce'
 }
 
 /** Maximum retry attempts before the sweeper gives up. Past this, the row
@@ -71,48 +99,84 @@ export type OutboxKind =
   | 'status-change'
   | 'withdrawal-visitor'
 
-interface OutboxContext {
-  db: D1Database
-  kind: OutboxKind
-}
-
+/**
+ * Internal send primitive. Every public function in this file funnels
+ * through here. Four things happen, in order:
+ *
+ *   1. SUPPRESSION CHECK — if the recipient address has a stop-sending
+ *      event in email_events (complaint, hard bounce, unsubscribe), we
+ *      skip the Resend POST entirely. `SendResult.suppressed` carries the
+ *      reason for the caller to optionally surface (magic-link does).
+ *      Admin addresses (env.ADMIN_EMAILS) are exempt — Marc's own inbox
+ *      must always reach him.
+ *
+ *   2. UNSUBSCRIBE HEADERS — RFC 8058 List-Unsubscribe-Post + the
+ *      List-Unsubscribe URL. Gmail / Outlook native the "Unsubscribe"
+ *      button using these; clicking it POSTs to /api/unsubscribe with
+ *      our HMAC token.
+ *
+ *   3. RESEND POST — single fetch, no retry. On non-2xx or network throw,
+ *      record the error string for the outbox.
+ *
+ *   4. OUTBOX ENQUEUE — only when the call originated from a durable
+ *      send (caller passed an `outboxKind`). Persists the rendered
+ *      payload so the daily digest sweeper can retry.
+ */
 async function send(
-  apiKey: string,
+  env: EmailEnv,
   payload: ResendPayload,
-  outbox?: OutboxContext,
-): Promise<boolean> {
+  origin: string,
+  outboxKind?: OutboxKind,
+): Promise<SendResult> {
+  // 1. Suppression check.
+  const sup = await isAddressSuppressed(env.DB, payload.to, env.ADMIN_EMAILS)
+  if (sup.suppressed) {
+    console.log(`email: skipping send to ${payload.to} (${sup.reason})`)
+    return { ok: false, suppressed: sup.reason }
+  }
+
+  // 2. Unsubscribe headers. Built per-send because the token is keyed on
+  //    the recipient. Merge with whatever headers the caller already set.
+  const unsubToken = await signUnsubscribeToken(env.SESSION_SECRET, payload.to)
+  const unsubLink = unsubscribeUrl(origin, payload.to, unsubToken)
+  const headers = {
+    ...payload.headers,
+    'List-Unsubscribe': `<${unsubLink}>`,
+    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+  }
+  const wirePayload = { ...payload, headers }
+
+  // 3. Resend POST.
   let lastError: string | null = null
   try {
     const res = await fetch(RESEND_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(wirePayload),
     })
     if (!res.ok) {
       lastError = `${res.status}: ${(await res.text()).slice(0, 200)}`
       console.error('resend send failed', lastError)
     } else {
-      return true
+      return { ok: true }
     }
   } catch (err) {
     lastError = String(err).slice(0, 200)
     console.error('resend send threw', err)
   }
-  // Resend failed (HTTP or threw). For durable sends, persist the rendered
-  // payload into the outbox so the digest sweeper can retry. Best-effort:
-  // if the outbox write itself fails, we'd already-logged the original
-  // Resend error, so just log + return false.
-  if (outbox) {
+
+  // 4. Outbox enqueue (best-effort; durable sends only).
+  if (outboxKind) {
     try {
-      await enqueueForRetry(outbox.db, outbox.kind, payload, lastError ?? 'unknown')
+      await enqueueForRetry(env.DB, outboxKind, wirePayload, lastError ?? 'unknown')
     } catch (queueErr) {
       console.error('outbox enqueue failed (continuing)', queueErr)
     }
   }
-  return false
+  return { ok: false }
 }
 
 /** Persist a rendered email into the outbox. Caller has already failed
@@ -176,8 +240,7 @@ export const OUTBOX_DELIVERED_TTL_SECONDS = 30 * 86_400
  * defense-in-depth.
  */
 export async function sweepEmailOutbox(
-  apiKey: string,
-  db: D1Database,
+  env: EmailEnv,
   now: number,
   marcEmail: string | null,
   origin: string,
@@ -190,6 +253,7 @@ export async function sweepEmailOutbox(
   alerted: number
   pruned: number
 }> {
+  const db = env.DB
   const rows = await db
     .prepare(
       `SELECT id, to_email, subject, html, text_body, kind, attempts
@@ -216,7 +280,7 @@ export async function sweepEmailOutbox(
       continue
     }
     retried++
-    const ok = await sendRaw(apiKey, {
+    const ok = await sendRaw(env.RESEND_API_KEY, {
       from: RESEND_FROM,
       to: row.to_email,
       subject: row.subject,
@@ -270,7 +334,7 @@ export async function sweepEmailOutbox(
       marcLang === 'fr'
         ? `${justCappedRows.length} courriel(s) durable(s) ont épuisé les ${OUTBOX_MAX_ATTEMPTS} tentatives de relance et restent non livrés :\n\n${lines}\n\nDétails dans la table email_outbox.`
         : `${justCappedRows.length} durable email(s) hit the ${OUTBOX_MAX_ATTEMPTS}-attempt ceiling and are now stuck:\n\n${lines}\n\nDetails in the email_outbox table.`
-    await sendAdminAlert(apiKey, marcEmail, origin, body, marcLang)
+    await sendAdminAlert(env, marcEmail, origin, body, marcLang)
     alerted = justCappedRows.length
   }
 
@@ -536,11 +600,11 @@ function renderEmail(
 // =============================================================================
 
 export async function sendMagicLink(
-  apiKey: string,
+  env: EmailEnv,
   email: string,
   url: string,
   lang: Lang,
-): Promise<boolean> {
+): Promise<SendResult> {
   const origin = new URL(url).origin
   const headline = lang === 'fr' ? 'Ton lien de connexion' : 'Your sign-in link'
   const p1 =
@@ -559,13 +623,7 @@ export async function sendMagicLink(
     cta: { href: url, label: lang === 'fr' ? 'Se connecter' : 'Sign in', tone: 'accent' },
     altLink: url,
   })
-  return send(apiKey, {
-    from: RESEND_FROM,
-    to: email,
-    subject: headline,
-    html,
-    text,
-  })
+  return send(env, { from: RESEND_FROM, to: email, subject: headline, html, text }, origin)
 }
 
 // =============================================================================
@@ -573,14 +631,14 @@ export async function sendMagicLink(
 // =============================================================================
 
 export async function sendVisitorMessageNotification(
-  apiKey: string,
+  env: EmailEnv,
   marcEmail: string,
   visitorEmail: string,
   sessionId: string,
   origin: string,
   preview: string,
   lang: Lang,
-): Promise<boolean> {
+): Promise<SendResult> {
   // Loi 25 / lock-screen privacy: keep the visitor's email out of the
   // subject line so a glance at Marc's notifications doesn't leak which
   // client is talking. The body still carries the full identifying info.
@@ -604,7 +662,7 @@ export async function sendVisitorMessageNotification(
     },
     signoff: 'system',
   })
-  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+  return send(env, { from: RESEND_FROM, to: marcEmail, subject, html, text }, origin)
 }
 
 // =============================================================================
@@ -612,13 +670,13 @@ export async function sendVisitorMessageNotification(
 // =============================================================================
 
 export async function sendMarcMessageNotification(
-  apiKey: string,
+  env: EmailEnv,
   visitorEmail: string,
   sessionId: string,
   origin: string,
   preview: string,
   lang: Lang,
-): Promise<boolean> {
+): Promise<SendResult> {
   const subject = lang === 'fr' ? 'Marc a répondu à ta session' : 'Marc replied to your session'
   const url = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const headline = lang === 'fr' ? 'J’ai répondu à ta session' : 'I replied to your session'
@@ -635,7 +693,7 @@ export async function sendMarcMessageNotification(
     cta: { href: url, label: lang === 'fr' ? 'Ouvrir la session' : 'Open the session' },
     altLink: url,
   })
-  return send(apiKey, { from: RESEND_FROM, to: visitorEmail, subject, html, text })
+  return send(env, { from: RESEND_FROM, to: visitorEmail, subject, html, text }, origin)
 }
 
 // =============================================================================
@@ -643,15 +701,14 @@ export async function sendMarcMessageNotification(
 // =============================================================================
 
 export async function sendStatusChangeNotification(
-  apiKey: string,
+  env: EmailEnv,
   visitorEmail: string,
   sessionId: string,
   fromStatus: string,
   toStatus: string,
   origin: string,
   lang: Lang,
-  outboxDb?: D1Database,
-): Promise<boolean> {
+): Promise<SendResult> {
   const url = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const fromLabel = statusLabel(fromStatus, lang)
   const toLabel = statusLabel(toStatus, lang)
@@ -673,9 +730,10 @@ export async function sendStatusChangeNotification(
     altLink: url,
   })
   return send(
-    apiKey,
+    env,
     { from: RESEND_FROM, to: visitorEmail, subject, html, text },
-    outboxDb ? { db: outboxDb, kind: 'status-change' } : undefined,
+    origin,
+    'status-change',
   )
 }
 
@@ -684,13 +742,13 @@ export async function sendStatusChangeNotification(
 // =============================================================================
 
 export async function sendIntakeEditedNotification(
-  apiKey: string,
+  env: EmailEnv,
   marcEmail: string,
   visitorEmail: string,
   sessionId: string,
   origin: string,
   lang: Lang,
-): Promise<boolean> {
+): Promise<SendResult> {
   // Generic subject — body carries the identifying info. See the
   // lock-screen privacy comment in sendVisitorMessageNotification.
   const subject =
@@ -713,7 +771,7 @@ export async function sendIntakeEditedNotification(
     cta: { href: url, label: lang === 'fr' ? 'Ouvrir dans l’inbox' : 'Open in inbox' },
     signoff: 'system',
   })
-  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+  return send(env, { from: RESEND_FROM, to: marcEmail, subject, html, text }, origin)
 }
 
 // =============================================================================
@@ -721,15 +779,14 @@ export async function sendIntakeEditedNotification(
 // =============================================================================
 
 export async function sendWithdrawalNotification(
-  apiKey: string,
+  env: EmailEnv,
   toEmail: string,
   byEmail: string,
   sessionId: string,
   origin: string,
   lang: Lang,
   audience: 'admin' | 'visitor',
-  outboxDb?: D1Database,
-): Promise<boolean> {
+): Promise<SendResult> {
   // Subjects: admin side is generic (no email leak on lock screen); visitor
   // side is already non-identifying.
   const subject =
@@ -785,9 +842,10 @@ export async function sendWithdrawalNotification(
   // Only the visitor-facing path is durable — the admin-side is internal
   // (the row stays in /admin/inbox trash; Marc sees it on next visit).
   return send(
-    apiKey,
+    env,
     { from: RESEND_FROM, to: toEmail, subject, html, text },
-    outboxDb && audience === 'visitor' ? { db: outboxDb, kind: 'withdrawal-visitor' } : undefined,
+    origin,
+    audience === 'visitor' ? 'withdrawal-visitor' : undefined,
   )
 }
 
@@ -796,15 +854,14 @@ export async function sendWithdrawalNotification(
 // =============================================================================
 
 export async function sendInstallmentClearedPrompt(
-  apiKey: string,
+  env: EmailEnv,
   visitorEmail: string,
   sessionId: string,
   paidIndex: number,
   totalOf: number,
   origin: string,
   lang: Lang,
-  outboxDb?: D1Database,
-): Promise<boolean> {
+): Promise<SendResult> {
   const sessionUrl = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const remaining = totalOf - paidIndex
   const subject =
@@ -830,9 +887,10 @@ export async function sendInstallmentClearedPrompt(
     altLink: sessionUrl,
   })
   return send(
-    apiKey,
+    env,
     { from: RESEND_FROM, to: visitorEmail, subject, html, text },
-    outboxDb ? { db: outboxDb, kind: 'installment-cleared' } : undefined,
+    origin,
+    'installment-cleared',
   )
 }
 
@@ -841,7 +899,7 @@ export async function sendInstallmentClearedPrompt(
 // =============================================================================
 
 export async function sendTierAssignedNotification(
-  apiKey: string,
+  env: EmailEnv,
   visitorEmail: string,
   sessionId: string,
   tier: 0 | 1 | 2 | 3 | 4,
@@ -852,8 +910,7 @@ export async function sendTierAssignedNotification(
    *  session was already active. Lets the subject read "Quote ready" rather
    *  than "Marc accepted." */
   isLateQuote: boolean = false,
-  outboxDb?: D1Database,
-): Promise<boolean> {
+): Promise<SendResult> {
   const sessionUrl = `${origin}${lang === 'en' ? '/en' : ''}/session/${sessionId}`
   const priceLine = amountCadCents != null ? formatCadCents(amountCadCents, lang) : null
 
@@ -1003,9 +1060,10 @@ export async function sendTierAssignedNotification(
     altLink: sessionUrl,
   })
   return send(
-    apiKey,
+    env,
     { from: RESEND_FROM, to: visitorEmail, subject, html, text },
-    outboxDb ? { db: outboxDb, kind: 'tier-assigned' } : undefined,
+    origin,
+    'tier-assigned',
   )
 }
 
@@ -1014,7 +1072,7 @@ export async function sendTierAssignedNotification(
 // =============================================================================
 
 export async function sendNewVouchNotification(
-  apiKey: string,
+  env: EmailEnv,
   marcEmail: string,
   vouchId: string,
   authorName: string,
@@ -1023,7 +1081,7 @@ export async function sendNewVouchNotification(
   bodyPreview: string,
   origin: string,
   lang: Lang,
-): Promise<boolean> {
+): Promise<SendResult> {
   const subject =
     lang === 'fr' ? 'Un nouveau vouch attend la modération' : 'A new vouch is awaiting moderation'
   const url = `${origin}/admin/vouches`
@@ -1058,7 +1116,7 @@ export async function sendNewVouchNotification(
     cta: { href: url, label: lang === 'fr' ? 'Modérer' : 'Moderate' },
     signoff: 'system',
   })
-  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+  return send(env, { from: RESEND_FROM, to: marcEmail, subject, html, text }, origin)
 }
 
 // =============================================================================
@@ -1068,12 +1126,12 @@ export async function sendNewVouchNotification(
 // =============================================================================
 
 export async function sendAdminAlert(
-  apiKey: string,
+  env: EmailEnv,
   marcEmail: string,
   origin: string,
   body: string,
   lang: Lang,
-): Promise<boolean> {
+): Promise<SendResult> {
   const subject =
     lang === 'fr'
       ? 'Alerte Stripe — quelque chose mérite ton attention'
@@ -1094,7 +1152,7 @@ export async function sendAdminAlert(
     cta: { href: url, label: lang === 'fr' ? 'Ouvrir l’admin' : 'Open admin' },
     signoff: 'system',
   })
-  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+  return send(env, { from: RESEND_FROM, to: marcEmail, subject, html, text }, origin)
 }
 
 // =============================================================================
@@ -1102,13 +1160,13 @@ export async function sendAdminAlert(
 // =============================================================================
 
 export async function sendAllYoursAckNotification(
-  apiKey: string,
+  env: EmailEnv,
   marcEmail: string,
   visitorEmail: string,
   sessionId: string,
   origin: string,
   lang: Lang,
-): Promise<boolean> {
+): Promise<SendResult> {
   const subject =
     lang === 'fr'
       ? 'Visiteur a confirmé « Tout à toi »'
@@ -1132,7 +1190,7 @@ export async function sendAllYoursAckNotification(
     cta: { href: url, label: lang === 'fr' ? 'Ouvrir dans l’admin' : 'Open in admin' },
     signoff: 'system',
   })
-  return send(apiKey, { from: RESEND_FROM, to: marcEmail, subject, html, text })
+  return send(env, { from: RESEND_FROM, to: marcEmail, subject, html, text }, origin)
 }
 
 // =============================================================================
@@ -1145,14 +1203,13 @@ export async function sendAllYoursAckNotification(
 // =============================================================================
 
 export async function sendRefundNotice(
-  apiKey: string,
+  env: EmailEnv,
   visitorEmail: string,
   refundedCents: number,
   totalCents: number,
   origin: string,
   lang: Lang,
-  outboxDb?: D1Database,
-): Promise<boolean> {
+): Promise<SendResult> {
   const meUrl = `${origin}${lang === 'en' ? '/en' : ''}/me`
   const refundedFormatted = formatCadCents(refundedCents, lang)
   const isFull = refundedCents >= totalCents
@@ -1192,9 +1249,10 @@ export async function sendRefundNotice(
     altLink: meUrl,
   })
   return send(
-    apiKey,
+    env,
     { from: RESEND_FROM, to: visitorEmail, subject, html, text },
-    outboxDb ? { db: outboxDb, kind: 'refund-notice' } : undefined,
+    origin,
+    'refund-notice',
   )
 }
 

@@ -107,7 +107,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   // Fire-and-forget: even if Resend is down we return 200. The token is in
   // D1; visitor can request another link. Error is logged inside sendMagicLink.
-  await sendMagicLink(env.RESEND_API_KEY, email, verifyUrl, lang)
+  //
+  // Suppression carries info back though — if the address is on the
+  // suppression list (bounced / complained / unsubscribed), we still return
+  // 200 (no email-enumeration leak) but carry a `suppressed` hint so a
+  // future client iteration can surface "the address you typed isn't
+  // accepting our mail; try another."
+  const result = await sendMagicLink(env, email, verifyUrl, lang)
+  if (result.suppressed) {
+    return ok({ sent: true, suppressed: result.suppressed })
+  }
 
   return ok({ sent: true })
 }

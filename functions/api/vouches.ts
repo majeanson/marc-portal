@@ -120,7 +120,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     try {
       const marcLang = await getLang(env.DB, marc)
       await sendNewVouchNotification(
-        env.RESEND_API_KEY,
+        env,
         marc,
         id,
         authorName,

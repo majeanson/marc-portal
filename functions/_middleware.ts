@@ -51,6 +51,12 @@ const CSRF_EXEMPT_PATHS: ReadonlySet<string> = new Set([
   // to forge; the secret is shared between Resend Dashboard and our
   // RESEND_WEBHOOK_SECRET env var. Same shape as the Stripe webhook above.
   '/api/webhooks/resend',
+  // One-click unsubscribe (RFC 8058). POST'd by Gmail / Outlook from the
+  // List-Unsubscribe-Post header; no visitor cookie is involved. Auth is
+  // the stateless HMAC token in the URL — signed over the recipient email
+  // with SESSION_SECRET. The worst CSRF could do is unsubscribe an
+  // already-known address, which requires the token anyway.
+  '/api/unsubscribe',
 ])
 
 const SAFE_METHODS: ReadonlySet<string> = new Set(['GET', 'HEAD', 'OPTIONS'])

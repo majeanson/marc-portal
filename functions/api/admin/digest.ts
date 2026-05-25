@@ -174,7 +174,7 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     const marc = primaryAdminEmail(env.ADMIN_EMAILS)
     const marcLang = marc ? await getLang(env.DB, marc) : 'fr'
     const origin = new URL(request.url).origin
-    const r = await sweepEmailOutbox(env.RESEND_API_KEY, env.DB, now, marc, origin, marcLang)
+    const r = await sweepEmailOutbox(env, now, marc, origin, marcLang)
     if (r.retried > 0 || r.alerted > 0 || r.pruned > 0) {
       console.log(
         `digest: outbox sweep — retried ${r.retried}, delivered ${r.delivered}, ` +

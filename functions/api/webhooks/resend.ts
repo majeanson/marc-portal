@@ -118,14 +118,26 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   return ok({ received: true, persisted: true, type: event.type, to })
 }
 
-/** Resend nests a `bounce.type` (or similar) inside `data` for the
- *  detail-ed event types. Extract it as a separate column so the operator
- *  can filter "hard bounces only" without parsing the payload TEXT. */
+/** Resend nests bounce details inside `data.bounce.type` for `email.bounced`.
+ *  Extract it as a separate `subtype` column so the operator can filter
+ *  "permanent bounces only" without parsing the payload TEXT — and so the
+ *  suppression-list check (functions/_lib/emailSuppression.ts) can key on
+ *  a column instead of scanning JSON.
+ *
+ *  Normalized values for bounces: 'permanent' | 'transient'.
+ *  Resend's payload shape: `data.bounce = { type: 'Permanent'|'Transient', subType, message }`.
+ *  Older / forward-compat keys (`bounce_type`, `reason`, `subtype` at the
+ *  data root) are accepted as fallbacks. Returns null when no shape matches. */
 function extractSubtype(event: ResendWebhookEvent): string | null {
   const data = event.data
   if (!data || typeof data !== 'object') return null
-  // Resend uses different sub-fields per event family. Check the known ones;
-  // anything else → null.
+  // Current shape: data.bounce.type
+  const bounce = (data as Record<string, unknown>).bounce
+  if (bounce && typeof bounce === 'object') {
+    const t = (bounce as Record<string, unknown>).type
+    if (typeof t === 'string') return t.toLowerCase()
+  }
+  // Legacy / forward-compat fallbacks.
   const candidates = ['bounce_type', 'reason', 'subtype'] as const
   for (const key of candidates) {
     const v = (data as Record<string, unknown>)[key]

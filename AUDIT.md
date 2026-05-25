@@ -27,6 +27,25 @@
   `onboarding@resend.dev`. The "temporary fallback" guidance in
   `functions/_lib/email.ts`'s header comment is now historical; remove on
   next touch.
+- ✅ **P1.11** — Send-time suppression check + one-click unsubscribe.
+  Closes the loop opened by P1.2: now that `email_events` ingests real
+  bounce/complaint/unsubscribe events, every outbound send checks the
+  recipient's history via `isAddressSuppressed` (functions/_lib/emailSuppression.ts)
+  and skips Resend entirely if hard-bounced, complained, or unsubscribed.
+  Admin emails are exempt (Marc's own inbox must always reach him). RFC
+  8058 List-Unsubscribe + List-Unsubscribe-Post headers now ride every
+  send so Gmail/Outlook show the native unsubscribe button; the one-click
+  POST hits `POST /api/unsubscribe` with a stateless HMAC token (no DB
+  state for the token itself). Browser GET serves a small confirmation
+  page with the bilingual "you've been removed" copy. Unsubscribed
+  addresses are recorded as synthetic `email.unsubscribed` rows in
+  `email_events` — suppression treats them identically to a complaint.
+  Refactor side: every public send function in `_lib/email.ts` now takes
+  `env: EmailEnv` instead of `apiKey: string`, returns
+  `{ ok, suppressed? }` instead of bare boolean, and the durable opt-in
+  is hardcoded per-function (cleaner than the per-call outboxDb arg).
+  17 new tests on the writer + suppression + Svix subtype extraction +
+  unsubscribe handler.
 - ⚠ **P1.2** — Resend bounce/complaint webhook handler shipped at
   `POST /api/webhooks/resend`. Code-only landing: signature verification
   (Svix-style HMAC-SHA-256, `whsec_` prefix accepted), idempotency via the
