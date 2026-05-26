@@ -366,6 +366,8 @@ export function clearTestRows(): void {
        DELETE FROM operator_notes;
        DELETE FROM magic_link_tokens;
        DELETE FROM intake_drafts;
+       DELETE FROM attachments;
+       DELETE FROM email_events;
        DELETE FROM sessions;`,
     )
   } finally {
@@ -431,6 +433,103 @@ export function seedOperatorNote(opts: {
  * notes spec uses this to confirm a PUT round-trips into D1 and a DELETE
  * removes the row.
  */
+export interface EmailEventRow {
+  id: string
+  to_email: string
+  type: string
+  subtype: string | null
+  payload: string | null
+  received_at: number
+}
+
+/**
+ * Read every email_events row for a given recipient, newest first. Used by
+ * the resend-webhook + unsubscribe specs to assert "the right event landed
+ * with the right shape." Order is descending so the latest is rows[0].
+ */
+export function readEmailEvents(email: string): EmailEventRow[] {
+  const db = openD1()
+  try {
+    return db
+      .prepare(
+        `SELECT id, to_email, type, subtype, payload, received_at
+           FROM email_events
+          WHERE to_email = ?
+          ORDER BY received_at DESC`,
+      )
+      .all(email.toLowerCase()) as EmailEventRow[]
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Count rows in a given table. Used by /me erasure spec to assert "no
+ * lingering rows for this email after DELETE /api/me". Lets the caller
+ * inline the WHERE clause without exposing the DB handle.
+ */
+export function countRowsWhere(sql: string, ...args: unknown[]): number {
+  const db = openD1()
+  try {
+    const row = db.prepare(sql).get(...args) as { c: number } | undefined
+    return row?.c ?? 0
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Read the full status_history JSON for a session. Used by the lifecycle
+ * spec to assert that every PATCH transition appended an entry, with the
+ * right from/to/by/at fields.
+ */
+export function readStatusHistory(sessionId: string): Array<{
+  from: string
+  to: string
+  by: string
+  at: number
+}> {
+  const db = openD1()
+  try {
+    const row = db.prepare(`SELECT status_history FROM sessions WHERE id = ?`).get(sessionId) as
+      | { status_history: string | null }
+      | undefined
+    if (!row?.status_history) return []
+    try {
+      return JSON.parse(row.status_history)
+    } catch {
+      return []
+    }
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Insert an attachments row directly. Used by the /me erasure spec to
+ * confirm the cascade-or-not behavior — the app does not enable SQLite FK
+ * enforcement, so this row would otherwise survive a DELETE FROM sessions.
+ */
+export function seedAttachment(opts: {
+  sessionId: string
+  r2Key: string
+  filename?: string
+}): string {
+  const id = `att_e2e_${Math.random().toString(36).slice(2, 10)}`
+  const now = Math.floor(Date.now() / 1000)
+  const db = openD1()
+  try {
+    db.prepare(
+      `INSERT INTO attachments
+         (id, session_id, uploaded_by, filename, content_type, size, r2_key, kind, created_at)
+       VALUES (?, ?, ?, ?, 'application/octet-stream', 0, ?, 'file', ?)`,
+    ).run(id, opts.sessionId, 'e2e@e2e.test', opts.filename ?? 'fixture.bin', opts.r2Key, now)
+  } finally {
+    db.close()
+  }
+  return id
+}
+
 export interface OperatorNoteRow {
   session_id: string
   body: string

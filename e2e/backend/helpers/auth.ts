@@ -121,6 +121,20 @@ export function forgeAuthHeaders(email: string, opts: ForgeOpts = {}): ForgedHea
 // constants directly (the spec already imports plenty).
 export { E2E_PORT }
 
+/**
+ * Mint a stateless unsubscribe token the same way functions/_lib/unsubscribe.ts
+ * (signUnsubscribeToken) does on the server. HMAC-SHA-256 over the
+ * lowercased email with SESSION_SECRET, base64url-encoded with no padding.
+ *
+ * The unsubscribe spec uses this to produce a valid token without round-
+ * tripping through the email send (which is stubbed). A bad token is just
+ * any other string the verifier won't accept.
+ */
+export function signUnsubscribeTokenForEmail(email: string): string {
+  const sig = createHmac('sha256', SECRET).update(email.toLowerCase(), 'utf8').digest()
+  return b64url(sig)
+}
+
 interface MintTokenOpts {
   /** unix seconds when the token expires. Defaults to now + 30 minutes
    *  (matching request-link.ts TOKEN_TTL_SECONDS). Pass a past value to

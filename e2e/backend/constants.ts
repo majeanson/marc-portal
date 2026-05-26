@@ -22,6 +22,11 @@ export const E2E_BINDINGS = {
   // Resend stub key. Unset would degrade email side-effects to no-ops; the
   // stub is here so the code paths that gate on `env.RESEND_API_KEY` run.
   RESEND_API_KEY: 're_e2e_stub',
+  // Resend webhook signing secret. The handler returns 503 without it; the
+  // resend-webhook spec uses the same value to mirror the Svix signature
+  // shape (functions/_lib/resendWebhook.ts strips the whsec_ prefix before
+  // base64-decoding). The body after the prefix is base64-encoded bytes.
+  RESEND_WEBHOOK_SECRET: 'whsec_ZTJlX3Jlc2VuZF93ZWJob29rX3NlY3JldA==',
   // Stripe Price IDs for the custodian plans. Stub values — the e2e Stripe
   // path short-circuits in functions/_lib/stripe.ts via the sentinel apiKey
   // before the price IDs are dereferenced, so any non-empty string works.
