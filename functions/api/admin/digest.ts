@@ -333,6 +333,22 @@ ${alerts
     console.error('digest: resend send threw', err)
   }
 
+  // Return-shape contract — keep these field meanings explicit because
+  // they look interchangeable from a distance:
+  //   sent   — Resend's HTTP send returned 2xx. NOT "we identified work
+  //            to nudge about." A Resend outage gives `sent: false` even
+  //            when count/alerts > 0; a successful send with no work
+  //            never gets here (we early-return above with sent:false +
+  //            count:0 + alerts:0 before touching Resend).
+  //   count  — number of triage rows >48h old. The actual nudge subject.
+  //   alerts — number of unresolved admin_alerts rows. Webhook-fallback
+  //            signal; a future operator UI would clear these explicitly.
+  //
+  // For an outside observer wondering "did the digest do its job?": the
+  // job is "identify work AND deliver email." `count + alerts > 0`
+  // answers the first half; `sent` answers the second. A cron consumer
+  // should treat HTTP 200 as "handler executed cleanly"; the body fields
+  // are operator-facing diagnostics, not retry signals.
   return ok({ sent: mailSent, count: rows.length, alerts: alerts.length })
 }
 

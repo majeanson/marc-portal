@@ -33,6 +33,8 @@ import {
   countRowsWhere,
   seedAttachment,
   seedMessage,
+  seedOperatorNote,
+  seedPendingPayment,
   seedSession,
 } from './helpers/db'
 
@@ -70,15 +72,27 @@ test.describe('DELETE /api/me — Loi 25 self-erasure', () => {
     expect(res.status).toBe(401)
   })
 
-  test('signed in: deletes every row tied to the email', async () => {
-    // Seed: one session, two messages, one magic-link token, one attachment.
-    // After DELETE /api/me the count for each should be 0 for our email.
+  test('signed in: deletes every row tied to the email across every child table', async () => {
+    // Seed: one session and every kind of child row that references it.
+    // After DELETE /api/me the count for each must be 0. The handler does
+    // explicit DELETE FROM <child> before DELETE FROM sessions (belt-and-
+    // suspenders, see /api/me.ts comment), so the erasure is bulletproof
+    // even if FK enforcement is ever turned off.
     const sessionId = `sess_e2e_${randomBytes(6).toString('hex')}`
+    const paymentId = `pay_e2e_${randomBytes(6).toString('hex')}`
     seedSession({ id: sessionId, email: TARGET_EMAIL, status: 'active', tier: 1 })
     seedMessage({ sessionId, author: 'visitor', body: 'first' })
     seedMessage({ sessionId, author: 'marc', body: 'reply' })
     mintMagicLinkToken(TARGET_EMAIL)
     seedAttachment({ sessionId, r2Key: `e2e/${sessionId}/fixture.bin` })
+    seedOperatorNote({ sessionId, body: 'admin note attached to this session' })
+    seedPendingPayment({ paymentId, sessionId, kind: 'build' })
+    // intake_drafts is keyed by email (not session_id) — seed it directly
+    // by hitting the upsert endpoint isn't worth it; use a magic-link
+    // token mint as a proxy that the email's draft row WOULD live under
+    // this email. The handler still must DELETE FROM intake_drafts on
+    // erasure even if no row exists today, so we assert count=0 after
+    // (idempotent: deleting from an empty table is a no-op).
 
     // Sanity: rows exist before the erasure.
     expect(countRowsWhere(`SELECT COUNT(*) AS c FROM sessions WHERE email = ?`, TARGET_EMAIL)).toBe(
@@ -92,6 +106,12 @@ test.describe('DELETE /api/me — Loi 25 self-erasure', () => {
     ).toBe(1)
     expect(
       countRowsWhere(`SELECT COUNT(*) AS c FROM attachments WHERE session_id = ?`, sessionId),
+    ).toBe(1)
+    expect(
+      countRowsWhere(`SELECT COUNT(*) AS c FROM operator_notes WHERE session_id = ?`, sessionId),
+    ).toBe(1)
+    expect(
+      countRowsWhere(`SELECT COUNT(*) AS c FROM payments WHERE session_id = ?`, sessionId),
     ).toBe(1)
 
     const headers = forgeAuthHeaders(TARGET_EMAIL)
@@ -110,25 +130,29 @@ test.describe('DELETE /api/me — Loi 25 self-erasure', () => {
     // Expires in the past). Either pattern is acceptable.
     expect(clears).toMatch(/mp_session=;|max-age=0|expires=/i)
 
-    // Sessions and magic-link tokens for this email are gone.
+    // Every owning + child row tied to this email is gone. This is the
+    // Loi 25 promise — partial deletion would mean "we erased your
+    // account but left your messages" which is exactly the wrong shape.
     expect(countRowsWhere(`SELECT COUNT(*) AS c FROM sessions WHERE email = ?`, TARGET_EMAIL)).toBe(
       0,
     )
     expect(
       countRowsWhere(`SELECT COUNT(*) AS c FROM magic_link_tokens WHERE email = ?`, TARGET_EMAIL),
     ).toBe(0)
-    // The cascade test — these tables reference sessions(id) with
-    // ON DELETE CASCADE. If FK enforcement is off in the runtime, these
-    // rows survive as orphans. The handler relies on the cascade for its
-    // correctness; if this assertion fails, /api/me.ts needs explicit
-    // DELETE FROM messages + DELETE FROM attachments before the sessions
-    // DELETE — and the handler's comment about "ON DELETE CASCADE … takes
-    // care of the children" needs to come down.
     expect(
       countRowsWhere(`SELECT COUNT(*) AS c FROM messages WHERE session_id = ?`, sessionId),
     ).toBe(0)
     expect(
       countRowsWhere(`SELECT COUNT(*) AS c FROM attachments WHERE session_id = ?`, sessionId),
+    ).toBe(0)
+    expect(
+      countRowsWhere(`SELECT COUNT(*) AS c FROM operator_notes WHERE session_id = ?`, sessionId),
+    ).toBe(0)
+    expect(
+      countRowsWhere(`SELECT COUNT(*) AS c FROM payments WHERE session_id = ?`, sessionId),
+    ).toBe(0)
+    expect(
+      countRowsWhere(`SELECT COUNT(*) AS c FROM intake_drafts WHERE email = ?`, TARGET_EMAIL),
     ).toBe(0)
   })
 

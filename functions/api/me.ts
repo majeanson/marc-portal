@@ -69,8 +69,41 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
     console.error('r2 enumeration failed', err)
   }
 
-  // Hard-delete the visitor's data. ON DELETE CASCADE on messages + attachments
-  // takes care of the children when sessions go.
+  // Hard-delete the visitor's data. Belt-and-suspenders: every child table
+  // declares ON DELETE CASCADE on sessions(id), AND we delete the children
+  // explicitly here. D1 enables foreign keys by default so the cascade
+  // fires today, but the application never sets `PRAGMA foreign_keys = ON`
+  // — so a runtime swap, a Miniflare default change, or a future "let's
+  // disable FK for write perf" could silently turn cascade off and leave
+  // orphan rows that a Loi 25 erasure was supposed to obliterate. Doing
+  // both costs ~4 extra D1 statements per erasure (rare op) and removes
+  // the dependency on FK enforcement entirely.
+  //
+  // Order matters when there are FKs between children: messages references
+  // sessions; attachments references both sessions and messages. We do
+  // attachments → messages → operator_notes → intake_drafts → payments →
+  // sessions, then magic_link_tokens (no FK).
+  await env.DB.prepare(
+    `DELETE FROM attachments WHERE session_id IN (SELECT id FROM sessions WHERE email = ?)`,
+  )
+    .bind(email)
+    .run()
+  await env.DB.prepare(
+    `DELETE FROM messages WHERE session_id IN (SELECT id FROM sessions WHERE email = ?)`,
+  )
+    .bind(email)
+    .run()
+  await env.DB.prepare(
+    `DELETE FROM operator_notes WHERE session_id IN (SELECT id FROM sessions WHERE email = ?)`,
+  )
+    .bind(email)
+    .run()
+  await env.DB.prepare(`DELETE FROM intake_drafts WHERE email = ?`).bind(email).run()
+  await env.DB.prepare(
+    `DELETE FROM payments WHERE session_id IN (SELECT id FROM sessions WHERE email = ?)`,
+  )
+    .bind(email)
+    .run()
   await env.DB.prepare(`DELETE FROM sessions WHERE email = ?`).bind(email).run()
   await env.DB.prepare(`DELETE FROM magic_link_tokens WHERE email = ?`).bind(email).run()
 
