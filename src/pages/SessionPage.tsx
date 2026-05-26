@@ -6,6 +6,7 @@ import { Footer } from '../components/Footer'
 import { PAGE_FEATURE } from '../lib/features'
 import { SessionAdvancements } from '../components/SessionAdvancements'
 import { SessionShowcase } from '../components/SessionShowcase'
+import { OperatorNotesPanel } from '../components/OperatorNotesPanel'
 import { useAuth } from '../lib/authContext'
 import {
   deleteSession,
@@ -1266,6 +1267,8 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 onPatched={(next) => setSession(next)}
               />
             )}
+
+            {isAdmin && <OperatorNotesPanel sessionId={session.id} lang={lang} />}
 
             <div id="session-builds">
               <SessionAdvancements

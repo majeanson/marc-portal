@@ -442,6 +442,13 @@
       "inAdminShell": true
     },
     {
+      "path": "/admin/today",
+      "component": "AdminToday",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
       "path": "/en/admin",
       "component": "Admin",
       "lang": "en",
@@ -475,6 +482,13 @@
       "lang": "en",
       "dynamic": false,
       "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/today",
+      "component": "AdminToday",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
     }
   ],
   "endpoints": [
@@ -497,6 +511,17 @@
       "file": "functions/api/admin/digest.ts"
     },
     {
+      "id": "api.admin.sessions.id.notes",
+      "path": "/api/admin/sessions/:id/notes",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "adminOnly": true,
+      "file": "functions/api/admin/sessions/[id]/notes.ts"
+    },
+    {
       "id": "api.admin.test-emails",
       "path": "/api/admin/test-emails",
       "methods": [
@@ -504,6 +529,15 @@
       ],
       "adminOnly": true,
       "file": "functions/api/admin/test-emails.ts"
+    },
+    {
+      "id": "api.admin.today",
+      "path": "/api/admin/today",
+      "methods": [
+        "GET"
+      ],
+      "adminOnly": true,
+      "file": "functions/api/admin/today.ts"
     },
     {
       "id": "api.admin.vouches",
@@ -839,6 +873,11 @@
       "id": "table.messages",
       "name": "messages",
       "firstMigration": "0001_initial.sql"
+    },
+    {
+      "id": "table.operator_notes",
+      "name": "operator_notes",
+      "firstMigration": "0028_operator_notes.sql"
     },
     {
       "id": "table.payments",

@@ -1,0 +1,77 @@
+{
+  "featureKey": "feat-2026-104",
+  "title": "Admin today — one-glance operator dashboard",
+  "status": "active",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminToday.tsx",
+  "problem": "Reconstructing 'what do I need to do today?' from the existing admin surfaces requires clicking through the hub, the inbox, the custodian board and the audit log — and even then the per-session 'next action' isn't surfaced anywhere; it lives in Marc's head. AdminToday collapses every signal the daily-digest email already aggregates into one page so the triage decision happens by eye, then links each row back to the focused surface (session page, custodian view) for the action itself.",
+  "tags": ["admin", "dashboard", "triage", "operator", "today"],
+  "analysis": "Single round-trip: GET /api/admin/today returns sessions (with computed nextAction, last-message timestamps per author, build-leg payment counts, note snippet), overduePayments (build-kind pending >7d), slaBreaches (draft/triage >72h), unansweredMessages (visitor wrote, no operator reply, >24h), systemHealth (outbox stuck/pending, last-7d bounces+complaints, open admin_alerts, capacity), and custodianAlerts (past-due + recent-30d switches). Client renders one panel per section; capacity reads from the same payload (no second /api/capacity call). The nextAction inference (functions/_lib/nextAction.ts) is the pure-function brain — given session + payment + message timestamps, returns one of 13 NextActionCodes plus severity + FR/EN copy. The dashboard renders the label by code so a new branch flows through automatically.",
+  "decisions": [
+    {
+      "decision": "Single /api/admin/today endpoint, not five parallel calls",
+      "rationale": "The dashboard is read-only and needs everything-or-nothing — a partial render (e.g. sessions loaded but health pending) is worse than the loading spinner. One endpoint also lets the server share the sessions query across the SLA/unanswered/per-session subsections instead of making the client recompute. The capacity cap keeps the dataset small enough that the multi-table aggregation is cheap.",
+      "recommendation": "When a new dashboard signal lands, add it to /api/admin/today rather than minting a new endpoint. Resist the urge to refactor into per-section endpoints unless one section gets expensive enough to justify its own cache.",
+      "date": "2026-05-26"
+    },
+    {
+      "decision": "nextAction is a pure function (functions/_lib/nextAction.ts), not inlined in the handler",
+      "rationale": "The 'what should Marc do next?' inference will outgrow the dashboard — it's the natural input for a future digest summary line, a push notification, or an LLM context blurb. Pulling it out as a pure function with explicit NextActionContext means the dashboard handler stays a data-aggregation shell and the action logic gets unit-tested in isolation.",
+      "recommendation": "When adding a new branch, extend NextActionCode + the inferNextAction precedence chain, then add FR/EN LABELS + HINTS. Don't fork into a parallel inference fn — precedence ordering is the contract.",
+      "date": "2026-05-26"
+    },
+    {
+      "decision": "Operator-notes table read in the same query, with graceful pre-migration fallback",
+      "rationale": "The note snippet (first 200 chars) ships in each TodaySessionEntry so the dashboard can show 'there's context to read here' without a second request. Migration 0028 may land in a separate deploy from the handler — wrapping the read in try/catch on /no such table/ matches the tenants pre-migration pattern in _middleware.ts and keeps /admin/today rendering during the window.",
+      "recommendation": "Any new admin-data table read by /admin/today should follow the same fallback — a missing table degrades to 'no signal for this section', not a 5xx.",
+      "date": "2026-05-26"
+    },
+    {
+      "decision": "Capacity panel reads from the dashboard payload, not /api/capacity",
+      "rationale": "The dashboard already loads in one round-trip; calling /api/capacity in parallel would mean a second roundtrip + the risk of momentary disagreement between the two reads (e.g. an admission landed between them). Including the capacity numbers in the dashboard's systemHealth section keeps the page internally consistent.",
+      "recommendation": "Don't add a /api/capacity call from this page. If the cap rule itself changes, edit the SQL in today.ts and the docs in this feature — the cap is structural (see CLAUDE.md).",
+      "date": "2026-05-26"
+    }
+  ],
+  "successCriteria": "- One GET /api/admin/today returns the full payload; client renders in one pass\n- Each panel has explicit empty state (the dashboard is *useful* when nothing's wrong)\n- nextAction labels render in the visitor's lang (FR/EN parity)\n- Per-row links land on the right focused surface (session page / custodian view)\n- Pre-migration deploy of operator_notes degrades to no-snippet, no 500\n- Capacity panel agrees with the home page's /api/capacity (they share a count source via shared SQL semantics — see decisions)",
+  "implementation": "functions/api/admin/today.ts — GET handler, admin-gated, no CSRF (GET). Pulls sessions, messages (MAX per author per session), payments, operator_notes, email_events (7d window), email_outbox, admin_alerts, custodians (past-due + recent switches). Composes via inferNextAction (functions/_lib/nextAction.ts).\nsrc/pages/AdminToday.tsx — single-page render; one panel per section. Inline COPY for operator-only surface (per i18n convention). Reuses CrossFeatureLink/PageMast chrome. CSS in src/styles.css under '.admin-today__*' (mobile-first single column, two-column custodian grid ≥720px).\nsrc/lib/todayApi.ts — typed client binding (mirror of TodayResponse).\nfunctions/_lib/nextAction.ts — pure inference fn with 13 NextActionCodes, severity precedence, FR+EN copy.",
+  "userGuide": "Land here from /admin sidebar (Today) or the hub tile at the top of the working surfaces list. Each panel summarizes one failure mode:\n- Capacity — current occupancy vs the 1+1 cap. The home counter reads the same source.\n- Live sessions — every non-rejected session, sorted triage → active → draft → shipped, with a per-row 'next action' label.\n- Overdue payments — build-kind 'pending' rows older than 7 days. Click → session page → message the visitor.\n- SLA breaches — draft/triage older than 72h. The intake copy promises this turnaround.\n- Unanswered messages — visitor wrote, no operator reply, >24h.\n- System health — email outbox (stuck/pending), last-7d bounces+complaints, open admin_alerts.\n- Custodians — past-due charges + recent-30d switches.\n\nTo see a session's full operator note: click Open → the SessionPage's operator-notes panel.\nTo regenerate the dashboard: hit Reload (or refresh the page — there's no client-side cache).",
+  "knownLimitations": [
+    "No auto-refresh — the page reads on mount; if Marc leaves it open all day the numbers staling are on him. Adding a 60s poll would be one useState/useEffect away but the current operator routine is open-page → act → close.",
+    "Sort within sections is server-side; the client doesn't expose alternative sorts. Single-operator scale doesn't need them yet.",
+    "No filter UI — the dataset is small (capacity cap = 2 live sessions), so Ctrl+F suffices.",
+    "Email-event volume is a 7-day rolling count, not a trend chart. The /admin/audit page is the deeper view if signals look off."
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-26",
+      "reason": "Dashboard shipped — handler + page + 38 backend tests passing."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-26",
+  "revisions": [
+    {
+      "date": "2026-05-26",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — /admin/today landed.",
+      "commit": "pending",
+      "buildUrl": "pending"
+    }
+  ],
+  "annotations": []
+}

@@ -47,6 +47,12 @@ export function buildAdminSections(lang: Lang): AdminSection[] {
         title: t.working,
         tiles: [
           {
+            href: `${langPrefix}/admin/today`,
+            title: 'Today',
+            desc: 'Everything waiting on you, one glance. Capacity, sessions, overdue payments, unanswered messages, system health.',
+            badge: '/admin/today',
+          },
+          {
             href: `${langPrefix}/admin/inbox`,
             title: 'Inbox',
             desc: 'Live sessions, triage, replies. The primary working surface.',
@@ -161,6 +167,12 @@ export function buildAdminSections(lang: Lang): AdminSection[] {
     {
       title: t.working,
       tiles: [
+        {
+          href: `${langPrefix}/admin/today`,
+          title: 'Aujourd’hui',
+          desc: 'Tout ce qui demande ton attention, en une page. Capacité, sessions, paiements en retard, messages en attente, santé.',
+          badge: '/admin/today',
+        },
         {
           href: `${langPrefix}/admin/inbox`,
           title: 'Boîte de réception',

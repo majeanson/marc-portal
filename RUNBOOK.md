@@ -1300,6 +1300,81 @@ npx wrangler d1 execute marc-portal-db --remote --command \
 
 Same suppression as the one-click flow.
 
+## 18. `/admin/today` dashboard wrong, empty, or 500
+
+**Symptoms:** the operator dashboard at `/admin/today` either returns 500,
+shows "Failed to load", or renders with numbers that disagree with what
+you see elsewhere (capacity counter, inbox, custodian board).
+
+### What happens (system behavior)
+
+- `/admin/today` is one round-trip to `GET /api/admin/today`. The handler
+  pulls sessions + messages + payments + operator_notes + email events +
+  email outbox + admin alerts + custodians in ~8 queries and composes the
+  per-session **next action** via the pure-fn `functions/_lib/nextAction.ts`.
+- The capacity numbers in the dashboard's "system health" panel are
+  computed from the same `sessions` query as the rest of the page — they
+  intentionally do not call `/api/capacity`, so the dashboard is
+  internally consistent even if the home counter was momentarily stale.
+- The note-snippet column wraps its `SELECT ... FROM operator_notes` in a
+  `no such table` fallback. A deploy that landed the handler before
+  migration 0028 ran will degrade to "no snippet visible", not 500.
+
+### Step-by-step
+
+1. **First probe the endpoint:**
+   ```bash
+   curl -s https://marcportal.com/api/admin/today \
+     -H "Cookie: mp_sess=…" | jq '.generatedAtS, .sessions | length'
+   ```
+   - 401 → cookie missing/expired. Re-sign in.
+   - 403 → cookie email isn't in the admin list (`ADMIN_EMAILS` in wrangler.toml).
+   - 200 with a believable shape → the issue is client-side, see step 4.
+   - 500 → continue.
+
+2. **Tail logs while re-fetching** to see which SQL phase blew up:
+   ```bash
+   npx wrangler pages deployment tail --project-name marc-portal
+   ```
+   - `no such table: operator_notes` → migration 0028 hasn't applied.
+     The fallback `try/catch` in `functions/api/admin/today.ts` should
+     absorb this, but if you removed it: re-add. Then
+     `npm run db:migrate:prod` from local to land the migration.
+   - `no such column: ...` on the sessions/messages/payments query → a
+     schema migration was reverted or skipped. Run `db:migrate:prod`.
+
+3. **Capacity numbers disagree with the home counter:**
+   - The home counter reads `/api/capacity`. The dashboard reads the same
+     `sessions` rows that `/api/capacity` reads, but in its own query.
+     If the two disagree, the only realistic cause is a write that
+     landed mid-render. Reload both pages; they will reconcile.
+   - If they stay disagreeing after a reload, that's a real bug — the
+     atomic capacity guard in `PATCH /api/sessions/:id` is what enforces
+     1+1, and a disagreement means a write bypassed the guard. Open an
+     incident — this is the structural invariant from CLAUDE.md.
+
+4. **Page rendered but a section is missing or wrong:**
+   - The dashboard reads once on mount; there's no polling. A stale page
+     left open all day is on the operator. Hit **Reload** (header) or
+     refresh the browser.
+   - A section showing 0 when you know there should be entries (e.g. a
+     visitor sent a message that's been unanswered for two days but
+     "Unanswered messages" is empty): the SLA windows are 24h for replies
+     and 72h for triage/draft SLA — entries below those thresholds don't
+     show. This is by design.
+
+5. **Restoring confidence quickly** — the dashboard is a *view*, not a
+   write path. If it's broken, none of the underlying surfaces are
+   affected. The hub at `/admin`, the inbox at `/admin/inbox`, and the
+   custodian board at `/admin/custodians` all keep working independently.
+
+### What this dashboard does NOT do
+
+- Does **not** mutate state. No "mark as resolved" buttons; the page
+  links out to the focused surface for the action.
+- Does **not** poll for live updates. One read on mount, manual reload.
+- Does **not** read from the daily digest email cache. It reads D1 fresh.
+
 ## Payments setup (one-time) — Stripe
 
 Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card

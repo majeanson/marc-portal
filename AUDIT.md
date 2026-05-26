@@ -476,6 +476,27 @@
   flat PNG. Touches P3.4 (autosave moved into the draft) and P1.8 (scene
   JSON now rides alongside the PNG). Typecheck + lint + build clean; e2e
   visual baselines regenerated on the CI runner.
+- 2026-05-26 — **`/admin/today` operator dashboard + operator notes shipped.**
+  The dashboard collapses everything the daily-digest email aggregates
+  (live sessions with computed next-action, overdue payments, SLA breaches,
+  unanswered messages, system health, custodian alerts) into one page —
+  one round-trip via `GET /api/admin/today`. The per-session "what should
+  Marc do next?" inference moved out of head-space into the pure-fn
+  `functions/_lib/nextAction.ts` (13 NextActionCodes, FR + EN copy).
+  Migration 0028 adds an admin-only `operator_notes` table — a per-session
+  scratch pad mounted on the SessionPage when isAdmin, 4 KB byte ceiling,
+  cascade-deleted with the parent session (explicit DELETE, FK enforcement
+  isn't on).
+  - 604 vitest tests pass (+8 for OperatorNotesPanel). Typecheck + lint +
+    format clean. Two new e2e backend specs (admin-today, operator-notes)
+    exercise the wire format + auth wall + CSRF gate against a real
+    wrangler pages dev + ephemeral D1 — PR-only, but in the repo for the
+    next one.
+  - Feature docs co-located: `src/pages/AdminToday.feature.json` and
+    `functions/api/admin/sessions/[id]/notes.feature.json`.
+  - RUNBOOK §18 added — triage for "/admin/today wrong, empty, or 500",
+    including the structural-invariant note about capacity disagreement
+    between the dashboard and `/api/capacity`.
 
 ## Session totals (2026-05-15)
 

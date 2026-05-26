@@ -85,6 +85,9 @@ interface SeedSessionOpts {
   /** Community-pricing flag (default 0). When 1, build-tier checkouts charge
    *  the 20% discount. Scoping + custodian unaffected. */
   communityDiscount?: 0 | 1
+  /** unix seconds for created_at / updated_at. Defaults to now. Pass a past
+   *  value to drive the /admin/today SLA-breach branch (draft/triage >72h). */
+  createdAt?: number
 }
 
 /**
@@ -93,7 +96,7 @@ interface SeedSessionOpts {
  * under functions/db/migrations/ for the canonical list.
  */
 export function seedSession(opts: SeedSessionOpts): void {
-  const now = Math.floor(Date.now() / 1000)
+  const now = opts.createdAt ?? Math.floor(Date.now() / 1000)
   // Base columns are always written; the later-migration columns
   // (tier4_amount_cents, tier3_split) only appear when the caller asks —
   // keeps the SQL stable for the common Tier-1 case and avoids surfacing
@@ -159,6 +162,9 @@ interface SeedPendingPaymentOpts {
   installmentIndex?: number | null
   installmentOf?: number | null
   amountCents?: number
+  /** unix seconds. Defaults to now. Pass a past value to drive the
+   *  /admin/today "overdue payment" branch (>7 days old). */
+  createdAt?: number
 }
 
 /**
@@ -169,7 +175,7 @@ interface SeedPendingPaymentOpts {
  * indistinguishable from one minted through the real flow.
  */
 export function seedPendingPayment(opts: SeedPendingPaymentOpts): void {
-  const now = Math.floor(Date.now() / 1000)
+  const createdAt = opts.createdAt ?? Math.floor(Date.now() / 1000)
   const db = openD1()
   try {
     db.prepare(
@@ -185,7 +191,7 @@ export function seedPendingPayment(opts: SeedPendingPaymentOpts): void {
       opts.installmentIndex ?? 1,
       opts.installmentOf ?? 1,
       opts.amountCents ?? 75_000,
-      now,
+      createdAt,
     )
   } finally {
     db.close()
@@ -343,7 +349,11 @@ export function countAdminAlertsContaining(bodySubstr: string): number {
 /**
  * Best-effort wipe between tests — keeps the schema, drops the data. Useful
  * when a spec runs multiple sub-cases on the same db file. admin_alerts is
- * scoped per-test now that the fallback spec lands rows there.
+ * scoped per-test now that the fallback spec lands rows there. messages and
+ * operator_notes are wiped explicitly because the app does not enable SQLite
+ * foreign-key enforcement (no `PRAGMA foreign_keys = ON`), so the
+ * ON DELETE CASCADE on `sessions(id)` doesn't fire — relying on cascade
+ * leaks rows between specs that share the same persist dir.
  */
 export function clearTestRows(): void {
   const db = openD1()
@@ -352,8 +362,88 @@ export function clearTestRows(): void {
       `DELETE FROM payments;
        DELETE FROM webhook_events;
        DELETE FROM admin_alerts;
+       DELETE FROM messages;
+       DELETE FROM operator_notes;
        DELETE FROM sessions;`,
     )
+  } finally {
+    db.close()
+  }
+}
+
+interface SeedMessageOpts {
+  sessionId: string
+  author: 'visitor' | 'marc'
+  body?: string
+  /** unix seconds. Defaults to now. */
+  createdAt?: number
+}
+
+/**
+ * Insert a single message row. Used by the /admin/today spec to drive the
+ * lastVisitorMessageAt / lastMarcMessageAt + unansweredMessages branches.
+ */
+export function seedMessage(opts: SeedMessageOpts): void {
+  const id = `msg_e2e_${Math.random().toString(36).slice(2, 10)}`
+  const createdAt = opts.createdAt ?? Math.floor(Date.now() / 1000)
+  const db = openD1()
+  try {
+    db.prepare(
+      `INSERT INTO messages (id, session_id, author, body, created_at)
+       VALUES (?, ?, ?, ?, ?)`,
+    ).run(id, opts.sessionId, opts.author, opts.body ?? 'hello', createdAt)
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Direct-write an operator_notes row. Mirrors the upsert the PUT handler
+ * does, so a spec that wants to assert a fresh GET reads the seed value
+ * can skip the round-trip.
+ */
+export function seedOperatorNote(opts: {
+  sessionId: string
+  body: string
+  updatedBy?: string
+  updatedAt?: number
+}): void {
+  const now = opts.updatedAt ?? Math.floor(Date.now() / 1000)
+  const db = openD1()
+  try {
+    db.prepare(
+      `INSERT INTO operator_notes (session_id, body, updated_by, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(session_id) DO UPDATE SET
+         body = excluded.body,
+         updated_by = excluded.updated_by,
+         updated_at = excluded.updated_at`,
+    ).run(opts.sessionId, opts.body, opts.updatedBy ?? 'admin@e2e.test', now)
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Read back the operator note (or undefined) for a session. The operator-
+ * notes spec uses this to confirm a PUT round-trips into D1 and a DELETE
+ * removes the row.
+ */
+export interface OperatorNoteRow {
+  session_id: string
+  body: string
+  updated_by: string
+  updated_at: number
+}
+export function readOperatorNote(sessionId: string): OperatorNoteRow | undefined {
+  const db = openD1()
+  try {
+    return db
+      .prepare(
+        `SELECT session_id, body, updated_by, updated_at
+           FROM operator_notes WHERE session_id = ?`,
+      )
+      .get(sessionId) as OperatorNoteRow | undefined
   } finally {
     db.close()
   }

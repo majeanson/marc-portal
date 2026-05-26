@@ -1,0 +1,70 @@
+{
+  "featureKey": "feat-2026-105",
+  "title": "Operator notes — admin-only per-session scratch pad",
+  "status": "active",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "functions/api/admin/sessions/[id]/notes.ts",
+  "problem": "The session message thread is visitor-facing — the operator can't write 'remember to push back on scope tomorrow' or 'visitor is travelling until Wed' there without the visitor seeing it. Marc's been keeping this kind of context in his head, which works at one-active-session scale until a few days off and the next-action isn't obvious anymore. The /admin/today dashboard surfaces *what* the next action is; this surface stores the *why* behind it.",
+  "tags": ["admin", "operator", "session", "notes", "scratchpad"],
+  "analysis": "One row per session (operator_notes.session_id is PK). GET returns null gracefully when no row exists. PUT upserts via INSERT … ON CONFLICT (session_id) DO UPDATE; empty/whitespace body folds into a DELETE so an emptied textarea tidies up instead of persisting nothing. DELETE removes the row outright. Body capped at 4 KB *bytes* (not chars — emoji can bloat past 4096 chars while staying under 4 KB, or vice-versa). Cascade-deleted with the parent session via FK ON DELETE CASCADE, so a /api/me erasure cleans this up for free.",
+  "decisions": [
+    {
+      "decision": "Single PUT endpoint, empty-body folds into delete",
+      "rationale": "Two endpoints (PUT for content, DELETE for clear) is the strictly-correct REST split — but the UX is a textarea with a Save button. Most real 'clear this' moments will be 'select all → backspace → save', not a separate Clear-and-Save flow. Folding empty-string PUT into DELETE means the textarea-save path always Does The Right Thing. DELETE still exists for the explicit Clear button on the panel.",
+      "recommendation": "Don't add a 'soft-clear' state. The note is either present or not; there's no preserved-but-hidden state.",
+      "date": "2026-05-26"
+    },
+    {
+      "decision": "4 KB byte ceiling enforced in the handler, not via SQLite CHECK",
+      "rationale": "SQLite's CHECK on length() runs per write — the application layer is the right boundary because we want to return 413 cleanly with a JSON error, not surface a DB-constraint error. The number 4096 is generous enough that no realistic operator memo trips it (a 4 KB note is ~600 words) while bounding a paste-bomb.",
+      "recommendation": "If a note routinely hits the cap, the real fix is decomposing — the note is becoming a doc and belongs in a different surface, not a bigger field.",
+      "date": "2026-05-26"
+    },
+    {
+      "decision": "Pre-migration fallback on GET (try/catch 'no such table')",
+      "rationale": "Same pattern as the tenants table in _middleware.ts. If migration 0028 lands a few minutes after the handler in a deploy, the SessionPage operator panel mounts cleanly with an empty textarea instead of throwing in the user's face.",
+      "recommendation": "Mirror this fallback on any new admin-data table that the operator panel reads optimistically.",
+      "date": "2026-05-26"
+    }
+  ],
+  "successCriteria": "- GET returns {note: null} when no row, never 404\n- PUT with non-empty body upserts and returns the canonical note\n- PUT with empty/whitespace body deletes the row and returns {note: null}\n- DELETE always returns {note: null} (idempotent)\n- Body >4 KB returns 413\n- All three methods admin-gated (currentEmail → isAdmin), 401/403 otherwise\n- PUT/DELETE flow through the standard CSRF gate (not in CSRF_EXEMPT_PATHS)\n- Cascade-deletes with the parent session (/api/me erasure cleans it)",
+  "implementation": "functions/api/admin/sessions/[id]/notes.ts — onRequestGet/Put/Delete. Shared requireAdminAndSession guard. Schema: functions/db/migrations/0028_operator_notes.sql. Client panel: src/components/OperatorNotesPanel.tsx (mounts when isAdmin on SessionPage). Client binding: src/lib/todayApi.ts (getOperatorNote/putOperatorNote/deleteOperatorNote).",
+  "userGuide": "Admin-only. Mount point is the SessionPage (/session/:id and /admin/inbox/:id) — the panel renders below the session metadata when the viewer is admin. Type, click Save. The Clear button (visible only when there's a saved note and no pending edits) removes the row.\n\nWho sees it: the operator. Never the visitor — there is no read path from /me or any visitor surface. The note is also surfaced as a 200-char snippet on /admin/today so a missing context cue ('there's a note here') is visible at the dashboard level.\n\nWhat to write: anything that doesn't belong in the visitor-facing thread. Scope-creep callouts, follow-up reminders, out-of-thread context. Treat it as a notes-to-self field.",
+  "knownLimitations": [
+    "No history — every save overwrites. If recovering a prior version matters, paste it into the visitor thread or store elsewhere. Single-operator scale, not worth a versioning layer today.",
+    "No formatting beyond plain text — no markdown rendering, no link auto-linking. Adding rich text would mean a sanitization story; the field stays plain to stay simple.",
+    "Single body per session — no thread of timestamped entries. If a session ages enough that the note becomes a journal, the right move is to summarize-in-place rather than expand the schema."
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-26",
+      "reason": "Endpoint + panel + migration shipped; tests passing."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-26",
+  "revisions": [
+    {
+      "date": "2026-05-26",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "tags"
+      ],
+      "reason": "Initial author — operator notes landed alongside /admin/today.",
+      "commit": "pending",
+      "buildUrl": "pending"
+    }
+  ],
+  "annotations": []
+}

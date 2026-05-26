@@ -16473,3 +16473,470 @@ a.feature-dot:focus-visible {
     opacity: 0;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   ADMIN — /admin/today dashboard. Mobile-first single column; expands to
+   a two-column custodian grid above 720px. Reuses existing color tokens
+   so the surface tracks day/night themes without a parallel palette.
+   ────────────────────────────────────────────────────────────────────── */
+.admin-today {
+  padding: 0 0 24px;
+}
+.admin-today__head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 14px;
+}
+.admin-today__stamp {
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.admin-today__loading {
+  color: var(--text-soft);
+  padding: 12px 0;
+}
+.admin-today__error {
+  background: var(--warm-soft);
+  border: 1px solid var(--warm);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.admin-today__error p {
+  margin: 0;
+  color: var(--text);
+  flex: 1 1 auto;
+}
+
+.admin-today__panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+.admin-today__panel-title {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-today__count {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+.admin-today__panel-note {
+  margin: 4px 0 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-mid);
+  max-width: 64ch;
+}
+.admin-today__empty {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+/* Capacity panel — two cells (active + triage), each showing n / cap. */
+.admin-today__capacity {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.admin-today__cap-cell {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  background: var(--bg-section);
+}
+.admin-today__cap-cell--full {
+  border-color: var(--warm);
+  background: var(--warm-soft);
+}
+.admin-today__cap-label {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 4px;
+}
+.admin-today__cap-figure {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 24px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.admin-today__cap-cap {
+  font-size: 14px;
+  color: var(--text-faint);
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+/* Live sessions list — cards that span the panel width. */
+.admin-today__sessions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.admin-today__session {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-section);
+  transition: border-color 140ms ease;
+}
+.admin-today__session:hover,
+.admin-today__session:focus-within {
+  border-color: var(--accent);
+}
+.admin-today__session--urgent {
+  border-left: 3px solid var(--warm);
+}
+.admin-today__session--warn {
+  border-left: 3px solid var(--accent);
+}
+.admin-today__session--info {
+  border-left: 3px solid var(--cool);
+}
+.admin-today__session--muted {
+  border-left: 3px solid var(--border);
+  opacity: 0.85;
+}
+.admin-today__session-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+}
+.admin-today__session-link:hover {
+  text-decoration: none;
+}
+.admin-today__session-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+.admin-today__session-status {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.admin-today__action-pill {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-mid);
+}
+.admin-today__action-pill--urgent {
+  background: var(--warm-soft);
+  border-color: var(--warm);
+  color: var(--warm);
+}
+.admin-today__action-pill--warn {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-warm);
+}
+.admin-today__action-pill--info {
+  background: var(--cool-soft);
+  border-color: var(--cool);
+  color: var(--cool);
+}
+.admin-today__action-pill--muted {
+  color: var(--text-soft);
+}
+.admin-today__session-email {
+  font-size: 13px;
+  color: var(--text);
+  word-break: break-all;
+}
+.admin-today__session-hint {
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.admin-today__session-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.admin-today__session-waiting {
+  color: var(--warm);
+}
+.admin-today__session-pay {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.admin-today__pay-tag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  border: 1px solid var(--border-soft);
+}
+.admin-today__pay-tag--paid {
+  color: var(--accent-warm);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.admin-today__pay-tag--pending {
+  color: var(--cool);
+  border-color: var(--cool);
+  background: var(--cool-soft);
+}
+.admin-today__pay-tag--failed {
+  color: var(--warm);
+  border-color: var(--warm);
+  background: var(--warm-soft);
+}
+.admin-today__session-open {
+  color: var(--accent-warm);
+  margin-left: auto;
+}
+.admin-today__session-note {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  background: var(--bg-card);
+  border-left: 2px solid var(--border);
+  color: var(--text-mid);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.admin-today__session-note-tag {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+/* Generic rows used by overdue / SLA / unanswered / custodian sections. */
+.admin-today__rows {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-today__row {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-section);
+}
+.admin-today__row--urgent {
+  border-left: 3px solid var(--warm);
+}
+.admin-today__row-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  padding: 10px 12px;
+  text-decoration: none;
+  color: inherit;
+  font-size: 13px;
+}
+.admin-today__row-link:hover {
+  background: var(--bg-hover);
+  text-decoration: none;
+}
+.admin-today__row-email {
+  color: var(--text);
+  flex: 1 1 220px;
+  word-break: break-all;
+}
+.admin-today__row-amount,
+.admin-today__row-age,
+.admin-today__row-tag {
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.admin-today__row-tag {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--warm);
+}
+
+/* System-health metrics row. */
+.admin-today__metrics {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.admin-today__metric {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: var(--bg-section);
+}
+.admin-today__metric--urgent {
+  border-color: var(--warm);
+  background: var(--warm-soft);
+}
+.admin-today__metric-label {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 4px;
+}
+.admin-today__metric-figure {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--text);
+}
+.admin-today__metric-sub {
+  font-size: 11px;
+  color: var(--text-soft);
+  font-weight: 400;
+  margin-left: 2px;
+}
+.admin-today__metric-stuck {
+  color: var(--warm);
+}
+
+/* Custodian section — two-column grid on wider viewports. */
+.admin-today__custodian-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 720px) {
+  .admin-today__custodian-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.admin-today__custodian-heading {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+}
+
+/* Small-screen tightening — match the existing admin shell's 800px break. */
+@media (max-width: 640px) {
+  .admin-today__panel {
+    padding: 14px 14px;
+  }
+  .admin-today__capacity {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .admin-today__cap-figure {
+    font-size: 22px;
+  }
+  .admin-today__session-link {
+    padding: 12px;
+  }
+  .admin-today__row-link {
+    padding: 10px 10px;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   OPERATOR NOTES — admin-only scratch pad on /session/:id. Sits between
+   the showcase controls and the message thread.
+   ────────────────────────────────────────────────────────────────────── */
+.operator-notes {
+  border-left: 3px solid var(--cool);
+}
+.operator-notes__heading {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+.operator-notes__sub {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+  color: var(--text-mid);
+  line-height: 1.5;
+  max-width: 60ch;
+}
+.operator-notes__loading {
+  margin: 6px 0;
+  color: var(--text-soft);
+}
+.operator-notes__textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--bg-section);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+}
+.operator-notes__textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+.operator-notes__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.operator-notes__save {
+  color: var(--accent-warm);
+}
+.operator-notes__save:disabled {
+  color: var(--text-faint);
+  cursor: default;
+}
+.operator-notes__clear {
+  color: var(--warm);
+}
+.operator-notes__error {
+  color: var(--warm);
+}
+.operator-notes__saved {
+  color: var(--accent);
+}
+.operator-notes__count {
+  color: var(--text-faint);
+}
+.operator-notes__stamp {
+  color: var(--text-soft);
+  margin-left: auto;
+}

@@ -156,6 +156,13 @@ interface EmailOutboxRowMock {
   sent_at: number | null
 }
 
+interface OperatorNoteRowMock {
+  session_id: string
+  body: string
+  updated_by: string
+  updated_at: number
+}
+
 export class D1Mock {
   sessions = new Map<string, SessionRowMock>()
   messages = new Map<string, MessageRowMock>()
@@ -169,6 +176,7 @@ export class D1Mock {
   user_prefs = new Map<string, UserPrefRowMock>()
   email_outbox = new Map<string, EmailOutboxRowMock>()
   email_events = new Map<string, EmailEventRowMock>()
+  operator_notes = new Map<string, OperatorNoteRowMock>()
 
   prepare(sql: string): MockPreparedStatement {
     return new MockPreparedStatement(this, sql, [])
@@ -728,6 +736,151 @@ class MockPreparedStatement {
     if (sql.includes('SELECT last_attempt FROM email_outbox WHERE id = ?')) {
       const r = this.db.email_outbox.get(a[0] as string)
       return r ? [{ last_attempt: r.last_attempt }] : []
+    }
+
+    // SELECT ... FROM operator_notes WHERE session_id = ?  (single row)
+    if (sql.includes('FROM operator_notes WHERE session_id = ?')) {
+      const r = this.db.operator_notes.get(a[0] as string)
+      return r ? [{ ...r }] : []
+    }
+
+    // SELECT ... FROM operator_notes WHERE session_id IN (...)
+    //   used by /api/admin/today to fetch all notes in one round-trip.
+    if (sql.includes('FROM operator_notes') && sql.includes('WHERE session_id IN')) {
+      const ids = new Set(a.map((x) => String(x)))
+      const rows: OperatorNoteRowMock[] = []
+      for (const r of this.db.operator_notes.values()) {
+        if (ids.has(r.session_id)) rows.push({ ...r })
+      }
+      return rows
+    }
+
+    // /admin/today aggregator: ordered, non-rejected live session list.
+    if (
+      sql.includes('FROM sessions') &&
+      sql.includes("status != 'rejected'") &&
+      sql.includes('deleted_at IS NULL') &&
+      sql.includes('CASE status')
+    ) {
+      const out = [...this.db.sessions.values()]
+        .filter((s) => s.deleted_at === null && s.status !== 'rejected')
+        .sort((x, y) => {
+          const order = (s: string) =>
+            s === 'triage' ? 0 : s === 'active' ? 1 : s === 'draft' ? 2 : s === 'shipped' ? 3 : 4
+          const ds = order(x.status) - order(y.status)
+          if (ds !== 0) return ds
+          return y.updated_at - x.updated_at
+        })
+      return out.map((s) => projectSession(this.db, s))
+    }
+
+    // /admin/today aggregator: custodian past_due + recent switches.
+    if (
+      sql.includes('FROM sessions') &&
+      sql.includes("custodian_status = 'past_due'") &&
+      sql.includes("custodian_status = 'switched_to_tout_a_toi'")
+    ) {
+      const recentCutoff = a[0] as number
+      const out = [...this.db.sessions.values()]
+        .filter((s) => s.deleted_at === null)
+        .filter(
+          (s) =>
+            s.custodian_status === 'past_due' ||
+            (s.custodian_status === 'switched_to_tout_a_toi' && s.updated_at > recentCutoff),
+        )
+        .sort((x, y) => y.updated_at - x.updated_at)
+      return out.map((s) => projectSession(this.db, s))
+    }
+
+    // /admin/today: MAX(created_at) per (session_id, author) over messages.
+    if (
+      sql.includes('FROM messages') &&
+      sql.includes('SELECT session_id, author') &&
+      sql.includes('MAX(created_at)') &&
+      sql.includes('GROUP BY session_id, author')
+    ) {
+      const ids = new Set(a.map((x) => String(x)))
+      const bucket = new Map<string, { author: string; last_at: number }>()
+      for (const m of this.db.messages.values()) {
+        if (!ids.has(m.session_id)) continue
+        const key = `${m.session_id}|${m.author}`
+        const cur = bucket.get(key)
+        if (!cur || m.created_at > cur.last_at) {
+          bucket.set(key, { author: m.author, last_at: m.created_at })
+        }
+      }
+      const rows: Record<string, unknown>[] = []
+      for (const [key, v] of bucket) {
+        const sessionId = key.split('|', 1)[0]
+        rows.push({ session_id: sessionId, author: v.author, last_at: v.last_at })
+      }
+      return rows
+    }
+
+    // /admin/today: payment stats per (session_id) — return raw rows we
+    // then bucket on the JS side.
+    if (
+      sql.includes('FROM payments') &&
+      sql.includes('SELECT session_id, kind, status') &&
+      sql.includes('WHERE session_id IN')
+    ) {
+      const ids = new Set(a.map((x) => String(x)))
+      const rows: Record<string, unknown>[] = []
+      for (const p of this.db.payments.values()) {
+        if (!ids.has(p.session_id)) continue
+        rows.push({
+          session_id: p.session_id,
+          kind: p.kind,
+          status: p.status,
+          amount_cents: p.amount_cents,
+          installment_index: p.installment_index ?? null,
+          installment_of: p.installment_of ?? null,
+          created_at: p.created_at,
+        })
+      }
+      return rows
+    }
+
+    // /admin/today: outbox pending+stuck count aggregate.
+    if (
+      sql.includes('FROM email_outbox') &&
+      sql.includes('COUNT(CASE WHEN sent_at IS NULL AND attempts <')
+    ) {
+      const maxAttempts = a[0] as number
+      let pending = 0
+      let stuck = 0
+      for (const r of this.db.email_outbox.values()) {
+        if (r.sent_at !== null) continue
+        if (r.attempts < maxAttempts) pending++
+        else stuck++
+      }
+      return [{ pending, stuck }]
+    }
+
+    // /admin/today: bounces/complaints over the last 7 days.
+    if (
+      sql.includes('FROM email_events') &&
+      sql.includes("type = 'email.bounced'") &&
+      sql.includes('WHERE received_at >')
+    ) {
+      const since = a[0] as number
+      let bounces = 0
+      let complaints = 0
+      for (const r of this.db.email_events.values()) {
+        if (r.received_at <= since) continue
+        if (r.type === 'email.bounced') bounces++
+        else if (r.type === 'email.complained' || r.type === 'email.unsubscribed') complaints++
+      }
+      return [{ bounces, complaints }]
+    }
+
+    // /admin/today: COUNT(*) AS n FROM admin_alerts WHERE resolved_at IS NULL
+    if (sql.includes('FROM admin_alerts') && sql.includes('COUNT(*)')) {
+      let n = 0
+      for (const v of this.db.admin_alerts.values()) {
+        if (v.resolved_at == null) n++
+      }
+      return [{ n }]
     }
 
     // Fallback: SELECT intake_json FROM sessions WHERE email = ? AND deleted_at IS NULL
@@ -1423,6 +1576,26 @@ class MockPreparedStatement {
         updated_at: a[2] as number,
       })
       return 1
+    }
+
+    // INSERT INTO operator_notes (session_id, body, updated_by, updated_at)
+    //   ON CONFLICT(session_id) DO UPDATE SET body=..., updated_by=..., updated_at=...
+    if (sql.startsWith('INSERT INTO operator_notes') && sql.includes('ON CONFLICT(session_id)')) {
+      const sessionId = a[0] as string
+      this.db.operator_notes.set(sessionId, {
+        session_id: sessionId,
+        body: a[1] as string,
+        updated_by: a[2] as string,
+        updated_at: a[3] as number,
+      })
+      return 1
+    }
+
+    // DELETE FROM operator_notes WHERE session_id = ?
+    if (sql.startsWith('DELETE FROM operator_notes WHERE session_id = ?')) {
+      const sessionId = a[0] as string
+      const had = this.db.operator_notes.delete(sessionId)
+      return had ? 1 : 0
     }
 
     // Generic vouches UPDATE: parse the SET clause so admin/vouches/[id] can

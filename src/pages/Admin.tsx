@@ -23,6 +23,7 @@ const COPY = {
     audit: 'Journal',
     showcase: 'Vitrine',
     runbook: 'Runbook',
+    today: 'Aujourd’hui',
     hub: 'Console',
     backToApp: '← Retour à l’app',
     operator: 'Opérateur',
@@ -38,6 +39,7 @@ const COPY = {
     audit: 'Audit log',
     showcase: 'Showcase',
     runbook: 'Runbook',
+    today: 'Today',
     hub: 'Console',
     backToApp: '← Back to app',
     operator: 'Operator',
@@ -94,6 +96,9 @@ export function Admin({ lang }: { lang: Lang }) {
             <>
               <NavLink to={`${langPrefix}/admin`} end className="admin__link">
                 <span className="admin__link-dot admin__link-dot--operator" /> {t.hub}
+              </NavLink>
+              <NavLink to={`${langPrefix}/admin/today`} className="admin__link">
+                <span className="admin__link-dot admin__link-dot--operator" /> {t.today}
               </NavLink>
               <NavLink to={`${langPrefix}/admin/showcase`} className="admin__link">
                 <span className="admin__link-dot admin__link-dot--operator" /> {t.showcase}

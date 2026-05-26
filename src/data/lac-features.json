@@ -1,6 +1,110 @@
 {
   "features": [
     {
+      "featureKey": "feat-2026-104",
+      "title": "Admin today — one-glance operator dashboard",
+      "status": "active",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "dashboard",
+        "triage",
+        "operator",
+        "today"
+      ],
+      "componentFile": "src/pages/AdminToday.tsx",
+      "liveUrl": null,
+      "problem": "Reconstructing 'what do I need to do today?' from the existing admin surfaces requires clicking through the hub, the inbox, the custodian board and the audit log — and even then the per-session 'next action' isn't surfaced anywhere; it lives in Marc's head. AdminToday collapses every signal the daily-digest email already aggregates into one page so the triage decision happens by eye, then links each row back to the focused surface (session page, custodian view) for the action itself.",
+      "analysis": "Single round-trip: GET /api/admin/today returns sessions (with computed nextAction, last-message timestamps per author, build-leg payment counts, note snippet), overduePayments (build-kind pending >7d), slaBreaches (draft/triage >72h), unansweredMessages (visitor wrote, no operator reply, >24h), systemHealth (outbox stuck/pending, last-7d bounces+complaints, open admin_alerts, capacity), and custodianAlerts (past-due + recent-30d switches). Client renders one panel per section; capacity reads from the same payload (no second /api/capacity call). The nextAction inference (functions/_lib/nextAction.ts) is the pure-function brain — given session + payment + message timestamps, returns one of 13 NextActionCodes plus severity + FR/EN copy. The dashboard renders the label by code so a new branch flows through automatically.",
+      "decisions": [
+        {
+          "decision": "Single /api/admin/today endpoint, not five parallel calls",
+          "rationale": "The dashboard is read-only and needs everything-or-nothing — a partial render (e.g. sessions loaded but health pending) is worse than the loading spinner. One endpoint also lets the server share the sessions query across the SLA/unanswered/per-session subsections instead of making the client recompute. The capacity cap keeps the dataset small enough that the multi-table aggregation is cheap.",
+          "recommendation": "When a new dashboard signal lands, add it to /api/admin/today rather than minting a new endpoint. Resist the urge to refactor into per-section endpoints unless one section gets expensive enough to justify its own cache."
+        },
+        {
+          "decision": "nextAction is a pure function (functions/_lib/nextAction.ts), not inlined in the handler",
+          "rationale": "The 'what should Marc do next?' inference will outgrow the dashboard — it's the natural input for a future digest summary line, a push notification, or an LLM context blurb. Pulling it out as a pure function with explicit NextActionContext means the dashboard handler stays a data-aggregation shell and the action logic gets unit-tested in isolation.",
+          "recommendation": "When adding a new branch, extend NextActionCode + the inferNextAction precedence chain, then add FR/EN LABELS + HINTS. Don't fork into a parallel inference fn — precedence ordering is the contract."
+        },
+        {
+          "decision": "Operator-notes table read in the same query, with graceful pre-migration fallback",
+          "rationale": "The note snippet (first 200 chars) ships in each TodaySessionEntry so the dashboard can show 'there's context to read here' without a second request. Migration 0028 may land in a separate deploy from the handler — wrapping the read in try/catch on /no such table/ matches the tenants pre-migration pattern in _middleware.ts and keeps /admin/today rendering during the window.",
+          "recommendation": "Any new admin-data table read by /admin/today should follow the same fallback — a missing table degrades to 'no signal for this section', not a 5xx."
+        },
+        {
+          "decision": "Capacity panel reads from the dashboard payload, not /api/capacity",
+          "rationale": "The dashboard already loads in one round-trip; calling /api/capacity in parallel would mean a second roundtrip + the risk of momentary disagreement between the two reads (e.g. an admission landed between them). Including the capacity numbers in the dashboard's systemHealth section keeps the page internally consistent.",
+          "recommendation": "Don't add a /api/capacity call from this page. If the cap rule itself changes, edit the SQL in today.ts and the docs in this feature — the cap is structural (see CLAUDE.md)."
+        }
+      ],
+      "successCriteria": "- One GET /api/admin/today returns the full payload; client renders in one pass\n- Each panel has explicit empty state (the dashboard is *useful* when nothing's wrong)\n- nextAction labels render in the visitor's lang (FR/EN parity)\n- Per-row links land on the right focused surface (session page / custodian view)\n- Pre-migration deploy of operator_notes degrades to no-snippet, no 500\n- Capacity panel agrees with the home page's /api/capacity (they share a count source via shared SQL semantics — see decisions)",
+      "knownLimitations": [
+        "No auto-refresh — the page reads on mount; if Marc leaves it open all day the numbers staling are on him. Adding a 60s poll would be one useState/useEffect away but the current operator routine is open-page → act → close.",
+        "Sort within sections is server-side; the client doesn't expose alternative sorts. Single-operator scale doesn't need them yet.",
+        "No filter UI — the dataset is small (capacity cap = 2 live sessions), so Ctrl+F suffices.",
+        "Email-event volume is a 7-day rolling count, not a trend chart. The /admin/audit page is the deeper view if signals look off."
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-26",
+          "reason": "Dashboard shipped — handler + page + 38 backend tests passing."
+        }
+      ],
+      "lastTransitionDate": "2026-05-26"
+    },
+    {
+      "featureKey": "feat-2026-105",
+      "title": "Operator notes — admin-only per-session scratch pad",
+      "status": "active",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "operator",
+        "session",
+        "notes",
+        "scratchpad"
+      ],
+      "componentFile": "functions/api/admin/sessions/[id]/notes.ts",
+      "liveUrl": null,
+      "problem": "The session message thread is visitor-facing — the operator can't write 'remember to push back on scope tomorrow' or 'visitor is travelling until Wed' there without the visitor seeing it. Marc's been keeping this kind of context in his head, which works at one-active-session scale until a few days off and the next-action isn't obvious anymore. The /admin/today dashboard surfaces *what* the next action is; this surface stores the *why* behind it.",
+      "analysis": "One row per session (operator_notes.session_id is PK). GET returns null gracefully when no row exists. PUT upserts via INSERT … ON CONFLICT (session_id) DO UPDATE; empty/whitespace body folds into a DELETE so an emptied textarea tidies up instead of persisting nothing. DELETE removes the row outright. Body capped at 4 KB *bytes* (not chars — emoji can bloat past 4096 chars while staying under 4 KB, or vice-versa). Cascade-deleted with the parent session via FK ON DELETE CASCADE, so a /api/me erasure cleans this up for free.",
+      "decisions": [
+        {
+          "decision": "Single PUT endpoint, empty-body folds into delete",
+          "rationale": "Two endpoints (PUT for content, DELETE for clear) is the strictly-correct REST split — but the UX is a textarea with a Save button. Most real 'clear this' moments will be 'select all → backspace → save', not a separate Clear-and-Save flow. Folding empty-string PUT into DELETE means the textarea-save path always Does The Right Thing. DELETE still exists for the explicit Clear button on the panel.",
+          "recommendation": "Don't add a 'soft-clear' state. The note is either present or not; there's no preserved-but-hidden state."
+        },
+        {
+          "decision": "4 KB byte ceiling enforced in the handler, not via SQLite CHECK",
+          "rationale": "SQLite's CHECK on length() runs per write — the application layer is the right boundary because we want to return 413 cleanly with a JSON error, not surface a DB-constraint error. The number 4096 is generous enough that no realistic operator memo trips it (a 4 KB note is ~600 words) while bounding a paste-bomb.",
+          "recommendation": "If a note routinely hits the cap, the real fix is decomposing — the note is becoming a doc and belongs in a different surface, not a bigger field."
+        },
+        {
+          "decision": "Pre-migration fallback on GET (try/catch 'no such table')",
+          "rationale": "Same pattern as the tenants table in _middleware.ts. If migration 0028 lands a few minutes after the handler in a deploy, the SessionPage operator panel mounts cleanly with an empty textarea instead of throwing in the user's face.",
+          "recommendation": "Mirror this fallback on any new admin-data table that the operator panel reads optimistically."
+        }
+      ],
+      "successCriteria": "- GET returns {note: null} when no row, never 404\n- PUT with non-empty body upserts and returns the canonical note\n- PUT with empty/whitespace body deletes the row and returns {note: null}\n- DELETE always returns {note: null} (idempotent)\n- Body >4 KB returns 413\n- All three methods admin-gated (currentEmail → isAdmin), 401/403 otherwise\n- PUT/DELETE flow through the standard CSRF gate (not in CSRF_EXEMPT_PATHS)\n- Cascade-deletes with the parent session (/api/me erasure cleans it)",
+      "knownLimitations": [
+        "No history — every save overwrites. If recovering a prior version matters, paste it into the visitor thread or store elsewhere. Single-operator scale, not worth a versioning layer today.",
+        "No formatting beyond plain text — no markdown rendering, no link auto-linking. Adding rich text would mean a sanitization story; the field stays plain to stay simple.",
+        "Single body per session — no thread of timestamped entries. If a session ages enough that the note becomes a journal, the right move is to summarize-in-place rather than expand the schema."
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-26",
+          "reason": "Endpoint + panel + migration shipped; tests passing."
+        }
+      ],
+      "lastTransitionDate": "2026-05-26"
+    },
+    {
       "featureKey": "feat-2026-095",
       "title": "submitIntake — two-phase intake submit orchestrator (session POST + napkin upload)",
       "status": "active",
@@ -4696,5 +4800,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-25T00:39:10.097Z"
+  "generatedAt": "2026-05-26T13:07:31.413Z"
 }

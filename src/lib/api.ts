@@ -11,7 +11,7 @@
  */
 
 interface ApiOpts {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
   signal?: AbortSignal
   /** Set true for `multipart/form-data` calls (attachments upload). We then

@@ -40,6 +40,7 @@ npm run db:migrate:prod
 | `0025_community_discount.sql`    | Add `community_discount` (INTEGER bool) to `sessions` |
 | `0026_email_outbox.sql`          | AUDIT P1.3: send-failure outbox for durable notices   |
 | `0027_email_events.sql`          | AUDIT P1.2: bounce/complaint events from Resend       |
+| `0028_operator_notes.sql`        | Per-session admin-only scratch pad for /admin/today    |
 
 ## After applying 0002
 
