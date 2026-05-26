@@ -368,6 +368,10 @@ export function clearTestRows(): void {
        DELETE FROM intake_drafts;
        DELETE FROM attachments;
        DELETE FROM email_events;
+       DELETE FROM email_outbox;
+       DELETE FROM audit_log;
+       DELETE FROM rate_limits;
+       DELETE FROM vouches;
        DELETE FROM sessions;`,
     )
   } finally {
@@ -528,6 +532,183 @@ export function seedAttachment(opts: {
     db.close()
   }
   return id
+}
+
+interface SeedOutboxOpts {
+  id?: string
+  toEmail: string
+  subject?: string
+  html?: string
+  textBody?: string
+  /** e.g. 'tier-assigned'. Free-form column on the row. */
+  kind?: string
+  /** unix seconds. Defaults to now. */
+  createdAt?: number
+  attempts?: number
+  lastAttempt?: number | null
+  lastError?: string | null
+  sentAt?: number | null
+}
+
+/**
+ * Insert a row directly into email_outbox. Used by the outbox-sweep spec
+ * to seed various states (fresh pending, mid-retry, at-cap) and observe
+ * the sweeper's behavior on each.
+ */
+export function seedOutboxRow(opts: SeedOutboxOpts): string {
+  const id = opts.id ?? `outbox_e2e_${Math.random().toString(36).slice(2, 10)}`
+  const now = Math.floor(Date.now() / 1000)
+  const db = openD1()
+  try {
+    db.prepare(
+      `INSERT INTO email_outbox
+         (id, to_email, subject, html, text_body, kind, created_at,
+          attempts, last_attempt, last_error, sent_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      id,
+      opts.toEmail.toLowerCase(),
+      opts.subject ?? 'fixture subject',
+      opts.html ?? '<p>fixture html</p>',
+      opts.textBody ?? 'fixture text',
+      opts.kind ?? 'tier-assigned',
+      opts.createdAt ?? now,
+      opts.attempts ?? 0,
+      opts.lastAttempt ?? null,
+      opts.lastError ?? null,
+      opts.sentAt ?? null,
+    )
+  } finally {
+    db.close()
+  }
+  return id
+}
+
+export interface OutboxRow {
+  id: string
+  to_email: string
+  subject: string
+  kind: string
+  attempts: number
+  last_attempt: number | null
+  last_error: string | null
+  sent_at: number | null
+}
+
+export function readOutboxRow(id: string): OutboxRow | undefined {
+  const db = openD1()
+  try {
+    return db
+      .prepare(
+        `SELECT id, to_email, subject, kind, attempts, last_attempt, last_error, sent_at
+           FROM email_outbox WHERE id = ?`,
+      )
+      .get(id) as OutboxRow | undefined
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Insert a row directly into admin_alerts. Used by the digest spec to
+ * confirm "alerts surface in the digest payload".
+ */
+export function seedAdminAlert(opts: {
+  id?: string
+  kind?: string
+  body: string
+  createdAt?: number
+  resolvedAt?: number | null
+}): string {
+  const id = opts.id ?? `alert_e2e_${Math.random().toString(36).slice(2, 10)}`
+  const now = Math.floor(Date.now() / 1000)
+  const db = openD1()
+  try {
+    db.prepare(
+      `INSERT INTO admin_alerts (id, kind, body, created_at, resolved_at)
+       VALUES (?, ?, ?, ?, ?)`,
+    ).run(id, opts.kind ?? 'fixture', opts.body, opts.createdAt ?? now, opts.resolvedAt ?? null)
+  } finally {
+    db.close()
+  }
+  return id
+}
+
+/**
+ * Insert directly into audit_log. The application writes audit rows from
+ * one place today (functions/api/tenant/theme.ts), so the audit spec
+ * seeds rows here rather than driving the actual writer.
+ */
+export function seedAuditLog(opts: {
+  id?: string
+  ts?: number
+  actorEmail: string
+  tenantId?: string | null
+  action: string
+  payload?: unknown
+}): string {
+  const id = opts.id ?? `audit_e2e_${Math.random().toString(36).slice(2, 10)}`
+  const ts = opts.ts ?? Math.floor(Date.now() / 1000)
+  const payload =
+    opts.payload === undefined
+      ? null
+      : typeof opts.payload === 'string'
+        ? opts.payload
+        : JSON.stringify(opts.payload)
+  const db = openD1()
+  try {
+    db.prepare(
+      `INSERT INTO audit_log (id, ts, actor_email, tenant_id, action, payload)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    ).run(id, ts, opts.actorEmail.toLowerCase(), opts.tenantId ?? null, opts.action, payload)
+  } finally {
+    db.close()
+  }
+  return id
+}
+
+export interface VouchRow {
+  id: string
+  author_name: string
+  author_email: string
+  author_relationship: string
+  body: string
+  link_url: string | null
+  session_id: string | null
+  status: string
+  created_at: number
+  approved_at: number | null
+  deleted_at: number | null
+}
+
+export function readLatestVouchFor(email: string): VouchRow | undefined {
+  const db = openD1()
+  try {
+    return db
+      .prepare(
+        `SELECT id, author_name, author_email, author_relationship, body,
+                link_url, session_id, status, created_at, approved_at, deleted_at
+           FROM vouches
+          WHERE author_email = ?
+          ORDER BY created_at DESC
+          LIMIT 1`,
+      )
+      .get(email.toLowerCase()) as VouchRow | undefined
+  } finally {
+    db.close()
+  }
+}
+
+export function countVouchesFor(email: string): number {
+  const db = openD1()
+  try {
+    const row = db
+      .prepare(`SELECT COUNT(*) AS c FROM vouches WHERE author_email = ?`)
+      .get(email.toLowerCase()) as { c: number } | undefined
+    return row?.c ?? 0
+  } finally {
+    db.close()
+  }
 }
 
 export interface OperatorNoteRow {

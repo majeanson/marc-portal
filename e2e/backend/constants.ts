@@ -27,6 +27,10 @@ export const E2E_BINDINGS = {
   // shape (functions/_lib/resendWebhook.ts strips the whsec_ prefix before
   // base64-decoding). The body after the prefix is base64-encoded bytes.
   RESEND_WEBHOOK_SECRET: 'whsec_ZTJlX3Jlc2VuZF93ZWJob29rX3NlY3JldA==',
+  // Digest cron token. /api/admin/digest 401s without a matching value
+  // (X-Digest-Token header). Stub here, used by the digest + outbox-sweep
+  // specs to drive the housekeeping cron without a real cron-job.org config.
+  DIGEST_TOKEN: 'e2e_digest_token_deterministic',
   // Stripe Price IDs for the custodian plans. Stub values — the e2e Stripe
   // path short-circuits in functions/_lib/stripe.ts via the sentinel apiKey
   // before the price IDs are dereferenced, so any non-empty string works.
