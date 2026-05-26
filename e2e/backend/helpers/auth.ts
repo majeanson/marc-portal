@@ -5,9 +5,10 @@
 // and joined with a dot. Any drift from the production format means the
 // server rejects the cookie and the spec sees a 401 instead of a 200.
 
-import { createHmac, randomBytes } from 'node:crypto'
+import { createHash, createHmac, randomBytes } from 'node:crypto'
 import type { BrowserContext } from '@playwright/test'
 import { E2E_BINDINGS, E2E_PORT } from '../constants'
+import { openD1 } from './db'
 
 const SECRET = E2E_BINDINGS.SESSION_SECRET
 const COOKIE_NAME = 'mp_session'
@@ -119,3 +120,117 @@ export function forgeAuthHeaders(email: string, opts: ForgeOpts = {}): ForgedHea
 // Re-export for specs that want to drive port-aware URLs without importing
 // constants directly (the spec already imports plenty).
 export { E2E_PORT }
+
+interface MintTokenOpts {
+  /** unix seconds when the token expires. Defaults to now + 30 minutes
+   *  (matching request-link.ts TOKEN_TTL_SECONDS). Pass a past value to
+   *  drive the expired-token redirect in /api/auth/verify. */
+  expiresAt?: number
+  /** unix seconds when the token was created. Defaults to now. Mostly only
+   *  matters for the rate-limit count window in request-link.ts. */
+  createdAt?: number
+  /** unix seconds when the token was consumed. Default null (still valid).
+   *  Pass a non-null value to drive the replay redirect (`reason=token-used`). */
+  usedAt?: number | null
+  /** Source IP recorded on the row. Defaults to a sentinel value so the
+   *  rate-limit counts produced by these tokens don't interfere with the
+   *  per-IP ceiling in request-link.ts (which counts within a rolling
+   *  hour). */
+  ip?: string
+}
+
+/**
+ * Mint a magic-link token directly into D1, returning the plaintext the
+ * /api/auth/verify endpoint accepts. The server stores only the SHA-256
+ * hash (see functions/_lib/bytes.ts sha256B64url + request-link.ts), so we
+ * pick a plaintext, hash it the same way, INSERT the hash. The spec gets
+ * back the plaintext to drive the verify URL.
+ *
+ * Returns the plaintext token. The spec composes `?token=${plaintext}`
+ * exactly as the email link would.
+ */
+export function mintMagicLinkToken(email: string, opts: MintTokenOpts = {}): string {
+  const plaintext = `e2e_token_${randomBytes(16).toString('hex')}`
+  const tokenHash = createHash('sha256').update(plaintext, 'utf8').digest('base64url')
+  const now = Math.floor(Date.now() / 1000)
+  const createdAt = opts.createdAt ?? now
+  const expiresAt = opts.expiresAt ?? now + 30 * 60
+  const usedAt = opts.usedAt ?? null
+  const ip = opts.ip ?? 'e2e-mint'
+
+  const db = openD1()
+  try {
+    db.prepare(
+      `INSERT INTO magic_link_tokens (token, email, expires_at, created_at, ip, used_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    ).run(tokenHash, email.toLowerCase(), expiresAt, createdAt, ip, usedAt)
+  } finally {
+    db.close()
+  }
+  return plaintext
+}
+
+/**
+ * Read the latest magic_link_tokens row for an email. Used by the journey
+ * spec to confirm POST /api/auth/request-link actually wrote one (the
+ * endpoint returns 200 either way, so the only way to prove it landed is
+ * to inspect D1).
+ */
+export interface MagicLinkRow {
+  token: string
+  email: string
+  expires_at: number
+  created_at: number
+  used_at: number | null
+  ip: string | null
+}
+export function latestMagicLinkRow(email: string): MagicLinkRow | undefined {
+  const db = openD1()
+  try {
+    return db
+      .prepare(
+        `SELECT token, email, expires_at, created_at, used_at, ip
+           FROM magic_link_tokens
+          WHERE email = ?
+          ORDER BY created_at DESC
+          LIMIT 1`,
+      )
+      .get(email.toLowerCase()) as MagicLinkRow | undefined
+  } finally {
+    db.close()
+  }
+}
+
+/**
+ * Parse the Set-Cookie headers a 302 redirect from /api/auth/verify returns
+ * into a `Cookie: a=…; b=…` string the next fetch can carry forward. We
+ * keep mp_session, mp_csrf, mp_lang — every cookie the verify endpoint
+ * sets is something the SPA's fetch wrapper will echo, so the spec carries
+ * them all.
+ */
+export function cookieHeaderFromVerifyResponse(res: Response): string {
+  // Fetch in Node 18+ exposes getSetCookie() for multi-value Set-Cookie.
+  const cookies =
+    (res.headers as Headers & { getSetCookie?: () => string[] }).getSetCookie?.() ?? []
+  const pairs: string[] = []
+  for (const sc of cookies) {
+    const namevalue = sc.split(';', 1)[0]?.trim()
+    if (namevalue) pairs.push(namevalue)
+  }
+  return pairs.join('; ')
+}
+
+/**
+ * Extract the value of a single Set-Cookie by name from a verify response.
+ * The journey spec uses this to grab mp_csrf for the X-CSRF-Token header
+ * on subsequent state-changing fetches.
+ */
+export function csrfTokenFromVerifyResponse(res: Response): string | null {
+  const cookies =
+    (res.headers as Headers & { getSetCookie?: () => string[] }).getSetCookie?.() ?? []
+  for (const sc of cookies) {
+    const m = /^\s*mp_csrf=([^;]+)/.exec(sc)
+    if (m) return m[1]
+  }
+  return null
+}

@@ -364,6 +364,8 @@ export function clearTestRows(): void {
        DELETE FROM admin_alerts;
        DELETE FROM messages;
        DELETE FROM operator_notes;
+       DELETE FROM magic_link_tokens;
+       DELETE FROM intake_drafts;
        DELETE FROM sessions;`,
     )
   } finally {

@@ -31,7 +31,8 @@
     "e2e:backend": "npm run e2e:backend:setup && playwright test --config=playwright.backend.config.ts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run lac-lint && npm run test:run",
     "db:migrate:local": "wrangler d1 migrations apply marc-portal-db --local",
-    "db:migrate:prod": "wrangler d1 migrations apply marc-portal-db --remote"
+    "db:migrate:prod": "wrangler d1 migrations apply marc-portal-db --remote",
+    "prod-smoke": "node scripts/prod-smoke.mjs"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
