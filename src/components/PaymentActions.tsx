@@ -45,6 +45,12 @@ const COPY = {
     partiallyRefunded: (amount: string) => `Remboursement partiel : ${amount}`,
     fullyRefunded: (amount: string) => `Remboursé · ${amount}`,
     checkoutPending: 'Ouverture du paiement…',
+    refundRequestLabel: 'Demander un remboursement →',
+    refundRequestHint:
+      'Pas de bouton self-serve — Marc traite chaque demande à la main. Tu lui écris, il te répond sous 2 jours ouvrables.',
+    refundRequestSubject: (sid: string) => `Demande de remboursement — session ${sid}`,
+    refundRequestBody: (sid: string, paidAmount: string) =>
+      `Bonjour Marc,\n\nJ'aimerais discuter d'un remboursement pour la session ${sid} (montant payé : ${paidAmount}).\n\nMotif : [à compléter]\n\nMerci.`,
 
     // Custodian section — the recommended default at delivery. Two annual
     // plans (Watch / Care); bigger changes are billed hourly ($75/h).
@@ -121,6 +127,12 @@ const COPY = {
     partiallyRefunded: (amount: string) => `Partial refund: ${amount}`,
     fullyRefunded: (amount: string) => `Refunded · ${amount}`,
     checkoutPending: 'Opening checkout…',
+    refundRequestLabel: 'Request a refund →',
+    refundRequestHint:
+      'No self-serve button — Marc handles each request by hand. Email him, he replies within 2 business days.',
+    refundRequestSubject: (sid: string) => `Refund request — session ${sid}`,
+    refundRequestBody: (sid: string, paidAmount: string) =>
+      `Hi Marc,\n\nI'd like to discuss a refund for session ${sid} (amount paid: ${paidAmount}).\n\nReason: [fill in]\n\nThanks.`,
 
     custodianHeading: 'Custodian mode',
     custodianRecommended: 'recommended',
@@ -330,6 +342,23 @@ export function PaymentActions({
       ? copy.partiallyRefunded(formatCadCents(refundedCents, lang))
       : null
 
+  // Refund-request link surfaces whenever the visitor has paid something
+  // one-time AND isn't already fully refunded. Build a prefilled mailto so
+  // the visitor doesn't have to remember their session id — Marc gets the
+  // context inline. Manual review by design (closes gap #3 from the prod-
+  // readiness audit): a self-serve refund button would invite gaming and
+  // also has to settle with Stripe out-of-band, which is the same operator
+  // step either way.
+  const refundContactEmail = 'marc@marcportal.com'
+  const showRefundRequest = paidOneTimeCents > 0 && !allOneTimeFullyRefunded
+  const refundMailto = showRefundRequest
+    ? `mailto:${refundContactEmail}?subject=${encodeURIComponent(
+        copy.refundRequestSubject(session.id),
+      )}&body=${encodeURIComponent(
+        copy.refundRequestBody(session.id, formatCadCents(paidOneTimeCents, lang)),
+      )}`
+    : null
+
   // Scoping report — paid note, or an offer during triage (before a tier).
   const scopingPaid = summary.scoping.paid
   const showScopingOffer = !scopingPaid && session.status === 'triage'
@@ -482,6 +511,14 @@ export function PaymentActions({
               <span className="me-portal__pay-muted">{copy.quotePending}</span>
             )}
           </div>
+          {refundMailto && (
+            <p className="field__hint me-portal__pay-hint">
+              <a className="mono" href={refundMailto}>
+                {copy.refundRequestLabel}
+              </a>{' '}
+              {copy.refundRequestHint}
+            </p>
+          )}
           {/* Community-rate anchor — appears under the pay/paid state so the
               visitor sees the regular tier total they would otherwise have
               paid. Renders for both 'pay' (helps decide) and 'paid' (helps

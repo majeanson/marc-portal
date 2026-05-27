@@ -211,6 +211,25 @@ describe('inferNextAction — triage and draft', () => {
     expect(a.severity).toBe('warn')
   })
 
+  it('ready_to_start fires when triage + a build leg has been paid', () => {
+    const createdAt = 1_700_000_000
+    const a = inferNextAction(
+      makeSession({ status: 'triage', created_at: createdAt, tier: 2 }),
+      ctx({ nowS: createdAt + 3600, paidBuildLegs: 1 }),
+    )
+    expect(a.code).toBe('ready_to_start')
+    expect(a.severity).toBe('urgent')
+  })
+
+  it('ready_to_start outranks triage_overdue when a leg has been paid', () => {
+    const createdAt = 1_700_000_000
+    const a = inferNextAction(
+      makeSession({ status: 'triage', created_at: createdAt, tier: 2 }),
+      ctx({ nowS: createdAt + 49 * 3600, paidBuildLegs: 1 }),
+    )
+    expect(a.code).toBe('ready_to_start')
+  })
+
   it('draft_stalled past 12h', () => {
     const updatedAt = 1_700_000_000
     const a = inferNextAction(

@@ -69,6 +69,25 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
   const now = Math.floor(Date.now() / 1000)
   const cutoff = now - SLA_THRESHOLD_SECONDS
 
+  // Heartbeat — stamped on every cron firing that passed auth, regardless
+  // of whether there's work to do or any housekeeping succeeds. /admin/today
+  // reads this and flags the dashboard when it's older than 36h, which is
+  // the user-facing signal that cron-job.org went silent. INSERT OR REPLACE
+  // (D1's UPSERT shape via primary key conflict) so the row is updated in
+  // place without a pre-check. Best-effort: a failure here doesn't matter
+  // for the digest itself, and `system_kv` may not exist on a pre-migration
+  // env — wrap in try/catch so a missing-table doesn't block the cron.
+  try {
+    await env.DB.prepare(
+      `INSERT INTO system_kv (key, value, updated_at) VALUES (?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+    )
+      .bind('last_digest_at', String(now), now)
+      .run()
+  } catch (err) {
+    console.warn('digest: heartbeat stamp failed (continuing)', err)
+  }
+
   // Piggyback housekeeping: prune magic-link tokens older than 24h. Used
   // tokens never expire on their own; the rate-limit query scans this table
   // every request, so it must stay small. Errors here don't fail the digest —

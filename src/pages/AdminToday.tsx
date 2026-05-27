@@ -84,6 +84,11 @@ const COPY = {
     healthComplaints: 'plaintes',
     healthAlerts: 'Alertes opérateur ouvertes',
     healthAllGood: 'Rien à signaler.',
+    digestStaleHeading: 'Cron quotidien — silencieux',
+    digestStaleNever:
+      'Le digest quotidien n’a jamais signalé son passage. Vérifie cron-job.org : le job est-il toujours actif ?',
+    digestStaleAgo: (s: string) =>
+      `Le digest quotidien n’a pas signalé son passage depuis ${s}. Cron-job.org est probablement en panne ou désactivé.`,
 
     custodianHeading: 'Dépositaires',
     custodianPastDueHeading: 'Paiement en retard',
@@ -154,6 +159,11 @@ const COPY = {
     healthComplaints: 'complaints',
     healthAlerts: 'Open operator alerts',
     healthAllGood: 'All quiet.',
+    digestStaleHeading: 'Daily cron — silent',
+    digestStaleNever:
+      'The daily digest has never reported a run. Check cron-job.org — is the job still active?',
+    digestStaleAgo: (s: string) =>
+      `The daily digest hasn't reported a run for ${s}. Cron-job.org is probably down or disabled.`,
 
     custodianHeading: 'Custodians',
     custodianPastDueHeading: 'Past due',
@@ -301,7 +311,12 @@ export function AdminToday({ lang }: { lang: Lang }) {
           />
           <SlaBreachesPanel t={t} rows={data.slaBreaches} langPrefix={langPrefix} />
           <UnansweredPanel t={t} rows={data.unansweredMessages} langPrefix={langPrefix} />
-          <SystemHealthPanel t={t} health={data.systemHealth} />
+          <SystemHealthPanel
+            t={t}
+            health={data.systemHealth}
+            lang={lang}
+            nowMs={data.generatedAtS * 1000}
+          />
           <CustodianPanel t={t} alerts={data.custodianAlerts} langPrefix={langPrefix} />
         </>
       )}
@@ -584,13 +599,27 @@ function UnansweredPanel({
   )
 }
 
-function SystemHealthPanel({ t, health }: { t: CopyT; health: SystemHealthEntry }) {
+function SystemHealthPanel({
+  t,
+  health,
+  lang,
+  nowMs,
+}: {
+  t: CopyT
+  health: SystemHealthEntry
+  lang: Lang
+  nowMs: number
+}) {
+  // digestStale takes a metric slot like the others (instead of a banner)
+  // so the panel keeps its single rhythm — every signal lives in the same
+  // grid, urgent ones flagged with the existing --urgent variant.
   const allClear =
     health.outboxPending === 0 &&
     health.outboxStuck === 0 &&
     health.emailBouncesLast7d === 0 &&
     health.emailComplaintsLast7d === 0 &&
-    health.openAdminAlerts === 0
+    health.openAdminAlerts === 0 &&
+    !health.digestStale
   return (
     <section className="admin-today__panel">
       <h2 className="admin-today__panel-title mono">{t.healthHeading}</h2>
@@ -598,6 +627,18 @@ function SystemHealthPanel({ t, health }: { t: CopyT; health: SystemHealthEntry 
         <p className="admin-today__empty">{t.healthAllGood}</p>
       ) : (
         <ul className="admin-today__metrics">
+          {health.digestStale && (
+            <li className="admin-today__metric admin-today__metric--urgent">
+              <div className="mono admin-today__metric-label">{t.digestStaleHeading}</div>
+              <div className="admin-today__metric-figure">
+                {health.lastDigestAtS === null
+                  ? t.digestStaleNever
+                  : t.digestStaleAgo(
+                      formatRelativeWindow(health.lastDigestAtS * 1000 - nowMs, lang),
+                    )}
+              </div>
+            </li>
+          )}
           {(health.outboxPending > 0 || health.outboxStuck > 0) && (
             <li className="admin-today__metric">
               <div className="mono admin-today__metric-label">{t.healthOutbox}</div>

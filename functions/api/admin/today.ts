@@ -106,6 +106,14 @@ export interface SystemHealthEntry {
     activeCap: number
     triageCap: number
   }
+  /** Unix seconds of the last successful digest-cron firing, or null when
+   *  the heartbeat has never been written (pre-migration env, fresh deploy
+   *  before the first cron tick). Read from `system_kv.last_digest_at`. */
+  lastDigestAtS: number | null
+  /** True when lastDigestAtS is null OR older than DIGEST_STALE_S. The
+   *  dashboard's banner renders off this flag — the threshold lives
+   *  server-side so a future cadence change is one place. */
+  digestStale: boolean
 }
 
 export interface CustodianAlertsEntry {
@@ -132,6 +140,10 @@ const RECENT_SWITCH_S = 30 * 24 * 3600
 const EMAIL_LOOKBACK_S = 7 * 24 * 3600
 // Mirror sweepEmailOutbox's default — keeping the numbers in lockstep.
 const OUTBOX_MAX_ATTEMPTS = 5
+// Digest cron firing cadence is daily (~24h). Give a 12h grace before
+// flagging the heartbeat stale — caters for clock drift, cron-job.org's
+// jitter, and the case where the next firing is mid-process.
+const DIGEST_STALE_S = 36 * 3600
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
@@ -368,6 +380,26 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     if (!/no such table/.test(msg)) throw err
   }
 
+  // Digest heartbeat — null when the row has never been written (fresh
+  // deploy before first cron tick) OR when the table is pre-migration.
+  // Treat both as "stale" so the dashboard shows the same warning either
+  // way: the operator's question ("is the cron running?") has the same
+  // answer in both cases.
+  let lastDigestAtS: number | null = null
+  try {
+    const r = await env.DB.prepare(`SELECT value FROM system_kv WHERE key = ? LIMIT 1`)
+      .bind('last_digest_at')
+      .first<{ value: string }>()
+    if (r?.value) {
+      const n = Number.parseInt(r.value, 10)
+      if (Number.isFinite(n)) lastDigestAtS = n
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (!/no such table/.test(msg)) throw err
+  }
+  const digestStale = lastDigestAtS === null || nowS - lastDigestAtS > DIGEST_STALE_S
+
   // Capacity occupancy — pulled from the same sessions list we already have
   // in memory rather than a second round-trip to countActiveAndTriage.
   let activeCount = 0
@@ -384,6 +416,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     emailComplaintsLast7d: complaintsLast7d,
     openAdminAlerts,
     capacity: { active: activeCount, triage: triageCount, activeCap: 1, triageCap: 1 },
+    lastDigestAtS,
+    digestStale,
   }
 
   // ── Custodian alerts. Past-due first, then recent switches (the

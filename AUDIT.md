@@ -497,6 +497,120 @@
   - RUNBOOK §18 added — triage for "/admin/today wrong, empty, or 500",
     including the structural-invariant note about capacity disagreement
     between the dashboard and `/api/capacity`.
+- 2026-05-26 — **Digest cron heartbeat shipped.** Closes prod-readiness
+  gap #11 option (b). Migration 0029 adds a small `system_kv`
+  key/value table for ops heartbeats. The digest cron stamps
+  `last_digest_at` on every successful firing (after token auth, before
+  housekeeping — so the heartbeat reflects "cron alive" regardless of
+  any downstream errors). `/api/admin/today` reads the stamp and
+  computes `digestStale` server-side (threshold = 36h, named constant
+  so a future cadence change is one place). The dashboard's system-
+  health panel now surfaces a `--urgent` metric tile when stale —
+  treating the silent-cron failure mode as a first-class signal in the
+  same panel as outbox/email/alert urgents. Bilingual copy ("Cron
+  quotidien — silencieux" / "Daily cron — silent"). Pre-migration env
+  is handled with the same `no such table` graceful-degrade pattern as
+  operator_notes. 8 new vitest specs (4 on the dashboard heartbeat
+  flag + 4 on the cron stamp + token gating).
+  - 673 tests pass (+8 net). Typecheck + lint + format clean.
+- 2026-05-26 — **Loi 25 erasure receipt + deep health probe shipped.** Closes
+  prod-readiness gaps #12 (erasure UX) and #17 (deep health probe).
+  - **#12** `DELETE /api/me` now captures pre-deletion state (session
+    count + visitor language), runs the existing erasure cascade plus a
+    new `user_prefs` deletion (Loi 25 completeness — a preference row
+    outliving its account was a quiet gap), then fires the new
+    `sendErasureReceipt` email. Receipt is transactional (non-durable —
+    the data is already gone, no retry value) and respects suppression
+    (unsubscribed visitors aren't re-emailed). The MePortal danger
+    panel now shows a concrete session count and the "you'll get a
+    confirmation email" hint when the visitor expands to confirm.
+    6 new vitest specs covering auth, cleanup isolation, user_prefs
+    purge, receipt args, zero-session edge, and receipt-failure
+    non-blocking.
+  - **#17** `/api/health?deep=1` admin-gated readiness probe. Probes
+    D1 + R2 (list limit:1) + Resend (GET /domains) + Stripe (GET
+    /v1/balance) in parallel with a 5s per-probe timeout. Unconfigured
+    bindings report `unconfigured` (neutral, not failure). E2E sentinel
+    Stripe key shortcircuits to unconfigured to keep the harness quiet.
+    Shallow probe (no `?deep=1`) stays public and unchanged — uptime
+    monitors don't have to migrate. 12 new vitest specs.
+  - 665 tests pass (+18 net). Typecheck + lint + format clean.
+- 2026-05-26 — **Refund-request CTA + RUNBOOK doc sweep shipped.** Closes
+  prod-readiness gaps #3 (refund mailto), #6 (D1 backup/restore doc),
+  #7 (migrations README backfill), and #16 (RUNBOOK sections for
+  operator notes + tenant onboarding).
+  - **#3** `src/components/PaymentActions.tsx` now exposes a bilingual
+    "Request a refund" mailto on the full variant whenever the visitor
+    has paid something one-time and isn't already fully refunded. Body
+    pre-fills with the session id + amount paid; address is
+    `marc@marcportal.com` (matches Privacy / PIA references). Manual
+    review by design — a self-serve refund button would still have to
+    settle out-of-band with Stripe.
+  - **#6** RUNBOOK §19 documents D1 Time Travel restore (30-day
+    retention, `wrangler d1 time-travel info / restore` commands,
+    Stripe + Resend + R2 reconciliation after a restore).
+  - **#7** `functions/db/migrations/README.md` migration log table now
+    covers all 28 migrations end-to-end (was: 0001-0004 then jumped to
+    0024-0028).
+  - **#16** RUNBOOK §20 (operator_notes failure modes — empty panel,
+    413 ceiling, hard-delete cascade) and §21 (manual tenant onboarding
+    procedure as fallback for `/admin/fleet/new`).
+  - Docs + one component change only. 647 tests still pass. Typecheck +
+    lint + format clean.
+- 2026-05-26 — **`audit_log` write-side wired into session mutations.** Closes
+  prod-readiness gap #13. The table existed since migration 0002 but no
+  handler was writing to it — `AdminAudit`'s filter UI rendered an empty
+  feed. New `functions/_lib/auditLog.ts` exports `appendAuditLog(env, …)`
+  — best-effort writer (catches its own errors so a logging hiccup never
+  fails the parent mutation). Wired into:
+  - `PATCH /api/sessions/:id` — one row per field that actually changed
+    (`session.status`, `session.tier`, `session.tier4_amount_cents`,
+    `session.tier3_split`, `session.community_discount`,
+    `session.showcase`, `session.decline_note`, `session.intake_json`,
+    `session.all_yours_acknowledged`, `session.undelete`).
+  - `DELETE /api/sessions/:id` — `session.soft_delete` with
+    `byAdmin` boolean.
+  - PII discipline: free-text fields (`decline_note`, `intake_json`)
+    capture the FACT of the change without leaking content (visitor
+    phrasing or the note body never lands in the diagnostic log).
+  - 17 new vitest specs (3 on the helper covering happy path + tenant
+    null + payload-undefined + error swallowing; 14 on PATCH/DELETE
+    integration covering each field + multi-field diff + no-change
+    case + soft-delete by-admin/by-visitor distinction).
+  - 647 tests pass (+19 net). Typecheck + lint + format clean.
+- 2026-05-26 — **Email-outbox admin viewer shipped.** Closes prod-readiness
+  gap #9. New `/admin/email-outbox` page + `GET/POST /api/admin/email-outbox`
+  endpoint. GET returns pending rows sorted attempts DESC then created_at
+  ASC (stuck rows surface first). POST `{ id }` triggers a manual retry
+  via the exported `sendRaw` from `_lib/email.ts` — bypasses
+  `OUTBOX_MAX_ATTEMPTS` and the backoff window (manual is the explicit
+  intent). Delivery updates `sent_at`; failure bumps `attempts` +
+  records `last_error`. Idempotent: already-sent rows return
+  `alreadySent:true` without re-POSTing to Resend. Hub tile under
+  Diagnostics group. 16 new vitest specs (auth gate, payload shape,
+  ordering, idempotent already-sent, 404 unknown id, RESEND_API_KEY
+  unset → 503, attempts past-ceiling on manual retry).
+  - 628 tests pass (+14 net since last shipment).
+- 2026-05-26 — **Payment → work handoff visibility closed.** A paid leg used
+  to land silently — `handleCheckoutCompleted` updated the row to `paid` and
+  (for further legs) emailed the visitor, but nothing told Marc. The session
+  also stayed in `triage` with no visual signal that the visitor had pulled
+  the trigger. Two changes:
+  1. `handleCheckoutCompleted` now calls `maybeNotifyAdmin` on the first
+     transition for every kind (build / scoping / custodian). Body
+     includes kind, leg number, amount, and session id. Durable: Resend
+     first with the existing `admin_alerts` fallback. Webhook_events
+     dedup catches Stripe retries; `isFirstTransition` (pre-read
+     `paid_at IS NULL`) catches dashboard-replay events that synthesise
+     a fresh event.id for the same payment.
+  2. New `ready_to_start` NextActionCode in `functions/_lib/nextAction.ts`
+     fires when `status === 'triage' AND paidBuildLegs > 0`. Outranks
+     the age-based `triage_overdue`/`triage_pending` classifiers — a
+     paid-but-unpromoted session is the strongest "act now" signal in
+     the system. Severity `urgent`. FR/EN labels added; the
+     `NextActionPill` on `/admin/today` picks it up automatically.
+  - 614 vitest tests pass (+10 for the new notify paths + ready_to_start
+    branch). Typecheck + lint + format clean.
 
 ## Session totals (2026-05-15)
 

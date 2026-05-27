@@ -87,6 +87,10 @@ const COPY = {
     deleteBtn: 'Supprimer mes données',
     deleteConfirm: 'Confirmer la suppression',
     deleteCancel: 'Annuler',
+    deleteConfirmDetail: (n: number) =>
+      n === 0
+        ? 'Aucune session à effacer — il reste seulement ton courriel et tes préférences. Un courriel de confirmation t’est envoyé.'
+        : `${n} session${n > 1 ? 's' : ''} (avec messages, pièces jointes et historique de paiement) ${n > 1 ? 'seront effacées' : 'sera effacée'}, plus tes brouillons et tes préférences. Un courriel de confirmation t’est envoyé.`,
     deleting: 'Suppression…',
     deleteFailed: 'La suppression a échoué — réessaie ou écris-moi.',
     unreadBadge: 'NOUVEAU',
@@ -185,6 +189,10 @@ const COPY = {
     deleteBtn: 'Delete my data',
     deleteConfirm: 'Confirm deletion',
     deleteCancel: 'Cancel',
+    deleteConfirmDetail: (n: number) =>
+      n === 0
+        ? 'No sessions to erase — only your email and preferences remain. A confirmation email is on its way.'
+        : `${n} session${n > 1 ? 's' : ''} (with messages, attachments, and payment history) will be erased, plus your drafts and preferences. A confirmation email is on its way.`,
     deleting: 'Deleting…',
     deleteFailed: 'Deletion failed — retry or write to me.',
     unreadBadge: 'NEW',
@@ -609,24 +617,29 @@ export function MePortal({ lang }: { lang: Lang }) {
                 {t.deleteBtn}
               </button>
             ) : (
-              <div className="me-portal__danger-actions">
-                <button
-                  type="button"
-                  className="me-portal__danger-btn me-portal__danger-btn--confirm"
-                  onClick={onDeleteAccount}
-                  disabled={deleteState === 'deleting'}
-                >
-                  {deleteState === 'deleting' ? t.deleting : t.deleteConfirm}
-                </button>
-                <button
-                  type="button"
-                  className="link-btn mono"
-                  onClick={() => setDeleteState('idle')}
-                  disabled={deleteState === 'deleting'}
-                >
-                  {t.deleteCancel}
-                </button>
-              </div>
+              <>
+                <p className="me-portal__danger-body">
+                  {t.deleteConfirmDetail(sessions?.length ?? 0)}
+                </p>
+                <div className="me-portal__danger-actions">
+                  <button
+                    type="button"
+                    className="me-portal__danger-btn me-portal__danger-btn--confirm"
+                    onClick={onDeleteAccount}
+                    disabled={deleteState === 'deleting'}
+                  >
+                    {deleteState === 'deleting' ? t.deleting : t.deleteConfirm}
+                  </button>
+                  <button
+                    type="button"
+                    className="link-btn mono"
+                    onClick={() => setDeleteState('idle')}
+                    disabled={deleteState === 'deleting'}
+                  >
+                    {t.deleteCancel}
+                  </button>
+                </div>
+              </>
             )}
             {deleteState === 'error' && (
               <p className="me-portal__danger-error mono">{t.deleteFailed}</p>

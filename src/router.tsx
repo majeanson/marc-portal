@@ -50,6 +50,9 @@ const Atelier = lazy(() => import('./pages/Atelier').then((m) => ({ default: m.A
 const MapPage = lazy(() => import('./pages/Map').then((m) => ({ default: m.Map })))
 const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
 const AdminAudit = lazy(() => import('./pages/AdminAudit').then((m) => ({ default: m.AdminAudit })))
+const AdminEmailOutbox = lazy(() =>
+  import('./pages/AdminEmailOutbox').then((m) => ({ default: m.AdminEmailOutbox })),
+)
 const AdminShowcase = lazy(() =>
   import('./pages/AdminShowcase').then((m) => ({ default: m.AdminShowcase })),
 )
@@ -541,6 +544,14 @@ export const router = createBrowserRouter(
             </L>
           }
         />
+        <Route
+          path="email-outbox"
+          element={
+            <L>
+              <AdminEmailOutbox lang="fr" />
+            </L>
+          }
+        />
       </Route>
       <Route
         path="/en/admin"
@@ -587,6 +598,14 @@ export const router = createBrowserRouter(
           element={
             <L>
               <AdminToday lang="en" />
+            </L>
+          }
+        />
+        <Route
+          path="email-outbox"
+          element={
+            <L>
+              <AdminEmailOutbox lang="en" />
             </L>
           }
         />

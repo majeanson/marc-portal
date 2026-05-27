@@ -1,0 +1,50 @@
+{
+  "featureKey": "feat-2026-091",
+  "title": "/admin/email-outbox — pending email outbox viewer with manual retry",
+  "status": "active",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "src/pages/AdminEmailOutbox.tsx",
+  "problem": "Durable email sends (tier-assigned, refund-notice, installment-cleared, status-change, withdrawal-visitor) fail-and-enqueue into email_outbox. The daily digest sweepEmailOutbox retries with exponential backoff up to 5 attempts; rows stuck past the cap sit silently. Marc had no admin UI to see what's stuck or to force one more try. Closes prod-readiness gap #9.",
+  "tags": ["admin", "operator-gated", "email", "outbox", "manual-retry"],
+  "analysis": "Lazy-loaded route mounted under the existing Admin <Outlet>. Loads /api/admin/email-outbox on mount. Renders a single fleet-table with one row per pending outbox entry (to, kind+subject, attempts+stuck-tag, last_error, created_at, Retry button). Click Retry → POST { id } → on delivered, reload; on failure, surface the error inline next to the button. Per-row busy + result state kept in two records keyed by id; no global busy.",
+  "decisions": [
+    {
+      "decision": "Lazy-loaded route, not a panel under /admin/today",
+      "rationale": "Operator-only diagnostic that's rarely visited but valuable during incidents. Keeping it off /admin/today avoids cluttering the dashboard with rows that 99% of the time are zero.",
+      "recommendation": "If outbox volume becomes a chronic signal, add an outbox count widget to /admin/today's System health panel (already shows the count, just no link).",
+      "date": "2026-05-26"
+    },
+    {
+      "decision": "Per-row inline result instead of a toast or modal",
+      "rationale": "Retry is a low-frequency, high-context operation — Marc is troubleshooting one specific row. Inline result keeps the cause (last_error) and effect (new state) in the same eyeline. Toast/modal would obscure the row context.",
+      "recommendation": "Same pattern in any other admin retry UI.",
+      "date": "2026-05-26"
+    },
+    {
+      "decision": "No bulk retry button",
+      "rationale": "Bulk retry on Resend incidents would either succeed (great) or hammer the API with retries we already know will fail. The daily cron's sweepEmailOutbox already serves the 'try them all on a schedule' use case; manual retry is for one-row triage.",
+      "recommendation": "Reconsider only if Marc reports needing to retry 10+ rows in a single session. Bulk retry would also need rate-limit guards.",
+      "date": "2026-05-26"
+    }
+  ],
+  "successCriteria": "- Loads pending outbox rows admin-only\n- Click Retry → row delivers + drops off OR error shown inline\n- Already-delivered row → 'Already sent' inline (idempotent)\n- 403 → forbidden message; 5xx → error message + Reload button\n- Empty outbox → 'Outbox is clear' empty state\n- Both FR + EN copies (Québécois register for FR)",
+  "implementation": "src/pages/AdminEmailOutbox.tsx — wired into router at /admin/email-outbox + /en/admin/email-outbox. Hub tile under Diagnostics group in src/lib/admin/hubSections.ts.",
+  "userGuide": "Visit /admin/email-outbox. If empty, every durable send made it through. If rows are present, the one with the highest attempts is most likely stuck — check last_error before retrying. Manual retry bypasses the 5-attempt cap and the backoff window (the daily cron does not).",
+  "knownLimitations": [
+    "List capped at 100 rows server-side; backlog past that is invisible",
+    "No delivered-history view; the sweep prunes delivered rows after 30 days",
+    "No bulk retry"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-26",
+      "reason": "Shipped paired with /api/admin/email-outbox as Tier-A #9 of prod-readiness gap queue."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-26",
+  "revisions": [],
+  "annotations": []
+}

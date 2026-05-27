@@ -1375,6 +1375,252 @@ you see elsewhere (capacity counter, inbox, custodian board).
 - Does **not** poll for live updates. One read on mount, manual reload.
 - Does **not** read from the daily digest email cache. It reads D1 fresh.
 
+## 19. D1 backup + restore
+
+**Symptoms:** "I accidentally deleted a session" / "a bad migration corrupted
+a column" / "the database is in an obviously-wrong state and I need to roll
+back."
+
+### What happens (system behavior)
+
+- Cloudflare D1 has built-in **Time Travel** — every successful write
+  produces a bookmark; the engine retains 30 days of history and you can
+  restore the entire DB to any second within that window.
+- There is no automated nightly export. The Time Travel retention IS the
+  backup — there's nothing to set up; it ships on by default.
+- Restore is **destructive** at the DB level: it rolls the entire D1
+  database back. There is no per-table or per-row restore — that's the
+  cost of the built-in feature being free + automatic.
+- A migration that ran successfully but produced bad data is still
+  reversible via Time Travel — `wrangler d1 migrations apply` is just
+  ordinary writes, so it has a bookmark like any other write.
+- A migration that failed mid-statement is the harder case: D1 has
+  per-statement timeouts, so a long ALTER can leave the schema partially
+  applied. Time Travel still works, but the migration log will need a
+  manual cleanup row (see step 5 below).
+
+### Step-by-step
+
+1. **Decide what you actually want.** Time Travel rolls the whole DB
+   back. If only one row is wrong, fixing the row in place is cheaper
+   than a restore that throws away every other write since.
+   - "Accidentally deleted a row" → fix forward: re-INSERT from a logged
+     copy (sessions are sometimes referenced in feature.json revisions
+     or in email outbox payloads; check those before reaching for restore).
+   - "Schema is wedged after a bad migration" → continue.
+   - "I want yesterday's state back" → continue.
+
+2. **Find the bookmark you want to restore to:**
+   ```bash
+   npx wrangler d1 time-travel info marc-portal-db --json
+   ```
+   Returns the current bookmark + the retention window. Bookmarks are
+   opaque strings; you don't read them, you pass them back to `restore`.
+   To restore to a timestamp instead, pass `--timestamp 2026-05-25T14:30:00Z`.
+
+3. **Restore (preview first):**
+   ```bash
+   # Dry-run — confirms the window covers your target.
+   npx wrangler d1 time-travel restore marc-portal-db \
+     --timestamp 2026-05-25T14:30:00Z --dry-run
+   # Real restore — DESTRUCTIVE.
+   npx wrangler d1 time-travel restore marc-portal-db \
+     --timestamp 2026-05-25T14:30:00Z
+   ```
+   The restore creates a new D1 bookmark of the restored state (so a
+   restore is itself reversible). Wrangler prints both the old and new
+   bookmark IDs — write them in this RUNBOOK incident log.
+
+4. **After restore — reconcile out-of-band state:**
+   - **Stripe.** The webhook may have written rows after the restore
+     point that you just threw away. Run a quick check:
+     ```bash
+     curl -s "https://api.stripe.com/v1/events?limit=50&type=charge.succeeded" \
+       -H "Authorization: Bearer $STRIPE_SECRET_KEY" \
+       | jq '.data[] | {created, id, type}'
+     ```
+     Anything created after the restore point that doesn't have a
+     matching `payments` row is a webhook event you need to re-apply
+     manually (or re-trigger via Stripe Dashboard → Developers → Events
+     → "Resend").
+   - **Resend.** Email events (bounces, complaints) since the restore
+     point are also gone. Most are recoverable from the Resend dashboard
+     activity log; the webhook handler is idempotent so re-firing
+     anything you find via Svix's "Resend" button is safe.
+   - **R2.** Attachments are stored in R2, not D1. The restore does
+     NOT touch R2. If the restore drops rows that referenced R2 keys,
+     those keys are now orphaned — the orphan-sweep on the digest cron
+     will clean them up at the 7-day cutoff.
+
+5. **If a migration failed mid-statement** and Time Travel won't go back
+   far enough to skip it:
+   - Inspect `d1_migrations` table to see which file is logged as
+     applied:
+     ```bash
+     npx wrangler d1 execute marc-portal-db --remote \
+       --command "SELECT name, applied_at FROM d1_migrations ORDER BY applied_at DESC LIMIT 10"
+     ```
+   - If the failing migration is logged as applied but only half-ran,
+     ship a forward-fix migration that completes the work. Do NOT
+     manually DELETE from `d1_migrations` and re-run — see the
+     filename-lock note at the top of `functions/db/migrations/README.md`.
+
+### What this does NOT do
+
+- Does NOT restore R2 objects (see step 4 above).
+- Does NOT restore Stripe state (Stripe is its own source of truth;
+  webhook re-fire is the path).
+- Does NOT restore Resend event history (re-fire from Resend dashboard).
+- Does NOT preserve the writes that happened between the restore point
+  and now — every write in that window is lost.
+
+## 20. Operator notes (`/session/:id` admin panel) — failure modes
+
+**Symptoms:** the admin-only scratch pad on a session page doesn't load,
+returns 500, or appears empty when you remember writing something.
+
+### What happens (system behavior)
+
+- Operator notes are admin-only per-session scratch pads (migration
+  0028). One row per session, keyed by session_id. 4 KB byte ceiling
+  enforced server-side. Not exposed to the visitor — `isAdmin` gate at
+  both read and write endpoints.
+- Cascade delete is **explicit** (not FK-enforced): when a session is
+  hard-deleted, the handler runs a `DELETE FROM operator_notes WHERE
+  session_id = ?` first. Foreign-key enforcement is off on D1, so the
+  explicit DELETE is the only thing keeping these clean.
+- `/admin/today` reads operator_notes in a snippet column (first 200
+  chars). That query is wrapped in a `no such table` fallback so a
+  pre-migration deploy degrades gracefully.
+
+### Step-by-step
+
+1. **Empty panel when you know you wrote something:**
+   - Confirm the session id in the URL — operator notes are keyed by
+     session_id, and clicking through from `/admin/inbox` always
+     resolves to the right id, but a hand-typed URL could mismatch.
+   - Tail logs while loading: `npx wrangler pages deployment tail …`.
+     A `no such table` on the GET means migration 0028 hasn't applied;
+     run `npm run db:migrate:prod`.
+   - If logs are clean but the panel is empty, query D1 directly:
+     ```bash
+     npx wrangler d1 execute marc-portal-db --remote \
+       --command "SELECT * FROM operator_notes WHERE session_id = 's_xxx'"
+     ```
+     No row → the note was never saved (likely the save POST failed
+     silently — check Network tab in DevTools for a 4xx/5xx response).
+
+2. **Save returns 413 (payload too large):**
+   - The byte ceiling is 4 KB. Trim the note; the panel doesn't yet show
+     a live character counter.
+
+3. **Notes appearing on the wrong session:**
+   - This shouldn't be possible — the URL drives the session_id, the
+     write endpoint validates the param. If it actually happens, log
+     the session ids in both the URL bar and the network request and
+     open an incident.
+
+4. **Restoring a note that's gone (visitor session was hard-deleted):**
+   - The explicit-cascade DELETE on hard-delete throws the note away
+     with the session. Time Travel restore (§19) is the only recovery
+     path, and it brings back the session too.
+
+## 21. Adding a new tenant (multi-tenant onboarding)
+
+**Symptoms:** you want to point a new domain at marc-portal and have it
+serve a buyer-customised tenant. The `/admin/fleet/new` wizard is the
+intended path but until it's fully wired this is the manual fallback.
+
+### What happens (system behavior)
+
+- Every Functions request runs `functions/_middleware.ts` which
+  resolves `Host` header → tenant via the `tenant_domains` table. An
+  unknown host returns a terse 404; a known host without a tenant
+  match also returns 404. There is no fallback domain.
+- The seeded tenant `t_marc` covers `marcportal.com`, the
+  `marc-portal.pages.dev` preview, and localhost in dev. Anything else
+  needs both a `tenants` row AND at least one `tenant_domains` row.
+- A tenant has a `theme` JSON blob (palette overrides) and a `flags`
+  JSON blob (`isOperator: true` gates `/admin` access).
+
+### Step-by-step
+
+1. **Plan the slug and domain:**
+   - `slug` — short URL-safe identifier (no spaces, lowercase). Used in
+     audit log queries and as the tenant id.
+   - `domain` — the host header the visitor will hit. Must include the
+     port for non-443 hosts (e.g. `staging.example.com:8443`).
+
+2. **Insert the tenant row:**
+   ```bash
+   # PowerShell — use a .sql file rather than --command to dodge quoting issues.
+   $sql = @"
+   INSERT INTO tenants (id, slug, owner_email, status, theme, flags, created_at)
+   VALUES (
+     'tn_buyer1', 'buyer1', 'owner@buyer1.com', 'active',
+     '{}', '{"isOperator": false}', unixepoch()
+   );
+   "@
+   $sql | Out-File -Encoding utf8 .\tmp.sql
+   npx wrangler d1 execute marc-portal-db --remote --file=./tmp.sql
+   Remove-Item .\tmp.sql
+   ```
+   Empty `theme = '{}'` falls back to the styles.css `:root` palette.
+
+3. **Insert the domain row:**
+   ```bash
+   $sql = @"
+   INSERT INTO tenant_domains (domain, tenant_id, is_primary, ssl_status, added_at)
+   VALUES ('buyer1.com', 'tn_buyer1', 1, 'active', unixepoch());
+   "@
+   $sql | Out-File -Encoding utf8 .\tmp.sql
+   npx wrangler d1 execute marc-portal-db --remote --file=./tmp.sql
+   Remove-Item .\tmp.sql
+   ```
+   Repeat for any www/preview/staging hosts. The middleware compares
+   case-insensitive on hostname but case-sensitive on port.
+
+4. **Attach the domain at Cloudflare Pages:**
+   - Dashboard → Pages → marc-portal → Custom domains → Set up a
+     custom domain. CF issues an SSL cert automatically.
+   - Or, if `CF_API_TOKEN` / `CF_ACCOUNT_ID` / `CF_PAGES_PROJECT_NAME`
+     are configured as secrets, the `/admin/fleet/new` endpoint can do
+     this via the CF API; otherwise this step is the dashboard.
+
+5. **Test resolution:**
+   ```bash
+   curl -sI -H "Host: buyer1.com" https://marc-portal.pages.dev/ \
+     | head -5
+   ```
+   200 → middleware resolved the tenant. 404 → check the
+   `tenant_domains` row landed:
+   ```bash
+   npx wrangler d1 execute marc-portal-db --remote \
+     --command "SELECT * FROM tenant_domains WHERE domain = 'buyer1.com'"
+   ```
+
+6. **Freezing a tenant** (pausing the app for a buyer without deleting
+   data):
+   ```bash
+   $sql = "UPDATE tenants SET status = 'frozen', frozen_at = unixepoch() WHERE id = 'tn_buyer1';"
+   $sql | Out-File -Encoding utf8 .\tmp.sql
+   npx wrangler d1 execute marc-portal-db --remote --file=./tmp.sql
+   ```
+   Middleware returns 503 "This app is currently paused" for any
+   request resolving to a frozen tenant. Reverse with `status = 'active'`.
+
+### What this does NOT do
+
+- Does NOT provision a separate D1 database per tenant. All tenants
+  share `marc-portal-db`; isolation is via the `tenant_id` column on
+  rows and the middleware-resolved tenant on every request.
+- Does NOT issue separate Stripe accounts or Resend domains. A
+  productized buyer rollout would need those, but the schema-level
+  multi-tenancy is the only piece in place today.
+- Does NOT prevent operator-tenant cross-contamination in the audit
+  log read endpoint (the read currently returns all rows without a
+  tenant filter — see the audit feature.json for the open item).
+
 ## Payments setup (one-time) — Stripe
 
 Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card

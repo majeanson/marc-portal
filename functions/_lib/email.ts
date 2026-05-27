@@ -358,10 +358,10 @@ export async function sweepEmailOutbox(
   return { retried, delivered, failed, alerted, pruned }
 }
 
-/** Pure Resend POST without outbox side-effects. Used by the sweeper —
- *  the row is already in the outbox; we just want to try delivery and
- *  report success/failure separately. */
-async function sendRaw(
+/** Pure Resend POST without outbox side-effects. Used by the sweeper and
+ *  by the admin manual-retry endpoint — the row is already in the outbox;
+ *  we just want to try delivery and report success/failure separately. */
+export async function sendRaw(
   apiKey: string,
   payload: ResendPayload,
 ): Promise<{ delivered: boolean; error?: string }> {
@@ -1254,6 +1254,58 @@ export async function sendRefundNotice(
     origin,
     'refund-notice',
   )
+}
+
+// =============================================================================
+// Loi 25 erasure receipt — sent to the visitor after DELETE /api/me completes.
+// Transactional confirmation that the right-to-erasure action they triggered
+// landed. Non-durable: the data is already gone, no recovery value in
+// retrying, and the /au-revoir page is the primary in-band confirmation.
+// Suppression still applies (a visitor who unsubscribed previously is taken
+// at their word).
+// =============================================================================
+
+export async function sendErasureReceipt(
+  env: EmailEnv,
+  visitorEmail: string,
+  origin: string,
+  lang: Lang,
+  counts: { sessionCount: number },
+): Promise<SendResult> {
+  const subject = lang === 'fr' ? 'Tes données ont été effacées' : 'Your data has been erased'
+  const headline = lang === 'fr' ? 'Effacement confirmé' : 'Erasure confirmed'
+  const sessionWord =
+    lang === 'fr'
+      ? counts.sessionCount === 1
+        ? 'session'
+        : 'sessions'
+      : counts.sessionCount === 1
+        ? 'session'
+        : 'sessions'
+  const p1 =
+    lang === 'fr'
+      ? `Confirmation : j'ai effacé toutes les données associées à <strong>${escapeHtml(visitorEmail)}</strong>. Cela inclut ${counts.sessionCount} ${sessionWord} avec leurs messages et pièces jointes, tes brouillons d'intake, l'historique de paiement, tes préférences de langue et les jetons de connexion en attente.`
+      : `Confirmation: I've erased every piece of data tied to <strong>${escapeHtml(visitorEmail)}</strong>. That covers ${counts.sessionCount} ${sessionWord} with their messages and attachments, your intake drafts, payment history, language preference, and any pending sign-in tokens.`
+  const p2 =
+    lang === 'fr'
+      ? "Ce courriel est ton reçu — garde-le si tu veux une trace écrite. Loi 25 te donne ce droit et c'est exécuté."
+      : "This email is your receipt — keep it if you'd like a paper trail. Bill 25 gives you this right and it's done."
+  const p3 =
+    lang === 'fr'
+      ? "Si tu reviens un jour, tu repars d'une page blanche : une nouvelle session, sans rien hérité du passé. Pas de question, pas de jugement."
+      : 'If you come back one day, you start fresh: a new session with nothing carried over. No questions, no judgment.'
+  const p4 =
+    lang === 'fr'
+      ? "Pour toute question sur ce qui restait (logs techniques, journal d'audit côté opérateur), tu peux m'écrire à marc@marcportal.com — j'ai 30 jours pour répondre, comme l'exige la loi."
+      : 'For any question about what remained (technical logs, operator-side audit log), write to me at marc@marcportal.com — I have 30 days to reply, as the law requires.'
+  const { html, text } = renderEmail(visitorEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'loi 25 · effacement' : 'bill 25 · erasure',
+    headline,
+    paragraphs: [p1, p2, p3, p4],
+    signoff: 'system',
+  })
+  return send(env, { from: RESEND_FROM, to: visitorEmail, subject, html, text }, origin)
 }
 
 // =============================================================================

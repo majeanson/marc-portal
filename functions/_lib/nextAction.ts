@@ -36,6 +36,7 @@ export type NextActionCode =
   | 'tier4_quote_missing'
   | 'installment_unpaid'
   | 'check_in_due'
+  | 'ready_to_start'
   | 'triage_overdue'
   | 'triage_pending'
   | 'draft_stalled'
@@ -91,6 +92,7 @@ const LABELS: Record<NextActionCode, { fr: string; en: string }> = {
   tier4_quote_missing: { fr: 'Envoyer le devis', en: 'Send Tier 4 quote' },
   installment_unpaid: { fr: 'Relancer le paiement', en: 'Nudge payment' },
   check_in_due: { fr: 'Donner des nouvelles', en: 'Check in' },
+  ready_to_start: { fr: 'Démarrer', en: 'Start the build' },
   triage_overdue: { fr: 'Triage en retard', en: 'Triage overdue' },
   triage_pending: { fr: 'Trier', en: 'Triage' },
   draft_stalled: { fr: 'Intake commencé', en: 'Intake started' },
@@ -134,6 +136,10 @@ const HINTS: Record<NextActionCode, { fr: string; en: string }> = {
     fr: 'Pas de message dans la session depuis plus de 14 jours. Un mot rapide.',
     en: 'No message in the session for more than 14 days. A quick note.',
   },
+  ready_to_start: {
+    fr: 'Le visiteur a payé. Promouvoir en actif et embarquer.',
+    en: 'Visitor has paid. Promote to active and get rolling.',
+  },
   triage_overdue: {
     fr: 'En triage depuis plus de 48h. SLA visiteur dépassé.',
     en: 'In triage for more than 48h. Visitor SLA missed.',
@@ -162,6 +168,7 @@ const SEVERITY: Record<NextActionCode, NextActionSeverity> = {
   tier4_quote_missing: 'urgent',
   installment_unpaid: 'warn',
   check_in_due: 'warn',
+  ready_to_start: 'urgent',
   triage_overdue: 'urgent',
   triage_pending: 'warn',
   draft_stalled: 'info',
@@ -244,6 +251,13 @@ export function inferNextAction(session: SessionRow, ctx: NextActionContext): Ne
   }
 
   if (session.status === 'triage') {
+    // Visitor has paid a build leg but the session is still in triage. This is
+    // the strongest "act now" signal in the system — payment landed without
+    // a corresponding promotion, so the operator must move it to 'active' to
+    // start work. Outranks the age-based overdue/pending classifiers because
+    // a paid-but-unpromoted session is more urgent than a fresh-and-unread
+    // triage.
+    if (ctx.paidBuildLegs > 0) return build('ready_to_start')
     const ageS = ctx.nowS - session.created_at
     return ageS > TRIAGE_OVERDUE_S ? build('triage_overdue') : build('triage_pending')
   }

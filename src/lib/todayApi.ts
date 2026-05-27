@@ -81,6 +81,13 @@ export interface SystemHealthEntry {
     activeCap: number
     triageCap: number
   }
+  /** Unix seconds of the last successful digest-cron firing, or null when
+   *  the heartbeat has never been written (pre-migration env, fresh deploy
+   *  before the first cron tick). */
+  lastDigestAtS: number | null
+  /** True when the heartbeat is missing OR older than 36h. The dashboard
+   *  surfaces this as a stale-cron warning. */
+  digestStale: boolean
 }
 
 export interface CustodianAlertsEntry {

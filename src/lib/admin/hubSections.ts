@@ -118,6 +118,12 @@ export function buildAdminSections(lang: Lang): AdminSection[] {
             badge: '/admin/audit',
           },
           {
+            href: `${langPrefix}/admin/email-outbox`,
+            title: 'Email outbox',
+            desc: 'Durable sends that failed once and are waiting on the daily sweep. Manually retry stuck rows here.',
+            badge: '/admin/email-outbox',
+          },
+          {
             href: '/og/ping?fonts=1',
             external: true,
             title: 'OG font health',
@@ -237,6 +243,12 @@ export function buildAdminSections(lang: Lang): AdminSection[] {
           title: 'Journal',
           desc: 'Actions opérateur dans le temps. Met en évidence la dette technique et la chronologie des incidents.',
           badge: '/admin/audit',
+        },
+        {
+          href: `${langPrefix}/admin/email-outbox`,
+          title: 'Outbox courriel',
+          desc: 'Envois durables qui ont échoué une fois et attendent le prochain passage du cron. Relance manuelle des lignes bloquées.',
+          badge: '/admin/email-outbox',
         },
         {
           href: '/og/ping?fonts=1',

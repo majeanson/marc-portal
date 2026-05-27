@@ -85,7 +85,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(env, event.data.object, origin)
+        await handleCheckoutCompleted(env, request, event.data.object, origin)
         break
       case 'invoice.paid':
         await handleInvoicePaid(env, event.data.object)
@@ -121,7 +121,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   return ok({ received: true })
 }
 
-async function handleCheckoutCompleted(env: Env, obj: StripeObject, origin: string): Promise<void> {
+async function handleCheckoutCompleted(
+  env: Env,
+  request: Request,
+  obj: StripeObject,
+  origin: string,
+): Promise<void> {
   const paymentId = obj.client_reference_id
   if (!paymentId) {
     console.warn('checkout.completed without client_reference_id; ignoring', obj.id)
@@ -203,6 +208,33 @@ async function handleCheckoutCompleted(env: Env, obj: StripeObject, origin: stri
         await sendInstallmentClearedPrompt(env, session.email, sessionId, idx, of, origin, lang)
       }
     }
+  }
+
+  // Operator notification on first transition. Without this, a paid leg lands
+  // silently — Marc only learns by visiting /admin/today or waiting for the
+  // daily digest, which means a paid-but-still-triage session can sit in
+  // limbo for hours. maybeNotifyAdmin is durable: Resend first, admin_alerts
+  // row as the safety net. Mirrors the existing call sites in
+  // handleInvoiceFailed and handleSubscriptionDeleted.
+  if (isFirstTransition) {
+    const sessionId = obj.metadata?.session_id ?? null
+    const sessionTag = sessionId ? ` (session ${sessionId})` : ''
+    let body: string
+    if (kind === 'build') {
+      const idx = Number(obj.metadata?.installment_index ?? '0')
+      const of = Number(obj.metadata?.installment_of ?? '0')
+      const leg = idx > 0 && of > 0 ? `${idx}/${of}` : 'unknown'
+      const amount = obj.amount_total ?? 0
+      body = `Build payment cleared — leg ${leg}, ${amount} cents${sessionTag}`
+    } else if (kind === 'scoping') {
+      body = `Scoping payment cleared${sessionTag}`
+    } else if (kind === 'custodian') {
+      const plan = obj.metadata?.custodian_plan ?? 'unknown'
+      body = `Custodian ${plan} subscription started${sessionTag}`
+    } else {
+      body = `Checkout completed — kind=${kind ?? 'unknown'}${sessionTag}`
+    }
+    await maybeNotifyAdmin(env, request, body)
   }
 }
 

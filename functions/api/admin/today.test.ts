@@ -177,3 +177,57 @@ describe('GET /api/admin/today — shape', () => {
     expect(body.overduePayments[0].installmentLabel).toBe('1/2')
   })
 })
+
+describe('GET /api/admin/today — digest heartbeat', () => {
+  it('reports digestStale=true and lastDigestAtS=null when the row is missing', async () => {
+    const ctx = makeCtx('marc@x.com')
+    const res = await onRequestGet(ctx)
+    const body = (await res.json()) as TodayResponse
+    expect(body.systemHealth.lastDigestAtS).toBeNull()
+    expect(body.systemHealth.digestStale).toBe(true)
+  })
+
+  it('reports digestStale=false when the heartbeat is fresh (<36h)', async () => {
+    const ctx = makeCtx('marc@x.com')
+    const db = ctx.env._db as D1Mock
+    const fresh = Math.floor(Date.now() / 1000) - 3600
+    db.system_kv.set('last_digest_at', {
+      key: 'last_digest_at',
+      value: String(fresh),
+      updated_at: fresh,
+    })
+    const res = await onRequestGet(ctx)
+    const body = (await res.json()) as TodayResponse
+    expect(body.systemHealth.lastDigestAtS).toBe(fresh)
+    expect(body.systemHealth.digestStale).toBe(false)
+  })
+
+  it('reports digestStale=true when the heartbeat is older than 36h', async () => {
+    const ctx = makeCtx('marc@x.com')
+    const db = ctx.env._db as D1Mock
+    const stale = Math.floor(Date.now() / 1000) - 48 * 3600
+    db.system_kv.set('last_digest_at', {
+      key: 'last_digest_at',
+      value: String(stale),
+      updated_at: stale,
+    })
+    const res = await onRequestGet(ctx)
+    const body = (await res.json()) as TodayResponse
+    expect(body.systemHealth.lastDigestAtS).toBe(stale)
+    expect(body.systemHealth.digestStale).toBe(true)
+  })
+
+  it('treats a non-numeric heartbeat value as missing (defensive)', async () => {
+    const ctx = makeCtx('marc@x.com')
+    const db = ctx.env._db as D1Mock
+    db.system_kv.set('last_digest_at', {
+      key: 'last_digest_at',
+      value: 'corrupt',
+      updated_at: 0,
+    })
+    const res = await onRequestGet(ctx)
+    const body = (await res.json()) as TodayResponse
+    expect(body.systemHealth.lastDigestAtS).toBeNull()
+    expect(body.systemHealth.digestStale).toBe(true)
+  })
+})

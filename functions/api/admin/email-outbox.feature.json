@@ -1,0 +1,50 @@
+{
+  "featureKey": "feat-2026-090",
+  "title": "GET/POST /api/admin/email-outbox — pending outbox view + manual retry (operator only)",
+  "status": "active",
+  "schemaVersion": 1,
+  "domain": "marc-portal/admin",
+  "componentFile": "functions/api/admin/email-outbox.ts",
+  "problem": "Durable email sends fail-and-enqueue into email_outbox. The daily digest sweepEmailOutbox retries them with exponential backoff up to OUTBOX_MAX_ATTEMPTS=5, after which a row sits silently — the daily digest alerts once but the row stays stuck. Marc had no admin UI to view the current outbox state or to manually retry a row past the cap. Closes prod-readiness gap #9.",
+  "tags": ["admin", "operator-gated", "email", "outbox", "manual-retry"],
+  "analysis": "Two handlers in one file. GET: currentEmail → unauthorized; isAdmin → forbidden; SELECT pending rows (sent_at IS NULL) ordered attempts DESC then created_at ASC, limit 100. Graceful degrade on 'no such table' (pre-migration). POST: same auth, JSON body { id }, SELECT row, sendRaw with stored payload, UPDATE sent_at on delivery or attempts+1 + last_error on failure. Manual retry intentionally bypasses the attempts ceiling (operator explicit intent) and the backoff window.",
+  "decisions": [
+    {
+      "decision": "Reuse exported sendRaw from _lib/email.ts",
+      "rationale": "sweepEmailOutbox already uses sendRaw for the same shape (rendered payload, pure POST). Exporting it for the manual-retry path keeps the network primitive in one file and ensures parity with the automated sweep. Building a separate retryOutboxRow helper would be premature — one caller, sweeper has its own batched loop.",
+      "recommendation": "If a third caller appears (e.g. an SQS-style worker queue), promote to a retryOutboxRow helper then. Don't pre-build the abstraction.",
+      "date": "2026-05-26"
+    },
+    {
+      "decision": "Manual retry bypasses OUTBOX_MAX_ATTEMPTS and backoff window",
+      "rationale": "The whole point of the manual endpoint is to give the operator an escape hatch. Honoring the cap would make the UI button useless on the exact rows that need it most.",
+      "recommendation": "If retries-past-cap become a regular workflow (not occasional incident response), revisit whether the cap itself needs to be raised.",
+      "date": "2026-05-26"
+    },
+    {
+      "decision": "POST gates on RESEND_API_KEY",
+      "rationale": "Without Resend configured the retry can't possibly succeed. Returning 503 is more useful than pretending success and silently no-oping.",
+      "recommendation": "Same shape as other Resend-dependent endpoints — graceful degrade with a clear message.",
+      "date": "2026-05-26"
+    }
+  ],
+  "successCriteria": "- Operator gets list of pending rows (sent_at IS NULL)\n- Non-operator → 403\n- Anon → 401\n- POST { id } retries the row and updates DB\n- 404 on unknown id\n- 200 + alreadySent:true on already-delivered row (idempotent)\n- 503 when RESEND_API_KEY unset\n- Graceful degrade on pre-migration env (returns empty list)",
+  "implementation": "functions/api/admin/email-outbox.ts — onRequestGet + onRequestPost in one file. sendRaw imported from _lib/email.ts. CSRF gated centrally via _middleware.ts (POST not in CSRF_EXEMPT_PATHS).",
+  "userGuide": "Visit /admin/email-outbox to see pending + stuck outbox rows with their kind, attempts, last error. Click 'Retry' on a row to force one more delivery attempt. Tests: functions/api/admin/email-outbox.test.ts covers auth, payload shape, retry happy path, already-sent no-op, unknown id 404, RESEND_API_KEY unset.",
+  "knownLimitations": [
+    "List capped at 100 rows; backlog past that is invisible (acceptable — outbox never grows past ~10 at current scale)",
+    "No delivered-history view (sent_at IS NOT NULL rows hidden); the sweep prunes delivered rows after 30 days anyway",
+    "No bulk retry button — manual retry is one row at a time"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-26",
+      "reason": "Endpoint + page shipped together as Tier-A #9 of prod-readiness gap queue."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-26",
+  "revisions": [],
+  "annotations": []
+}

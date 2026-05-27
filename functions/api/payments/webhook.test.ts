@@ -60,9 +60,12 @@ function checkoutCompletedEvent(opts: {
   installmentIndex?: number
   installmentOf?: number
   lang?: 'fr' | 'en'
+  eventId?: string
+  amountTotal?: number
+  custodianPlan?: 'watch' | 'care'
 }) {
   return {
-    id: 'evt_test',
+    id: opts.eventId ?? 'evt_test',
     type: 'checkout.session.completed',
     created: Math.floor(Date.now() / 1000),
     data: {
@@ -72,6 +75,7 @@ function checkoutCompletedEvent(opts: {
         client_reference_id: opts.paymentId,
         payment_intent: 'pi_test',
         customer: 'cus_test',
+        amount_total: opts.amountTotal ?? null,
         metadata: {
           payment_id: opts.paymentId,
           session_id: opts.sessionId,
@@ -81,6 +85,7 @@ function checkoutCompletedEvent(opts: {
             : {}),
           ...(opts.installmentOf != null ? { installment_of: String(opts.installmentOf) } : {}),
           ...(opts.lang ? { lang: opts.lang } : {}),
+          ...(opts.custodianPlan ? { custodian_plan: opts.custodianPlan } : {}),
         },
       },
     },
@@ -323,6 +328,175 @@ describe('POST /api/payments/webhook — build installment auto-prompt', () => {
       params: {},
     } as never)
     expect(res.status).toBe(401)
+  })
+})
+
+// ────────────────────────────────────────────────────────────────────────────
+// Operator notification on first paid transition. Without this, a paid leg
+// lands silently and the session sits in triage until Marc happens to refresh
+// /admin/today. The notification mirrors handleInvoiceFailed /
+// handleSubscriptionDeleted: Resend first, admin_alerts as the durable
+// fallback.
+// ────────────────────────────────────────────────────────────────────────────
+
+describe('POST /api/payments/webhook — operator notify on first paid leg', () => {
+  it('notifies Marc once on the first checkout.session.completed for a build leg', async () => {
+    const env = buildEnv()
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
+
+    await onRequestPost({
+      request: buildWebhookRequest(
+        checkoutCompletedEvent({
+          paymentId,
+          sessionId,
+          kind: 'build',
+          installmentIndex: 1,
+          installmentOf: 2,
+          amountTotal: 90000,
+        }),
+      ),
+      env,
+      params: {},
+    } as never)
+
+    expect(email.sendAdminAlert).toHaveBeenCalledOnce()
+    const call = (email.sendAdminAlert as ReturnType<typeof vi.fn>).mock.calls[0]
+    // Body should carry kind, leg, amount, session id — enough for Marc to
+    // know what landed without opening D1.
+    const body = call?.[3] as string
+    expect(body).toContain('Build payment cleared')
+    expect(body).toContain('1/2')
+    expect(body).toContain('90000')
+    expect(body).toContain(sessionId)
+  })
+
+  it('notifies on scoping payments with the right shape', async () => {
+    const env = buildEnv()
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'scoping' })
+
+    await onRequestPost({
+      request: buildWebhookRequest(
+        checkoutCompletedEvent({ paymentId, sessionId, kind: 'scoping' }),
+      ),
+      env,
+      params: {},
+    } as never)
+
+    expect(email.sendAdminAlert).toHaveBeenCalledOnce()
+    const body = (email.sendAdminAlert as ReturnType<typeof vi.fn>).mock.calls[0]?.[3] as string
+    expect(body).toContain('Scoping payment cleared')
+    expect(body).toContain(sessionId)
+  })
+
+  it('notifies on custodian sub start with the plan name', async () => {
+    const env = buildEnv()
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'custodian' })
+
+    await onRequestPost({
+      request: buildWebhookRequest(
+        checkoutCompletedEvent({
+          paymentId,
+          sessionId,
+          kind: 'custodian',
+          custodianPlan: 'watch',
+        }),
+      ),
+      env,
+      params: {},
+    } as never)
+
+    expect(email.sendAdminAlert).toHaveBeenCalledOnce()
+    const body = (email.sendAdminAlert as ReturnType<typeof vi.fn>).mock.calls[0]?.[3] as string
+    expect(body).toContain('Custodian watch subscription started')
+    expect(body).toContain(sessionId)
+  })
+
+  it('does NOT notify on a webhook_events-dedup Stripe retry (same event.id)', async () => {
+    const env = buildEnv()
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
+    const event = checkoutCompletedEvent({
+      paymentId,
+      sessionId,
+      kind: 'build',
+      installmentIndex: 1,
+      installmentOf: 2,
+      amountTotal: 90000,
+    })
+
+    await onRequestPost({ request: buildWebhookRequest(event), env, params: {} } as never)
+    expect(email.sendAdminAlert).toHaveBeenCalledOnce()
+
+    await onRequestPost({ request: buildWebhookRequest(event), env, params: {} } as never)
+    expect(email.sendAdminAlert).toHaveBeenCalledOnce()
+  })
+
+  it('does NOT notify when a different event.id arrives but paid_at is already set', async () => {
+    // Belt-and-suspenders: webhook_events dedup catches same-event-id retries.
+    // The isFirstTransition pre-read catches the rarer case where Stripe
+    // synthesises a new event.id for the same payment (e.g. test-mode replays
+    // from the dashboard).
+    const env = buildEnv()
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
+
+    await onRequestPost({
+      request: buildWebhookRequest(
+        checkoutCompletedEvent({
+          eventId: 'evt_first',
+          paymentId,
+          sessionId,
+          kind: 'build',
+          installmentIndex: 1,
+          installmentOf: 2,
+          amountTotal: 90000,
+        }),
+      ),
+      env,
+      params: {},
+    } as never)
+    expect(email.sendAdminAlert).toHaveBeenCalledOnce()
+
+    await onRequestPost({
+      request: buildWebhookRequest(
+        checkoutCompletedEvent({
+          eventId: 'evt_replay',
+          paymentId,
+          sessionId,
+          kind: 'build',
+          installmentIndex: 1,
+          installmentOf: 2,
+          amountTotal: 90000,
+        }),
+      ),
+      env,
+      params: {},
+    } as never)
+    // Still 1: paid_at is now non-null, so isFirstTransition is false.
+    expect(email.sendAdminAlert).toHaveBeenCalledOnce()
+  })
+
+  it('falls back to admin_alerts row when sendAdminAlert returns ok:false', async () => {
+    ;(email.sendAdminAlert as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: false })
+    const env = buildEnv()
+    const { paymentId, sessionId } = seedSessionAndPayment(env, { kind: 'build' })
+
+    await onRequestPost({
+      request: buildWebhookRequest(
+        checkoutCompletedEvent({
+          paymentId,
+          sessionId,
+          kind: 'build',
+          installmentIndex: 1,
+          installmentOf: 2,
+          amountTotal: 90000,
+        }),
+      ),
+      env,
+      params: {},
+    } as never)
+
+    // One Resend attempt, one admin_alerts row written.
+    expect(email.sendAdminAlert).toHaveBeenCalledOnce()
+    expect(env._db.admin_alerts.size).toBe(1)
   })
 })
 

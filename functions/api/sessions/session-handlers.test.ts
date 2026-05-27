@@ -76,6 +76,9 @@ function seedSession(db: D1Mock, over: Record<string, unknown> = {}) {
     updated_at: 1700000000,
     deleted_at: null,
     status_history: null,
+    showcased_at: null,
+    showcase_title: null,
+    showcase_tagline: null,
     tier: null,
     tier4_amount_cents: null,
     tier3_split: null,
@@ -776,5 +779,249 @@ describe('POST /api/sessions — rate limit', () => {
     }
     expect(allowed).toBe(5)
     expect(blocked).toBe(1)
+  })
+})
+
+// ────────────────────────────────────────────────────────────────────────────
+// audit_log writes — one row per field that actually changed on a PATCH.
+// AdminAudit's filter UI does substring search on action, so dotted labels
+// (`session.tier`, `session.status`) are the read-side contract.
+// ────────────────────────────────────────────────────────────────────────────
+
+function findAuditRows(db: D1Mock, action: string) {
+  return [...db.audit_log.values()].filter((r) => r.action === action)
+}
+
+describe('PATCH /api/sessions/:id — audit_log writes', () => {
+  it('writes a session.status row on a status change with from/to', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { status: 'triage' },
+    })
+    seedSession(ctx.env._db)
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+
+    const rows = findAuditRows(ctx.env._db, 'session.status')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].actor_email).toBe('marc@x.com')
+    expect(JSON.parse(rows[0].payload!)).toEqual({
+      sessionId: 's1',
+      from: 'draft',
+      to: 'triage',
+    })
+  })
+
+  it('writes session.tier on tier assignment', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier: 2 },
+    })
+    seedSession(ctx.env._db)
+    await onRequestPatch(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.tier')
+    expect(rows).toHaveLength(1)
+    expect(JSON.parse(rows[0].payload!)).toEqual({ sessionId: 's1', from: null, to: 2 })
+  })
+
+  it('writes session.tier4_amount_cents on quote', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { tier4AmountCents: 950_000 },
+    })
+    seedSession(ctx.env._db, { tier: 4, tier4_amount_cents: null })
+    await onRequestPatch(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.tier4_amount_cents')
+    expect(rows).toHaveLength(1)
+    expect(JSON.parse(rows[0].payload!)).toEqual({
+      sessionId: 's1',
+      from: null,
+      to: 950_000,
+    })
+  })
+
+  it('writes session.community_discount with boolean from/to', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { communityDiscount: true },
+    })
+    seedSession(ctx.env._db, { tier: 1, community_discount: 0 })
+    await onRequestPatch(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.community_discount')
+    expect(rows).toHaveLength(1)
+    expect(JSON.parse(rows[0].payload!)).toEqual({
+      sessionId: 's1',
+      from: false,
+      to: true,
+    })
+  })
+
+  it('writes session.showcase with the sub-keys that actually changed', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { showcase: { enabled: true, title: 'Cool project' } },
+    })
+    seedSession(ctx.env._db)
+    await onRequestPatch(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.showcase')
+    expect(rows).toHaveLength(1)
+    const payload = JSON.parse(rows[0].payload!)
+    expect(payload.sessionId).toBe('s1')
+    expect(payload.enabled).toEqual({ from: false, to: true })
+    expect(payload.title).toEqual({ from: null, to: 'Cool project' })
+    // Tagline didn't change → key absent.
+    expect(payload.tagline).toBeUndefined()
+  })
+
+  it('writes session.decline_note WITHOUT the note text (PII discipline)', async () => {
+    const noteText = 'You should try reaching out to X instead — Marc'
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { declineNote: noteText },
+    })
+    seedSession(ctx.env._db)
+    await onRequestPatch(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.decline_note')
+    expect(rows).toHaveLength(1)
+    const payload = JSON.parse(rows[0].payload!)
+    expect(payload).toEqual({ sessionId: 's1', hadNote: false, hasNote: true })
+    // The actual note text must NOT appear in the payload.
+    expect(rows[0].payload).not.toContain('reaching out')
+  })
+
+  it('writes session.intake_json with by=visitor for visitor self-edits', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'visitor@x.com',
+      body: { intakeJson: { lang: 'fr', formData: { x: 1 } } },
+    })
+    seedSession(ctx.env._db)
+    await onRequestPatch(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.intake_json')
+    expect(rows).toHaveLength(1)
+    expect(JSON.parse(rows[0].payload!)).toEqual({ sessionId: 's1', by: 'visitor' })
+  })
+
+  it('writes session.intake_json with by=admin when admin edits', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { intakeJson: { lang: 'fr', formData: { x: 1 } } },
+    })
+    seedSession(ctx.env._db)
+    await onRequestPatch(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.intake_json')
+    expect(rows).toHaveLength(1)
+    expect(JSON.parse(rows[0].payload!)).toEqual({ sessionId: 's1', by: 'admin' })
+  })
+
+  it('writes session.all_yours_acknowledged when visitor acks', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'visitor@x.com',
+      body: { acknowledgeAllYours: true },
+    })
+    seedSession(ctx.env._db, { status: 'shipped' })
+    await onRequestPatch(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.all_yours_acknowledged')
+    expect(rows).toHaveLength(1)
+    expect(JSON.parse(rows[0].payload!)).toEqual({
+      sessionId: 's1',
+      from: false,
+      to: true,
+    })
+  })
+
+  it('writes session.undelete on admin restore', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { undelete: true },
+    })
+    seedSession(ctx.env._db, { deleted_at: 100 })
+    await onRequestPatch(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.undelete')
+    expect(rows).toHaveLength(1)
+    expect(JSON.parse(rows[0].payload!)).toEqual({ sessionId: 's1' })
+  })
+
+  it('multiple field changes in one PATCH produce one row per field', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { status: 'triage', tier: 2 },
+    })
+    seedSession(ctx.env._db)
+    await onRequestPatch(ctx as never)
+
+    expect(findAuditRows(ctx.env._db, 'session.status')).toHaveLength(1)
+    expect(findAuditRows(ctx.env._db, 'session.tier')).toHaveLength(1)
+  })
+
+  it('no row written when nothing actually changes', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { status: 'draft' }, // same as seeded value
+    })
+    seedSession(ctx.env._db) // status='draft'
+    await onRequestPatch(ctx as never)
+
+    expect(ctx.env._db.audit_log.size).toBe(0)
+  })
+})
+
+describe('DELETE /api/sessions/:id — audit_log writes', () => {
+  it('writes session.soft_delete with byAdmin=true when admin force-deletes', async () => {
+    const ctx = makeCtx({
+      method: 'DELETE',
+      asEmail: 'marc@x.com',
+    })
+    seedSession(ctx.env._db) // visitor@x.com owns it; admin is acting
+    const res = await onRequestDelete(ctx as never)
+    expect(res.status).toBe(200)
+
+    const rows = findAuditRows(ctx.env._db, 'session.soft_delete')
+    expect(rows).toHaveLength(1)
+    expect(JSON.parse(rows[0].payload!)).toEqual({ sessionId: 's1', byAdmin: true })
+  })
+
+  it('writes session.soft_delete with byAdmin=false on visitor self-withdraw', async () => {
+    const ctx = makeCtx({
+      method: 'DELETE',
+      asEmail: 'visitor@x.com',
+    })
+    seedSession(ctx.env._db) // visitor owns it; they're acting on themselves
+    await onRequestDelete(ctx as never)
+
+    const rows = findAuditRows(ctx.env._db, 'session.soft_delete')
+    expect(rows).toHaveLength(1)
+    expect(JSON.parse(rows[0].payload!)).toEqual({ sessionId: 's1', byAdmin: false })
+  })
+
+  it('does NOT write on idempotent re-delete (row was already deleted)', async () => {
+    const ctx = makeCtx({
+      method: 'DELETE',
+      asEmail: 'marc@x.com',
+    })
+    seedSession(ctx.env._db, { deleted_at: 100 })
+    await onRequestDelete(ctx as never)
+
+    expect(findAuditRows(ctx.env._db, 'session.soft_delete')).toHaveLength(0)
   })
 })

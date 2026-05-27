@@ -163,6 +163,21 @@ interface OperatorNoteRowMock {
   updated_at: number
 }
 
+interface AuditLogRowMock {
+  id: string
+  ts: number
+  actor_email: string
+  tenant_id: string | null
+  action: string
+  payload: string | null
+}
+
+interface SystemKvRowMock {
+  key: string
+  value: string
+  updated_at: number
+}
+
 export class D1Mock {
   sessions = new Map<string, SessionRowMock>()
   messages = new Map<string, MessageRowMock>()
@@ -177,6 +192,8 @@ export class D1Mock {
   email_outbox = new Map<string, EmailOutboxRowMock>()
   email_events = new Map<string, EmailEventRowMock>()
   operator_notes = new Map<string, OperatorNoteRowMock>()
+  audit_log = new Map<string, AuditLogRowMock>()
+  system_kv = new Map<string, SystemKvRowMock>()
 
   prepare(sql: string): MockPreparedStatement {
     return new MockPreparedStatement(this, sql, [])
@@ -738,6 +755,80 @@ class MockPreparedStatement {
       return r ? [{ last_attempt: r.last_attempt }] : []
     }
 
+    // /api/health probe: SELECT 1 AS ok — confirms D1 reachability.
+    if (sql === 'SELECT 1 AS ok') {
+      return [{ ok: 1 }]
+    }
+
+    // /admin/today digest heartbeat: SELECT value FROM system_kv WHERE key = ?.
+    if (sql.includes('FROM system_kv') && sql.includes('WHERE key =')) {
+      const r = this.db.system_kv.get(a[0] as string)
+      return r ? [{ value: r.value }] : []
+    }
+
+    // Loi 25 erasure preflight: count the visitor's sessions for the receipt.
+    if (sql.includes('SELECT COUNT(*) AS n FROM sessions WHERE email = ?')) {
+      const email = a[0] as string
+      const n = [...this.db.sessions.values()].filter((s) => s.email === email).length
+      return [{ n }]
+    }
+
+    // Loi 25 erasure: enumerate R2 keys for the visitor's attachments via a
+    // session join. Mirrors the production JOIN — we walk attachments looking
+    // for rows whose session belongs to this email.
+    if (
+      sql.includes('SELECT a.r2_key') &&
+      sql.includes('FROM attachments a') &&
+      sql.includes('JOIN sessions s')
+    ) {
+      const email = a[0] as string
+      const sessionIds = new Set(
+        [...this.db.sessions.values()].filter((s) => s.email === email).map((s) => s.id),
+      )
+      const out: { r2_key: string }[] = []
+      for (const at of this.db.attachments.values()) {
+        if (sessionIds.has(at.session_id)) {
+          out.push({ r2_key: (at as { r2_key?: string }).r2_key ?? '' })
+        }
+      }
+      return out
+    }
+
+    // /admin/email-outbox GET: pending rows ordered attempts DESC then created_at ASC.
+    if (
+      sql.includes('FROM email_outbox') &&
+      sql.includes('sent_at IS NULL') &&
+      sql.includes('ORDER BY attempts DESC')
+    ) {
+      const limit = a[0] as number
+      const rows = [...this.db.email_outbox.values()]
+        .filter((r) => r.sent_at === null)
+        .sort((x, y) => y.attempts - x.attempts || x.created_at - y.created_at)
+        .slice(0, limit)
+      return rows.map((r) => ({
+        id: r.id,
+        to_email: r.to_email,
+        subject: r.subject,
+        kind: r.kind,
+        created_at: r.created_at,
+        attempts: r.attempts,
+        last_attempt: r.last_attempt,
+        last_error: r.last_error,
+      }))
+    }
+
+    // /admin/email-outbox POST: single row by id with the full payload (html
+    // + text_body + sent_at) for the retry path.
+    if (
+      sql.includes('FROM email_outbox') &&
+      sql.includes('WHERE id = ?') &&
+      sql.includes('html') &&
+      sql.includes('text_body')
+    ) {
+      const r = this.db.email_outbox.get(a[0] as string)
+      return r ? [{ ...r }] : []
+    }
+
     // SELECT ... FROM operator_notes WHERE session_id = ?  (single row)
     if (sql.includes('FROM operator_notes WHERE session_id = ?')) {
       const r = this.db.operator_notes.get(a[0] as string)
@@ -945,6 +1036,71 @@ class MockPreparedStatement {
       return n
     }
 
+    // Loi 25 erasure (DELETE /api/me) writes a fan of session-scoped deletes.
+    // Each one is "DELETE FROM <table> WHERE session_id IN (SELECT id FROM
+    // sessions WHERE email = ?)" — same shape, different child table. Collapse
+    // into one matcher to keep the mock terse.
+    const erasureCascade = sql.match(
+      /^DELETE FROM (attachments|messages|operator_notes|payments) WHERE session_id IN \(SELECT id FROM sessions WHERE email = \?\)/,
+    )
+    if (erasureCascade) {
+      const table = erasureCascade[1] as 'attachments' | 'messages' | 'operator_notes' | 'payments'
+      const email = a[0] as string
+      const sessionIds = new Set(
+        [...this.db.sessions.values()].filter((s) => s.email === email).map((s) => s.id),
+      )
+      let n = 0
+      const map = this.db[table]
+      for (const [k, v] of map as Map<string, { session_id: string }>) {
+        if (sessionIds.has(v.session_id)) {
+          ;(map as Map<string, unknown>).delete(k)
+          n++
+        }
+      }
+      return n
+    }
+
+    // DELETE FROM sessions WHERE email = ?  (Loi 25 erasure terminal step)
+    if (sql === 'DELETE FROM sessions WHERE email = ?') {
+      const email = a[0] as string
+      let n = 0
+      for (const [k, v] of this.db.sessions) {
+        if (v.email === email) {
+          this.db.sessions.delete(k)
+          n++
+        }
+      }
+      return n
+    }
+
+    // DELETE FROM magic_link_tokens WHERE email = ?  (Loi 25 erasure)
+    if (sql === 'DELETE FROM magic_link_tokens WHERE email = ?') {
+      const email = a[0] as string
+      let n = 0
+      for (const [k, v] of this.db.magic_link_tokens) {
+        if (v.email === email) {
+          this.db.magic_link_tokens.delete(k)
+          n++
+        }
+      }
+      return n
+    }
+
+    // DELETE FROM user_prefs WHERE email = ?  (Loi 25 erasure)
+    if (sql === 'DELETE FROM user_prefs WHERE email = ?') {
+      // user_prefs is keyed by email (lowercased on insert), so direct delete.
+      this.db.user_prefs.delete(a[0] as string)
+      return 1
+    }
+
+    // DELETE FROM intake_drafts WHERE email = ?  (Loi 25 erasure)
+    // The mock doesn't track intake_drafts; treat the delete as a no-op so the
+    // handler completes. If a future test asserts on this, add a Map + DELETE
+    // wiring then.
+    if (sql === 'DELETE FROM intake_drafts WHERE email = ?') {
+      return 0
+    }
+
     if (sql.startsWith('INSERT INTO magic_link_tokens')) {
       const token = a[0] as string
       this.db.magic_link_tokens.set(token, {
@@ -1079,6 +1235,40 @@ class MockPreparedStatement {
       if (row) {
         ;(row as Record<string, unknown>).tier4_amount_cents = a[0]
         row.updated_at = a[1] as number
+      }
+      return row ? 1 : 0
+    }
+
+    // UPDATE sessions SET decline_note = ?, updated_at = ? WHERE id = ?
+    if (sql.startsWith('UPDATE sessions SET decline_note = ?, updated_at = ?')) {
+      const id = a[2] as string
+      const row = this.db.sessions.get(id)
+      if (row) {
+        ;(row as Record<string, unknown>).decline_note = a[0]
+        row.updated_at = a[1] as number
+      }
+      return row ? 1 : 0
+    }
+
+    // Showcase fields are written via a dynamically composed SET clause —
+    // any subset of (showcased_at, showcase_title, showcase_tagline) plus
+    // a trailing updated_at. Parse the column list from the SQL and bind
+    // values to columns positionally.
+    if (
+      sql.startsWith('UPDATE sessions SET ') &&
+      (sql.includes('showcased_at') ||
+        sql.includes('showcase_title') ||
+        sql.includes('showcase_tagline')) &&
+      sql.endsWith('WHERE id = ?')
+    ) {
+      const setClause = sql.replace(/^UPDATE sessions SET\s+/, '').replace(/\s+WHERE id = \?$/, '')
+      const cols = setClause.split(',').map((s) => s.trim().split(/\s*=\s*/)[0])
+      const id = a[a.length - 1] as string
+      const row = this.db.sessions.get(id)
+      if (row) {
+        for (let i = 0; i < cols.length; i++) {
+          ;(row as Record<string, unknown>)[cols[i]] = a[i]
+        }
       }
       return row ? 1 : 0
     }
@@ -1427,6 +1617,33 @@ class MockPreparedStatement {
         created_at: a[7] as number,
         approved_at: null,
         deleted_at: null,
+      })
+      return 1
+    }
+
+    // INSERT INTO system_kv (key, value, updated_at) VALUES (?, ?, ?)
+    //   ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+    // Used by the digest cron for the last_digest_at heartbeat and by any
+    // future ops heartbeats. UPSERT semantics — same key replaces.
+    if (sql.startsWith('INSERT INTO system_kv') && sql.includes('ON CONFLICT(key)')) {
+      const key = a[0] as string
+      const value = a[1] as string
+      const updated_at = a[2] as number
+      this.db.system_kv.set(key, { key, value, updated_at })
+      return 1
+    }
+
+    // INSERT INTO audit_log (id, ts, actor_email, tenant_id, action, payload)
+    //   VALUES (?, ?, ?, ?, ?, ?)
+    if (sql.startsWith('INSERT INTO audit_log')) {
+      const id = a[0] as string
+      this.db.audit_log.set(id, {
+        id,
+        ts: a[1] as number,
+        actor_email: a[2] as string,
+        tenant_id: (a[3] as string | null) ?? null,
+        action: a[4] as string,
+        payload: (a[5] as string | null) ?? null,
       })
       return 1
     }

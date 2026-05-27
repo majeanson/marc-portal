@@ -4,6 +4,7 @@
 // DELETE /api/sessions/:id  — soft delete (sets deleted_at). Self or admin.
 
 import { currentEmail } from '../../_lib/auth'
+import { appendAuditLog } from '../../_lib/auditLog'
 import {
   sendAllYoursAckNotification,
   sendIntakeEditedNotification,
@@ -77,7 +78,8 @@ interface PatchBody {
   communityDiscount?: unknown
 }
 
-export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params }) => {
+export const onRequestPatch: PagesFunction<Env> = async (ctx) => {
+  const { request, env, params } = ctx
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
   const id = String(params.id ?? '')
@@ -96,6 +98,11 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   const admin = isAdmin(env, email)
   const now = Math.floor(Date.now() / 1000)
   const origin = new URL(request.url).origin
+  // Tenant id for audit log entries. Middleware attaches `tenant` on
+  // ctx.data when resolution succeeds; on pre-migration envs the tenant
+  // is intentionally absent (see _middleware.ts). Null is acceptable for
+  // audit_log — the read endpoint doesn't filter by tenant today.
+  const tenantId = (ctx.data as PagesContextData | undefined)?.tenant?.id ?? null
 
   // Undelete is admin-only and is the *only* PATCH operation valid against a
   // soft-deleted row. Everything else 404s once the row is in trash.
@@ -105,6 +112,12 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     await env.DB.prepare(`UPDATE sessions SET deleted_at = NULL, updated_at = ? WHERE id = ?`)
       .bind(now, id)
       .run()
+    await appendAuditLog(env, {
+      actorEmail: email,
+      tenantId,
+      action: 'session.undelete',
+      payload: { sessionId: id },
+    })
     const fresh = await loadSession(env.DB, id)
     return ok({ session: fresh })
   }
@@ -376,6 +389,124 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
 
   const fresh = await loadSession(env.DB, id)
 
+  // ── Audit log writes. One row per field that actually changed between
+  // the pre-read `session` and the post-write `fresh`. AdminAudit filters
+  // on action substring, so dotted labels (`session.tier`,
+  // `session.status`) read naturally in the UI. PII discipline: for
+  // free-text fields (decline_note, intake_json) the payload captures the
+  // FACT of the change without leaking content. Best-effort by design —
+  // appendAuditLog catches its own errors.
+  if (fresh) {
+    if (fresh.status !== session.status) {
+      await appendAuditLog(env, {
+        actorEmail: email,
+        tenantId,
+        action: 'session.status',
+        payload: { sessionId: id, from: session.status, to: fresh.status },
+      })
+    }
+    if (fresh.tier !== session.tier) {
+      await appendAuditLog(env, {
+        actorEmail: email,
+        tenantId,
+        action: 'session.tier',
+        payload: { sessionId: id, from: session.tier, to: fresh.tier },
+      })
+    }
+    if (fresh.tier4_amount_cents !== session.tier4_amount_cents) {
+      await appendAuditLog(env, {
+        actorEmail: email,
+        tenantId,
+        action: 'session.tier4_amount_cents',
+        payload: {
+          sessionId: id,
+          from: session.tier4_amount_cents,
+          to: fresh.tier4_amount_cents,
+        },
+      })
+    }
+    if (fresh.tier3_split !== session.tier3_split) {
+      await appendAuditLog(env, {
+        actorEmail: email,
+        tenantId,
+        action: 'session.tier3_split',
+        payload: { sessionId: id, from: session.tier3_split, to: fresh.tier3_split },
+      })
+    }
+    if ((fresh.community_discount ?? 0) !== (session.community_discount ?? 0)) {
+      await appendAuditLog(env, {
+        actorEmail: email,
+        tenantId,
+        action: 'session.community_discount',
+        payload: {
+          sessionId: id,
+          from: (session.community_discount ?? 0) === 1,
+          to: (fresh.community_discount ?? 0) === 1,
+        },
+      })
+    }
+    // Showcase: single composite entry covering the three fields. Each
+    // sub-key is omitted when unchanged so the payload reads as "what
+    // changed in this PATCH" rather than "current state".
+    const showcaseChanges: Record<string, unknown> = {}
+    const wasShowcased = session.showcased_at !== null
+    const isShowcased = fresh.showcased_at !== null
+    if (wasShowcased !== isShowcased) {
+      showcaseChanges.enabled = { from: wasShowcased, to: isShowcased }
+    }
+    if (fresh.showcase_title !== session.showcase_title) {
+      showcaseChanges.title = { from: session.showcase_title, to: fresh.showcase_title }
+    }
+    if (fresh.showcase_tagline !== session.showcase_tagline) {
+      showcaseChanges.tagline = { from: session.showcase_tagline, to: fresh.showcase_tagline }
+    }
+    if (Object.keys(showcaseChanges).length > 0) {
+      await appendAuditLog(env, {
+        actorEmail: email,
+        tenantId,
+        action: 'session.showcase',
+        payload: { sessionId: id, ...showcaseChanges },
+      })
+    }
+    // Decline note: capture the transition without the text body — the
+    // note may include visitor-context phrasing that doesn't belong in a
+    // diagnostic log surface.
+    const hadNote = (session.decline_note ?? '').length > 0
+    const hasNote = (fresh.decline_note ?? '').length > 0
+    if (hadNote !== hasNote || session.decline_note !== fresh.decline_note) {
+      await appendAuditLog(env, {
+        actorEmail: email,
+        tenantId,
+        action: 'session.decline_note',
+        payload: { sessionId: id, hadNote, hasNote },
+      })
+    }
+    // Intake edits: visitor self-edits vs admin-on-behalf-of are
+    // different operationally (visitor edit = nudge Marc; admin edit =
+    // silent). Audit captures both so the feed shows who actually
+    // touched the form.
+    if (fresh.intake_json !== session.intake_json) {
+      await appendAuditLog(env, {
+        actorEmail: email,
+        tenantId,
+        action: 'session.intake_json',
+        payload: { sessionId: id, by: admin ? 'admin' : 'visitor' },
+      })
+    }
+    // All-yours ack: present-vs-absent boolean transition. Visitor opting
+    // OUT of Custodian is a load-bearing decision worth a log entry.
+    const wasAcked = session.all_yours_acknowledged_at !== null
+    const isAcked = fresh.all_yours_acknowledged_at !== null
+    if (wasAcked !== isAcked) {
+      await appendAuditLog(env, {
+        actorEmail: email,
+        tenantId,
+        action: 'session.all_yours_acknowledged',
+        payload: { sessionId: id, from: wasAcked, to: isAcked },
+      })
+    }
+  }
+
   // Best-effort notifications. Failures are logged but don't fail the PATCH —
   // the data is in D1; emails are nudges.
   if (statusChanged && fresh) {
@@ -454,7 +585,8 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
   return ok({ session: fresh })
 }
 
-export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params }) => {
+export const onRequestDelete: PagesFunction<Env> = async (ctx) => {
+  const { request, env, params } = ctx
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
 
@@ -476,6 +608,15 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env, params
   await env.DB.prepare(`UPDATE sessions SET deleted_at = ?, updated_at = ? WHERE id = ?`)
     .bind(now, now, id)
     .run()
+  // Audit: soft-deletes are a load-bearing decision. byAdmin distinguishes
+  // admin force-delete (Marc nuking a visitor's row) from visitor
+  // self-withdrawal — both flow through this handler.
+  await appendAuditLog(env, {
+    actorEmail: email,
+    tenantId: (ctx.data as PagesContextData | undefined)?.tenant?.id ?? null,
+    action: 'session.soft_delete',
+    payload: { sessionId: id, byAdmin: admin && session.email !== email },
+  })
 
   // Symmetric notification: visitor self-withdraws → Marc; Marc force-deletes
   // someone else's → visitor. Both are best-effort; the soft-delete is the

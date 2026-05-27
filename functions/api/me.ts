@@ -14,9 +14,11 @@ import {
   newCsrfToken,
   setCsrfCookieHeader,
 } from '../_lib/auth'
+import { sendErasureReceipt } from '../_lib/email'
 import type { Env } from '../_lib/env'
 import { isAdmin } from '../_lib/env'
 import { ok, unauthorized } from '../_lib/json'
+import { getLang } from '../_lib/userPrefs'
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
@@ -43,6 +45,23 @@ interface AttachmentR2Row {
 export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
   if (!email) return unauthorized()
+
+  // Capture pre-deletion state for the receipt email. Lang must be resolved
+  // BEFORE we drop user_prefs; session count is captured BEFORE the rows
+  // disappear. Both are independent best-effort reads — if either query
+  // fails, the erasure still proceeds (data integrity wins over a polished
+  // receipt).
+  let receiptLang: 'fr' | 'en' = 'fr'
+  let sessionCount = 0
+  try {
+    receiptLang = await getLang(env.DB, email)
+    const r = await env.DB.prepare(`SELECT COUNT(*) AS n FROM sessions WHERE email = ?`)
+      .bind(email)
+      .first<{ n: number }>()
+    sessionCount = r?.n ?? 0
+  } catch (err) {
+    console.error('erasure preflight read failed (continuing)', err)
+  }
 
   // Best-effort R2 cleanup BEFORE we drop the rows — once the rows are gone,
   // we can't enumerate the objects. A failure here is logged but doesn't
@@ -106,6 +125,25 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
     .run()
   await env.DB.prepare(`DELETE FROM sessions WHERE email = ?`).bind(email).run()
   await env.DB.prepare(`DELETE FROM magic_link_tokens WHERE email = ?`).bind(email).run()
+  // user_prefs is keyed by lowercased email and carries the visitor's
+  // language + first name — Loi 25 erasure has to take both, otherwise a
+  // ghost preference row outlives the account it was attached to.
+  await env.DB.prepare(`DELETE FROM user_prefs WHERE email = ?`).bind(email.toLowerCase()).run()
+
+  // Receipt email — non-durable, sent AFTER the data is gone. The
+  // suppression check inside send() still applies (a visitor who'd
+  // unsubscribed previously won't get this), and that's the right call:
+  // the /au-revoir page is the primary in-band confirmation, and an
+  // unsubscribed visitor opted out of email for a reason. Logged on
+  // failure but never blocks the response — at this point the data is
+  // already gone, the user is logged out, and there's nothing left to
+  // recover.
+  try {
+    const origin = new URL(request.url).origin
+    await sendErasureReceipt(env, email, origin, receiptLang, { sessionCount })
+  } catch (err) {
+    console.error('erasure receipt send failed (continuing)', err)
+  }
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
