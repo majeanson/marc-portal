@@ -70,25 +70,16 @@ const FR = {
     "Marc, dev québécois. Le soir et la fin de semaine, j'aide les gens à régler des problèmes du quotidien avec du code. Tout est async, sans meetings, à ton rythme.",
 
   hero: {
-    eyebrow: 'side-gig · Québec · async',
-    folio: '№ 01 · Marc, dev québécois',
-    salut: 'Marc-Antoine, là pour résoudre des problèmes importants pour ma communauté',
-    display: {
-      pre: 'Marc-Antoine,',
-      lead: 'là pour résoudre',
-      emphasis: 'des problèmes importants',
-      tail: 'pour ma communauté.',
-    },
     signature: 'Marc, dev québécois',
-    body2:
-      "Tu as une affaire plate qui revient chaque semaine. De la paperasse à retaper, un suivi qui se perd, du monde à coordonner. C'est pas un enjeu national, mais c'est assez tannant pour mériter mieux. Raconte-moi ça.",
+    // Empathy-first opening paragraph. The closer is split out so the
+    // component can give it italic + sage emphasis — the eye should land
+    // on "Raconte-moi ça." before reaching the CTA.
+    body: "Tu as une affaire plate qui revient chaque semaine. C'est pas un enjeu national, mais c'est assez tannant pour mériter mieux.",
+    closer: 'Raconte-moi ça.',
     cta: 'Crée ton compte gratuit →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle proposition →',
     mySessionsLink: 'Voir mes sessions',
-    // Split so the language word ("anglais") renders as a link that
-    // switches the page to that language. See Hero.tsx.
-    bilingual: { pre: '(Aussi en ', link: 'anglais', post: ', je réponds dans ta langue.)' },
   },
 
   how: {
@@ -276,6 +267,9 @@ const FR = {
     communityNoteHeading: 'C’est pour un OBNL ou un projet communautaire ?',
     communityNote:
       'Vingt pour cent de moins sur chacun des niveaux de build (1 à 4). Marc l’applique manuellement quand il triage — pas de coupon à entrer. Le rapport de cadrage et le mode dépositaire restent au prix régulier.',
+    communityPromoLabel: '−20 %',
+    communityPromoBody: 'OBNL et projets communautaires, sur les niveaux 1 à 4.',
+    moreInfoLabel: 'Plus de détails',
     tiers: [
       {
         name: 'Niveau 0',
@@ -1095,25 +1089,13 @@ const EN: Copy = {
     'Marc, a Québécois dev. Evenings and weekends, I help people solve everyday problems with code. Everything runs async, no meetings, at your pace.',
 
   hero: {
-    eyebrow: 'side-practice · Quebec · async',
-    folio: '№ 01 · Marc, a Québécois dev',
-    salut: 'Marc-Antoine, here to solve important problems for my community',
-    display: {
-      pre: 'Marc-Antoine,',
-      lead: 'here to solve',
-      emphasis: 'important problems',
-      tail: 'for my community.',
-    },
     signature: 'Marc, Québécois dev',
-    body2:
-      "There's something that comes back every week. Paperwork you keep re-typing, a thread that gets lost, people to wrangle. It's no national crisis, but it's annoying enough to deserve better. Tell me about it.",
+    body: "There's something that comes back every week. It's no national crisis, but it's annoying enough to deserve better.",
+    closer: 'Tell me about it.',
     cta: 'Create a free account →',
     ctaWaitlist: 'Join the waitlist →',
     ctaLoggedIn: 'Start a new proposal →',
     mySessionsLink: 'View my sessions',
-    // Split so the language word ("French") renders as a link that
-    // switches the page to that language. See Hero.tsx.
-    bilingual: { pre: '(Also in ', link: 'French', post: ', I reply in your language.)' },
   },
 
   how: {
@@ -1301,6 +1283,9 @@ const EN: Copy = {
     communityNoteHeading: 'For a nonprofit or community project?',
     communityNote:
       'Twenty percent off each build tier (1–4). Marc applies it manually during triage — no coupon code to enter. The scoping report and custodian mode stay at the regular price.',
+    communityPromoLabel: '−20%',
+    communityPromoBody: 'Nonprofit and community projects, on tiers 1–4.',
+    moreInfoLabel: 'More details',
     tiers: [
       {
         name: 'Tier 0',

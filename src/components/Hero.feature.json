@@ -1,34 +1,39 @@
 {
   "featureKey": "feat-2026-093",
-  "title": "Hero — the home-page cover (offer + capacity + clock-aware greeting)",
-  "status": "frozen",
+  "title": "Hero — the home-page cover (manifesto paragraph + live capacity)",
+  "status": "active",
   "schemaVersion": 1,
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/Hero.tsx",
-  "problem": "The Hero is the home page's magazine cover — the visitor's first paragraph of contact with the practice. It carries the offer headline, a live capacity readout (1 active + 1 in triage = open or paused), a HeroShippedProject card linking to the latest showcased work, and a clock-aware greeting (late-night gets a dry 'encore là?' because most honest traffic happens after 22h). Capacity is fetched from /api/capacity at request time — visitor sees the truth, not a marketing claim.",
-  "tags": ["home-section", "hero", "live-capacity", "clock-aware", "shipped-feed"],
-  "analysis": "Renders DICT[lang].hero copy. Two live data sources fetched on mount: getCapacityLive (returns the current 1+1 cap state for the badge) and listPublicProjects (top 1 for HeroShippedProject). Clock-aware greeting via pickSalut(lang) — reads visitor's local clock and picks the right greeting (morning / day / evening / late-night). Late-night gets the dry Québécois 'encore là?' which is the anti-AI-tells anchor — no AI would write that line. Feature colour is undefined (Hero crosses every feature).",
+  "problem": "The Hero is the visitor's first paragraph of contact with the practice. It carries one empathy-first manifesto sentence ('Tu as une affaire plate qui revient chaque semaine...') and a live capacity readout (1 active + 1 in triage = open or paused). Capacity is fetched from /api/capacity at request time — visitor sees the truth, not a marketing claim.",
+  "tags": ["home-section", "hero", "live-capacity", "manifesto", "empathy-first"],
+  "analysis": "Renders DICT[lang].hero copy. One live data source fetched on mount: getCapacityLive (returns the current 1+1 cap state; flips the CTA label between 'Crée ton compte gratuit' and 'Rejoindre la liste d’attente'). Logged-in visitors see 'Démarrer une nouvelle proposition' instead, plus a 'Voir mes sessions' link that resolves to /me or /admin/inbox depending on isAdmin. The h1 holds the body + closer; the closer is wrapped in a span that gets italic + sage emphasis. The h1 *is* the LCP element, so its first-paint animation is a colour transition (text-faint → text) rather than an opacity fade — a coloured element counts as contentful and LCP fires on the prerendered first paint while the ink visibly absorbs.",
   "decisions": [
     {
       "decision": "Capacity is fetched live, not a static claim",
-      "rationale": "Saying 'I take 1 active build at a time' is a structural claim — it must be testable. Showing the LIVE state ('currently building X for Y, triage queue is open / closed') turns it from claim into observation. Capacity cap race fix (AUDIT P1.7) makes this trustworthy.",
+      "rationale": "Saying 'I take 1 active build at a time' is a structural claim — it must be testable. Showing the LIVE state turns it from claim into observation. Capacity cap race fix (AUDIT P1.7) makes this trustworthy.",
       "recommendation": "Don't switch to static copy. The live readout IS the trust statement.",
       "date": "2026-05-09"
     },
     {
-      "decision": "Clock-aware greeting in Québécois register",
-      "rationale": "Default greeting + late-night variant. Late-night ('encore là?') is the Québécois register tell — no chatbot would write that. Marc's family-first practice has a late-night honest-traffic pattern (visitors browsing after kid-bedtime); the greeting acknowledges it.",
-      "recommendation": "Don't translate 'encore là?' to anything generic. The literal Québécois is the load-bearing word.",
-      "date": "2026-05-09"
+      "decision": "Empathy-first manifesto, not a self-introduction headline",
+      "rationale": "Previous design opened with 'Marc-Antoine, là pour résoudre des problèmes importants pour ma communauté' — a self-introduction. Replaced with the empathy paragraph ('Tu as une affaire plate qui revient chaque semaine...') because the first sentence should name the visitor's situation, not Marc's. Marc gets the signature line. The closer 'Raconte-moi ça.' carries italic + sage emphasis so the eye lands on it before the CTA.",
+      "recommendation": "Don't add back the 4-line display headline. The voice has to be 'tu' first, 'je' second.",
+      "date": "2026-05-27"
+    },
+    {
+      "decision": "Drop the clock-aware greeting and VÉRIFIÉ stamp",
+      "rationale": "Previous design carried a clock-aware greeting (‘encore là?’ late-night) + a VÉRIFIÉ stamp echoing the OG card. The redesign strips them: the greeting added a date/timestamp feel Marc cooled on, and the stamp competed with the open-paper layout. The stamp may return later as a watermark; the greeting is gone.",
+      "recommendation": "Don't restore the stamp as a corner decoration — if it returns, it lives behind the headline as a watermark or it doesn't return.",
+      "date": "2026-05-27"
     }
   ],
-  "successCriteria": "- Renders offer headline + capacity badge + HeroShippedProject + greeting\n- Capacity readout reflects live D1 state\n- Greeting varies with visitor's local clock\n- Late-night greeting in Québécois register\n- Bilingual at full parity\n- Two live fetches on mount, no waterfall",
-  "implementation": "src/components/Hero.tsx — useEffect fetches getCapacityLive + listPublicProjects in parallel. pickSalut(lang) returns the greeting string based on new Date().getHours(). useLangSwitch hook handles the FR/EN toggle in-page.",
-  "userGuide": "Edit headline copy via DICT.fr.hero / DICT.en.hero. To adjust greeting time windows: pickSalut in the file. To change the capacity badge wording: same file. The HeroShippedProject component renders the embedded preview.",
+  "successCriteria": "- Renders empathy paragraph + closer span + signature + CTA + capacity pill\n- Capacity readout reflects live D1 state\n- CTA label flips for logged-in / waitlist / cold states\n- Sessions link appears for logged-in visitors\n- Bilingual at full parity (FR + EN body + closer)\n- One live fetch on mount\n- Reduced-motion: ink-absorb skipped, paragraph presented at rest",
+  "implementation": "src/components/Hero.tsx — useEffect fetches getCapacityLive on mount. The body + closer come from DICT[lang].hero.body and .closer; closer is wrapped in a <span class=\"hero__closer\"> for italic+sage emphasis. CSS in src/styles.css (.home .hero, .hero__manifesto, .hero__closer, .hero__sig*) handles the ink-absorb animation and the sage hairline rule under the small-caps name.",
+  "userGuide": "Edit copy via DICT.fr.hero / DICT.en.hero (body, closer, cta, ctaWaitlist, ctaLoggedIn, mySessionsLink, signature). The closer span is what gets the italic+sage emphasis — keep it short (one sentence, ends with a period). To flatten the CTA further (e.g., make it text-only): edit .home .hero__cta in styles.css. Capacity badge wording is hardcoded in Hero.tsx (FR/EN lookup); the dot-or-square indicator lives in .hero__slot-pill CSS.",
   "knownLimitations": [
-    "Two fetches on mount; mitigated by parallelism. If capacity API is down, the badge shows a fallback state",
-    "Clock-aware greeting reads VISITOR's clock; an admin viewing from a different timezone might get a 'wrong-feeling' greeting. Cost is tiny",
-    "HeroShippedProject embeds the latest showcased project; if none exist, falls back to a static placeholder"
+    "One fetch on mount for capacity. If /api/capacity is down, the CTA defaults to the cold-state label (open), which is the right side of the fence for a hero that should never look broken on cold-start",
+    "The h1 is unusually long (2 short sentences). Screen readers will announce it as one heading — acceptable here because the heading IS the page's primary message, but worth noting for accessibility review"
   ],
   "statusHistory": [
     {
@@ -42,9 +47,15 @@
       "to": "frozen",
       "date": "2026-05-23",
       "reason": "Code-first doc co-located. Live-capacity + clock-aware greeting stable."
+    },
+    {
+      "from": "frozen",
+      "to": "active",
+      "date": "2026-05-27",
+      "reason": "Redesign: stripped 4-line display headline, clock-aware greeting, VÉRIFIÉ stamp, shipped counter, bilingual line, hand-drawn signature flourish, HeroShippedProject right-rail. Replaced with one empathy paragraph + closer + sage hairline + small-caps name. Anti-AI-tells pass on the copy (triadic noun list dropped)."
     }
   ],
-  "lastVerifiedDate": "2026-05-23",
+  "lastVerifiedDate": "2026-05-27",
   "revisions": [
     {
       "date": "2026-05-23",
@@ -64,6 +75,24 @@
       "reason": "Initial author — P4 component sweep.",
       "commit": "add6630",
       "buildUrl": "https://52917cc7.marc-portal.pages.dev"
+    },
+    {
+      "date": "2026-05-27",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "decisions",
+        "successCriteria",
+        "implementation",
+        "userGuide",
+        "knownLimitations",
+        "tags",
+        "status",
+        "statusHistory"
+      ],
+      "reason": "Hero redesign — empathy paragraph replaces 4-line display, calling-card iteration ported to live SPA."
     }
   ],
   "annotations": []

@@ -73,67 +73,74 @@ export function Pricing({ lang }: { lang: Lang }) {
             )
           })}
         </ol>
-        {/* Hardware floor — a sizing rule, not a tier. Anything with a
-            physical device skips the software-only lower tiers, so this
-            sits first below the ladder where it qualifies a reader's tier
-            guess before the parallel-entry notes. No CTA: it's a rule. */}
-        <aside className="tier__hardware-note" aria-labelledby="tier-hardware-heading">
-          <h3 id="tier-hardware-heading" className="tier__hardware-heading mono">
-            {t.hardwareNoteHeading}
-          </h3>
-          <p className="tier__hardware-body">{t.hardwareNote}</p>
-        </aside>
-        {/* Community rate — 20% off build tiers 1–4 for OBNL / nonprofit /
-            community projects. Operator-applied at triage (sessions.community_discount),
-            so there's no coupon UX to render here — just the eligibility cue.
-            Sits with the other sizing/eligibility notes (hardware) rather than
-            with the parallel-entry notes (rescue, custodian). */}
-        <aside className="tier__hardware-note" aria-labelledby="tier-community-heading">
-          <h3 id="tier-community-heading" className="tier__hardware-heading mono">
-            {t.communityNoteHeading}
-          </h3>
-          <p className="tier__hardware-body">{t.communityNote}</p>
-        </aside>
-        {/* Rescue — a parallel entry point, not a tier. The ladder above
-            measures build size; a rescue is sized by its audit, so it sits
-            below the ladder as its own note and links into the intake. */}
-        <aside className="tier__rescue-note" aria-labelledby="tier-rescue-heading">
-          <h3 id="tier-rescue-heading" className="tier__rescue-heading mono">
-            {t.rescueNoteHeading}
-          </h3>
-          <p className="tier__rescue-body">
-            {t.rescueNote}{' '}
-            <CrossFeatureLink
-              lang={lang}
-              feature={intakeFeature}
-              href={`${langPrefix}/intake`}
-              mono
-            >
-              {t.rescueNoteCta}
-            </CrossFeatureLink>
-          </p>
-        </aside>
-        {/* Custodian-mode mini-section. Previously rendered only under the
-            Tier-2 card via tier2Note, which falsely implied custodian was a
-            Tier-2-only option. It applies to every paid tier (1, 2, 3) by
-            default, so it lives below the tier list now as a single shared
-            note instead of a per-card addendum. */}
-        <aside className="tier__custodian-note" aria-labelledby="tier-custodian-heading">
-          <h3 id="tier-custodian-heading" className="tier__custodian-heading mono">
-            {t.custodianNoteHeading}
-          </h3>
-          <p className="tier__custodian-body">
-            {t.custodianNote}{' '}
-            <CrossFeatureLink
-              lang={lang}
-              feature={handoffFeature}
-              href={`${langPrefix}/handoff`}
-              mono
-            >
-              {t.custodianNoteCta}
-            </CrossFeatureLink>
-          </p>
-        </aside>
+        {/* Community-rate promo — always visible because it changes the price
+            a visitor sees in the ladder above. The four detailed FAQ-style
+            notes (hardware, community details, rescue, custodian) live in
+            the disclosure below so the section doesn't shout four asides
+            at someone who only came for the prices. */}
+        <p className="tier__promo mono">
+          <span className="tier__promo-label">{t.communityPromoLabel}</span>
+          <span className="tier__promo-body">{t.communityPromoBody}</span>
+        </p>
+        {/* Disclosure: the four sizing/parallel-entry notes. Native
+            <details> — no JS state, browsers and screen readers know the
+            pattern. Each note keeps its existing class so the cream-card
+            styling is untouched; the <details> wrapper only adds the
+            summary affordance. */}
+        <details className="tier__more">
+          <summary className="tier__more-summary mono">
+            <span className="tier__more-label">{t.moreInfoLabel}</span>
+            <span className="tier__more-marker" aria-hidden="true">
+              +
+            </span>
+          </summary>
+          <div className="tier__more-body">
+            <aside className="tier__hardware-note" aria-labelledby="tier-hardware-heading">
+              <h3 id="tier-hardware-heading" className="tier__hardware-heading mono">
+                {t.hardwareNoteHeading}
+              </h3>
+              <p className="tier__hardware-body">{t.hardwareNote}</p>
+            </aside>
+            <aside className="tier__hardware-note" aria-labelledby="tier-community-heading">
+              <h3 id="tier-community-heading" className="tier__hardware-heading mono">
+                {t.communityNoteHeading}
+              </h3>
+              <p className="tier__hardware-body">{t.communityNote}</p>
+            </aside>
+            <aside className="tier__rescue-note" aria-labelledby="tier-rescue-heading">
+              <h3 id="tier-rescue-heading" className="tier__rescue-heading mono">
+                {t.rescueNoteHeading}
+              </h3>
+              <p className="tier__rescue-body">
+                {t.rescueNote}{' '}
+                <CrossFeatureLink
+                  lang={lang}
+                  feature={intakeFeature}
+                  href={`${langPrefix}/intake`}
+                  mono
+                >
+                  {t.rescueNoteCta}
+                </CrossFeatureLink>
+              </p>
+            </aside>
+            <aside className="tier__custodian-note" aria-labelledby="tier-custodian-heading">
+              <h3 id="tier-custodian-heading" className="tier__custodian-heading mono">
+                {t.custodianNoteHeading}
+              </h3>
+              <p className="tier__custodian-body">
+                {t.custodianNote}{' '}
+                <CrossFeatureLink
+                  lang={lang}
+                  feature={handoffFeature}
+                  href={`${langPrefix}/handoff`}
+                  mono
+                >
+                  {t.custodianNoteCta}
+                </CrossFeatureLink>
+              </p>
+            </aside>
+          </div>
+        </details>
         <p className="tier__disclaimer">{t.disclaimer}</p>
       </div>
     </section>

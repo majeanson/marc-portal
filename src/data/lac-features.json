@@ -1,6 +1,115 @@
 {
   "features": [
     {
+      "featureKey": "feat-2026-093",
+      "title": "Hero — the home-page cover (manifesto paragraph + live capacity)",
+      "status": "active",
+      "domain": "marc-portal/home-section",
+      "tags": [
+        "home-section",
+        "hero",
+        "live-capacity",
+        "manifesto",
+        "empathy-first"
+      ],
+      "componentFile": "src/components/Hero.tsx",
+      "liveUrl": null,
+      "problem": "The Hero is the visitor's first paragraph of contact with the practice. It carries one empathy-first manifesto sentence ('Tu as une affaire plate qui revient chaque semaine...') and a live capacity readout (1 active + 1 in triage = open or paused). Capacity is fetched from /api/capacity at request time — visitor sees the truth, not a marketing claim.",
+      "analysis": "Renders DICT[lang].hero copy. One live data source fetched on mount: getCapacityLive (returns the current 1+1 cap state; flips the CTA label between 'Crée ton compte gratuit' and 'Rejoindre la liste d’attente'). Logged-in visitors see 'Démarrer une nouvelle proposition' instead, plus a 'Voir mes sessions' link that resolves to /me or /admin/inbox depending on isAdmin. The h1 holds the body + closer; the closer is wrapped in a span that gets italic + sage emphasis. The h1 *is* the LCP element, so its first-paint animation is a colour transition (text-faint → text) rather than an opacity fade — a coloured element counts as contentful and LCP fires on the prerendered first paint while the ink visibly absorbs.",
+      "decisions": [
+        {
+          "decision": "Capacity is fetched live, not a static claim",
+          "rationale": "Saying 'I take 1 active build at a time' is a structural claim — it must be testable. Showing the LIVE state turns it from claim into observation. Capacity cap race fix (AUDIT P1.7) makes this trustworthy.",
+          "recommendation": "Don't switch to static copy. The live readout IS the trust statement."
+        },
+        {
+          "decision": "Empathy-first manifesto, not a self-introduction headline",
+          "rationale": "Previous design opened with 'Marc-Antoine, là pour résoudre des problèmes importants pour ma communauté' — a self-introduction. Replaced with the empathy paragraph ('Tu as une affaire plate qui revient chaque semaine...') because the first sentence should name the visitor's situation, not Marc's. Marc gets the signature line. The closer 'Raconte-moi ça.' carries italic + sage emphasis so the eye lands on it before the CTA.",
+          "recommendation": "Don't add back the 4-line display headline. The voice has to be 'tu' first, 'je' second."
+        },
+        {
+          "decision": "Drop the clock-aware greeting and VÉRIFIÉ stamp",
+          "rationale": "Previous design carried a clock-aware greeting (‘encore là?’ late-night) + a VÉRIFIÉ stamp echoing the OG card. The redesign strips them: the greeting added a date/timestamp feel Marc cooled on, and the stamp competed with the open-paper layout. The stamp may return later as a watermark; the greeting is gone.",
+          "recommendation": "Don't restore the stamp as a corner decoration — if it returns, it lives behind the headline as a watermark or it doesn't return."
+        }
+      ],
+      "successCriteria": "- Renders empathy paragraph + closer span + signature + CTA + capacity pill\n- Capacity readout reflects live D1 state\n- CTA label flips for logged-in / waitlist / cold states\n- Sessions link appears for logged-in visitors\n- Bilingual at full parity (FR + EN body + closer)\n- One live fetch on mount\n- Reduced-motion: ink-absorb skipped, paragraph presented at rest",
+      "knownLimitations": [
+        "One fetch on mount for capacity. If /api/capacity is down, the CTA defaults to the cold-state label (open), which is the right side of the fence for a hero that should never look broken on cold-start",
+        "The h1 is unusually long (2 short sentences). Screen readers will announce it as one heading — acceptable here because the heading IS the page's primary message, but worth noting for accessibility review"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Component shipped with the offer + live capacity + greeting."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-23",
+          "reason": "Code-first doc co-located. Live-capacity + clock-aware greeting stable."
+        },
+        {
+          "from": "frozen",
+          "to": "active",
+          "date": "2026-05-27",
+          "reason": "Redesign: stripped 4-line display headline, clock-aware greeting, VÉRIFIÉ stamp, shipped counter, bilingual line, hand-drawn signature flourish, HeroShippedProject right-rail. Replaced with one empathy paragraph + closer + sage hairline + small-caps name. Anti-AI-tells pass on the copy (triadic noun list dropped)."
+        }
+      ],
+      "lastTransitionDate": "2026-05-27"
+    },
+    {
+      "featureKey": "feat-2026-091",
+      "title": "/admin/email-outbox — pending email outbox viewer with manual retry",
+      "status": "active",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "operator-gated",
+        "email",
+        "outbox",
+        "manual-retry"
+      ],
+      "componentFile": "src/pages/AdminEmailOutbox.tsx",
+      "liveUrl": null,
+      "problem": "Durable email sends (tier-assigned, refund-notice, installment-cleared, status-change, withdrawal-visitor) fail-and-enqueue into email_outbox. The daily digest sweepEmailOutbox retries with exponential backoff up to 5 attempts; rows stuck past the cap sit silently. Marc had no admin UI to see what's stuck or to force one more try. Closes prod-readiness gap #9.",
+      "analysis": "Lazy-loaded route mounted under the existing Admin <Outlet>. Loads /api/admin/email-outbox on mount. Renders a single fleet-table with one row per pending outbox entry (to, kind+subject, attempts+stuck-tag, last_error, created_at, Retry button). Click Retry → POST { id } → on delivered, reload; on failure, surface the error inline next to the button. Per-row busy + result state kept in two records keyed by id; no global busy.",
+      "decisions": [
+        {
+          "decision": "Lazy-loaded route, not a panel under /admin/today",
+          "rationale": "Operator-only diagnostic that's rarely visited but valuable during incidents. Keeping it off /admin/today avoids cluttering the dashboard with rows that 99% of the time are zero.",
+          "recommendation": "If outbox volume becomes a chronic signal, add an outbox count widget to /admin/today's System health panel (already shows the count, just no link)."
+        },
+        {
+          "decision": "Per-row inline result instead of a toast or modal",
+          "rationale": "Retry is a low-frequency, high-context operation — Marc is troubleshooting one specific row. Inline result keeps the cause (last_error) and effect (new state) in the same eyeline. Toast/modal would obscure the row context.",
+          "recommendation": "Same pattern in any other admin retry UI."
+        },
+        {
+          "decision": "No bulk retry button",
+          "rationale": "Bulk retry on Resend incidents would either succeed (great) or hammer the API with retries we already know will fail. The daily cron's sweepEmailOutbox already serves the 'try them all on a schedule' use case; manual retry is for one-row triage.",
+          "recommendation": "Reconsider only if Marc reports needing to retry 10+ rows in a single session. Bulk retry would also need rate-limit guards."
+        }
+      ],
+      "successCriteria": "- Loads pending outbox rows admin-only\n- Click Retry → row delivers + drops off OR error shown inline\n- Already-delivered row → 'Already sent' inline (idempotent)\n- 403 → forbidden message; 5xx → error message + Reload button\n- Empty outbox → 'Outbox is clear' empty state\n- Both FR + EN copies (Québécois register for FR)",
+      "knownLimitations": [
+        "List capped at 100 rows server-side; backlog past that is invisible",
+        "No delivered-history view; the sweep prunes delivered rows after 30 days",
+        "No bulk retry"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-26",
+          "reason": "Shipped paired with /api/admin/email-outbox as Tier-A #9 of prod-readiness gap queue."
+        }
+      ],
+      "lastTransitionDate": "2026-05-26"
+    },
+    {
       "featureKey": "feat-2026-104",
       "title": "Admin today — one-glance operator dashboard",
       "status": "active",
@@ -51,6 +160,55 @@
           "to": "active",
           "date": "2026-05-26",
           "reason": "Dashboard shipped — handler + page + 38 backend tests passing."
+        }
+      ],
+      "lastTransitionDate": "2026-05-26"
+    },
+    {
+      "featureKey": "feat-2026-090",
+      "title": "GET/POST /api/admin/email-outbox — pending outbox view + manual retry (operator only)",
+      "status": "active",
+      "domain": "marc-portal/admin",
+      "tags": [
+        "admin",
+        "operator-gated",
+        "email",
+        "outbox",
+        "manual-retry"
+      ],
+      "componentFile": "functions/api/admin/email-outbox.ts",
+      "liveUrl": null,
+      "problem": "Durable email sends fail-and-enqueue into email_outbox. The daily digest sweepEmailOutbox retries them with exponential backoff up to OUTBOX_MAX_ATTEMPTS=5, after which a row sits silently — the daily digest alerts once but the row stays stuck. Marc had no admin UI to view the current outbox state or to manually retry a row past the cap. Closes prod-readiness gap #9.",
+      "analysis": "Two handlers in one file. GET: currentEmail → unauthorized; isAdmin → forbidden; SELECT pending rows (sent_at IS NULL) ordered attempts DESC then created_at ASC, limit 100. Graceful degrade on 'no such table' (pre-migration). POST: same auth, JSON body { id }, SELECT row, sendRaw with stored payload, UPDATE sent_at on delivery or attempts+1 + last_error on failure. Manual retry intentionally bypasses the attempts ceiling (operator explicit intent) and the backoff window.",
+      "decisions": [
+        {
+          "decision": "Reuse exported sendRaw from _lib/email.ts",
+          "rationale": "sweepEmailOutbox already uses sendRaw for the same shape (rendered payload, pure POST). Exporting it for the manual-retry path keeps the network primitive in one file and ensures parity with the automated sweep. Building a separate retryOutboxRow helper would be premature — one caller, sweeper has its own batched loop.",
+          "recommendation": "If a third caller appears (e.g. an SQS-style worker queue), promote to a retryOutboxRow helper then. Don't pre-build the abstraction."
+        },
+        {
+          "decision": "Manual retry bypasses OUTBOX_MAX_ATTEMPTS and backoff window",
+          "rationale": "The whole point of the manual endpoint is to give the operator an escape hatch. Honoring the cap would make the UI button useless on the exact rows that need it most.",
+          "recommendation": "If retries-past-cap become a regular workflow (not occasional incident response), revisit whether the cap itself needs to be raised."
+        },
+        {
+          "decision": "POST gates on RESEND_API_KEY",
+          "rationale": "Without Resend configured the retry can't possibly succeed. Returning 503 is more useful than pretending success and silently no-oping.",
+          "recommendation": "Same shape as other Resend-dependent endpoints — graceful degrade with a clear message."
+        }
+      ],
+      "successCriteria": "- Operator gets list of pending rows (sent_at IS NULL)\n- Non-operator → 403\n- Anon → 401\n- POST { id } retries the row and updates DB\n- 404 on unknown id\n- 200 + alreadySent:true on already-delivered row (idempotent)\n- 503 when RESEND_API_KEY unset\n- Graceful degrade on pre-migration env (returns empty list)",
+      "knownLimitations": [
+        "List capped at 100 rows; backlog past that is invisible (acceptable — outbox never grows past ~10 at current scale)",
+        "No delivered-history view (sent_at IS NOT NULL rows hidden); the sweep prunes delivered rows after 30 days anyway",
+        "No bulk retry button — manual retry is one row at a time"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-26",
+          "reason": "Endpoint + page shipped together as Tier-A #9 of prod-readiness gap queue."
         }
       ],
       "lastTransitionDate": "2026-05-26"
@@ -832,56 +990,6 @@
           "to": "frozen",
           "date": "2026-05-23",
           "reason": "Code-first doc co-located. Self-hide + iframe-preview decisions stable."
-        }
-      ],
-      "lastTransitionDate": "2026-05-23"
-    },
-    {
-      "featureKey": "feat-2026-093",
-      "title": "Hero — the home-page cover (offer + capacity + clock-aware greeting)",
-      "status": "frozen",
-      "domain": "marc-portal/home-section",
-      "tags": [
-        "home-section",
-        "hero",
-        "live-capacity",
-        "clock-aware",
-        "shipped-feed"
-      ],
-      "componentFile": "src/components/Hero.tsx",
-      "liveUrl": null,
-      "problem": "The Hero is the home page's magazine cover — the visitor's first paragraph of contact with the practice. It carries the offer headline, a live capacity readout (1 active + 1 in triage = open or paused), a HeroShippedProject card linking to the latest showcased work, and a clock-aware greeting (late-night gets a dry 'encore là?' because most honest traffic happens after 22h). Capacity is fetched from /api/capacity at request time — visitor sees the truth, not a marketing claim.",
-      "analysis": "Renders DICT[lang].hero copy. Two live data sources fetched on mount: getCapacityLive (returns the current 1+1 cap state for the badge) and listPublicProjects (top 1 for HeroShippedProject). Clock-aware greeting via pickSalut(lang) — reads visitor's local clock and picks the right greeting (morning / day / evening / late-night). Late-night gets the dry Québécois 'encore là?' which is the anti-AI-tells anchor — no AI would write that line. Feature colour is undefined (Hero crosses every feature).",
-      "decisions": [
-        {
-          "decision": "Capacity is fetched live, not a static claim",
-          "rationale": "Saying 'I take 1 active build at a time' is a structural claim — it must be testable. Showing the LIVE state ('currently building X for Y, triage queue is open / closed') turns it from claim into observation. Capacity cap race fix (AUDIT P1.7) makes this trustworthy.",
-          "recommendation": "Don't switch to static copy. The live readout IS the trust statement."
-        },
-        {
-          "decision": "Clock-aware greeting in Québécois register",
-          "rationale": "Default greeting + late-night variant. Late-night ('encore là?') is the Québécois register tell — no chatbot would write that. Marc's family-first practice has a late-night honest-traffic pattern (visitors browsing after kid-bedtime); the greeting acknowledges it.",
-          "recommendation": "Don't translate 'encore là?' to anything generic. The literal Québécois is the load-bearing word."
-        }
-      ],
-      "successCriteria": "- Renders offer headline + capacity badge + HeroShippedProject + greeting\n- Capacity readout reflects live D1 state\n- Greeting varies with visitor's local clock\n- Late-night greeting in Québécois register\n- Bilingual at full parity\n- Two live fetches on mount, no waterfall",
-      "knownLimitations": [
-        "Two fetches on mount; mitigated by parallelism. If capacity API is down, the badge shows a fallback state",
-        "Clock-aware greeting reads VISITOR's clock; an admin viewing from a different timezone might get a 'wrong-feeling' greeting. Cost is tiny",
-        "HeroShippedProject embeds the latest showcased project; if none exist, falls back to a static placeholder"
-      ],
-      "statusHistory": [
-        {
-          "from": "draft",
-          "to": "active",
-          "date": "2026-05-07",
-          "reason": "Component shipped with the offer + live capacity + greeting."
-        },
-        {
-          "from": "active",
-          "to": "frozen",
-          "date": "2026-05-23",
-          "reason": "Code-first doc co-located. Live-capacity + clock-aware greeting stable."
         }
       ],
       "lastTransitionDate": "2026-05-23"
@@ -4800,5 +4908,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-26T21:24:29.169Z"
+  "generatedAt": "2026-05-27T18:07:23.490Z"
 }

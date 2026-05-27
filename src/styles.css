@@ -805,7 +805,12 @@ p {
   box-shadow: 0 1px 3px rgba(31, 29, 24, 0.08);
 }
 
-/* Hero */
+/* Hero — base styles. `.hero` is only worn by the home hero (one
+   instance in src/components/Hero.tsx), but `.hero__cta` is heavily
+   reused across the app (intake, /me, /handoff, /vouches, error pages,
+   etc.) as a generic primary-CTA button — keep its rules stable. The
+   home-specific manifesto layout lives under `.home .hero` further
+   down. */
 .hero {
   padding-top: 88px;
   padding-bottom: 48px;
@@ -813,124 +818,6 @@ p {
 .hero h1 {
   color: var(--text);
   margin-bottom: 18px;
-}
-.hero__lead {
-  color: var(--text-mid);
-  max-width: 62ch;
-  line-height: 1.55;
-}
-.hero__lead--primary {
-  font-size: 22px;
-  color: var(--text);
-  margin: 0 0 24px;
-  line-height: 1.4;
-}
-.hero__lead--primary strong {
-  color: var(--text);
-  font-weight: 600;
-}
-.hero__logged-in {
-  margin-top: 12px;
-  font-size: 14px;
-  font-family: var(--mono);
-}
-.hero__bilingual {
-  margin-top: 14px;
-  font-size: 13px;
-  color: var(--text-soft);
-  font-family: var(--mono);
-}
-/* The language word inside the bilingual line — a quiet inline link that
-   switches the page to the other language. Underlined so it reads as a
-   link without shouting; colour lifts to the accent on hover/focus. */
-.hero__bilingual-link {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  text-decoration-thickness: 1px;
-  transition: color 0.15s ease;
-}
-.hero__bilingual-link:hover,
-.hero__bilingual-link:focus-visible {
-  color: var(--accent);
-}
-/* Clock-aware greeting that opens the hero like a letter. Sits just above
-   the display headline, italic serif so it reads as handwriting rather than
-   UI chrome. */
-.hero__salut {
-  margin: 0 0 4px;
-  font-family: var(--sans);
-  font-style: italic;
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--text-soft);
-  letter-spacing: 0.005em;
-}
-@media (max-width: 640px) {
-  .hero__salut {
-    font-size: 16px;
-  }
-}
-/* Signed sign-off — italic serif "Marc — dev québécois" with a wobbly
-   hand-drawn underline that strokes in on first paint. */
-.hero__signature {
-  margin-top: 18px;
-  color: var(--text-mid);
-  line-height: 0;
-}
-.hero__signature svg {
-  display: block;
-  width: 220px;
-  max-width: 100%;
-  height: 44px;
-}
-.hero__signature-flourish {
-  /* Path total length is ~218; rounded up to give the dasharray slack. */
-  stroke-dasharray: 240;
-  stroke-dashoffset: 240;
-  animation: hero-signature-draw 0.85s 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
-}
-@keyframes hero-signature-draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero__signature-flourish {
-    animation: none;
-    stroke-dashoffset: 0;
-  }
-}
-.hero__anchors {
-  margin-top: 28px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-soft);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 4px;
-}
-.hero__anchor {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--text-mid);
-  border-radius: 999px;
-  text-decoration: none;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-.hero__anchor:hover {
-  background: var(--bg-card);
-  color: var(--accent-warm);
-  text-decoration: none;
-}
-.hero__anchor:focus-visible {
-  background: var(--accent-soft);
-  color: var(--accent-warm);
 }
 .hero__cta {
   display: inline-flex;
@@ -7395,11 +7282,10 @@ button.intake__progress-step:disabled {
   clip-path: inset(0 -100vw 0 -12px);
 }
 .page-mast::after {
-  /* Soft sage glow — atmosphere, not decoration. Echo of hero--editorial::after.
-     The hero glow lands in the viewport corner because the hero section is
-     full-bleed; the page-mast is a header inside the centred column, so the
-     glow is pushed out to the viewport's right edge explicitly: 50% (half the
-     column) minus 50vw (half the viewport) is the negative gutter width. */
+  /* Soft sage glow — atmosphere, not decoration. The page-mast is a
+     header inside the centred column, so the glow is pushed out to the
+     viewport's right edge explicitly: 50% (half the column) minus 50vw
+     (half the viewport) is the negative gutter width. */
   content: '';
   position: absolute;
   top: -120px;
@@ -7555,38 +7441,100 @@ button.intake__progress-step:disabled {
   }
 }
 
-/* ── Hero — manifesto cover ───────────────────────────────────────────────── */
-.home .hero--editorial {
+/* ── Hero — open manifesto layout ─────────────────────────────────────
+   The home hero is one paragraph on cream paper. No card frame, no
+   stamp, no glow, no display headline. The italic+sage closer carries
+   the eye to the CTA. All animations are colour/opacity moves — no
+   transform-staggers, no highlighter rectangles. See
+   src/components/Hero.tsx for the markup. */
+.home .hero {
   padding: 76px var(--gutter) 96px;
   border-bottom: none;
-  overflow: hidden;
 }
-.home .hero--editorial::after {
-  /* Soft sage glow in the upper-right — atmosphere, not decoration. */
-  content: '';
-  position: absolute;
-  top: -160px;
-  right: -160px;
-  width: 520px;
-  height: 520px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(61, 110, 78, 0.18), transparent 65%);
-  z-index: 0;
-  pointer-events: none;
+/* Left-aligned content block; the wrapper itself stays centered via
+   `.section__inner { max-width; margin: 0 auto }` further up. */
+.home .hero .section__inner {
+  text-align: left;
 }
-.hero__folio {
-  position: absolute;
-  top: 22px;
-  right: var(--gutter);
-  font-size: 11px;
+
+/* The manifesto. Upright Source Serif 4 at clamp(20-26px), wide column
+   so a two-sentence paragraph lands in 2–3 long lines instead of 5–6
+   short ones. The h1 default heading weight is overridden — this reads
+   as running paragraph text, not a display headline. */
+.hero__manifesto {
+  margin: 0 0 36px;
+  font-family: var(--sans);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(20px, 2.2vw, 26px);
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  color: var(--text-faint);
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+/* Ink-absorb: the paragraph starts at text-faint and saturates to text
+   over 1.1s. This h1 is the LCP element, so we animate `color` (not
+   `opacity`) — a coloured element counts as contentful so LCP fires on
+   the prerendered first paint while the ink still visibly soaks in. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__manifesto {
+    animation: hero-ink-absorb 1100ms cubic-bezier(0.4, 0, 0.2, 1) 240ms forwards;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__manifesto {
+    color: var(--text);
+  }
+}
+@keyframes hero-ink-absorb {
+  to {
+    color: var(--text);
+  }
+}
+/* The closer — italic + sage, the one coloured mark in the paragraph.
+   The visitor's eye should land here before reaching the CTA. */
+.hero__closer {
+  font-style: italic;
+  color: var(--accent-warm);
+  font-weight: 500;
+}
+
+/* Signature block — sage hairline + small-caps name, left-anchored.
+   Replaces the old hand-drawn flourish SVG. The rule's left-edge
+   scale-in animation fires ~540ms after page-load, lining up with the
+   manifesto's ink-absorb so the page settles in one calm beat. */
+.hero__sig {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 0 40px;
+}
+.hero__sig-rule {
+  width: 56px;
+  height: 1px;
+  background: var(--accent);
+  transform-origin: left center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero__sig-rule {
+    transform: scaleX(0);
+    animation: hero-rule-draw 500ms cubic-bezier(0.32, 0.72, 0.24, 1) 540ms forwards;
+  }
+}
+@keyframes hero-rule-draw {
+  to {
+    transform: scaleX(1);
+  }
+}
+.hero__sig-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12.5px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--text-faint);
-  z-index: 1;
-}
-.hero__inner {
-  position: relative;
-  z-index: 1;
+  color: var(--text-mid);
 }
 
 /* Error-page panels (NotFound + RouteError) — corner stamp + relative
@@ -7724,302 +7672,13 @@ button.intake__progress-step:disabled {
   }
 }
 
-/* VÉRIFIÉ stamp echoing the OG card. Decorative, low-opacity warm-brown
-   so the headline always wins the eye. Positioned bottom-right of the
-   hero block; smaller + nudged on mobile. */
-.hero__stamp {
-  position: absolute;
-  right: calc(var(--gutter) + 16px);
-  bottom: 28px;
-  width: 220px;
-  height: 84px;
-  color: #8a4f1c;
-  opacity: 0.18;
-  pointer-events: none;
-  z-index: 0;
-}
-@media (prefers-color-scheme: dark) {
-  .hero__stamp {
-    opacity: 0.26;
-  }
-}
-:root[data-theme='night'] .hero__stamp {
-  opacity: 0.26;
-}
-@media (max-width: 720px) {
-  .hero__stamp {
-    width: 160px;
-    height: 60px;
-    bottom: 18px;
-    right: 12px;
-    opacity: 0.12;
-  }
-}
-
-/* "N projets livrés en YYYY" — small dotted-leader line that reads as
-   a quiet social-proof note. Lives between the secondary CTA and the
-   facts list. Hidden via JSX when count is 0. */
-.hero__shipped-counter {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin: 14px 0 0;
-  padding: 0;
-  font-size: 12.5px;
-  letter-spacing: 0.02em;
-  color: var(--text-soft);
-}
-.hero__shipped-counter-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--accent);
-}
-
-/* Hero shipped-project preview — always stacks below the hero text. We
-   tried a desktop side-by-side grid; it diluted the headline's weight
-   and competed with the FeaturedProjects grid two sections down. Now
-   the hero owns the fold and the shipped card reads as a quiet
-   follow-up. Hidden via JSX when no shipped project exists OR when the
-   pick is already surfaced in FeaturedProjects, so the layout
-   collapses cleanly on cold-start and avoids duplication. Bumped
-   max-width on wide viewports so it doesn't stretch to the full
-   column width and read as a banner. */
-.hero__shipped {
-  display: block;
-  margin: 36px auto 0;
-  max-width: 520px;
-  position: relative;
-  z-index: 1;
-}
-.hero__shipped-link {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-  box-shadow: 0 6px 20px -12px rgba(31, 29, 24, 0.18);
-}
-.hero__shipped-link:hover,
-.hero__shipped-link:focus-visible {
-  transform: translateY(-3px);
-  border-color: var(--accent-warm);
-  box-shadow: 0 14px 32px -14px rgba(61, 110, 78, 0.32);
-  text-decoration: none;
-  outline: none;
-}
-.hero__shipped-thumb {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  background: var(--bg-section);
-  overflow: hidden;
-}
-.hero__shipped-meta {
-  padding: 14px 16px 16px;
-}
-.hero__shipped-meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-.hero__shipped-eyebrow {
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
-.hero__shipped-tier {
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent-warm);
-  background: var(--accent-soft);
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(61, 110, 78, 0.2);
-}
-.hero__shipped-title {
-  margin: 0 0 4px;
-  font-size: 17px;
-  line-height: 1.3;
-  font-weight: 700;
-  color: var(--text);
-}
-.hero__shipped-tagline {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--text-mid);
-  /* Keep tagline to ~2 lines so the card stays compact. */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
-  overflow: hidden;
-}
-.hero__shipped-open {
-  display: inline-block;
-  margin-top: 10px;
-  font-size: 12px;
-  color: var(--text-soft);
-}
-.hero__shipped-link:hover .hero__shipped-open,
-.hero__shipped-link:focus-visible .hero__shipped-open {
-  color: var(--accent-warm);
-}
-
-.hero__display {
-  margin: 6px 0 24px;
-  font-family: var(--display);
-  font-weight: 800;
-  font-size: clamp(40px, 6.2vw, 78px);
-  line-height: 1.02;
-  letter-spacing: -0.035em;
-  color: var(--text);
-  text-wrap: balance;
-}
-.hero__display-line {
-  display: block;
-  /* First-paint reveal — staggered slide-up. Wrapped in a media query for
-     reduced-motion respect; non-animated state stays visually identical.
-     The reveal is transform-ONLY (no opacity fade): this <h1> is the
-     homepage's LCP element, and an element at opacity:0 does not count as
-     "contentful" — fading it in would push LCP out by the full animation
-     duration (~1s). A translated element still paints, so LCP fires on the
-     prerendered first paint while the line still visibly slides into place. */
-  opacity: 1;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .hero__display-line {
-    transform: translateY(14px);
-    animation: hero-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
-  }
-  .hero__display-line--pre {
-    animation-delay: 60ms;
-  }
-  .hero__display-line--lead {
-    animation-delay: 160ms;
-  }
-  .hero__display-line--emph {
-    animation-delay: 260ms;
-  }
-  .hero__display-line--tail {
-    animation-delay: 360ms;
-  }
-  .hero__lead--primary {
-    animation: hero-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 480ms backwards;
-  }
-  .hero__actions {
-    animation: hero-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 580ms backwards;
-  }
-}
-@keyframes hero-rise {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.hero__display-line--pre {
-  font-style: normal;
-  color: var(--text-mid);
-  font-weight: 500;
-  font-size: 0.62em;
-  letter-spacing: -0.02em;
-}
-.hero__display-line--lead {
-  font-weight: 800;
-}
-/* The "highlighter" mark: editorial underline that draws itself once on
-   first paint beneath the emphasis line. Sits behind the text (z-index -1
-   with isolation on the parent), at 24% opacity so it reads as ink-on-paper
-   highlight rather than a hard underline. Reduced-motion: appears statically. */
-.hero__display-emph-mark {
-  position: relative;
-  display: inline-block;
-  isolation: isolate;
-}
-.hero__display-emph-mark::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0.06em;
-  height: 0.18em;
-  width: 100%;
-  background: var(--accent);
-  opacity: 0.22;
-  border-radius: 2px;
-  z-index: -1;
-  transform-origin: left center;
-  transform: scaleX(0);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .hero__display-emph-mark::after {
-    animation: hero-mark-draw 1100ms cubic-bezier(0.32, 0.72, 0.24, 1) 700ms forwards;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero__display-emph-mark::after {
-    transform: scaleX(1);
-  }
-}
-@keyframes hero-mark-draw {
-  0% {
-    transform: scaleX(0);
-  }
-  60% {
-    transform: scaleX(1);
-  }
-  /* Brief settle — the highlighter "lifts" a touch as it finishes, mimics
-     the wrist motion of an actual highlighter pen. */
-  80% {
-    transform: scaleX(0.97);
-  }
-  100% {
-    transform: scaleX(1);
-  }
-}
-
-.hero__display-line--emph {
-  font-family: var(--sans);
-  font-style: italic;
-  font-weight: 600;
-  color: var(--accent-warm);
-  letter-spacing: -0.02em;
-}
-.hero__display-line--tail {
-  font-weight: 800;
-}
-
-.hero__lead--primary {
-  font-family: var(--sans);
-  font-size: 21px;
-  line-height: 1.45;
-  margin: 0 0 28px;
-  color: var(--text);
-  max-width: 48ch;
-}
-.hero__lead--primary strong {
-  font-weight: 600;
-  background: linear-gradient(transparent 62%, rgba(193, 105, 61, 0.22) 62% 92%, transparent 92%);
-  padding: 0 2px;
-}
-
+/* Actions row — CTA + capacity pill + (if logged in) sessions link.
+   Left-aligned, wraps on narrow viewports. */
 .hero__actions {
-  /* Block-level flex — NOT inline-flex. As an inline box it sat on the same
-     line as the inline-flex .hero__shipped-counter that follows it, so the
-     slot pill and the "N projects shipped" counter ran together. */
   display: flex;
   align-items: center;
-  gap: 18px;
+  justify-content: flex-start;
+  gap: 22px;
   flex-wrap: wrap;
   margin-top: 4px;
 }
@@ -8070,52 +7729,14 @@ button.intake__progress-step:disabled {
   box-shadow: inset 0 0 0 1.6px currentColor;
 }
 
-.hero__bilingual {
-  margin-top: 18px;
-  font-size: 12.5px;
-  color: var(--text-soft);
-  letter-spacing: 0.02em;
-}
-
-/* Hero side column — signature */
-.hero__side {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  position: relative;
-}
-.hero__signature {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  color: var(--accent-warm);
-}
-.hero__signature-svg {
-  width: 140px;
-  height: 44px;
-  opacity: 0.7;
-}
-.hero__signature-caption {
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-/* Hero TOC removed 2026-05-17 (PLAN_TOMORROW.md §2.2(b)) — SectionRail
-   on /pages/Home.tsx is the single source for in-page navigation. The
-   .hero__toc*, .hero__toc-label, .hero__toc-list, .hero__toc-link,
-   .hero__toc-num rules that used to live here are gone with the JSX. */
-
-/* CTA buttons — wax-stamp lift on hover, with restrained shadow */
+/* Home-page CTA — slightly larger padding than the shared button. No
+   wax-stamp shadow here: the open hero is calm and flat, the paper is
+   the surface, the button doesn't pretend to lift off it. */
 .home .hero__cta {
   padding: 16px 26px;
   font-size: 16px;
   letter-spacing: 0.005em;
-  box-shadow:
-    0 1px 0 rgba(31, 29, 24, 0.04),
-    0 8px 22px -10px rgba(44, 82, 57, 0.25);
+  box-shadow: none;
 }
 /* ── HowItWorks — editorial steps ─────────────────────────────────────────── */
 .home .steps--editorial {
@@ -9121,39 +8742,14 @@ button.intake__progress-step:disabled {
   .home .section--editorial {
     padding: 64px var(--gutter) 56px;
   }
-  .home .hero--editorial {
+  .home .hero {
     padding: 56px var(--gutter) 72px;
   }
-  .home .hero--editorial::after {
-    width: 320px;
-    height: 320px;
-    top: -120px;
-    right: -120px;
+  .hero__manifesto {
+    margin-bottom: 30px;
   }
-  .hero__folio {
-    top: 12px;
-    font-size: 10px;
-  }
-  .hero__inner {
-    gap: 28px;
-  }
-  .hero__display-line--pre {
-    font-size: 0.55em;
-  }
-  .hero__lead--primary {
-    font-size: 18.5px;
-  }
-  .hero__side {
-    flex-direction: row;
-    align-items: stretch;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .hero__signature {
-    align-items: flex-end;
-    justify-content: flex-end;
-    flex: 0 0 auto;
+  .hero__sig {
+    margin-bottom: 32px;
   }
   .section__head {
     margin-bottom: 32px;
@@ -9315,9 +8911,6 @@ button.intake__progress-step:disabled {
   }
 }
 @media (max-width: 480px) {
-  .hero__display {
-    font-size: clamp(34px, 9.4vw, 48px);
-  }
   .home .step--editorial {
     grid-template-columns: 64px 1fr;
     gap: 12px;
@@ -10658,18 +10251,6 @@ button.intake__progress-step:disabled {
   color: var(--text-soft);
   margin: 0 0 10px;
 }
-/* Individual operator-tool body under the shared Outils section. Each
-   tool is a button + hint cluster; vertical rhythm + a thin top border
-   on every tool past the first reads as a list of "things you can do
-   here." Border lives only on tool-not-first so the section heading
-   doesn't double up on dividers. */
-.admin-hub__tool {
-  padding-top: 14px;
-}
-.admin-hub__tool + .admin-hub__tool {
-  margin-top: 6px;
-  border-top: 1px solid var(--border-soft);
-}
 .admin-hub__grid {
   list-style: none;
   padding: 0;
@@ -10693,6 +10274,15 @@ button.intake__progress-step:disabled {
   box-shadow: 0 12px 24px -16px rgba(31, 29, 24, 0.18);
   transform: translateY(-1px);
 }
+/* Non-link variant for operator tools. The card holds its own interactive
+   widgets (a button, maybe a lang toggle), so the whole-tile hover lift
+   would mislead — the card itself is not clickable. */
+.admin-hub__tile--tool:hover,
+.admin-hub__tile--tool:focus-within {
+  border-color: var(--border);
+  box-shadow: none;
+  transform: none;
+}
 .admin-hub__tile-link {
   display: flex;
   flex-direction: column;
@@ -10700,6 +10290,15 @@ button.intake__progress-step:disabled {
   padding: 16px 18px;
   text-decoration: none;
   color: inherit;
+  height: 100%;
+}
+/* Same inner geometry as __tile-link but for components that own their
+   own interactive content (no anchor wrap). */
+.admin-hub__tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
   height: 100%;
 }
 .admin-hub__tile-head {
@@ -11829,6 +11428,90 @@ button.intake__progress-step:disabled {
   .tier__hardware-body {
     font-size: 13.5px;
   }
+}
+
+/* Community-rate promo line. Ledger-style mono, not a pill — keeps the
+   "−20 %" legible at a glance without pattern-matching as a marketing
+   badge. Sits between the tier ladder and the more-details disclosure. */
+.tier__promo {
+  margin: 20px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+}
+.tier__promo-label {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  white-space: nowrap;
+}
+.tier__promo-body {
+  font-size: 13.5px;
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+}
+@media (max-width: 640px) {
+  .tier__promo {
+    padding: 10px 12px;
+  }
+}
+
+/* More-details disclosure — folds the four FAQ-style notes (hardware,
+   community details, rescue, custodian) into a single <details> so a
+   visitor who only wants prices isn't met with four cards of follow-up.
+   The contained .tier__*-note blocks keep their own card styling; this
+   wrapper only owns the summary affordance and resets the nested margin
+   so the first note sits flush under the summary instead of double-
+   spaced. */
+.tier__more {
+  margin: 16px 0 0;
+}
+.tier__more-summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 600;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: transparent;
+  user-select: none;
+}
+.tier__more-summary::-webkit-details-marker {
+  display: none;
+}
+.tier__more-summary:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+.tier__more-marker {
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-soft);
+  transition: transform 120ms ease;
+}
+.tier__more[open] .tier__more-marker {
+  transform: rotate(45deg);
+}
+.tier__more-body > .tier__hardware-note:first-child,
+.tier__more-body > .tier__rescue-note:first-child,
+.tier__more-body > .tier__custodian-note:first-child {
+  margin-top: 16px;
 }
 
 /* About — ownership note paragraph above the outbound-links list. */

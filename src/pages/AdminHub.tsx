@@ -76,13 +76,20 @@ export function AdminHub({ lang }: { lang: Lang }) {
         </section>
       ))}
 
-      {/* Outils — a single shared section holds every operator widget so the
-          "Outils" heading appears once. Each tool is body-only (no inner
-          section/heading) and the rhythm comes from .admin-hub__tool. */}
+      {/* Outils — same card grid as the tile sections above, with a non-link
+          variant so the whole card doesn't pretend to be clickable. Each tool
+          renders title + description + its own action, matching the rhythm
+          of the External Dashboards cards. */}
       <section className="admin-hub__section">
         <h2 className="admin-hub__section-title mono">{lang === 'en' ? 'Tools' : 'Outils'}</h2>
-        <ProposalProof lang={lang} />
-        <EmailTestCard lang={lang} />
+        <ul className="admin-hub__grid">
+          <li className="admin-hub__tile admin-hub__tile--tool">
+            <ProposalProof lang={lang} />
+          </li>
+          <li className="admin-hub__tile admin-hub__tile--tool">
+            <EmailTestCard lang={lang} />
+          </li>
+        </ul>
       </section>
 
       <LangPrefCard lang={lang} />
@@ -101,12 +108,14 @@ function ProposalProof({ lang }: { lang: Lang }) {
   const copy =
     lang === 'fr'
       ? {
-          label: 'Tester le dossier PDF',
-          hint: 'Ouvre l’aperçu d’impression avec un dossier d’exemple — aucun intake à remplir.',
+          title: 'Dossier PDF',
+          hint: 'Ouvre l’aperçu d’impression avec un dossier d’exemple. Aucun intake à remplir.',
+          action: 'Tester le dossier',
         }
       : {
-          label: 'Test the proposal PDF',
-          hint: 'Opens the print preview with a sample brief — no intake to fill out.',
+          title: 'Proposal PDF',
+          hint: 'Opens the print preview with a sample brief. No intake to fill out.',
+          action: 'Run the test',
         }
 
   // A fully-answered sample: select/radio take their first option, the
@@ -137,14 +146,15 @@ function ProposalProof({ lang }: { lang: Lang }) {
   }
 
   return (
-    <div className="admin-hub__tool">
-      <p style={{ margin: '0 0 6px 0' }}>
+    <div className="admin-hub__tile-body">
+      <div className="admin-hub__tile-head">
+        <h3 className="admin-hub__tile-title">{copy.title}</h3>
+      </div>
+      <p className="admin-hub__tile-desc">{copy.hint}</p>
+      <p style={{ margin: 'auto 0 0 0' }}>
         <button type="button" className="link-btn mono" onClick={onTest}>
-          {copy.label}
+          {copy.action}
         </button>
-      </p>
-      <p className="field__hint" style={{ marginTop: 0 }}>
-        {copy.hint}
       </p>
       {mounted && (
         <ProposalSheet

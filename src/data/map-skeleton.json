@@ -449,6 +449,13 @@
       "inAdminShell": true
     },
     {
+      "path": "/admin/email-outbox",
+      "component": "AdminEmailOutbox",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": true
+    },
+    {
       "path": "/en/admin",
       "component": "Admin",
       "lang": "en",
@@ -489,6 +496,13 @@
       "lang": "en",
       "dynamic": false,
       "inAdminShell": true
+    },
+    {
+      "path": "/en/admin/email-outbox",
+      "component": "AdminEmailOutbox",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": true
     }
   ],
   "endpoints": [
@@ -509,6 +523,16 @@
       ],
       "adminOnly": true,
       "file": "functions/api/admin/digest.ts"
+    },
+    {
+      "id": "api.admin.email-outbox",
+      "path": "/api/admin/email-outbox",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "adminOnly": true,
+      "file": "functions/api/admin/email-outbox.ts"
     },
     {
       "id": "api.admin.sessions.id.notes",
@@ -903,6 +927,11 @@
       "id": "table.snd_voice_clips",
       "name": "snd_voice_clips",
       "firstMigration": "0003_snd.sql"
+    },
+    {
+      "id": "table.system_kv",
+      "name": "system_kv",
+      "firstMigration": "0029_system_kv.sql"
     },
     {
       "id": "table.tenant_domains",
