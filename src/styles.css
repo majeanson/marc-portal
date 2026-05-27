@@ -2160,6 +2160,19 @@ button.intake__progress-step:focus-visible {
   overflow-y: auto;
   min-height: 0;
 }
+/* Desktop: the nav-bar + nav-body wrappers are layout-transparent — every
+   child is a direct flex item of .admin__nav with the same gap rhythm. */
+.admin__nav-bar {
+  display: contents;
+}
+.admin__nav-body {
+  display: contents;
+}
+/* Toggle button is a phones-only affordance — desktop renders the full
+   nav inline and never needs the button. */
+.admin__nav-toggle {
+  display: none;
+}
 @media (max-width: 800px) {
   .admin__nav {
     border-right: none;
@@ -2168,11 +2181,52 @@ button.intake__progress-step:focus-visible {
     /* Tighten chrome on phones — the desktop padding ate ~30% of the
        viewport before main content started rendering. Brand + links + footer
        stay vertical, just compressed. */
-    padding: 14px 18px 12px;
+    padding: 12px 14px;
+    gap: 0;
+  }
+  /* nav-bar = always-visible row (brand + toggle button). */
+  .admin__nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 12px;
   }
+  /* nav-body = collapsible drawer (links + footer). Hidden by default;
+     the React `--open` modifier flips it visible. Avoids needing JS to
+     measure heights or animate — the toggle is binary, the cost is
+     just a layout shift. */
+  .admin__nav-body {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .admin__nav--open .admin__nav-body {
+    display: flex;
+  }
+  .admin__nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text-mid);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .admin__nav-toggle:hover,
+  .admin__nav-toggle:focus-visible {
+    background: var(--bg-hover);
+    color: var(--text);
+    outline: none;
+  }
   .admin__brand {
-    padding-bottom: 10px;
+    padding-bottom: 0;
+    border-bottom: none;
   }
   .admin__brand-name {
     font-size: 16px;
