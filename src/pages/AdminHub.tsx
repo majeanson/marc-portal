@@ -76,9 +76,14 @@ export function AdminHub({ lang }: { lang: Lang }) {
         </section>
       ))}
 
-      <ProposalProof lang={lang} />
-
-      <EmailTestCard lang={lang} />
+      {/* Outils — a single shared section holds every operator widget so the
+          "Outils" heading appears once. Each tool is body-only (no inner
+          section/heading) and the rhythm comes from .admin-hub__tool. */}
+      <section className="admin-hub__section">
+        <h2 className="admin-hub__section-title mono">{lang === 'en' ? 'Tools' : 'Outils'}</h2>
+        <ProposalProof lang={lang} />
+        <EmailTestCard lang={lang} />
+      </section>
 
       <LangPrefCard lang={lang} />
     </article>
@@ -96,12 +101,10 @@ function ProposalProof({ lang }: { lang: Lang }) {
   const copy =
     lang === 'fr'
       ? {
-          heading: 'Outils',
           label: 'Tester le dossier PDF',
           hint: 'Ouvre l’aperçu d’impression avec un dossier d’exemple — aucun intake à remplir.',
         }
       : {
-          heading: 'Tools',
           label: 'Test the proposal PDF',
           hint: 'Opens the print preview with a sample brief — no intake to fill out.',
         }
@@ -134,14 +137,15 @@ function ProposalProof({ lang }: { lang: Lang }) {
   }
 
   return (
-    <section className="admin-hub__section">
-      <h2 className="admin-hub__section-title mono">{copy.heading}</h2>
-      <p>
+    <div className="admin-hub__tool">
+      <p style={{ margin: '0 0 6px 0' }}>
         <button type="button" className="link-btn mono" onClick={onTest}>
           {copy.label}
         </button>
       </p>
-      <p className="field__hint">{copy.hint}</p>
+      <p className="field__hint" style={{ marginTop: 0 }}>
+        {copy.hint}
+      </p>
       {mounted && (
         <ProposalSheet
           lang={lang}
@@ -151,7 +155,7 @@ function ProposalProof({ lang }: { lang: Lang }) {
           submittedAt={sample.submittedAt}
         />
       )}
-    </section>
+    </div>
   )
 }
 

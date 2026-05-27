@@ -10658,6 +10658,18 @@ button.intake__progress-step:disabled {
   color: var(--text-soft);
   margin: 0 0 10px;
 }
+/* Individual operator-tool body under the shared Outils section. Each
+   tool is a button + hint cluster; vertical rhythm + a thin top border
+   on every tool past the first reads as a list of "things you can do
+   here." Border lives only on tool-not-first so the section heading
+   doesn't double up on dividers. */
+.admin-hub__tool {
+  padding-top: 14px;
+}
+.admin-hub__tool + .admin-hub__tool {
+  margin-top: 6px;
+  border-top: 1px solid var(--border-soft);
+}
 .admin-hub__grid {
   list-style: none;
   padding: 0;

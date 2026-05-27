@@ -3,9 +3,11 @@
  * the signed-in admin's inbox so Marc can eyeball deliverability, voice,
  * and rendering across the catalog without walking the matching user flow.
  *
- * Mounted on /admin (AdminHub). The picked language drives every send in
- * the batch; default mirrors the current UI lang. Synthetic sample data —
- * no real session or vouch rows are touched.
+ * Mounted on /admin (AdminHub) inside the shared "Outils" section. The
+ * caller owns the section + heading; this component renders body-only.
+ * The picked language drives every send in the batch; default mirrors
+ * the current UI lang. Synthetic sample data — no real session or vouch
+ * rows are touched.
  */
 
 import { useState } from 'react'
@@ -27,7 +29,6 @@ type Status = 'idle' | 'sending' | 'done' | 'error'
 
 const COPY = {
   fr: {
-    heading: 'Outils',
     title: 'Tester toutes les notifications courriel',
     desc: 'Envoie un exemple de chaque type de courriel à ton inbox — exactement comme un visiteur les recevrait. Données synthétiques, aucune session réelle touchée.',
     langLabel: 'Langue du lot',
@@ -40,7 +41,6 @@ const COPY = {
     miss: (n: number) => `(${n} non livré${n > 1 ? 's' : ''})`,
   },
   en: {
-    heading: 'Tools',
     title: 'Test every email notification',
     desc: 'Sends a sample of each email type to your inbox — exactly like a visitor receives them. Synthetic data, no real session touched.',
     langLabel: 'Batch language',
@@ -84,8 +84,7 @@ export function EmailTestCard({ lang }: { lang: Lang }) {
   const missed = (response?.results.length ?? 0) - delivered
 
   return (
-    <section className="admin-hub__section">
-      <h2 className="admin-hub__section-title mono">{t.heading}</h2>
+    <div className="admin-hub__tool">
       <p style={{ margin: '0 0 6px 0' }}>
         <button
           type="button"
@@ -149,7 +148,7 @@ export function EmailTestCard({ lang }: { lang: Lang }) {
           ))}
         </ul>
       )}
-    </section>
+    </div>
   )
 }
 
