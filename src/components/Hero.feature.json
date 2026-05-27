@@ -6,7 +6,13 @@
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/Hero.tsx",
   "problem": "The Hero is the visitor's first paragraph of contact with the practice. It carries one empathy-first manifesto sentence ('Tu as une affaire plate qui revient chaque semaine...') and a live capacity readout (1 active + 1 in triage = open or paused). Capacity is fetched from /api/capacity at request time — visitor sees the truth, not a marketing claim.",
-  "tags": ["home-section", "hero", "live-capacity", "manifesto", "empathy-first"],
+  "tags": [
+    "home-section",
+    "hero",
+    "live-capacity",
+    "manifesto",
+    "empathy-first"
+  ],
   "analysis": "Renders DICT[lang].hero copy. One live data source fetched on mount: getCapacityLive (returns the current 1+1 cap state; flips the CTA label between 'Crée ton compte gratuit' and 'Rejoindre la liste d’attente'). Logged-in visitors see 'Démarrer une nouvelle proposition' instead, plus a 'Voir mes sessions' link that resolves to /me or /admin/inbox depending on isAdmin. The h1 holds the body + closer; the closer is wrapped in a span that gets italic + sage emphasis. The h1 *is* the LCP element, so its first-paint animation is a colour transition (text-faint → text) rather than an opacity fade — a coloured element counts as contentful and LCP fires on the prerendered first paint while the ink visibly absorbs.",
   "decisions": [
     {
@@ -92,7 +98,9 @@
         "status",
         "statusHistory"
       ],
-      "reason": "Hero redesign — empathy paragraph replaces 4-line display, calling-card iteration ported to live SPA."
+      "reason": "Hero redesign — empathy paragraph replaces 4-line display, calling-card iteration ported to live SPA.",
+      "commit": "8e51028",
+      "buildUrl": "https://a72cad7f.marc-portal.pages.dev"
     }
   ],
   "annotations": []
