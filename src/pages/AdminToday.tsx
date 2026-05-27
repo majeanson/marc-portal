@@ -261,7 +261,7 @@ export function AdminToday({ lang }: { lang: Lang }) {
         <div className="section__eyebrow">{t.eyebrow}</div>
         <h1>{t.title}</h1>
         <p>{t.sub}</p>
-        <div className="admin-today__head-actions">
+        <div className="admin-page__head-actions">
           <button
             type="button"
             className="link-btn mono"

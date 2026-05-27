@@ -2403,6 +2403,17 @@ button.intake__progress-step:focus-visible {
   gap: 14px;
   flex-wrap: wrap;
 }
+/* Actions row that sits at the end of `.admin-page__head` (below the
+   description). Used by /admin/today and /admin/email-outbox for the
+   Reload button + optional stamp pill. baseline alignment so a small
+   monospace stamp next to a button reads as one line. */
+.admin-page__head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 14px;
+}
 .theme-error {
   margin: 0;
 }
@@ -16535,13 +16546,6 @@ a.feature-dot:focus-visible {
    ────────────────────────────────────────────────────────────────────── */
 .admin-today {
   padding: 0 0 24px;
-}
-.admin-today__head-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 12px;
-  margin-top: 14px;
 }
 .admin-today__stamp {
   font-size: 11.5px;
