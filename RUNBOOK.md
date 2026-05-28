@@ -1621,6 +1621,57 @@ intended path but until it's fully wired this is the manual fallback.
   log read endpoint (the read currently returns all rows without a
   tenant filter — see the audit feature.json for the open item).
 
+## 22. Scheduled e2e gate failed (baseline drift or regression)
+
+**Symptoms:** a GitHub issue titled "Scheduled e2e gate red on main (baseline
+drift or regression)" appeared (filed by the `drift-alert` job in `e2e.yml`),
+or the nightly `e2e` workflow is red on the Actions tab. The deployed site is
+fine — this gate is a regression check, not a liveness check.
+
+### What happens (system behavior)
+
+- `e2e.yml` runs the full visual + interaction suite nightly (09:00 UTC) on
+  `main`, on top of its per-PR and manual-dispatch triggers. Direct pushes to
+  `main` don't run it inline, so the nightly is the only thing that catches
+  drift introduced by a straight-to-main change. (This was added after the R3
+  design pass shipped to main and left the gate red, unnoticed, for weeks.)
+- On a *scheduled* failure the `drift-alert` job opens — or comments on a single
+  deduped — GitHub issue. PR failures don't alert here; the PR author already
+  sees their own red check. The job never auto-regenerates baselines: you
+  triage, because auto-updating would paper over a real regression.
+
+### Step-by-step (triage)
+
+1. **Open the failing run** (link in the issue) and read the failure type:
+   - **Height-only screenshot diffs** — `Expected NNN x H1px, received NNN x
+     H2px`, same width, different height → **stale baselines**. A design change
+     shipped to main and the committed screenshots predate it. Common case.
+   - **Same-dimension pixel diffs** (identical W x H, N pixels differ) → a real
+     visual change; decide if it's intended.
+   - **Interaction failures** (`smoke.spec.ts` / `full-tour.spec.ts`, no
+     screenshot) → either a genuinely broken nav/flow OR a test gone stale
+     against an intended redesign (a section reordered, an element removed, a
+     control hidden at a breakpoint).
+2. **Stale baselines (height drift)** → regenerate on the runner:
+   ```bash
+   gh workflow run e2e-snapshots.yml --ref main
+   ```
+   It regenerates `screenshots` + `error-states` baselines on windows-latest
+   (the only environment whose 1px rounding matches the gate — never regenerate
+   these locally), commits them, and auto-triggers `e2e.yml` to verify. The
+   app-suite baselines (`app-*.png`) aren't touched by that workflow; if they
+   specifically drifted, regenerate locally with
+   `npx playwright test app-screenshots.spec.ts --update-snapshots`.
+3. **Real regression** → fix the code, push, re-run the gate.
+4. **Stale test vs. an intended redesign** → update the test to match the
+   shipped design (e.g. sync `smoke.spec.ts`'s `FUNNEL` to `HOME_SECTION_ORDER`;
+   skip a header-nav test below the 640px breakpoint where the section nav is
+   `display:none`; drop a test for a removed element).
+5. **Passes on a plain re-run** (`gh workflow run e2e.yml`) with no code or
+   baseline change → transient flake (home/error full-page height; see the
+   `settle()` helper in `e2e/prepare.ts`), not drift.
+6. Once the gate is green, **close the drift issue** — it doesn't auto-close.
+
 ## Payments setup (one-time) — Stripe
 
 Required reference: `docs/loi-25-pia-stripe.md`. Compliance posture: card

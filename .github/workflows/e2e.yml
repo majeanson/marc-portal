@@ -7,15 +7,24 @@ name: e2e
 # machine the baselines were generated on — a Linux runner would diff every
 # screenshot on font anti-aliasing.
 #
-# Cost note: windows-latest is billed at 2x the Linux rate and this run
-# takes ~30 min, so it does NOT trigger on every push to main — only on
-# pull_request (one run per PR) and manual dispatch. Direct pushes to main
-# skip the gate; open a PR or `gh workflow run e2e.yml` to exercise it.
+# Triggers: per-PR (catch regressions before merge), manual dispatch, AND a
+# nightly schedule. The repo is public, so Actions minutes are free — the old
+# "PR-only to save the 2x windows rate" tradeoff no longer applies. The nightly
+# run is the standing alarm for baseline DRIFT: a design change that ships
+# straight to main bypasses the PR gate, so the committed screenshots silently
+# go stale until something runs the gate (this bit us once — the gate sat red
+# for weeks after the R3 design pass). The nightly catches that within a day and
+# the drift-alert job files a GitHub issue. Triage: RUNBOOK section 22. Direct
+# pushes to main still don't run the gate inline (the nightly covers them); to
+# exercise it immediately, `gh workflow run e2e.yml`.
 
 on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+  schedule:
+    # Nightly drift alarm at 09:00 UTC (~04:00-05:00 ET) — see header note.
+    - cron: '0 9 * * *'
 
 # One e2e run per ref — a newer push cancels the older still-running e2e
 # instead of stacking a second 30-min Windows job alongside it.
@@ -41,3 +50,35 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+
+  # Standing alarm for the nightly run only: if the scheduled gate goes red,
+  # file (or update) a single GitHub issue so drift surfaces instead of sitting
+  # silently. PR failures are skipped here — the PR author already sees their
+  # own red check. Cancelled runs don't qualify (`needs` + `failure()`), so a
+  # superseded run won't false-alarm. Alert only — we never auto-regenerate
+  # baselines, since that would paper over a real regression.
+  drift-alert:
+    needs: e2e
+    if: ${{ failure() && github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the drift issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          title='Scheduled e2e gate red on main (baseline drift or regression)'
+          # Dedupe by exact title so repeated nightly failures comment on one
+          # issue instead of opening a new one each night. No custom label, to
+          # avoid a label-must-exist prerequisite.
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "in:title $title" --json number --jq '.[0].number // empty')
+          body="The nightly e2e gate failed on main. Most often this is stale visual baselines (a design change shipped to main, bypassing the PR-only gate). Triage: RUNBOOK section 22. Run: $RUN_URL"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          fi
