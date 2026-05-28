@@ -13,6 +13,7 @@ import { DICT, type Lang } from '../../i18n'
 import { attachmentUrl, type AttachmentRow } from '../../lib/attachmentsApi'
 import type { NapkinScene } from '../../lib/napkin'
 import { NapkinReplay } from '../NapkinReplay'
+import { SceneBoundary } from '../SceneBoundary'
 
 export function SketchAttachment({
   att,
@@ -57,7 +58,14 @@ export function SketchAttachment({
           {open ? tm.sketchClose : tm.sketchOpen}
         </button>
       </div>
-      {open && scene && <NapkinReplay lang={lang} scene={scene} />}
+      {open && scene && (
+        <SceneBoundary
+          surface="sketch-attachment"
+          fallback={<p className="mono thread__transcript-pending">—</p>}
+        >
+          <NapkinReplay lang={lang} scene={scene} />
+        </SceneBoundary>
+      )}
       {open && !scene && !failed && (
         <div className="napkin__loading mono">{DICT[lang].napkin.loadingCanvas}</div>
       )}

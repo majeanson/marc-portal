@@ -379,6 +379,8 @@ const FR = {
     editError: "Le croquis n'a pas pu être enregistré. Réessaie.",
     replayPlay: 'Rejouer le tracé ▶',
     replayDrawing: 'Tracé en cours…',
+    sceneError: "Le tableau blanc ne s'est pas ouvert.",
+    imageUnavailable: 'Le croquis n’est pas disponible.',
   },
 
   media: {
@@ -1407,6 +1409,8 @@ const EN: Copy = {
     editError: "Couldn't save the sketch. Try again.",
     replayPlay: 'Replay the sketch ▶',
     replayDrawing: 'Drawing…',
+    sceneError: "The whiteboard didn't open.",
+    imageUnavailable: 'Sketch unavailable.',
   },
 
   media: {

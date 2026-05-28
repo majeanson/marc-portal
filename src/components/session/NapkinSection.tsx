@@ -24,6 +24,7 @@ import { uploadNapkin } from '../../lib/attachmentsApi'
 import { ApiError } from '../../lib/api'
 import { captureException } from '../../lib/sentry'
 import { NapkinReplay } from '../NapkinReplay'
+import { SceneBoundary } from '../SceneBoundary'
 
 // SketchCanvas pulls in Excalidraw (~600 KB). Lazy so visitors who never
 // click "edit" don't pay the bundle cost.
@@ -56,6 +57,21 @@ type EditState =
   | { kind: 'editing' }
   | { kind: 'saving' }
   | { kind: 'error'; message: string }
+
+/** The napkin PNG, with a graceful fallback when the image can't load. The
+ *  src is usually an /api/.../attachments/:id URL backed by R2; if the R2
+ *  object is missing (stale napkin_attachment_id, a replace whose old-object
+ *  cleanup left the row pointing nowhere) the <img> would otherwise render as
+ *  a broken-image glyph. onError swaps to a plain mono line instead. Also
+ *  guards an empty src (no PNG at all). */
+function NapkinImage({ lang, src, alt }: { lang: Lang; src: string; alt: string }) {
+  const t = DICT[lang].napkin
+  const [broken, setBroken] = useState(false)
+  if (!src || broken) {
+    return <p className="session-napkin__unavailable mono">{t.imageUnavailable}</p>
+  }
+  return <img src={src} alt={alt} className="session-napkin__img" onError={() => setBroken(true)} />
+}
 
 export function NapkinSection({ lang, napkin, sessionId, onReplaced }: NapkinSectionProps) {
   const t = DICT[lang].napkin
@@ -137,23 +153,31 @@ export function NapkinSection({ lang, napkin, sessionId, onReplaced }: NapkinSec
       {napkin.text && <p className="session-napkin__caption">{napkin.text}</p>}
       <div className="session-napkin__frame">
         {isEditing && napkin.scene ? (
-          <Suspense fallback={<div className="napkin__loading mono">{t.loadingCanvas}</div>}>
-            <SketchCanvas
-              initialScene={napkin.scene}
-              loadingLabel={t.loadingCanvas}
-              onApiReady={(api) => {
-                editorApiRef.current = api
-              }}
-            />
-          </Suspense>
+          <SceneBoundary
+            surface="napkin-edit"
+            fallback={<p className="session-napkin__edit-error mono">{t.sceneError}</p>}
+          >
+            <Suspense fallback={<div className="napkin__loading mono">{t.loadingCanvas}</div>}>
+              <SketchCanvas
+                initialScene={napkin.scene}
+                loadingLabel={t.loadingCanvas}
+                onApiReady={(api) => {
+                  editorApiRef.current = api
+                }}
+              />
+            </Suspense>
+          </SceneBoundary>
         ) : sceneOpen && napkin.scene ? (
-          <NapkinReplay lang={lang} scene={napkin.scene} />
+          <SceneBoundary
+            surface="napkin-replay"
+            fallback={
+              <NapkinImage lang={lang} src={napkin.png} alt={napkin.text || 'Napkin sketch'} />
+            }
+          >
+            <NapkinReplay lang={lang} scene={napkin.scene} />
+          </SceneBoundary>
         ) : (
-          <img
-            src={napkin.png}
-            alt={napkin.text || 'Napkin sketch'}
-            className="session-napkin__img"
-          />
+          <NapkinImage lang={lang} src={napkin.png} alt={napkin.text || 'Napkin sketch'} />
         )}
       </div>
       {isEditing && (

@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import type { ExcalidrawAPI, NapkinScene } from '../lib/napkin'
+import { captureException } from '../lib/sentry'
 
 // Excalidraw is heavy (~600 KB). Keep <SketchCanvas> behind React.lazy so the
 // session view only pays for it when the sketch panel is actually opened.
@@ -34,6 +35,9 @@ export function NapkinReplay({ lang, scene }: { lang: Lang; scene: NapkinScene }
   const apiRef = useRef<ExcalidrawAPI | null>(null)
   const timers = useRef<number[]>([])
   const [replaying, setReplaying] = useState(false)
+  // A replay that threw once is disabled, not retried: if Excalidraw can't
+  // process these elements via updateScene, the next click can't either.
+  const [replayBroken, setReplayBroken] = useState(false)
 
   // Snapshot reduced-motion once. A replay is pure motion delight — under
   // `reduce` we drop the affordance and leave the static scene in place.
@@ -44,8 +48,10 @@ export function NapkinReplay({ lang, scene }: { lang: Lang; scene: NapkinScene }
   )
 
   const elements = scene.elements
-  // One element is one stroke/shape — nothing to "play back" below two.
-  const canReplay = elements.length > 1 && !reduceMotion
+  // One element is one stroke/shape — nothing to "play back" below two. A
+  // replay that already threw is suppressed too (the scene is still shown
+  // statically by SketchCanvas, which is what matters).
+  const canReplay = elements.length > 1 && !reduceMotion && !replayBroken
 
   const clearTimers = () => {
     timers.current.forEach((id) => window.clearTimeout(id))
@@ -54,9 +60,30 @@ export function NapkinReplay({ lang, scene }: { lang: Lang; scene: NapkinScene }
   // Drop any in-flight replay if the panel unmounts mid-draw.
   useEffect(() => clearTimers, [])
 
+  // The replay drives updateScene from a click handler AND from setTimeout
+  // ticks. A throw in either escapes React's render tree — event handlers and
+  // async timers don't reach the route errorElement — so an updateScene that
+  // chokes on a version-drifted element would surface as an uncaught error in
+  // Sentry rather than degrading. Recover here: stop the replay, restore the
+  // full scene so the canvas doesn't sit blank, report once, and disable the
+  // affordance. The static scene (rendered by SketchCanvas) stays intact.
+  const onReplayError = (err: unknown) => {
+    clearTimers()
+    setReplaying(false)
+    setReplayBroken(true)
+    try {
+      apiRef.current?.updateScene({ elements })
+    } catch {
+      // Restore failed too — the canvas may show blank, but a re-mount
+      // (toggle off/on) re-hydrates from initialData via SketchCanvas, and
+      // the SceneBoundary catches it there if even that throws.
+    }
+    captureException(err, { surface: 'napkin-replay', elements: elements.length })
+  }
+
   const replay = () => {
     const api = apiRef.current
-    if (!api || replaying) return
+    if (!api || replaying || replayBroken) return
     clearTimers()
     setReplaying(true)
 
@@ -67,12 +94,22 @@ export function NapkinReplay({ lang, scene }: { lang: Lang; scene: NapkinScene }
     // Clear to a blank napkin immediately, then re-reveal a growing prefix of
     // the element list. Slicing yields a fresh array each tick — Excalidraw is
     // free to version the snapshot without us mutating the stored scene.
-    api.updateScene({ elements: [] })
+    try {
+      api.updateScene({ elements: [] })
+    } catch (err) {
+      onReplayError(err)
+      return
+    }
     for (let f = 1; f <= frames; f++) {
       const count = Math.max(1, Math.round((f / frames) * total))
       const id = window.setTimeout(
         () => {
-          apiRef.current?.updateScene({ elements: elements.slice(0, count) })
+          try {
+            apiRef.current?.updateScene({ elements: elements.slice(0, count) })
+          } catch (err) {
+            onReplayError(err)
+            return
+          }
           if (f === frames) setReplaying(false)
         },
         START_DELAY_MS + f * interval,

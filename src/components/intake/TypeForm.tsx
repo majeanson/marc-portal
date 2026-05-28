@@ -8,6 +8,7 @@ import type { ExcalidrawAPI, NapkinSketch } from '../../lib/napkin'
 import { VoiceRecorder } from '../VoiceRecorder'
 import { transcribeIntakeVoice, type VoiceNapkin } from '../../lib/intakeMediaApi'
 import { ApiError } from '../../lib/api'
+import { SceneBoundary } from '../SceneBoundary'
 
 // Excalidraw is heavy — keep <SketchCanvas> (and the ~600 KB chunk it pulls)
 // behind React.lazy so word-first visitors who never open the sketch panel
@@ -270,22 +271,38 @@ export function TypeForm({
                   )}
                 </div>
               </div>
-              <Suspense
+              <SceneBoundary
+                surface="napkin-intake"
                 fallback={
                   <div className="napkin__canvas-wrap">
-                    <div className="napkin__loading mono">{tNapkin.loadingCanvas}</div>
+                    <p className="napkin__loading mono">{tNapkin.sceneError}</p>
+                    <button
+                      type="button"
+                      className="intake__sketch-link intake__sketch-link--remove"
+                      onClick={removeSketch}
+                    >
+                      {tNapkin.formRemove}
+                    </button>
                   </div>
                 }
               >
-                <SketchCanvas
-                  initialScene={sketch?.scene ?? null}
-                  loadingLabel={tNapkin.loadingCanvas}
-                  onApiReady={(api) => {
-                    apiRef.current = api
-                  }}
-                  onChange={scheduleCapture}
-                />
-              </Suspense>
+                <Suspense
+                  fallback={
+                    <div className="napkin__canvas-wrap">
+                      <div className="napkin__loading mono">{tNapkin.loadingCanvas}</div>
+                    </div>
+                  }
+                >
+                  <SketchCanvas
+                    initialScene={sketch?.scene ?? null}
+                    loadingLabel={tNapkin.loadingCanvas}
+                    onApiReady={(api) => {
+                      apiRef.current = api
+                    }}
+                    onChange={scheduleCapture}
+                  />
+                </Suspense>
+              </SceneBoundary>
               <p className="napkin__instruction">{tNapkin.instruction}</p>
               <label className="napkin__desc">
                 <span className="napkin__desc-label">{tNapkin.descLabel}</span>
