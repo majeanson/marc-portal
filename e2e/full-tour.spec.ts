@@ -236,6 +236,14 @@ test.describe('full tour — header chrome', () => {
 
     for (const { section } of HEADER_NAV) {
       test(`nav link → #${section} (${lang})`, async ({ page }) => {
+        // The header section nav is display:none below 640px by design —
+        // mobile navigates via the sticky CTA + scrolling, not anchor links
+        // (styles.css "Hide the section nav entirely on phones"). Nothing to
+        // click there, so this interaction only applies above the breakpoint.
+        test.skip(
+          (page.viewportSize()?.width ?? 0) < 640,
+          'header section nav is hidden on phone by design',
+        )
         await page.goto(start)
         const href = `${prefix}/#${section}`
         await page.locator(`.site-header__section-link[href="${href}"]`).click()
@@ -248,6 +256,12 @@ test.describe('full tour — header chrome', () => {
       test(`nav dot on #${section} → site map filtered to ${feature} (${lang})`, async ({
         page,
       }) => {
+        // Same as the nav link above: the section nav (dots included) is
+        // hidden below 640px, so this interaction is desktop/tablet only.
+        test.skip(
+          (page.viewportSize()?.width ?? 0) < 640,
+          'header section nav is hidden on phone by design',
+        )
         await page.goto(start)
         const to = lang === 'fr' ? `/carte?feature=${feature}` : `/en/map?feature=${feature}`
         // `meta` appears on two sections (how + about) — both dots carry the
@@ -416,29 +430,6 @@ test.describe('full tour — page mast (title-corner links)', () => {
   }
 })
 
-/* ─── 6. hero bilingual line — inline FR↔EN language link ──────────────── */
-
-// The hero's bilingual line ("Aussi en anglais …" / "Also in French …")
-// names the *other* language, and that word is itself a link to that
-// language's home. Home-only — the line lives in <Hero>.
-test.describe('full tour — hero bilingual line', () => {
-  test('FR home: the "anglais" link switches the page to English', async ({ page }) => {
-    await page.goto('/')
-    const link = page.locator('.hero__bilingual-link')
-    await expect(link).toBeVisible()
-    await expect(link).toHaveText('anglais')
-    await link.click()
-    await waitForPath(page, '/en')
-    await expectRealPage(page)
-  })
-
-  test('EN home: the "French" link switches the page to French', async ({ page }) => {
-    await page.goto('/en')
-    const link = page.locator('.hero__bilingual-link')
-    await expect(link).toBeVisible()
-    await expect(link).toHaveText('French')
-    await link.click()
-    await waitForPath(page, '/')
-    await expectRealPage(page)
-  })
-})
+/* The hero's inline FR↔EN bilingual link was removed in the R3 design pass;
+   language switching now lives solely in the header FR/EN toggle, which is
+   covered by the "lang switch FR→EN / EN→FR keeps the page" tests above. */

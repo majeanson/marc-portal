@@ -11,10 +11,10 @@ import { expect, test } from '@playwright/test'
 const FUNNEL = [
   'featured',
   'how',
+  'about',
   'vibe',
   'bring-anything',
   'pricing',
-  'about',
   'testimonials',
   'faq',
 ]
