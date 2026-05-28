@@ -39,7 +39,7 @@ import { DICT } from '../i18n'
 /** Section ids the Header nav surfaces (mirrors NAV_LINKS in Header.tsx;
  *  the `Header NAV_LINKS mirror` test below ties this constant to the
  *  actual source so the two can't drift). */
-const HEADER_SECTION_IDS = ['featured', 'how', 'vibe', 'pricing', 'about'] as const
+const HEADER_SECTION_IDS = ['featured', 'how', 'about', 'vibe', 'pricing'] as const
 
 /** Section ids the SectionRail surfaces (mirrors the FR/EN ITEMS arrays
  *  in SectionRail.tsx; the `SectionRail ITEMS mirror` test below ties this
@@ -49,10 +49,10 @@ const RAIL_SECTION_IDS = [
   'hero',
   'featured',
   'how',
+  'about',
   'vibe',
   'bring-anything',
   'pricing',
-  'about',
   'testimonials',
   'faq',
   'cta',

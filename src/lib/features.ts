@@ -297,10 +297,10 @@ export const META_PAGE_LINK: Record<string, { label: Bi; path: Bi }> = {
 export const HOME_SECTION_ORDER = [
   'featured',
   'how',
+  'about',
   'vibe',
   'bring-anything',
   'pricing',
-  'about',
   'testimonials',
   'faq',
 ] as const

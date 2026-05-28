@@ -3,6 +3,7 @@ import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
 import { HOME_SECTION_FEATURE } from '../lib/features'
 import { SectionEyebrow } from './SectionEyebrow'
+import { InlineIntakeTeaser } from './InlineIntakeTeaser'
 
 export function CTA({ lang }: { lang: Lang }) {
   const t = DICT[lang].cta
@@ -20,6 +21,11 @@ export function CTA({ lang }: { lang: Lang }) {
         </SectionEyebrow>
         <h2 className="cta__title">{t.title}</h2>
         <p className="cta__body">{t.body}</p>
+        {/* Type-picker grid folded INTO the CTA section per R3 design pass.
+            The grid offers a head-start (pick a type, skip that step in
+            intake); the primary button below is the bypass path (no type
+            chosen, go straight to /intake). One CTA section, two paths. */}
+        {!email && <InlineIntakeTeaser lang={lang} />}
         <a className="hero__cta cta__button" href={intakeHref}>
           {email ? t.buttonLoggedIn : t.button}
         </a>

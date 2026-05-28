@@ -10,14 +10,12 @@ import { FeaturedProjects } from '../components/FeaturedProjects'
 import { VibeFilter } from '../components/VibeFilter'
 import { Pricing } from '../components/Pricing'
 import { CTA } from '../components/CTA'
-import { ShareSite } from '../components/ShareSite'
 import { About } from '../components/About'
 import { Footer } from '../components/Footer'
 import { SectionRail } from '../components/SectionRail'
 import { ScrollProgress } from '../components/ScrollProgress'
 import { PullQuote } from '../components/PullQuote'
 import { MobileStickyCta } from '../components/MobileStickyCta'
-import { InlineIntakeTeaser } from '../components/InlineIntakeTeaser'
 import { FAQ } from '../components/FAQ'
 import { Testimonials } from '../components/Testimonials'
 import { NapperonDoodles } from '../components/NapperonDoodles'
@@ -80,46 +78,46 @@ export function Home({ lang }: { lang: Lang }) {
         <FeaturedProjects lang={lang} />
         {/* 3 — How: 4-step expectation-setter, very fast read */}
         <HowItWorks lang={lang} />
-        {/* 4 — Vibe filter: do/don't lists — self-qualification gate. Comes
+        {/* 4 — About: short bio. Moved up from its old end-of-page slot per
+              R3 design pass — visitors meet Marc before they commit to the
+              full scroll, so the personal layer lands before the funnel
+              starts pushing toward a click. */}
+        <About lang={lang} />
+        {/* 5 — Vibe filter: do/don't lists — self-qualification gate. Comes
               BEFORE pricing: the visitor decides "is this for me?" first, so
               the numbers land on someone already half-qualified rather than
               gating the read with a price. */}
         <VibeFilter lang={lang} />
-        {/* 5 — "Bring me anything": neutralizes the self-filter the vibe
+        {/* 6 — "Bring me anything": neutralizes the self-filter the vibe
               ledger can trigger. Marc's framing: I want every idea in my
               inbox; the triage is my job, not the visitor's. Examples are
               aspirational ("things I'd take"), not fake-historic. */}
         <BringAnything lang={lang} />
-        {/* 6 — Pricing: concrete numbers, read after the visitor has
-              self-qualified through the vibe gate. */}
-        <Pricing lang={lang} />
-        {/* 7 — Pull-quote: short voice break, becomes the reassurance beat
-              between price and act. Sits BEFORE the inline teaser so the
-              teaser is the last centered block before About — the click
-              lands hardest right after the pull-quote dissolves. */}
+        {/* 6b — Pull-quote: cushions the transition from "anything is
+              welcome" to "here's what it costs". Marc's voice grounding
+              the move from generous to commercial right before the
+              numbers land. */}
         <PullQuote lang={lang} />
-        {/* 7b — Inline intake teaser: low-friction "pick a type" CTA. Sits
-              last in the qualify→reassure→price→act run so the type-picker is
-              the final step before the visitor commits. Skips the type-picker
-              step inside /intake. */}
-        <InlineIntakeTeaser lang={lang} />
-        {/* 8 — About: short bio near the end (visitors who care, scroll) */}
-        <About lang={lang} />
-        {/* 8½ — Testimonials: social proof just before objections (FAQ).
+        {/* 7 — Pricing: concrete numbers, read after the visitor has
+              self-qualified through the vibe gate and been grounded by
+              the pull-quote. */}
+        <Pricing lang={lang} />
+        {/* 8 — Testimonials: social proof just before objections (FAQ).
               Component self-hides when zero approved vouches exist, so the
               section only appears once /vouches has something to show.
               SectionRail filters its index by element presence, so the
               rail entry hides in lockstep. */}
         <Testimonials lang={lang} />
-        {/* 8b — FAQ: handles common objections before the final CTA. JSON-LD
+        {/* 9 — FAQ: handles common objections before the final CTA. JSON-LD
               FAQPage schema is injected for SEO rich results. */}
         <FAQ lang={lang} />
-        {/* 9 — Final CTA: one last push before the footer */}
+        {/* 10 — Final CTA: one last push before the footer. Inline intake
+              teaser used to live above this as its own section; per R3 the
+              two CTA panels were competing, so the type-picker grid was
+              folded INTO the final CTA panel and the standalone teaser
+              section was retired. ShareSite likewise collapsed to a footer
+              line. */}
         <CTA lang={lang} />
-        {/* 10 — Share-this-site affordance. Web Share API (mobile native
-              sheet, desktop Chrome/Edge) with clipboard fallback.
-              Surfaces the live /og/home card as the preview. */}
-        <ShareSite lang={lang} />
       </main>
       <Footer lang={lang} />
       <MobileStickyCta lang={lang} />

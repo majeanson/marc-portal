@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
@@ -91,6 +91,45 @@ export function Footer({ lang }: { lang: Lang }) {
   const buildDate = formatBuildDate(__COMMIT_DATE__)
   const now = useNowEveryMinute()
   const qcTime = formatQuebecTime(lang, now)
+  // Share affordance, collapsed into the footer per R3 design pass: the
+  // standalone ShareSite section above the footer was a CTA stacked on the
+  // final CTA, and the lower-energy "share" action was getting the louder
+  // visual treatment. Footer line keeps the affordance reachable without
+  // competing with the primary "describe your problem" click.
+  const [shareCopied, setShareCopied] = useState(false)
+  async function onShare(e: MouseEvent) {
+    e.preventDefault()
+    const url =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}${lang === 'en' ? '/en' : '/'}`
+        : lang === 'en'
+          ? '/en'
+          : '/'
+    const nativeText =
+      lang === 'fr'
+        ? 'Marc — dev québécois. Le soir, j’aide à régler des petits problèmes du quotidien avec du code.'
+        : 'Marc — Québécois dev. Evenings, I help solve everyday problems with code.'
+    const data: ShareData = { title: 'marc.portal', text: nativeText, url }
+    const nav = typeof navigator !== 'undefined' ? navigator : null
+    if (nav?.share && (!nav.canShare || nav.canShare(data))) {
+      try {
+        await nav.share(data)
+        return
+      } catch (err) {
+        // User-dismissed sheet (AbortError): silent. Other errors fall
+        // through to clipboard so the link still goes somewhere.
+        if (err instanceof Error && err.name === 'AbortError') return
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2200)
+    } catch {
+      /* clipboard blocked (file://, perm policy, etc.) — no-op, the link
+         is right there in the URL bar */
+    }
+  }
   const qcTimeLabel = lang === 'fr' ? 'Heure du Québec' : 'Quebec time'
   const { frHref, enHref, onLangSwitch } = useLangSwitch(lang)
   const otherLangHref = lang === 'fr' ? enHref : frHref
@@ -128,6 +167,17 @@ export function Footer({ lang }: { lang: Lang }) {
             {t.contact.link}
           </a>
           {t.contact.post}
+        </p>
+        <p className="site-footer__line site-footer__share-line mono">
+          {t.share.pre}{' '}
+          <a
+            href={lang === 'fr' ? '/' : '/en'}
+            onClick={onShare}
+            className="site-footer__share-link"
+            aria-live="polite"
+          >
+            {shareCopied ? t.share.copied : `→ ${t.share.copy}`}
+          </a>
         </p>
         <p className="site-footer__line site-footer__pages">
           <span className="site-footer__pages-eyebrow">{t.legal}</span>

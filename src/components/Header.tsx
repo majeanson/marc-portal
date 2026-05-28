@@ -16,9 +16,9 @@ import { ThemeToggle } from './ThemeToggle'
 const NAV_LINKS = [
   { id: 'featured', labelKey: 'projects' },
   { id: 'how', labelKey: 'how' },
+  { id: 'about', labelKey: 'about' },
   { id: 'vibe', labelKey: 'vibe' },
   { id: 'pricing', labelKey: 'pricing' },
-  { id: 'about', labelKey: 'about' },
 ] as const satisfies readonly {
   id: string
   labelKey: keyof (typeof DICT)['fr']['nav']['sections']

@@ -74,8 +74,8 @@ const FR = {
     // component can give it italic + sage emphasis — the eye should land
     // on "Raconte-moi ça." before reaching the CTA.
     body: "Une affaire plate qui revient chaque semaine, c'est pas un enjeu national. Mais c'est assez tannant pour mériter mieux.",
-    closer: 'Raconte-moi ça.',
-    cta: 'Crée ton compte gratuit →',
+    closer: 'Raconte-moi la tienne.',
+    cta: 'Décris ton problème →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle proposition →',
     mySessionsLink: 'Voir mes sessions',
@@ -122,12 +122,12 @@ const FR = {
       {
         num: '03',
         title: 'Tu suis le travail en direct',
-        body: 'Démo testable dès le 2e jour. Aucune réunion de statut à attendre, parce que tout vit dans le portail.',
+        body: "Une démo cliquable dès la deuxième journée. L'avancée s'écrit direct dans le portail, fait que t'as pas besoin d'une réunion de statut pour suivre.",
       },
       {
         num: '04',
         title: 'Je livre',
-        body: 'Le projet devient une page publique (avec une option pour cacher tes données commerciales). Une ronde de retouches incluse.',
+        body: 'Le projet devient une page publique, avec une ronde de retouches incluse dans le prix. Tu peux cacher les noms et les chiffres si tu veux.',
       },
     ],
   },
@@ -159,7 +159,7 @@ const FR = {
 
   featuredTestimonials: {
     eyebrow: 'preuves sociales',
-    title: 'Quelques mots de gens qui ont travaillé avec moi',
+    title: 'Du monde qui a travaillé avec moi',
     sub: 'Témoignages courts, soumis par les vrais collaborateurs. Je relis, je peux resserrer la formulation, mais le contenu reste leur voix.',
     writeOne: 'Tu as travaillé avec moi ? Écris un témoignage →',
     galleryCard: {
@@ -177,7 +177,7 @@ const FR = {
     do: {
       title: 'Je fais',
       items: [
-        'Idées plates du quotidien — facture, formulaire, suivi',
+        'Idées plates du quotidien : facture, formulaire, suivi',
         'Automatisation de tout genre',
         'Coordination de petites équipes ou de bénévoles',
         'Portfolios, sites découvertes',
@@ -198,7 +198,7 @@ const FR = {
     eyebrow: 'aucune idée trop petite',
     title: 'Apporte-moi n’importe quoi',
     body: 'Je veux que toutes les idées arrivent dans ma boîte : petites, bizarres, à moitié formées, peu importe. Mon job, c’est de filtrer. Le tien, c’est juste de décrire ce qui te trotte dans la tête.',
-    examplesTitle: 'Des idées que je prendrais sans hésiter',
+    examplesTitle: "Genre d'idées que je prends",
     scrollHint: 'glisse pour en voir plus →',
     exampleGroups: [
       {
@@ -263,7 +263,7 @@ const FR = {
     body: 'Prix concrets, jamais « sur demande ». Chaque niveau renvoie à des projets réels du même calibre. Tu vois ce que ça donne avant de soumettre.',
     asOf: 'Prix publics, en vigueur depuis 2026-06-01.',
     disclaimer:
-      'Les prix sont fixes avant qu’on commence. Pas de surprise après : si je dépasse, c’est mon problème. Taxes en sus si applicable.',
+      'Le prix est figé avant qu’on commence ; si ça déborde, c’est sur moi. Taxes en sus si applicable.',
     custodianNote:
       'Après la livraison, je peux garder ton site en ligne et à jour, ou te transférer les comptes pour que tu gères toi-même.',
     custodianNoteHeading: 'Et après la livraison ?',
@@ -277,9 +277,10 @@ const FR = {
       'Tout ce qui touche un objet physique (un capteur, un Raspberry Pi, un écran au mur) démarre au Niveau 3. Les pièces, le montage et les tests sur place vont au-delà d’un projet purement logiciel.',
     communityNoteHeading: 'C’est pour un OBNL ou un projet communautaire ?',
     communityNote:
-      'Vingt pour cent de moins sur chacun des niveaux de build (1 à 4). Marc l’applique manuellement quand il triage — pas de coupon à entrer. Le rapport de cadrage et le mode dépositaire restent au prix régulier.',
+      'Vingt pour cent de moins sur chacun des niveaux de build (1 à 4). Marc l’applique manuellement quand il triage ; pas de coupon à entrer. Le rapport de cadrage et le mode dépositaire restent au prix régulier.',
     communityPromoLabel: '−20 %',
     communityPromoBody: 'OBNL et projets communautaires, sur les niveaux 1 à 4.',
+    communityChip: '−20 % OBNL',
     moreInfoLabel: 'Plus de détails',
     tiers: [
       {
@@ -295,7 +296,7 @@ const FR = {
         name: 'Niveau 1',
         price: '750 $',
         scope:
-          'Un truc qui marche, hébergé et mis en ligne. Pas une démo que tu dois garder en vie toi-même. Un livrable précis : un formulaire, un script, une automatisation, une page. Sans compte, sans multi-utilisateur. Payé en un seul versement au démarrage.',
+          "Un livrable précis (un formulaire, une petite page) qui marche sans compte d'utilisateur. Hébergé, mis en ligne, payé en un seul versement au démarrage.",
         example: 'Ex. un formulaire web qui rentre direct dans ton chiffrier, sans rien retaper.',
         after: 'un seul paiement',
       },
@@ -473,11 +474,11 @@ const FR = {
       },
       {
         q: 'Je pourrais pas juste le faire moi-même avec un générateur d’app IA?',
-        a: 'Pour un problème de Niveau 0, probablement que oui, et je te pointe vers un outil ou un template gratuitement. C’est exactement à ça que sert le Niveau 0.</p><p>Pour le reste, construire n’a jamais été la partie difficile. Un générateur IA a besoin que tu saches exactement quoi lui demander, et la plupart des gens ne le savent pas encore. Trouver ça, c’est le triage. Il te sort une démo rapide, puis te laisse pris avec le login qui marche à moitié, les données qui se perdent, l’hébergement, le nom de domaine. C’est toi qui debugges à 21 h sans personne à appeler. Ce que tu paies, c’est un prix fixe, un outil qui tient le coup pour de vrai, et un nom responsable quand quelque chose brise des mois plus tard. Déjà pris avec une app IA à moitié faite ? Ça, c’est un <a href="/intake">sauvetage</a> : je regarde ce qui cloche et je te dis franchement si ça se répare. Si ton idée est assez petite pour que rien de ça ne te dérange, prends le générateur, je te le dirai franchement.',
+        a: 'Pour un problème de Niveau 0, probablement que oui, et je te pointe vers un outil ou un template gratuitement. C’est exactement à ça que sert le Niveau 0.</p><p>Pour le reste, construire n’a jamais été la partie difficile. Un générateur IA a besoin que tu saches exactement quoi lui demander, et la plupart des gens ne le savent pas encore. Il te sort une démo rapide, puis te laisse pris avec le login qui marche à moitié, les données qui se perdent, l’hébergement, le nom de domaine. Ce que tu paies, c’est un prix fixe, un outil qui tient le coup pour de vrai, et un nom responsable quand quelque chose brise des mois plus tard. Déjà pris avec une app IA à moitié faite ? Ça, c’est un <a href="/intake">sauvetage</a> : je regarde ce qui cloche et je te dis franchement si ça se répare. Si ton idée est assez petite pour que rien de ça ne te dérange, prends le générateur, je te le dirai franchement.',
       },
       {
         q: 'Et si ça prend plus de temps que prévu?',
-        a: 'Si je dépasse, c’est mon problème : le prix reste celui du devis. Si la portée change en cours de route (tu ajoutes des choses), on s’arrête, on regarde, et on décide ensemble : ajuster le devis ou couper.',
+        a: 'Si je dépasse, c’est sur moi : la même règle qui vit sous la grille de prix. Si la portée change en cours de route (tu ajoutes des choses), on s’arrête, on regarde, et on décide ensemble : ajuster le devis ou couper.',
       },
       {
         q: 'Et si je n’aime pas le résultat?',
@@ -501,9 +502,9 @@ const FR = {
   about: {
     eyebrow: 'qui je suis',
     title: 'À propos',
-    body: 'Je suis dev depuis une dizaine d’années. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible, pour toi comme pour moi.',
+    body: 'Ça fait une dizaine d’années que je code. Job de jour à temps plein (37,5 h/sem), une famille à la maison, pis l’envie de dépanner les petites business pis le monde autour de moi sans qu’il faille passer par une agence. Le portail, c’est ce qui rend ça possible, pour toi comme pour moi.',
     body2:
-      'C’est un gars qui décide, avec juste ce qu’il faut de machine pour gérer la logistique — ni une agence, ni une plateforme géante. C’est ce qui nous garde nos soirées, à tous les deux.',
+      'C’est un gars qui décide, avec juste assez de machine pour la logistique : ni agence ni plateforme géante. C’est ça qui nous garde nos soirées, à tous les deux.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
   },
@@ -513,6 +514,11 @@ const FR = {
       pre: 'Contact : ',
       link: 'démarre une session',
       post: ' et on en parle là.',
+    },
+    share: {
+      pre: 'Partage marc.portal',
+      copy: 'copier le lien',
+      copied: 'Lien copié ✓',
     },
     legal: 'Hébergé au Canada · Loi 25 · OQLF',
     copyright: '© Marc 2026',
@@ -574,7 +580,7 @@ const FR = {
       "Si un de ces patrons ne suffit plus, c'est que ton problème a grandi. Bonne nouvelle, c'est probablement Niveau 1 ou 2 maintenant. Décris-moi ça.",
     intakeCta: 'Mon problème a grandi → ouvrir le formulaire',
     communityNote: 'OBNL ou projet communautaire ?',
-    communityNoteBody: 'Les niveaux payants sont à −20 % — voir la grille de prix.',
+    communityNoteBody: 'Les niveaux payants sont à −20 % (voir la grille de prix).',
     communityNoteLink: 'Voir les prix communautaires →',
   },
 
@@ -1101,9 +1107,9 @@ const EN: Copy = {
     'Marc, a Québécois dev. Evenings and weekends, I help people solve everyday problems with code. Everything runs async, no meetings, at your pace.',
 
   hero: {
-    body: "You've got something boring that comes back every week. It's no national crisis, but it's annoying enough to deserve better.",
+    body: "You've got a thing that nags you every week. Not the end of the world, but stubborn enough to deserve fixing.",
     closer: 'Tell me about it.',
-    cta: 'Create a free account →',
+    cta: 'Open the form →',
     ctaWaitlist: 'Join the waitlist →',
     ctaLoggedIn: 'Start a new proposal →',
     mySessionsLink: 'View my sessions',
@@ -1148,20 +1154,20 @@ const EN: Copy = {
       {
         num: '03',
         title: 'You watch the work live',
-        body: 'Testable demo from day 2. There’s no status meeting to wait for, because everything lives in the portal.',
+        body: "A clickable demo by day two. Progress is written straight into the portal, so there's no status meeting to schedule.",
       },
       {
         num: '04',
         title: 'I ship',
-        body: 'The project becomes a public page (with an option to redact your commercial data). One round of post-ship tweaks included.',
+        body: 'The project becomes a public page, with one round of polish included in the price. You can hide the names and the numbers if you want.',
       },
     ],
   },
 
   featured: {
     eyebrow: 'projects in progress',
-    title: 'What I’m actually shipping',
-    sub: 'Behind each card, a real project in production you can go test right now. Real code, real problem, real people.',
+    title: 'What I ship',
+    sub: 'Behind each card, a real project in production you can go test right now. Production code, real users, things that ship.',
     seeAll: 'See all projects →',
     galleryCard: {
       eyebrow: 'want to see everything?',
@@ -1185,7 +1191,7 @@ const EN: Copy = {
 
   featuredTestimonials: {
     eyebrow: 'social proof',
-    title: 'A few words from people who worked with me',
+    title: 'People who’ve worked with me',
     sub: 'Short vouches, submitted by actual collaborators. I read before they ship and may tighten the wording, but the substance is their voice.',
     writeOne: 'Worked with me? Write a vouch →',
     galleryCard: {
@@ -1203,7 +1209,7 @@ const EN: Copy = {
     do: {
       title: 'I do',
       items: [
-        'Boring everyday ideas — invoices, forms, tracking',
+        'Boring everyday ideas: invoices, forms, tracking',
         'Automation of any kind',
         'Coordination for small teams or volunteers',
         'Portfolios, discovery sites',
@@ -1224,7 +1230,7 @@ const EN: Copy = {
     eyebrow: 'no idea too small',
     title: 'Bring me anything',
     body: "I want every idea to land in my inbox: small, weird, half-formed, doesn't matter. My job is to filter. Yours is just to describe whatever's been rattling around in your head.",
-    examplesTitle: "Ideas I'd happily take",
+    examplesTitle: 'The kind of ideas I take',
     scrollHint: 'drag to see more →',
     exampleGroups: [
       {
@@ -1289,7 +1295,7 @@ const EN: Copy = {
     body: 'Concrete prices, never “request a quote.” Each tier (price level) links to actual past projects of the same level. You see what it looks like before you submit.',
     asOf: 'Public prices, effective 2026-06-01.',
     disclaimer:
-      'Prices are fixed before we start. No surprise after: if I run over, that’s on me. Taxes extra where applicable.',
+      'The price is locked before we start; if it spills over, that’s on me. Taxes extra where applicable.',
     custodianNote:
       'After delivery, I can keep the site online and up to date, or hand the accounts over so you manage it yourself.',
     custodianNoteHeading: 'After delivery, then what?',
@@ -1303,9 +1309,10 @@ const EN: Copy = {
       'Anything involving a physical device (a sensor, a Raspberry Pi, a screen on the wall) starts at Tier 3. The parts, the wiring and the on-site testing put it past a pure-software job.',
     communityNoteHeading: 'For a nonprofit or community project?',
     communityNote:
-      'Twenty percent off each build tier (1–4). Marc applies it manually during triage — no coupon code to enter. The scoping report and custodian mode stay at the regular price.',
+      'Twenty percent off each build tier (1–4). Marc applies it manually during triage; no coupon code to enter. The scoping report and custodian mode stay at the regular price.',
     communityPromoLabel: '−20%',
     communityPromoBody: 'Nonprofit and community projects, on tiers 1–4.',
+    communityChip: '−20% NPO',
     moreInfoLabel: 'More details',
     tiers: [
       {
@@ -1321,7 +1328,7 @@ const EN: Copy = {
         name: 'Tier 1',
         price: '$750',
         scope:
-          'A working thing, hosted and handed over running. Not a demo you have to keep alive yourself. One clear deliverable: a form, a script, an automation, a one-pager. No login, no multi-user. Paid as a single payment at the start.',
+          'One clear deliverable (a form, a small page) that runs without a login. Hosted, handed over, paid as a single payment at the start.',
         example: 'e.g. a web form that drops straight into your spreadsheet, no retyping.',
         after: 'one payment',
       },
@@ -1495,11 +1502,11 @@ const EN: Copy = {
       },
       {
         q: "Couldn't I just build this myself with an AI app builder?",
-        a: "For a Tier 0 problem, you probably can, and I'll point you to a builder or a template for free, which is what Tier 0 is for.</p><p>For anything bigger, the building was never the hard part. An AI builder needs you to know exactly what to ask it, and most people don't yet. Figuring that out is the triage. It gets you a quick demo, then leaves you stuck on the login that half-works, the data that goes missing, the hosting, the domain. You'd be the one debugging at 9pm with nobody to call. What you pay me for is a fixed price, a data model that holds up when it's really used, and a name that's accountable when something breaks months later. Already stuck with a half-working AI build? That's a <a href=\"/en/intake\">rescue</a>: I look at it and tell you straight whether it's worth fixing. If your idea is small enough that none of that bites, use the builder, I'll tell you so honestly.",
+        a: "For a Tier 0 problem, you probably can, and I'll point you to a builder or a template for free, which is what Tier 0 is for.</p><p>For anything bigger, the building was never the hard part. An AI builder needs you to know exactly what to ask it, and most people don't yet. It gets you a quick demo, then leaves you stuck on the login that half-works, the data that goes missing, the hosting, the domain. What you pay me for is a fixed price, a data model that holds up when it's really used, and a name that's accountable when something breaks months later. Already stuck with a half-working AI build? That's a <a href=\"/en/intake\">rescue</a>: I look at it and tell you straight whether it's worth fixing. If your idea is small enough that none of that bites, use the builder, I'll tell you so honestly.",
       },
       {
         q: 'What if it takes longer than expected?',
-        a: "If I run over, that's on me: the price stays what was quoted. If the scope changes mid-flight (you're adding new things), we pause, look at it, and decide together: adjust the quote or cut.",
+        a: "If I run over, that's on me: same rule that lives under the pricing grid. If the scope changes mid-flight (you're adding new things), we pause, look at it, and decide together: adjust the quote or cut.",
       },
       {
         q: "What if I don't like the result?",
@@ -1525,7 +1532,7 @@ const EN: Copy = {
     title: 'About',
     body: "I've been a dev for about ten years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible, for both of us.",
     body2:
-      'It’s one person making the calls, with just enough machine in the middle to handle the logistics — neither an agency nor a sprawling platform. That’s what keeps the evenings ours, yours and mine.',
+      'It’s one person making the calls, with just enough machine in the middle to handle the logistics: neither an agency nor a sprawling platform. That’s what keeps our evenings ours, both sides of the screen.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
   },
@@ -1536,12 +1543,17 @@ const EN: Copy = {
       link: 'start a session',
       post: ' and we’ll talk it through there.',
     },
+    share: {
+      pre: 'Share marc.portal',
+      copy: 'copy link',
+      copied: 'Link copied ✓',
+    },
     legal: 'Hosted in Canada · Bill 25 · OQLF',
     copyright: '© Marc 2026',
   },
 
   pullQuote: {
-    body: 'I’ll always tell you the truth about your project, even when the answer is “keep your money.”',
+    body: 'I’ll always be straight with you about your project, even when the answer is “save your cash.”',
     attribution: 'Marc',
   },
 
@@ -1596,7 +1608,7 @@ const EN: Copy = {
       "If one of these patterns isn't enough anymore, your problem grew. Good news: it's probably Tier 1 or 2 now. Tell me about it.",
     intakeCta: 'My problem grew → open the form',
     communityNote: 'Nonprofit or community project?',
-    communityNoteBody: 'The paid tiers are 20% off — see the pricing grid.',
+    communityNoteBody: 'The paid tiers are 20% off (see the pricing grid).',
     communityNoteLink: 'See community pricing →',
   },
 

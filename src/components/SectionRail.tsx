@@ -1,29 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Lang } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
-import { FeatureDot } from './FeatureDot'
-import { HOME_SECTION_FEATURE } from '../lib/features'
 
 interface RailItem {
   id: string
   label: string
 }
 
-/** Cheap order-insensitive set equality check — we only ever store a few
- *  short string ids in here, so size + every-membership is plenty. */
-function sameIds(a: Set<string>, b: Set<string>): boolean {
-  if (a.size !== b.size) return false
-  for (const v of a) if (!b.has(v)) return false
-  return true
-}
-
-/** Folio glyph for a given rail item id. The rail is the magazine's
- *  table-of-contents, so it lists the hero cover (I), EVERY folio'd home
- *  section (II–IX) and mirrors the masthead's Roman numeral, so a glance at
- *  the rail shows the same issue mark the section header carries. The hero
- *  cover gets "I" (it carries the "№ 01" cover folio, not a HOME_FOLIOS
- *  entry); the final CTA has no section folio — it gets a destination
- *  arrow instead. */
+/** Folio glyph for a given rail item id. The hero gets "I" (it carries the
+ *  "№ 01" cover folio, not a HOME_FOLIOS entry); the final CTA has no
+ *  section folio — it gets a destination arrow instead. */
 const RAIL_FOLIO: Record<string, string> = {
   hero: 'I',
   featured: HOME_FOLIOS.featured,
@@ -37,18 +23,31 @@ const RAIL_FOLIO: Record<string, string> = {
   cta: '→',
 }
 
-/** Rail items in render order — the hero cover (I), every folio'd section
- *  (II–IX) and the final CTA. Order MUST stay hero-then-HOME_SECTION_ORDER
+/** 1–9 Roman numerals. Capped at IX because the rail can never carry more
+ *  than 9 numbered items (hero + 8 HOME_FOLIOS entries). */
+const ROMAN: Record<number, string> = {
+  1: 'I',
+  2: 'II',
+  3: 'III',
+  4: 'IV',
+  5: 'V',
+  6: 'VI',
+  7: 'VII',
+  8: 'VIII',
+  9: 'IX',
+}
+
+/** Rail items in render order. Order MUST stay hero-then-HOME_SECTION_ORDER
  *  -then-CTA; guarded in features.test.ts. */
 const ITEMS: Record<Lang, RailItem[]> = {
   fr: [
     { id: 'hero', label: 'Accueil' },
     { id: 'featured', label: 'Projets' },
     { id: 'how', label: 'Comment ça marche' },
+    { id: 'about', label: 'À propos' },
     { id: 'vibe', label: 'Je fais / Je fais pas' },
     { id: 'bring-anything', label: 'Apporte n’importe quoi' },
     { id: 'pricing', label: 'Prix' },
-    { id: 'about', label: 'À propos' },
     { id: 'testimonials', label: 'Témoignages' },
     { id: 'faq', label: 'FAQ' },
     { id: 'cta', label: 'Décris ton problème' },
@@ -57,10 +56,10 @@ const ITEMS: Record<Lang, RailItem[]> = {
     { id: 'hero', label: 'Home' },
     { id: 'featured', label: 'Projects' },
     { id: 'how', label: 'How it works' },
+    { id: 'about', label: 'About' },
     { id: 'vibe', label: 'What I do / don’t' },
     { id: 'bring-anything', label: 'Bring anything' },
     { id: 'pricing', label: 'Pricing' },
-    { id: 'about', label: 'About' },
     { id: 'testimonials', label: 'Vouches' },
     { id: 'faq', label: 'FAQ' },
     { id: 'cta', label: 'Describe your problem' },
@@ -68,33 +67,20 @@ const ITEMS: Record<Lang, RailItem[]> = {
 }
 
 /**
- * Fixed right-edge vertical index — magazine-style table-of-contents that
- * stays pinned through scroll. The active item is the section whose top
- * crosses the viewport's 35% line.
+ * Compact scroll indicator pinned top-right. Replaces the magazine-style
+ * vertical ladder with a single mono `IV / IX` tag that updates as the
+ * visitor scrolls. Earlier ladder version pattern-matched as a decorative
+ * column on every viewport and competed with the content column for the
+ * eye — R3 design pass (2026-05-27).
  *
  * Items whose target element isn't present on the page (e.g. Testimonials
- * self-hides when zero approved vouches exist) are dropped from the
- * rendered list, so a click never points at a missing anchor.
- *
- * Per-item progress is tracked alongside active state: each link gets a
- * `--rail-progress` custom property (0–1) reflecting how much of that
- * section has scrolled past the viewport's anchor line. The CSS uses it
- * to grow the tick width, so already-read sections carry a longer ruler
- * mark than not-yet-reached ones. A handmade reading meter, basically.
- *
- * Each rail item also surfaces a small FeatureDot (clickable shortcut to
- * /carte?feature=X) so the right-edge index doubles as a colour legend
- * for the home page's section→feature mapping.
+ * self-hides when zero approved vouches exist) drop out of the count, so
+ * the total tracks what's actually navigable.
  */
 export function SectionRail({ lang }: { lang: Lang }) {
   const allItems = ITEMS[lang]
   const [presentIds, setPresentIds] = useState<Set<string>>(new Set())
   const [activeId, setActiveId] = useState<string>(allItems[0]?.id ?? '')
-  const [progress, setProgress] = useState<Record<string, number>>({})
-  // Last-emitted progress map, kept outside state so the rAF loop can
-  // short-circuit when nothing changed by more than 1% (avoids re-renders
-  // on every scroll event during a long page).
-  const lastProgress = useRef<Record<string, number>>({})
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -112,7 +98,6 @@ export function SectionRail({ lang }: { lang: Lang }) {
     )
 
     const observed = new Set<string>()
-    let lastPresent: Set<string> = new Set()
 
     const sync = () => {
       const present = new Set<string>()
@@ -126,10 +111,10 @@ export function SectionRail({ lang }: { lang: Lang }) {
           }
         }
       }
-      if (!sameIds(present, lastPresent)) {
-        lastPresent = present
-        setPresentIds(present)
-      }
+      setPresentIds((prev) => {
+        if (prev.size === present.size && [...prev].every((v) => present.has(v))) return prev
+        return present
+      })
     }
 
     let scheduled = false
@@ -152,88 +137,40 @@ export function SectionRail({ lang }: { lang: Lang }) {
     }
   }, [allItems])
 
-  // Per-section scroll progress. Same rAF-throttle pattern as the rest of
-  // the page's scroll listeners. Runs alongside the IO above — IO is great
-  // for "what's active right now", scroll is the right tool for continuous
-  // 0→1 progress within a single section.
-  useEffect(() => {
-    let ticking = false
-    const compute = () => {
-      ticking = false
-      const anchorY = window.innerHeight * 0.35
-      const next: Record<string, number> = {}
-      let anyChanged = false
-      for (const it of allItems) {
-        const el = document.getElementById(it.id)
-        if (!el) continue
-        const rect = el.getBoundingClientRect()
-        const p = Math.min(1, Math.max(0, (anchorY - rect.top) / Math.max(1, rect.height)))
-        next[it.id] = p
-        // Coalesce to 1% steps — any finer just burns React reconciliation
-        // for changes that aren't visible.
-        const prev = lastProgress.current[it.id] ?? -1
-        if (Math.abs(p - prev) > 0.01) anyChanged = true
-      }
-      if (anyChanged) {
-        lastProgress.current = next
-        setProgress(next)
-      }
+  // Total = numbered items that are actually on the page. CTA's "→" is
+  // never counted — it's the destination arrow, not a numbered section.
+  const total = useMemo(() => {
+    let n = 0
+    for (const it of allItems) {
+      if (it.id === 'cta') continue
+      if (presentIds.has(it.id)) n += 1
     }
-    const onScroll = () => {
-      if (ticking) return
-      ticking = true
-      requestAnimationFrame(compute)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll)
-    compute()
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-    }
-  }, [allItems])
+    return n
+  }, [allItems, presentIds])
 
-  const items = allItems.filter((it) => presentIds.has(it.id))
+  const activeFolio = RAIL_FOLIO[activeId] ?? ''
+  const totalRoman = ROMAN[total] ?? ''
+  const activeLabel = allItems.find((it) => it.id === activeId)?.label ?? ''
+
+  // Bail before any section has registered — avoids painting "I / 0" on
+  // the first frame before IO settles.
+  if (total === 0) return null
 
   return (
-    <nav className="section-rail" aria-label={lang === 'fr' ? 'Index de la page' : 'Page index'}>
-      <ol className="section-rail__list">
-        {items.map((it) => {
-          const isActive = it.id === activeId
-          const p = progress[it.id] ?? 0
-          const folio = RAIL_FOLIO[it.id] ?? ''
-          const feature = HOME_SECTION_FEATURE[it.id]
-          return (
-            <li key={it.id} className="section-rail__item" data-feature={feature}>
-              <a
-                href={`#${it.id}`}
-                className={`section-rail__link${isActive ? ' is-active' : ''}`}
-                aria-current={isActive ? 'true' : undefined}
-                style={{ ['--rail-progress' as string]: p.toFixed(2) }}
-              >
-                <span className="section-rail__label">{it.label}</span>
-                <span className="section-rail__tick" aria-hidden="true" />
-                <span className="section-rail__num mono">{folio}</span>
-              </a>
-              {/* Dot lives next to the rail link (not inside it) so a
-                  visitor can either jump to the anchor (the link) OR
-                  jump to the /carte cluster (the dot). Two destinations,
-                  two targets — no accidental click-stealing.
-
-                  The dot is hidden by CSS unless the row is active (or
-                  hovered) — at rest the rail is a clean numeral index,
-                  and `is-active` is what unhides the current section's
-                  feature dot. */}
-              <FeatureDot
-                feature={feature}
-                lang={lang}
-                size="sm"
-                className={`section-rail__dot${isActive ? ' is-active' : ''}`}
-              />
-            </li>
-          )
-        })}
-      </ol>
+    <nav
+      className="section-rail"
+      aria-label={lang === 'fr' ? 'Index de la page' : 'Page index'}
+    >
+      <span className="section-rail__indicator mono" aria-live="polite">
+        <span className="section-rail__indicator-active">{activeFolio}</span>
+        <span className="section-rail__indicator-sep" aria-hidden="true">
+          {' / '}
+        </span>
+        <span className="section-rail__indicator-total">{totalRoman}</span>
+        <span className="section-rail__indicator-sr">
+          {lang === 'fr' ? ` ${activeLabel}` : ` ${activeLabel}`}
+        </span>
+      </span>
     </nav>
   )
 }

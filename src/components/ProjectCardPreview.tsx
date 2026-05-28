@@ -85,12 +85,14 @@ export function ProjectCardPreview({
     return () => window.clearTimeout(tid)
   }, [visible, buildHref])
 
-  // No build *and* no sessionId: the legacy empty state. Cards in the
-  // home/projects grids should always have a sessionId (we pass one
-  // through now), so this is just a defensive fallback.
-  if (!buildHref && !ogSrc) {
-    return <div className="project-card__preview project-card__preview--empty" aria-hidden="true" />
-  }
+  // No buildHref: collapse to text-only. The OG card used to render as a
+  // bottom-layer placeholder, but for any card whose build wasn't deployed
+  // yet (a common state during dev + on home thumbnails before first ship)
+  // the card was reading as "missing image" — a cream rectangle sitting
+  // above the title with nothing on it. R3 design pass: drop the rectangle
+  // entirely when there's nothing meaningful to show. Cards with a real
+  // build still get the OG → iframe layered preview below.
+  if (!buildHref) return null
 
   const isLoading = visible && !!buildHref && outcome === null
   const isLoaded = outcome === 'loaded'

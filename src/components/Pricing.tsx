@@ -64,6 +64,17 @@ export function Pricing({ lang }: { lang: Lang }) {
                     <span className="tier__name mono">{tier.name}</span>
                     <span className="tier__leader" aria-hidden="true" />
                     <span className="tier__price">{tier.price}</span>
+                    {/* Per-tier community-discount chip on every paid tier
+                        (1–4). Replaces the standalone strip that used to
+                        sit below the ladder — R3 design pass: a strip read
+                        as a SaaS coupon banner; per-tier chip reads as a
+                        ledger annotation a reader at the right tier will
+                        actually see. */}
+                    {!isTier0 && (
+                      <span className="tier__community-chip mono" aria-label={t.communityNote}>
+                        {t.communityChip}
+                      </span>
+                    )}
                   </div>
                   <p className="tier__scope">{tier.scope}</p>
                   <p className="tier__example">{tier.example}</p>
@@ -73,15 +84,12 @@ export function Pricing({ lang }: { lang: Lang }) {
             )
           })}
         </ol>
-        {/* Community-rate promo — always visible because it changes the price
-            a visitor sees in the ladder above. The four detailed FAQ-style
-            notes (hardware, community details, rescue, custodian) live in
-            the disclosure below so the section doesn't shout four asides
-            at someone who only came for the prices. */}
-        <p className="tier__promo mono">
-          <span className="tier__promo-label">{t.communityPromoLabel}</span>
-          <span className="tier__promo-body">{t.communityPromoBody}</span>
-        </p>
+        {/* Community-rate promo used to live here as a standalone strip,
+            but it pattern-matched as a SaaS coupon banner. The discount is
+            now annotated per-tier inside .tier__community-chip (see above),
+            visible to anyone scanning the actual price they'd pay. Long-
+            form context is preserved in the `tier__more` disclosure below
+            under communityNote. */}
         {/* Disclosure: the four sizing/parallel-entry notes. Native
             <details> — no JS state, browsers and screen readers know the
             pattern. Each note keeps its existing class so the cream-card

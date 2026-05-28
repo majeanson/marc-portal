@@ -52,10 +52,10 @@
 export const HOME_FOLIOS = {
   featured: 'II',
   how: 'III',
-  vibe: 'IV',
-  bringAnything: 'V',
-  pricing: 'VI',
-  about: 'VII',
+  about: 'IV',
+  vibe: 'V',
+  bringAnything: 'VI',
+  pricing: 'VII',
   testimonials: 'VIII',
   faq: 'IX',
 } as const

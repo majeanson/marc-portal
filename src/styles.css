@@ -878,6 +878,15 @@ html:not([data-lang-nudge='en']) .en-nudge {
   outline-offset: 3px;
   text-decoration: none;
 }
+/* Night-mode contrast fix: the day-mode CTA is white text on deep sage
+   (#3d6e4e → high contrast). At night, --accent flips to light sage
+   (#87bd97) and white text on it falls to ~1.6:1 — fails AA. Swap text to
+   the dark night-bg ink so the contrast is high on the light surface.
+   R3 design pass flagged this. */
+:root[data-theme='night'] .hero__cta,
+:root[data-theme='night'] .hero__cta:hover {
+  color: var(--bg);
+}
 
 /* Primary CTA — promoted per §2.2(a). Larger, slightly elevated, more
    typographic weight. Only applied on the hero so we don't bulk up the
@@ -1245,6 +1254,13 @@ html:not([data-lang-nudge='en']) .en-nudge {
   background-color: var(--bg);
   background-size: 132px 12px;
   pointer-events: none;
+}
+/* Night-mode dampening: the SVG strokes + sage circle are hardcoded day
+   colors that pop too brightly against ink. Slight opacity drop keeps the
+   underline visible as a hand-drawn mark without becoming the brightest
+   pixel on the page. R3 design pass. */
+:root[data-theme='night'] .site-footer__flourish {
+  opacity: 0.55;
 }
 .site-footer__inner {
   max-width: var(--max-w);
@@ -7247,6 +7263,16 @@ button.intake__progress-step:disabled {
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border-soft);
 }
+/* Drops the underline hairline AND tightens the bottom margin. Used by About
+   (no eyebrow chip, no hairline) so Marc's section arrives without the
+   editorial scaffolding every other home section wears. Per R3 design pass:
+   one mid-page template break wakes the eye back up — without it, the
+   visitor pattern-matches the folio+eyebrow+hairline+h2 rhythm and skips. */
+.section__head--bare {
+  padding-bottom: 0;
+  border-bottom: none;
+  margin-bottom: 28px;
+}
 .section__folio {
   position: absolute;
   top: -10px;
@@ -7279,6 +7305,14 @@ button.intake__progress-step:disabled {
   color: var(--text);
   margin: 0 0 8px;
   text-wrap: balance;
+}
+/* Home: every section h2 sits one step below the default display scale so
+   it doesn't outshout the deliberately calm hero. Without this, section 2
+   ("Ce que je livre") reads as the page banner and the manifesto becomes
+   a sub-paragraph. The 54px ceiling is still available on subpages where
+   the page-mast IS supposed to be the loudest mark. */
+.home .section__display {
+  font-size: clamp(2rem, 2vw + 1.5rem, 3rem);
 }
 .section__lead {
   font-family: var(--sans);
@@ -7510,8 +7544,14 @@ button.intake__progress-step:disabled {
   max-width: 46ch;
   text-wrap: pretty;
 }
+/* The closer is the click-prompt — visitor's eye should finish here and
+   move to the CTA, not loop back to the manifesto body. Bumped one beat
+   larger and tighter than the manifesto so it carries more pressure
+   instead of reading as a continuation sentence. R3 design pass. */
 .hero__closer-line {
-  margin: 0 0 36px;
+  font-size: clamp(26px, 2.6vw + 0.8rem, 36px);
+  line-height: 1.25;
+  margin: 12px 0 32px;
 }
 /* Ink-absorb: the paragraph starts at text-faint and saturates to text
    over 1.1s. The h1 is the LCP element, so we animate `color` (not
@@ -7744,6 +7784,19 @@ button.intake__progress-step:disabled {
 :root[data-theme='night'] .hero__slot-pill--full {
   color: var(--feat-iterative);
 }
+/* Mobile: the actions row stacks CTA, pill, sessions-link as three rows on
+   narrow widths and the pill was reading as a second-row banner competing
+   with the CTA. Make the pill smaller + quieter so it reads as a small
+   annotation under the CTA, not as a peer element. R3 design pass. */
+@media (max-width: 640px) {
+  .hero__actions {
+    gap: 14px;
+  }
+  .hero__slot-pill {
+    font-size: 10px;
+    opacity: 0.78;
+  }
+}
 
 /* Home-page CTA — slightly larger padding than the shared button. No
    wax-stamp shadow here: the open hero is calm and flat, the paper is
@@ -7790,13 +7843,20 @@ button.intake__progress-step:disabled {
   font-family: var(--sans);
   font-style: italic;
   font-weight: 600;
-  font-size: clamp(64px, 9vw, 124px);
-  line-height: 0.85;
+  /* Shrunk from clamp(64-124px) to clamp(48-72px) — the previous size made
+     the vertical column of four numerals more visually loud than the step
+     content beside them. R3 design pass: numerals should read as a numbered
+     list, not four stacked banners. Aligned to the body baseline (line-
+     height 1) so the row reads as "01 — step title" instead of a hanging
+     drop cap. */
+  font-size: clamp(48px, 5vw + 1rem, 72px);
+  line-height: 1;
   letter-spacing: -0.04em;
   /* Solid ink — a printed drop-numeral, not a clipped gradient. */
   color: var(--accent-warm);
   opacity: 0.92;
   font-variant-numeric: tabular-nums;
+  align-self: baseline;
   transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
   transform-origin: left center;
 }
@@ -8101,9 +8161,38 @@ button.intake__progress-step:disabled {
   text-transform: uppercase;
   color: var(--text-soft);
 }
+/* Community-discount chip inside each paid tier's head row, sitting
+   beside the price. Mono ledger treatment — reads as an annotation a
+   reader at this tier will see, not a SaaS coupon. Replaces the
+   standalone tier__promo strip that lived under the ladder. */
+.tier__community-chip {
+  margin-left: 10px;
+  padding: 2px 7px;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 2px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  align-self: center;
+}
+@media (max-width: 640px) {
+  .tier__community-chip {
+    margin-left: 0;
+    margin-top: 4px;
+    align-self: flex-start;
+  }
+}
 .tier__stamp {
   position: absolute;
-  top: -10px;
+  /* Lifted from top: -10px to -18px so the stamp sits clearly ABOVE the
+     card's top edge instead of clipping it. The deeper offset + the
+     stronger drop-shadow read as "sticker applied to paper" rather than
+     "another eyebrow chip glued to the row." R3 design pass: the stamp
+     was being mistaken for the section eyebrow because both treatments
+     lived in the same plane. */
+  top: -18px;
   left: 18px;
   background: var(--accent);
   color: var(--bg);
@@ -8112,11 +8201,13 @@ button.intake__progress-step:disabled {
   text-transform: uppercase;
   padding: 4px 10px;
   border-radius: 2px;
-  /* Pushed from -1.5° to -4° for that "actual printed stamp" tilt per the
-     plan (§2.3). Pairs with the new asOf/disclaimer copy that frames the
-     price list as a versioned, signed document. */
-  transform: rotate(-4deg);
-  box-shadow: 0 2px 0 var(--accent-warm);
+  /* Eased back from -4° to -3°, paired with the lift and a deeper shadow,
+     so the angle feels "applied by hand" instead of "printed at a
+     deliberate skew." */
+  transform: rotate(-3deg);
+  box-shadow:
+    0 2px 0 var(--accent-warm),
+    0 6px 12px rgba(31, 29, 24, 0.18);
 }
 
 /* Menu-folio and disclaimer copy that wraps the price list — versioned-
@@ -8541,178 +8632,61 @@ button.intake__progress-step:disabled {
    that stays visible through scroll, with scrollspy-driven active state.
    ────────────────────────────────────────────────────────────────────────── */
 .section-rail {
+  /* Pinned top-right scroll indicator. Replaces the magazine-style vertical
+     ladder (per R3 design pass 2026-05-27) — that ladder pattern-matched as
+     a decorative column on every viewport and stole the eye from the
+     content column. The compact "IV / IX" tag carries the same information
+     (where am I in the page) without the visual weight. */
   position: fixed;
-  top: 50%;
-  right: 22px;
-  transform: translateY(-50%);
+  top: 22px;
+  right: 24px;
   z-index: 8;
   pointer-events: none;
   font-family: var(--display);
 }
-.section-rail__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  /* Shared grid so all rows align column-by-column — labels right-aligned,
-     ticks centered, numbers anchored to the rail's right edge. Subgrid lets
-     each row inherit these columns so all six numbers stack at the same x.
-     Num column widened from 22px → 30px to fit Roman numerals (VIII is the
-     widest the masthead motif currently emits). A leading 10px column hosts
-     the per-section FeatureDot — clicking it jumps to /carte?feature=X
-     while the rest of the row (label/tick/num) still anchors the page. */
-  display: grid;
-  grid-template-columns: 10px max-content 32px 30px;
-  column-gap: 8px;
-  row-gap: 6px;
-  pointer-events: auto;
-  justify-content: end;
-}
-.section-rail__item {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: subgrid;
-  align-items: center;
-}
-.section-rail__dot {
-  grid-column: 1;
-  /* Pin to row 1 of the item subgrid. Without it, auto-placement runs the
-     DOM-first link (column 2/-1) into row 1, then can't backfill column 1,
-     so the dot drops to row 2 — visibly offset below its own numeral. */
-  grid-row: 1;
-  justify-self: center;
-  align-self: center;
-  /* At rest the rail is a clean Roman-numeral index — the feature dots
-     only appear for the section the visitor is currently on (the active
-     row) or the row they're pointing at. The dot keeps its grid cell
-     either way, so numerals never shift when one fades in. */
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-.section-rail__dot.is-active,
-.section-rail__item:hover .section-rail__dot,
-.section-rail__item:focus-within .section-rail__dot {
-  opacity: 1;
-}
-/* The rail is a quiet index — dots stay neutral at rest and reveal the
-   section's feature hue only when the row is hovered or focused. */
-.section-rail__dot.feature-dot {
-  background: var(--text-faint);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-faint) 28%, transparent);
-  /* Keep the glyph's cut-outs matched to the muted rest-state disc, so the
-     pictogram doesn't flash the feature hue before the row is hovered. */
-  --feature-glyph-hole: var(--text-faint);
-  transition:
-    background 160ms ease,
-    box-shadow 160ms ease;
-}
-.section-rail__item:hover .section-rail__dot.feature-dot,
-.section-rail__item:focus-within .section-rail__dot.feature-dot {
-  background: var(--ft-color, var(--text-soft));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ft-color, var(--text-soft)) 28%, transparent);
-  --feature-glyph-hole: var(--ft-color, var(--text-soft));
-}
-.section-rail__link {
-  display: grid;
-  grid-column: 2 / -1;
-  grid-template-columns: subgrid;
-  align-items: center;
-  padding: 4px 0;
+.section-rail__indicator {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  padding: 4px 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   color: var(--text-faint);
-  text-decoration: none;
-  font-size: 12.5px;
-  letter-spacing: 0.04em;
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
-}
-.section-rail__num {
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  text-align: right;
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  border: 1px solid var(--border-soft);
+  border-radius: 2px;
   font-variant-numeric: tabular-nums;
-  color: inherit;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-  /* Tight line box. With the inherited ~1.6 line-height the numeral sat in a
-     16.8px box; grid-centring then aligned that *box*, leaving the caps-only
-     Roman glyph (no descender) optically ~2px high of the dot. line-height:1
-     hugs the glyph so its optical centre lands on the row centre. */
-  line-height: 1;
+  /* backdrop-filter keeps the tag legible over the napperon doodles or the
+     hero photo without painting a solid block. */
+  backdrop-filter: blur(2px);
 }
-.section-rail__tick {
-  height: 1px;
-  /* Base 10px tick that grows up to ~26px as the visitor scrolls through
-     the corresponding section. `--rail-progress` is a 0–1 value written by
-     the SectionRail component for each link. Hover/active still override
-     via the rules below — they take precedence by specificity. */
-  width: calc(10px + var(--rail-progress, 0) * 16px);
-  background: currentColor;
-  opacity: calc(0.35 + var(--rail-progress, 0) * 0.25);
-  justify-self: end;
-  transition:
-    width 0.25s cubic-bezier(0.2, 0.7, 0.2, 1),
-    opacity 0.2s ease,
-    background 0.2s ease;
-}
-.section-rail__label {
-  font-weight: 500;
-  white-space: nowrap;
-  color: inherit;
-  /* Left-aligned so the label hugs its FeatureDot (column 1) instead of
-     floating away from it — the label column is max-content (sized to the
-     widest label), so right-aligning short labels stranded the dot a whole
-     column-width away. Leader gap now falls between label and tick, the
-     classic table-of-contents look. */
-  text-align: left;
-  opacity: 0;
-  transform: translateX(6px);
-  transition:
-    opacity 0.2s ease,
-    transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-/* Peek labels when hovering anywhere in the rail */
-.section-rail:hover .section-rail__label,
-.section-rail:focus-within .section-rail__label {
-  opacity: 0.55;
-  transform: translateX(0);
-}
-.section-rail__link:hover,
-.section-rail__link:focus-visible {
-  color: var(--accent-warm);
-  outline: none;
-}
-.section-rail__link:hover .section-rail__tick {
-  width: 24px;
-  opacity: 1;
-}
-.section-rail__link:hover .section-rail__num {
-  opacity: 1;
-}
-.section-rail__link:hover .section-rail__label {
-  opacity: 1;
-  transform: translateX(0);
-}
-.section-rail__link.is-active {
-  color: var(--accent-warm);
-}
-.section-rail__link.is-active .section-rail__num {
-  opacity: 1;
+.section-rail__indicator-active {
+  color: var(--text);
   font-weight: 600;
 }
-.section-rail__link.is-active .section-rail__tick {
-  width: 30px;
-  opacity: 1;
-  background: var(--accent);
-  height: 2px;
+.section-rail__indicator-sep {
+  opacity: 0.5;
+  margin: 0 2px;
 }
-.section-rail__link.is-active .section-rail__label {
-  opacity: 1;
-  transform: translateX(0);
+.section-rail__indicator-total {
+  opacity: 0.7;
 }
-/* Below 1080px the 880-wide content + rail get cramped — drop it. The
-   sticky header section nav still covers desktop tablets, and the in-hero
-   TOC still covers narrow viewports. */
-@media (max-width: 1080px) {
+/* Screen-reader-only label so assistive tech reads "IV / IX, Bring anything"
+   not just "IV / IX" which would be opaque. */
+.section-rail__indicator-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+/* On phone widths the header already shows the current section name in
+   the nav strip — hide the redundant indicator. */
+@media (max-width: 640px) {
   .section-rail {
     display: none;
   }
@@ -11519,42 +11493,11 @@ button.intake__progress-step:disabled {
   }
 }
 
-/* Community-rate promo line. Ledger-style mono, not a pill — keeps the
-   "−20 %" legible at a glance without pattern-matching as a marketing
-   badge. Transparent background + uniform thin border so it sits BELOW
-   the tier ladder visually instead of outranking it: the OBNL discount
-   doesn't apply to most visitors, and the previous sage left-border +
-   card tint pulled too much weight for a parenthetical. */
-.tier__promo {
-  margin: 20px 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 10px;
-  padding: 10px 14px;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius);
-  background: transparent;
-}
-.tier__promo-label {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--text);
-  white-space: nowrap;
-}
-.tier__promo-body {
-  font-size: 13.5px;
-  color: var(--text-soft);
-  font-family: var(--font-body);
-  letter-spacing: 0;
-  text-transform: none;
-}
-@media (max-width: 640px) {
-  .tier__promo {
-    padding: 10px 12px;
-  }
-}
+/* (tier__promo strip removed in the R3 design pass — community discount is
+   now annotated per-tier inside .tier__community-chip on every paid tier
+   row, where the reader scanning the price they'd pay actually sees it.
+   The long-form context lives in the tier__more disclosure under
+   communityNote.) */
 
 /* More-details disclosure — folds the four FAQ-style notes (hardware,
    community details, rescue, custodian) into a single <details> so a
@@ -12460,7 +12403,14 @@ button.intake__progress-step:disabled {
   color: var(--text-soft);
 }
 .vouch-card__name {
+  /* Mono + tracked so the author name scans at a glance even at thumbnail
+     scale — R3 design pass: who-said-it was illegible in the home flow
+     because the name read as ordinary body text. Mono pops as a distinct
+     "signature line" treatment without needing a heavier weight. */
+  font-family: var(--mono);
   font-weight: 600;
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
   color: var(--text);
 }
 .vouch-card__name a {
@@ -13267,6 +13217,15 @@ button.intake__progress-step:disabled {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-faint);
+}
+/* On hover-capable, fine-pointer devices (desktop / laptop) the cards
+   visibly peek at the right edge already — the "drag to see more" hint is
+   wrong vocabulary AND visual noise. Hide there; the touch hint stays for
+   phones and tablets where the affordance is the swipe. R3 design pass. */
+@media (hover: hover) and (pointer: fine) {
+  .bring-anything__scroll-hint {
+    display: none;
+  }
 }
 
 /* Horizontal scroll-snap row of theme cards. Padding + negative margin let
