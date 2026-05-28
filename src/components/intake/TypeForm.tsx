@@ -181,10 +181,16 @@ export function TypeForm({
     }
   }
 
-  const allRequiredFilled = schema.fields.every(
-    (f) => !f.required || (values[f.id] && values[f.id].trim().length > 0),
-  )
-  const canSubmit = allRequiredFilled && !submitting
+  // No field is required (sketch + voice are alternative input channels), so
+  // the gate is "at least one channel of input": any answered question, a
+  // sketch, or a transcribed voice note. This blocks an accidental empty
+  // submit without forcing any specific question. __handoff_mode has a
+  // default and isn't a schema field, so it doesn't count as problem content.
+  const hasAnyAnswer =
+    schema.fields.some((f) => (values[f.id] ?? '').trim().length > 0) ||
+    hasSketch ||
+    !!voiceNapkin?.transcript.trim()
+  const canSubmit = hasAnyAnswer && !submitting
 
   return (
     <div className="intake__step">
@@ -401,6 +407,7 @@ export function TypeForm({
         </p>
       )}
 
+      {!hasAnyAnswer && !submitting && <p className="form__hint mono">{t.needsInput}</p>}
       <div className="form__actions">
         <button type="button" className="link-btn mono" onClick={onBack} disabled={submitting}>
           {t.back}

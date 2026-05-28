@@ -2841,6 +2841,13 @@ button.intake__progress-step:focus-visible {
   color: var(--status-active);
   margin: -8px 0 0;
 }
+/* Quiet nudge shown when submit is gated because no input channel has been
+   used yet (no answered question, no sketch, no voice note). */
+.form__hint {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin: 0 0 10px;
+}
 .form__actions {
   display: flex;
   align-items: center;
