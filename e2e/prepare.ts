@@ -23,6 +23,19 @@ import type { Page } from '@playwright/test'
  *     that never settles degrades to best-effort instead of hanging.
  */
 export async function settle(page: Page): Promise<void> {
+  // Phase 0 — force-reveal content-visibility:auto sections. styles.css sets
+  // `content-visibility: auto` on every `.home .section:not(#hero)` so the
+  // browser skips layout/paint for off-screen sections (real perf win). But
+  // Playwright's fullPage screenshot uses captureBeyondViewport, which does
+  // NOT reliably trigger the auto-reveal — sections stay as their 760px
+  // intrinsic-size placeholders and the capture shows ~9k px of empty cream
+  // where HowItWorks/Vibe/Bring/Pricing/About/FAQ/CTA should be. Overriding
+  // to `visible` only inside the e2e run keeps the production optimization
+  // intact for real visitors.
+  await page.addStyleTag({
+    content: '.home .section { content-visibility: visible !important; }',
+  })
+
   // Phase 1 — scroll through to trigger lazy images + IO reveals.
   await page.evaluate(
     () =>

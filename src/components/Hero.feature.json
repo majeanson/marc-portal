@@ -6,14 +6,8 @@
   "domain": "marc-portal/home-section",
   "componentFile": "src/components/Hero.tsx",
   "problem": "The Hero is the visitor's first paragraph of contact with the practice. It carries one empathy-first manifesto sentence ('Tu as une affaire plate qui revient chaque semaine...') and a live capacity readout (1 active + 1 in triage = open or paused). Capacity is fetched from /api/capacity at request time — visitor sees the truth, not a marketing claim.",
-  "tags": [
-    "home-section",
-    "hero",
-    "live-capacity",
-    "manifesto",
-    "empathy-first"
-  ],
-  "analysis": "Renders DICT[lang].hero copy. One live data source fetched on mount: getCapacityLive (returns the current 1+1 cap state; flips the CTA label between 'Crée ton compte gratuit' and 'Rejoindre la liste d’attente'). Logged-in visitors see 'Démarrer une nouvelle proposition' instead, plus a 'Voir mes sessions' link that resolves to /me or /admin/inbox depending on isAdmin. The h1 holds the body + closer; the closer is wrapped in a span that gets italic + sage emphasis. The h1 *is* the LCP element, so its first-paint animation is a colour transition (text-faint → text) rather than an opacity fade — a coloured element counts as contentful and LCP fires on the prerendered first paint while the ink visibly absorbs.",
+  "tags": ["home-section", "hero", "live-capacity", "manifesto", "empathy-first"],
+  "analysis": "Renders DICT[lang].hero copy. One live data source fetched on mount: getCapacityLive (returns the current 1+1 cap state; flips the CTA label between 'Crée ton compte gratuit' and 'Rejoindre la liste d’attente'). Logged-in visitors see 'Démarrer une nouvelle proposition' instead, plus a 'Voir mes sessions' link that resolves to /me or /admin/inbox depending on isAdmin. The body is the h1 (LCP + SEO anchor); the closer is a sibling <p> styled identically so the two read as one paragraph visually but announce as two distinct blocks to screen readers. The closer span gets italic + sage emphasis. The h1 *is* the LCP element, so its first-paint animation is a colour transition (text-faint → text) rather than an opacity fade — a coloured element counts as contentful and LCP fires on the prerendered first paint while the ink visibly absorbs.",
   "decisions": [
     {
       "decision": "Capacity is fetched live, not a static claim",
@@ -32,14 +26,19 @@
       "rationale": "Previous design carried a clock-aware greeting (‘encore là?’ late-night) + a VÉRIFIÉ stamp echoing the OG card. The redesign strips them: the greeting added a date/timestamp feel Marc cooled on, and the stamp competed with the open-paper layout. The stamp may return later as a watermark; the greeting is gone.",
       "recommendation": "Don't restore the stamp as a corner decoration — if it returns, it lives behind the headline as a watermark or it doesn't return.",
       "date": "2026-05-27"
+    },
+    {
+      "decision": "Remove the signature block; split closer into its own paragraph",
+      "rationale": "Design review (2026-05-27, second pass): the .hero__sig (sage hairline + small-caps name) sat between the closer and the CTA as a visual speed bump where the eye should be accelerating toward the button. Hero only needs to do three things — name the situation, name the response, take the click. Separately, the h1 was announcing both sentences (body + closer) as one heading; splitting the closer into a sibling <p> with shared typography keeps the visual paragraph intact while letting screen readers announce them as two blocks.",
+      "recommendation": "Don't add the signature back. If a name credit is wanted, place it BELOW the CTA as a small mono right-aligned line so it doesn't gate the click.",
+      "date": "2026-05-27"
     }
   ],
-  "successCriteria": "- Renders empathy paragraph + closer span + signature + CTA + capacity pill\n- Capacity readout reflects live D1 state\n- CTA label flips for logged-in / waitlist / cold states\n- Sessions link appears for logged-in visitors\n- Bilingual at full parity (FR + EN body + closer)\n- One live fetch on mount\n- Reduced-motion: ink-absorb skipped, paragraph presented at rest",
-  "implementation": "src/components/Hero.tsx — useEffect fetches getCapacityLive on mount. The body + closer come from DICT[lang].hero.body and .closer; closer is wrapped in a <span class=\"hero__closer\"> for italic+sage emphasis. CSS in src/styles.css (.home .hero, .hero__manifesto, .hero__closer, .hero__sig*) handles the ink-absorb animation and the sage hairline rule under the small-caps name.",
-  "userGuide": "Edit copy via DICT.fr.hero / DICT.en.hero (body, closer, cta, ctaWaitlist, ctaLoggedIn, mySessionsLink, signature). The closer span is what gets the italic+sage emphasis — keep it short (one sentence, ends with a period). To flatten the CTA further (e.g., make it text-only): edit .home .hero__cta in styles.css. Capacity badge wording is hardcoded in Hero.tsx (FR/EN lookup); the dot-or-square indicator lives in .hero__slot-pill CSS.",
+  "successCriteria": "- Renders body h1 + closer paragraph + CTA + capacity pill\n- Capacity readout reflects live D1 state\n- CTA label flips for logged-in / waitlist / cold states\n- Sessions link appears for logged-in visitors\n- Bilingual at full parity (FR + EN body + closer + slot pill)\n- One live fetch on mount\n- Reduced-motion: ink-absorb skipped, paragraphs presented at rest",
+  "implementation": "src/components/Hero.tsx — useEffect fetches getCapacityLive on mount. body + closer come from DICT[lang].hero.body / .closer; closer is rendered in a sibling <p class=\"hero__closer-line\"> with an inner <span class=\"hero__closer\"> for italic+sage emphasis. Slot-pill copy comes from DICT[lang].hero.slotOpen / .slotFull (no inline FR/EN ternaries — i18n parity contract). CSS in src/styles.css groups .hero__manifesto + .hero__closer-line under a single rule block so they share font-size, line-height, color, and the ink-absorb keyframe.",
+  "userGuide": "Edit copy via DICT.fr.hero / DICT.en.hero (body, closer, cta, ctaWaitlist, ctaLoggedIn, mySessionsLink, slotOpen, slotFull). The closer span is what gets the italic+sage emphasis — keep it short (one sentence, ends with a period). To flatten the CTA further (e.g., make it text-only): edit .home .hero__cta in styles.css. Slot-pill wording is now in DICT (not hardcoded). Night-theme contrast for the pill uses --feat-intake / --feat-iterative tokens.",
   "knownLimitations": [
-    "One fetch on mount for capacity. If /api/capacity is down, the CTA defaults to the cold-state label (open), which is the right side of the fence for a hero that should never look broken on cold-start",
-    "The h1 is unusually long (2 short sentences). Screen readers will announce it as one heading — acceptable here because the heading IS the page's primary message, but worth noting for accessibility review"
+    "One fetch on mount for capacity. If /api/capacity is down, the CTA defaults to the cold-state label (open), which is the right side of the fence for a hero that should never look broken on cold-start"
   ],
   "statusHistory": [
     {
@@ -62,6 +61,7 @@
     }
   ],
   "lastVerifiedDate": "2026-05-27",
+  "_lastReviewPass": "design-review 2026-05-27 (second pass): signature block removed, closer split into sibling <p>, slot-pill copy moved to DICT, aria-live dropped, night-theme contrast added.",
   "revisions": [
     {
       "date": "2026-05-23",

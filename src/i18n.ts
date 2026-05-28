@@ -70,16 +70,27 @@ const FR = {
     "Marc, dev québécois. Le soir et la fin de semaine, j'aide les gens à régler des problèmes du quotidien avec du code. Tout est async, sans meetings, à ton rythme.",
 
   hero: {
-    signature: 'Marc, dev québécois',
     // Empathy-first opening paragraph. The closer is split out so the
     // component can give it italic + sage emphasis — the eye should land
     // on "Raconte-moi ça." before reaching the CTA.
-    body: "Tu as une affaire plate qui revient chaque semaine. C'est pas un enjeu national, mais c'est assez tannant pour mériter mieux.",
+    body: "Une affaire plate qui revient chaque semaine, c'est pas un enjeu national. Mais c'est assez tannant pour mériter mieux.",
     closer: 'Raconte-moi ça.',
     cta: 'Crée ton compte gratuit →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle proposition →',
     mySessionsLink: 'Voir mes sessions',
+    slotOpen: '1 place ouverte',
+    slotFull: 'plein, liste d’attente ouverte',
+  },
+
+  /* One-time banner offered to EN-browser visitors who landed on the FR
+     home. Component (EnglishNudge.tsx) only renders on lang === 'fr', so
+     the EN parity below is contract-fulfillment — the keys must exist
+     for the typeof FR check but the strings never paint. */
+  enNudge: {
+    prompt: 'Tu lis en anglais d’habitude?',
+    yes: 'En anglais →',
+    no: 'Reste en français',
   },
 
   how: {
@@ -124,7 +135,7 @@ const FR = {
   featured: {
     eyebrow: 'projets en cours',
     title: 'Ce que je livre, en vrai',
-    sub: 'Derrière chaque carte, un projet qui roule pour vrai. Du code en production, des problèmes concrets, et un build que tu peux aller tester maintenant.',
+    sub: 'Derrière chaque carte, un projet en production que tu peux aller tester là, maintenant. Vrai code, vrai problème, vrai monde.',
     seeAll: 'Voir tous les projets →',
     galleryCard: {
       eyebrow: 'envie de tout voir?',
@@ -161,24 +172,24 @@ const FR = {
 
   vibe: {
     eyebrow: 'attrape mon vibe',
-    title: 'Ce que je fais, ce que je ne fais pas',
+    title: 'Ce que je fais, ce que je fais pas',
     body: 'Lis cette liste avant de remplir le formulaire. Si ça matche, on va bien s’entendre. Sinon, pas de drame, y a plein d’autres devs qui font autre chose.',
     do: {
       title: 'Je fais',
       items: [
-        'Tout simplement ton idée',
+        'Idées plates du quotidien — facture, formulaire, suivi',
         'Automatisation de tout genre',
         'Coordination de petites équipes ou de bénévoles',
         'Portfolios, sites découvertes',
       ],
     },
     dont: {
-      title: 'Je ne fais pas',
+      title: 'Je fais pas',
       items: [
         'Calls, meetings, vidéos planifiées',
         'Bug fixes urgents ou support 24/7',
         'Changements de scope en cours de projet',
-        'Du travail dans le beurre',
+        'Du travail qui mène nulle part',
       ],
     },
   },
@@ -186,7 +197,7 @@ const FR = {
   bringAnything: {
     eyebrow: 'aucune idée trop petite',
     title: 'Apporte-moi n’importe quoi',
-    body: 'Je veux que toutes les idées arrivent dans ma boîte : petites, weird, à moitié formées, peu importe. Mon job, c’est de filtrer. Le tien, c’est juste de décrire ce qui te trotte dans la tête.',
+    body: 'Je veux que toutes les idées arrivent dans ma boîte : petites, bizarres, à moitié formées, peu importe. Mon job, c’est de filtrer. Le tien, c’est juste de décrire ce qui te trotte dans la tête.',
     examplesTitle: 'Des idées que je prendrais sans hésiter',
     scrollHint: 'glisse pour en voir plus →',
     exampleGroups: [
@@ -203,7 +214,7 @@ const FR = {
       {
         label: 'Pour quelqu’un que t’aimes',
         items: [
-          'Un site une-page pour les 30 ans de ton chum, avec un mot de chaque ami',
+          'Un site une-page pour les 30 ans de ton/ta partenaire, avec un mot de chaque ami',
           'Une page mémorial avec photos pour ton chat décédé',
           'Un outil pour aider ta grand-mère à organiser ses recettes',
           'Un livre de recettes de famille que tout le monde peut remplir',
@@ -249,7 +260,7 @@ const FR = {
   pricing: {
     eyebrow: 'prix publics',
     title: 'Combien ça coûte',
-    body: 'Prix concrets, pas de devis caché. Chaque niveau renvoie à des projets réels du même calibre. Tu vois ce que ça donne avant de soumettre.',
+    body: 'Prix concrets, jamais « sur demande ». Chaque niveau renvoie à des projets réels du même calibre. Tu vois ce que ça donne avant de soumettre.',
     asOf: 'Prix publics, en vigueur depuis 2026-06-01.',
     disclaimer:
       'Les prix sont fixes avant qu’on commence. Pas de surprise après : si je dépasse, c’est mon problème. Taxes en sus si applicable.',
@@ -323,7 +334,7 @@ const FR = {
     eyebrow: 'prêt?',
     title: 'Décris ton problème',
     body: "Compte gratuit. Aucun call. Je lis chaque formulaire moi-même et je te réponds en 72 h. Oui, non, « j'ai plus de questions » ou « raconte-moi plus ».",
-    button: 'Ouvrir le formulaire →',
+    button: 'Crée ton compte et décris ton problème →',
     buttonLoggedIn: 'Démarrer une nouvelle proposition →',
     micro:
       'Si je suis plein, tu peux quand même créer un compte et te mettre sur la liste d’attente.',
@@ -335,7 +346,7 @@ const FR = {
     ariaLabel: 'Démarrer une session, ouvrir le formulaire',
     // Swapped in once the visitor scrolls past most of the page — same
     // destination, different mood.
-    farLabel: 'T’es rendu loin →',
+    farLabel: 'Presque rendu →',
     dismissLabel: 'Cacher',
     pebbleAriaLabel: 'Reprendre, démarrer une session',
   },
@@ -444,6 +455,7 @@ const FR = {
       rescue: 'Réparer un truc qui existe déjà',
     },
     cta: 'Continuer →',
+    moreTypes: 'autre chose ?',
   },
 
   faq: {
@@ -461,7 +473,7 @@ const FR = {
       },
       {
         q: 'Je pourrais pas juste le faire moi-même avec un générateur d’app IA?',
-        a: 'Pour un problème de Niveau 0, probablement que oui, et je te pointe vers un outil ou un template gratuitement. C’est exactement à ça que sert le Niveau 0. Pour le reste, construire n’a jamais été la partie difficile. Un générateur IA a besoin que tu saches exactement quoi lui demander, et la plupart des gens ne le savent pas encore. Trouver ça, c’est le triage. Il te sort une démo rapide, puis te laisse pris avec le login qui marche à moitié, les données qui se perdent, l’hébergement, le nom de domaine. C’est toi qui debugges à 21 h sans personne à appeler. Ce que tu paies, c’est un prix fixe, un outil qui tient le coup pour de vrai, et un nom responsable quand quelque chose brise des mois plus tard. Déjà pris avec une app IA à moitié faite ? Ça, c’est un <a href="/intake">sauvetage</a> : je regarde ce qui cloche et je te dis franchement si ça se répare. Si ton idée est assez petite pour que rien de ça ne te dérange, prends le générateur, je te le dirai franchement.',
+        a: 'Pour un problème de Niveau 0, probablement que oui, et je te pointe vers un outil ou un template gratuitement. C’est exactement à ça que sert le Niveau 0.</p><p>Pour le reste, construire n’a jamais été la partie difficile. Un générateur IA a besoin que tu saches exactement quoi lui demander, et la plupart des gens ne le savent pas encore. Trouver ça, c’est le triage. Il te sort une démo rapide, puis te laisse pris avec le login qui marche à moitié, les données qui se perdent, l’hébergement, le nom de domaine. C’est toi qui debugges à 21 h sans personne à appeler. Ce que tu paies, c’est un prix fixe, un outil qui tient le coup pour de vrai, et un nom responsable quand quelque chose brise des mois plus tard. Déjà pris avec une app IA à moitié faite ? Ça, c’est un <a href="/intake">sauvetage</a> : je regarde ce qui cloche et je te dis franchement si ça se répare. Si ton idée est assez petite pour que rien de ça ne te dérange, prends le générateur, je te le dirai franchement.',
       },
       {
         q: 'Et si ça prend plus de temps que prévu?',
@@ -473,7 +485,7 @@ const FR = {
       },
       {
         q: 'Je ne sais pas exactement ce que je veux. C’est ok?',
-        a: 'C’est même attendu. Décris comme il te vient, dans tes mots, sans te filtrer. Si ça sonne trop petit, trop weird, ou pas assez « professionnel », écris-le pareil. C’est moi qui décide ce qui rentre. Mon job c’est de poser les bonnes questions et de te montrer une version concrète sur laquelle tu peux réagir.',
+        a: 'C’est même attendu. Décris comme il te vient, dans tes mots, sans te filtrer. Si ça sonne trop petit, trop bizarre, ou pas assez « professionnel », écris-le pareil. C’est moi qui décide ce qui rentre. Mon job c’est de poser les bonnes questions et de te montrer une version concrète sur laquelle tu peux réagir.',
       },
       {
         q: 'À qui appartient le code à la fin?',
@@ -489,9 +501,9 @@ const FR = {
   about: {
     eyebrow: 'qui je suis',
     title: 'À propos',
-    body: 'Je suis dev depuis ~10 ans. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible, pour toi comme pour moi.',
+    body: 'Je suis dev depuis une dizaine d’années. Job de jour à temps plein (37,5 h/sem), une famille, et l’envie d’aider les petites entreprises et les gens autour de moi à se simplifier la vie sans payer une agence. Le portail, c’est ce qui rend ça possible, pour toi comme pour moi.',
     body2:
-      'C’est un gars qui décide, avec juste ce qu’il faut de machine pour gérer la logistique. Pas une agence, pas une plateforme géante. C’est ça qui nous garde nos soirées, à tous les deux.',
+      'C’est un gars qui décide, avec juste ce qu’il faut de machine pour gérer la logistique — ni une agence, ni une plateforme géante. C’est ce qui nous garde nos soirées, à tous les deux.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
   },
@@ -507,7 +519,7 @@ const FR = {
   },
 
   pullQuote: {
-    body: 'Je serai toujours honnête sur ton projet, même quand la réponse, c’est « garde ton argent ».',
+    body: 'Je vais toujours te dire la vérité sur ton projet, même quand la réponse c’est « garde ton argent ».',
     attribution: 'Marc',
   },
 
@@ -1089,13 +1101,22 @@ const EN: Copy = {
     'Marc, a Québécois dev. Evenings and weekends, I help people solve everyday problems with code. Everything runs async, no meetings, at your pace.',
 
   hero: {
-    signature: 'Marc, Québécois dev',
-    body: "There's something that comes back every week. It's no national crisis, but it's annoying enough to deserve better.",
+    body: "You've got something boring that comes back every week. It's no national crisis, but it's annoying enough to deserve better.",
     closer: 'Tell me about it.',
     cta: 'Create a free account →',
     ctaWaitlist: 'Join the waitlist →',
     ctaLoggedIn: 'Start a new proposal →',
     mySessionsLink: 'View my sessions',
+    slotOpen: '1 slot open',
+    slotFull: 'currently full, waitlist open',
+  },
+
+  /* Contract-only — see DICT.fr.enNudge. Never rendered: the component
+     short-circuits on lang !== 'fr'. */
+  enNudge: {
+    prompt: 'Do you usually read in English?',
+    yes: 'In English →',
+    no: 'Stay in French',
   },
 
   how: {
@@ -1140,7 +1161,7 @@ const EN: Copy = {
   featured: {
     eyebrow: 'projects in progress',
     title: 'What I’m actually shipping',
-    sub: 'Behind each card is a project that’s actually running. Code in production, concrete problems, and a build you can go test right now.',
+    sub: 'Behind each card, a real project in production you can go test right now. Real code, real problem, real people.',
     seeAll: 'See all projects →',
     galleryCard: {
       eyebrow: 'want to see everything?',
@@ -1182,7 +1203,7 @@ const EN: Copy = {
     do: {
       title: 'I do',
       items: [
-        'Quite simply, your idea',
+        'Boring everyday ideas — invoices, forms, tracking',
         'Automation of any kind',
         'Coordination for small teams or volunteers',
         'Portfolios, discovery sites',
@@ -1265,7 +1286,7 @@ const EN: Copy = {
   pricing: {
     eyebrow: 'public pricing',
     title: 'What it costs',
-    body: 'Concrete prices, no hidden quotes. Each tier (price level) links to actual past projects of the same level. You see what it looks like before you submit.',
+    body: 'Concrete prices, never “request a quote.” Each tier (price level) links to actual past projects of the same level. You see what it looks like before you submit.',
     asOf: 'Public prices, effective 2026-06-01.',
     disclaimer:
       'Prices are fixed before we start. No surprise after: if I run over, that’s on me. Taxes extra where applicable.',
@@ -1338,7 +1359,7 @@ const EN: Copy = {
     eyebrow: 'ready?',
     title: 'Describe your problem',
     body: "Free account. No call. I read every form myself and reply within 72h: yes, no, or 'tell me more.'",
-    button: 'Open the form →',
+    button: 'Create your account and describe your problem →',
     buttonLoggedIn: 'Start a new proposal →',
     micro: "If I'm full, you can still create an account and join the waitlist.",
   },
@@ -1456,6 +1477,7 @@ const EN: Copy = {
       rescue: 'Fix something that already exists',
     },
     cta: 'Continue →',
+    moreTypes: 'something else?',
   },
 
   faq: {
@@ -1473,7 +1495,7 @@ const EN: Copy = {
       },
       {
         q: "Couldn't I just build this myself with an AI app builder?",
-        a: "For a Tier 0 problem, you probably can, and I'll point you to a builder or a template for free, which is what Tier 0 is for. For anything bigger, the building was never the hard part. An AI builder needs you to know exactly what to ask it, and most people don't yet. Figuring that out is the triage. It gets you a quick demo, then leaves you stuck on the login that half-works, the data that goes missing, the hosting, the domain. You'd be the one debugging at 9pm with nobody to call. What you pay me for is a fixed price, a data model that holds up when it's really used, and a name that's accountable when something breaks months later. Already stuck with a half-working AI build? That's a <a href=\"/en/intake\">rescue</a>: I look at it and tell you straight whether it's worth fixing. If your idea is small enough that none of that bites, use the builder, I'll tell you so honestly.",
+        a: "For a Tier 0 problem, you probably can, and I'll point you to a builder or a template for free, which is what Tier 0 is for.</p><p>For anything bigger, the building was never the hard part. An AI builder needs you to know exactly what to ask it, and most people don't yet. Figuring that out is the triage. It gets you a quick demo, then leaves you stuck on the login that half-works, the data that goes missing, the hosting, the domain. You'd be the one debugging at 9pm with nobody to call. What you pay me for is a fixed price, a data model that holds up when it's really used, and a name that's accountable when something breaks months later. Already stuck with a half-working AI build? That's a <a href=\"/en/intake\">rescue</a>: I look at it and tell you straight whether it's worth fixing. If your idea is small enough that none of that bites, use the builder, I'll tell you so honestly.",
       },
       {
         q: 'What if it takes longer than expected?',
@@ -1501,9 +1523,9 @@ const EN: Copy = {
   about: {
     eyebrow: 'who I am',
     title: 'About',
-    body: "I've been a dev for ~10 years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible, for both of us.",
+    body: "I've been a dev for about ten years. Full-time day job (37.5h/week), a family, and a desire to help small businesses and people around me simplify their lives without paying an agency. The portal is what makes that possible, for both of us.",
     body2:
-      'It’s one person making the calls, with just enough machine in the middle to handle the logistics. Not an agency, not some sprawling platform. That’s what keeps the evenings ours, yours and mine.',
+      'It’s one person making the calls, with just enough machine in the middle to handle the logistics — neither an agency nor a sprawling platform. That’s what keeps the evenings ours, yours and mine.',
     portraitAlt: 'Marc',
     githubLabel: 'GitHub',
   },
@@ -1519,7 +1541,7 @@ const EN: Copy = {
   },
 
   pullQuote: {
-    body: 'I’ll always be honest about your project, even when the answer is “keep your money.”',
+    body: 'I’ll always tell you the truth about your project, even when the answer is “keep your money.”',
     attribution: 'Marc',
   },
 

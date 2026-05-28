@@ -8,6 +8,11 @@ import { SectionEyebrow } from './SectionEyebrow'
 import { PAGE_FEATURE } from '../lib/features'
 
 const TYPES: ProblemType[] = ['paperasse', 'suivi', 'coordination', 'autre', 'rescue']
+// On phones the full 5-card stack is half the viewport; gate "autre" + "rescue"
+// behind a "+ autre chose ?" link so the visitor's eye lands on the three
+// concrete categories first. PRIMARY_COUNT is the cutoff. Desktop is
+// unaffected (CSS short-circuits the gate).
+const PRIMARY_COUNT = 3
 
 /**
  * Soft on-ramp surfaced on the home page. Visitor picks a project type and
@@ -24,6 +29,7 @@ export function InlineIntakeTeaser({ lang }: { lang: Lang }) {
   const t = DICT[lang].inlineTeaser
   const navigate = useNavigate()
   const [picked, setPicked] = useState<ProblemType | null>(null)
+  const [revealedAll, setRevealedAll] = useState(false)
   const langPrefix = lang === 'en' ? '/en' : ''
 
   function commit(type: ProblemType) {
@@ -58,14 +64,19 @@ export function InlineIntakeTeaser({ lang }: { lang: Lang }) {
         </SectionEyebrow>
         <h2 className="inline-teaser__title">{t.title}</h2>
         <p className="inline-teaser__sub">{t.sub}</p>
-        <div className="inline-teaser__grid" role="group" aria-label={t.title}>
-          {TYPES.map((type) => {
+        <div
+          className={`inline-teaser__grid${revealedAll ? ' is-expanded' : ''}`}
+          role="group"
+          aria-label={t.title}
+        >
+          {TYPES.map((type, i) => {
             const isPicked = picked === type
+            const isSecondary = i >= PRIMARY_COUNT
             return (
               <button
                 key={type}
                 type="button"
-                className={`inline-teaser__card${isPicked ? ' is-picked' : ''}`}
+                className={`inline-teaser__card${isPicked ? ' is-picked' : ''}${isSecondary ? ' inline-teaser__card--secondary' : ''}`}
                 onClick={() => commit(type)}
                 disabled={picked !== null && !isPicked}
               >
@@ -78,6 +89,16 @@ export function InlineIntakeTeaser({ lang }: { lang: Lang }) {
             )
           })}
         </div>
+        {!revealedAll && (
+          <button
+            type="button"
+            className="inline-teaser__more mono"
+            onClick={() => setRevealedAll(true)}
+            aria-expanded={revealedAll}
+          >
+            {t.moreTypes}
+          </button>
+        )}
         <a className="inline-teaser__napkin-link mono" href={`${langPrefix}/intake`}>
           {DICT[lang].napkin.homeTeaser}
         </a>

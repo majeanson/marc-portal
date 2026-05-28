@@ -83,8 +83,15 @@
   --text-mid: #c9c0aa;
   --text-soft: #8d8674;
   --text-faint: #5e574d;
-  --accent: #6a9b78;
-  --accent-warm: #8cbb99;
+  /* Night-mode accent pair. Day defines --accent (#3d6e4e, deeper sage) +
+     --accent-warm (#2c5239, even deeper); the "warm" token in day means
+     "more saturated, eye-pulling — use it for the one coloured mark in
+     a paragraph." Night must hold that semantic relationship: --accent
+     is the primary sage; --accent-warm is the louder mark. The previous
+     pair flipped the relationship (warm lighter than accent), which made
+     the hero closer fade into the body text on dark. */
+  --accent: #87bd97;
+  --accent-warm: #b8a86b;
   --accent-soft: #2a3a30;
   --warm: #d28358;
   --warm-soft: #3a2820;
@@ -458,7 +465,16 @@ p {
    above the hero, offering the EN switch to visitors whose browser reports
    en-*. Chrome only: paper background, hairline border, no pill, no
    gradient, no fade-up. The visual register matches the section-rail
-   ledger tags so it reads as quiet site furniture, not a popup. */
+   ledger tags so it reads as quiet site furniture, not a popup.
+
+   Visibility is gated on html[data-lang-nudge="en"], which the inline
+   theme-bootstrap.js sets before paint based on navigator + cookie +
+   localStorage. The React component renders the banner DOM unconditionally
+   on the FR home; this rule keeps it out of view until the bootstrap decides
+   otherwise, so the prerendered banner doesn't blink in/out during mount. */
+html:not([data-lang-nudge='en']) .en-nudge {
+  display: none;
+}
 .en-nudge {
   background: var(--bg-section);
   border-bottom: 1px solid var(--border-soft);
@@ -668,6 +684,18 @@ p {
   }
   .site-header__section-link {
     flex-shrink: 0;
+  }
+}
+/* Below 640px the swipe-strip nav becomes a second sticky row of chrome
+   that takes ~40px of viewport before the visitor reads anything. The
+   home is short enough that anchor links to its own sections aren't the
+   right mobile affordance — the MobileStickyCta + ordinary scrolling
+   IS the mobile navigation. Hide the section nav entirely on phones.
+   The session-variant ("← Mes sessions" back link) keeps showing
+   because it's a different, primary navigation gesture. */
+@media (max-width: 640px) {
+  .site-header__sections:not(.site-header__sections--session) {
+    display: none;
   }
 }
 .site-header__right {
@@ -5607,9 +5635,15 @@ button:focus-visible,
   .tier--anchor .tier__head,
   .tier--anchor .tier__scope,
   .tier--anchor .tier__example,
-  .tier--anchor .tier__after,
-  .tier--anchor .tier__stamp {
+  .tier--anchor .tier__after {
     position: relative;
+    z-index: 1;
+  }
+  /* The stamp is already position:absolute (see .tier__stamp below); only
+     bump its z-index so the shimmer band passes behind it. Including it in
+     the rule above forced it into flow and pushed the price row ~40px down,
+     which made the anchor card's price stop aligning with the others. */
+  .tier--anchor .tier__stamp {
     z-index: 1;
   }
   @keyframes tier-anchor-shimmer {
@@ -7448,7 +7482,7 @@ button.intake__progress-step:disabled {
    transform-staggers, no highlighter rectangles. See
    src/components/Hero.tsx for the markup. */
 .home .hero {
-  padding: 76px var(--gutter) 96px;
+  padding: 48px var(--gutter) 88px;
   border-bottom: none;
 }
 /* Left-aligned content block; the wrapper itself stays centered via
@@ -7457,12 +7491,15 @@ button.intake__progress-step:disabled {
   text-align: left;
 }
 
-/* The manifesto. Upright Source Serif 4 at clamp(20-26px), wide column
-   so a two-sentence paragraph lands in 2–3 long lines instead of 5–6
-   short ones. The h1 default heading weight is overridden — this reads
-   as running paragraph text, not a display headline. */
-.hero__manifesto {
-  margin: 0 0 36px;
+/* Manifesto + closer line. Two paragraphs sharing every typographic
+   property so they read as one block visually; split into two <p>s for
+   a11y — screen readers were announcing the old combined h1 (body +
+   closer) as one heading, which buried the closer. The h1 default
+   heading weight is overridden — both lines read as running paragraph
+   text, not a display headline. */
+.hero__manifesto,
+.hero__closer-line {
+  margin: 0;
   font-family: var(--sans);
   font-style: normal;
   font-weight: 400;
@@ -7473,17 +7510,24 @@ button.intake__progress-step:disabled {
   max-width: 46ch;
   text-wrap: pretty;
 }
+.hero__closer-line {
+  margin: 0 0 36px;
+}
 /* Ink-absorb: the paragraph starts at text-faint and saturates to text
-   over 1.1s. This h1 is the LCP element, so we animate `color` (not
+   over 1.1s. The h1 is the LCP element, so we animate `color` (not
    `opacity`) — a coloured element counts as contentful so LCP fires on
-   the prerendered first paint while the ink still visibly soaks in. */
+   the prerendered first paint while the ink still visibly soaks in.
+   The closer-line shares the same keyframe + timing so both lines
+   absorb as one block. */
 @media (prefers-reduced-motion: no-preference) {
-  .hero__manifesto {
+  .hero__manifesto,
+  .hero__closer-line {
     animation: hero-ink-absorb 1100ms cubic-bezier(0.4, 0, 0.2, 1) 240ms forwards;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero__manifesto {
+  .hero__manifesto,
+  .hero__closer-line {
     color: var(--text);
   }
 }
@@ -7498,43 +7542,6 @@ button.intake__progress-step:disabled {
   font-style: italic;
   color: var(--accent-warm);
   font-weight: 500;
-}
-
-/* Signature block — sage hairline + small-caps name, left-anchored.
-   Replaces the old hand-drawn flourish SVG. The rule's left-edge
-   scale-in animation fires ~540ms after page-load, lining up with the
-   manifesto's ink-absorb so the page settles in one calm beat. */
-.hero__sig {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  margin: 0 0 40px;
-}
-.hero__sig-rule {
-  width: 56px;
-  height: 1px;
-  background: var(--accent);
-  transform-origin: left center;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .hero__sig-rule {
-    transform: scaleX(0);
-    animation: hero-rule-draw 500ms cubic-bezier(0.32, 0.72, 0.24, 1) 540ms forwards;
-  }
-}
-@keyframes hero-rule-draw {
-  to {
-    transform: scaleX(1);
-  }
-}
-.hero__sig-name {
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 12.5px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--text-mid);
 }
 
 /* Error-page panels (NotFound + RouteError) — corner stamp + relative
@@ -7728,15 +7735,32 @@ button.intake__progress-step:disabled {
   background: transparent;
   box-shadow: inset 0 0 0 1.6px currentColor;
 }
+/* Night-theme overrides — the day greens/browns sink under 4.5:1 on the
+   dark surface. Reuse the night palette tokens that already exist for
+   the cluster dots so the trust statement clears WCAG AA in both themes. */
+:root[data-theme='night'] .hero__slot-pill--open {
+  color: var(--feat-intake);
+}
+:root[data-theme='night'] .hero__slot-pill--full {
+  color: var(--feat-iterative);
+}
 
 /* Home-page CTA — slightly larger padding than the shared button. No
    wax-stamp shadow here: the open hero is calm and flat, the paper is
-   the surface, the button doesn't pretend to lift off it. */
+   the surface, the button doesn't pretend to lift off it. Hover is
+   the colour shift only — no lift, no shadow. The shared .hero__cta
+   carries those on other pages where the elevated look is warranted;
+   on the home it's an AI-y tell, so it gets explicitly disabled here. */
 .home .hero__cta {
   padding: 16px 26px;
   font-size: 16px;
   letter-spacing: 0.005em;
   box-shadow: none;
+}
+.home .hero__cta:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--accent-warm);
 }
 /* ── HowItWorks — editorial steps ─────────────────────────────────────────── */
 .home .steps--editorial {
@@ -8173,6 +8197,14 @@ button.intake__progress-step:disabled {
   transform: rotate(8deg);
   opacity: 0.26;
 }
+/* Night theme — the day red at 26% on a dark surface reads as a bright
+   corner accent (the dark page makes saturated colours pop). Drop to the
+   warmer feature token at lower opacity so it stays a faint affordance,
+   not an emphasis. */
+:root[data-theme='night'] .vibe--ledger .vibe__mark--dont {
+  color: var(--feat-keys);
+  opacity: 0.18;
+}
 .vibe--ledger .vibe__col h3 {
   font-family: var(--display);
   font-size: 24px;
@@ -8242,6 +8274,14 @@ button.intake__progress-step:disabled {
   grid-template-columns: 200px 1fr;
   gap: 36px;
   align-items: start;
+}
+/* When the portrait img onError hides the figure (style="display: none"),
+   reflow to a single column so the bio doesn't sit in a 200px-narrow
+   column with empty gutter. :has() is widely supported; older browsers
+   keep the two-column grid (mostly empty left column) which is a
+   degraded-but-not-broken fallback. */
+.home .about__layout--editorial:has(figure[style*='display: none']) {
+  grid-template-columns: 1fr;
 }
 @media (max-width: 640px) {
   .home .about__layout--editorial {
@@ -8745,11 +8785,8 @@ button.intake__progress-step:disabled {
   .home .hero {
     padding: 56px var(--gutter) 72px;
   }
-  .hero__manifesto {
-    margin-bottom: 30px;
-  }
-  .hero__sig {
-    margin-bottom: 32px;
+  .hero__closer-line {
+    margin-bottom: 24px;
   }
   .section__head {
     margin-bottom: 32px;
@@ -9301,11 +9338,26 @@ button.intake__progress-step:disabled {
 /* Inline feature dot in the FAQ summary — sits to the left of the question
    text. Borrows --ft-color from the <details data-feature> wrapper so a
    "price" Q is plum, "ownership" is terracotta, etc. Decorative — the
-   summary itself owns the click. */
+   summary itself owns the click. Hidden at rest, fades in on hover /
+   focus / [open] so 7 stacked multi-coloured bullets don't greet every
+   visitor as a ribbon. Width stays reserved so the question text doesn't
+   shift when the dot appears. */
 .faq__q-dot {
   align-self: center;
   margin-right: 12px;
   flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.faq__item[open] .faq__q-dot,
+.faq__item:hover .faq__q-dot,
+.faq__item:focus-within .faq__q-dot {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq__q-dot {
+    transition: none;
+  }
 }
 .faq__item[data-feature]:hover > summary,
 .faq__item[data-feature] > summary:focus-visible {
@@ -9325,7 +9377,12 @@ button.intake__progress-step:disabled {
 .faq__item[open] .faq__q-marker {
   transform: rotate(45deg);
 }
-.faq__a {
+/* `.faq__a + p` covers the second paragraph when an answer string injects
+   `</p><p>` mid-text — the browser closes .faq__a and opens an anonymous
+   sibling <p>. Same typography so the split reads as one continuous
+   answer broken at the right spot. */
+.faq__a,
+.faq__a + p {
   margin: 0 0 22px;
   padding: 0 4px;
   color: var(--text-mid);
@@ -9400,9 +9457,40 @@ button.intake__progress-step:disabled {
   margin: 0 auto;
   text-align: left;
 }
+/* "More options" link — only used on phones; the desktop grid shows all
+   5 cards in 2 columns and never needs the gate. */
+.inline-teaser__more {
+  display: none;
+}
 @media (max-width: 560px) {
   .inline-teaser__grid {
     grid-template-columns: 1fr;
+  }
+  /* On phones, 5 cards stack to ~half-viewport. Hide the secondary cards
+     (autre + rescue) by default; the visitor reveals them by tapping the
+     "+ autre chose ?" link below. Desktop is unaffected. */
+  .inline-teaser__grid:not(.is-expanded) .inline-teaser__card--secondary {
+    display: none;
+  }
+  .inline-teaser__more {
+    display: inline-block;
+    margin: 14px auto 0;
+    background: none;
+    border: 0;
+    color: var(--text-soft);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 4px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .inline-teaser__more:hover,
+  .inline-teaser__more:focus-visible {
+    color: var(--text);
+    outline: none;
   }
 }
 .inline-teaser__card {
@@ -9486,9 +9574,12 @@ button.intake__progress-step:disabled {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   MOBILE STICKY CTA — bottom-fixed pill that appears after the hero on
+   MOBILE STICKY CTA — bottom-fixed BAR that appears after the hero on
    narrow viewports. Desktop never sees it (display: none > 768px). The
    visibility class is toggled in TSX based on scrollY; CSS animates in.
+   Calm paper bar (not a floating pill) so it reads as part of the page,
+   not a SaaS-y bubble. Voice rules ban "big floating CTAs with shadow
+   lifts" — this is the corrected shape.
    ────────────────────────────────────────────────────────────────────── */
 .mobile-sticky-cta,
 .mobile-sticky-pebble {
@@ -9496,48 +9587,47 @@ button.intake__progress-step:disabled {
 }
 @media (max-width: 768px) {
   .mobile-sticky-cta {
-    display: inline-flex;
+    display: flex;
     position: fixed;
-    left: 50%;
-    bottom: calc(16px + env(safe-area-inset-bottom));
-    transform: translate(-50%, calc(100% + 24px));
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: translateY(100%);
     z-index: 40;
     align-items: center;
-    gap: 2px;
-    padding: 2px 4px 2px 0;
-    background: var(--accent-warm);
-    color: #fffaf0;
-    border-radius: 999px;
-    box-shadow:
-      0 10px 24px rgba(31, 29, 24, 0.18),
-      0 2px 6px rgba(31, 29, 24, 0.08);
+    gap: 0;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: var(--bg);
+    color: var(--text);
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
     transition:
       transform 280ms cubic-bezier(0.32, 0.72, 0.24, 1),
       opacity 220ms ease;
     opacity: 0;
     pointer-events: none;
-    max-width: calc(100vw - 32px);
   }
   .mobile-sticky-cta.is-visible {
-    transform: translate(-50%, 0);
+    transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
   }
   .mobile-sticky-cta__link {
     display: inline-flex;
     align-items: center;
-    padding: 12px 16px 12px 22px;
+    flex: 1 1 auto;
+    padding: 4px 0;
     color: inherit;
     text-decoration: none;
     font-family: var(--display);
     font-weight: 600;
     font-size: 15px;
     letter-spacing: 0.01em;
-    border-radius: 999px;
   }
   .mobile-sticky-cta__link:hover,
   .mobile-sticky-cta__link:focus-visible {
-    filter: brightness(1.05);
+    color: var(--accent-warm);
     outline: none;
   }
   .mobile-sticky-cta__dismiss {
@@ -9546,18 +9636,17 @@ button.intake__progress-step:disabled {
     justify-content: center;
     width: 32px;
     height: 32px;
-    margin-right: 4px;
-    background: rgba(255, 250, 240, 0.18);
+    flex: 0 0 32px;
+    background: transparent;
     border: 0;
-    border-radius: 999px;
-    color: inherit;
+    color: var(--text-soft);
     cursor: pointer;
     padding: 0;
-    transition: background 0.18s ease;
+    transition: color 0.18s ease;
   }
   .mobile-sticky-cta__dismiss:hover,
   .mobile-sticky-cta__dismiss:focus-visible {
-    background: rgba(255, 250, 240, 0.32);
+    color: var(--text);
     outline: none;
   }
   .mobile-sticky-cta__dismiss svg {
@@ -9630,7 +9719,7 @@ button.intake__progress-step:disabled {
     transition: opacity 120ms linear !important;
   }
   .mobile-sticky-cta:not(.is-visible) {
-    transform: translate(-50%, 0) !important;
+    transform: translateY(0) !important;
   }
   .mobile-sticky-pebble:not(.is-visible) {
     transform: translateY(0) !important;
@@ -11432,7 +11521,10 @@ button.intake__progress-step:disabled {
 
 /* Community-rate promo line. Ledger-style mono, not a pill — keeps the
    "−20 %" legible at a glance without pattern-matching as a marketing
-   badge. Sits between the tier ladder and the more-details disclosure. */
+   badge. Transparent background + uniform thin border so it sits BELOW
+   the tier ladder visually instead of outranking it: the OBNL discount
+   doesn't apply to most visitors, and the previous sage left-border +
+   card tint pulled too much weight for a parenthetical. */
 .tier__promo {
   margin: 20px 0 0;
   display: flex;
@@ -11441,9 +11533,8 @@ button.intake__progress-step:disabled {
   gap: 10px;
   padding: 10px 14px;
   border: 1px solid var(--border-soft);
-  border-left: 3px solid var(--accent);
   border-radius: var(--radius);
-  background: var(--bg-card);
+  background: transparent;
 }
 .tier__promo-label {
   font-size: 16px;
@@ -11514,20 +11605,12 @@ button.intake__progress-step:disabled {
   margin-top: 16px;
 }
 
-/* About — ownership note paragraph above the outbound-links list. */
-.about__ownership-note {
-  margin-top: 12px;
-  font-size: 14px;
-  color: var(--text-soft);
-  line-height: 1.55;
-}
-
 /* CrossFeatureLink — link to a page in a different feature cluster.
    The wrapper carries data-feature so the leading dot + the anchor both
-   adopt the destination feature's hue. Used in Pricing (→ /handoff) and
-   About (→ /handoff). Always sits on its own line below the prose that
-   introduces it — the dot+arrow act as a small "exit" marker, not an
-   inline citation, so wrapping next to body text reads as a typo. */
+   adopt the destination feature's hue. Used in Pricing (→ /handoff).
+   Always sits on its own line below the prose that introduces it — the
+   dot+arrow act as a small "exit" marker, not an inline citation, so
+   wrapping next to body text reads as a typo. */
 .cross-feature-link {
   display: inline-flex;
   align-items: center;
@@ -12867,8 +12950,10 @@ button.intake__progress-step:disabled {
 }
 
 /* Margins disappear under this width — hide the whole napperon to avoid
-   the doodles bleeding under the content column. */
-@media (max-width: 1080px) {
+   the doodles bleeding under the content column. Tightened from 1080px
+   to 1180px so the doodles never overlap with the mobile sticky CTA's
+   active range (768px) on narrow desktop / iPad portrait. */
+@media (max-width: 1180px) {
   .napperon {
     display: none;
   }
@@ -12880,8 +12965,18 @@ button.intake__progress-step:disabled {
   opacity: 0.55;
   mix-blend-mode: screen;
 }
+/* Ink blot needs its own override: the SVG fills are #1f1d18 (near-black),
+   which under mix-blend-mode: screen/lighten on a #181613 surface vanishes
+   into the page (screen of near-black on near-black is black). Recolour
+   the paths directly to a light warm-grey at low opacity so the blot
+   reads as a faint smudge in night theme. */
 :root[data-theme='night'] .napperon__blot {
-  mix-blend-mode: lighten;
+  mix-blend-mode: normal;
+}
+:root[data-theme='night'] .napperon__blot path,
+:root[data-theme='night'] .napperon__blot circle {
+  fill: #5a5650;
+  opacity: 0.4;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────

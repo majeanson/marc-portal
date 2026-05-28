@@ -35,9 +35,14 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
     }
   }, [])
 
-  const hasProjects = projects !== null && projects.length > 0
+  // Threshold: surface the section only when there are FEATURED_LIMIT
+  // (3) cards. A 1- or 2-card strip breaks the page rhythm — a thin
+  // gap between Hero and How that says "this is half-built". Below the
+  // threshold we render the same empty-state panel as the zero-projects
+  // branch, so the visitor still sees the invitation to write.
+  const hasProjects = projects !== null && projects.length >= FEATURED_LIMIT
   const isLoading = projects === null && !errored
-  const isEmpty = projects !== null && projects.length === 0
+  const isEmpty = projects !== null && projects.length < FEATURED_LIMIT
   const feature = HOME_SECTION_FEATURE['featured']
 
   return (

@@ -121,7 +121,7 @@ async function applyCriticalCss(html) {
     preload: 'js-lazy',
     reduceInlineStyles: false,
     pruneSource: false,
-    allowRules: [/\[data-theme/, /\[data-scroll-direction/],
+    allowRules: [/\[data-theme/, /\[data-scroll-direction/, /\[data-lang-nudge/],
     logLevel: 'warn',
   })
   return beasties.process(withFonts)

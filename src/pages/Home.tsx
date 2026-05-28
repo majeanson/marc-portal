@@ -59,8 +59,11 @@ export function Home({ lang }: { lang: Lang }) {
   return (
     <div className="app">
       <ScrollProgress lang={lang} />
-      <Header lang={lang} />
+      {/* EnglishNudge sits ABOVE Header so an EN-browser visitor sees the
+          choice land first and the page settles. Stacked between Header
+          and content it reads as a banner ad. */}
       <EnglishNudge lang={lang} />
+      <Header lang={lang} />
       <SectionRail lang={lang} />
       <main id="main-content" className="home">
         {/* 0 — Napperon doodles: hand-drawn margin glyphs (coffee ring, red-pen
@@ -90,13 +93,16 @@ export function Home({ lang }: { lang: Lang }) {
         {/* 6 — Pricing: concrete numbers, read after the visitor has
               self-qualified through the vibe gate. */}
         <Pricing lang={lang} />
-        {/* 7 — Inline intake teaser: low-friction "pick a type" CTA. Sits
+        {/* 7 — Pull-quote: short voice break, becomes the reassurance beat
+              between price and act. Sits BEFORE the inline teaser so the
+              teaser is the last centered block before About — the click
+              lands hardest right after the pull-quote dissolves. */}
+        <PullQuote lang={lang} />
+        {/* 7b — Inline intake teaser: low-friction "pick a type" CTA. Sits
               last in the qualify→reassure→price→act run so the type-picker is
               the final step before the visitor commits. Skips the type-picker
               step inside /intake. */}
         <InlineIntakeTeaser lang={lang} />
-        {/* 7b — Pull-quote: a short voice break before About lands */}
-        <PullQuote lang={lang} />
         {/* 8 — About: short bio near the end (visitors who care, scroll) */}
         <About lang={lang} />
         {/* 8½ — Testimonials: social proof just before objections (FAQ).

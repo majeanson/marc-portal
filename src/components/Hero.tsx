@@ -35,23 +35,18 @@ export function Hero({ lang }: { lang: Lang }) {
   return (
     <section className="section hero" id="hero" aria-labelledby="hero-title">
       <div className="section__inner">
-        {/* Empathy-first manifesto. The closer is split out so it can
-            carry italic + sage emphasis — the eye lands on it before
-            reaching the CTA. The h1 anchors the page for SEO + a11y;
-            CSS overrides the default heading weight so it reads as a
-            running paragraph, not a display headline. */}
+        {/* Empathy-first manifesto. Body is the h1 (LCP + SEO anchor);
+            closer lives in a sibling <p> styled identically so the two
+            visually read as one paragraph. They were merged into one
+            h1 originally, but screen readers announce h1s as a single
+            heading and the closer disappeared into the announcement —
+            splitting fixes that without changing the rendered look. */}
         <h1 id="hero-title" className="hero__manifesto">
-          {t.body} <span className="hero__closer">{t.closer}</span>
+          {t.body}
         </h1>
-
-        {/* Signature block — sage hairline + small-caps name. Replaces the
-            old hand-drawn flourish SVG. The rule's left-edge scale-in
-            animation lives in CSS so it lines up with the manifesto's
-            ink-absorb (which runs ~240ms after page-load). */}
-        <div className="hero__sig">
-          <span className="hero__sig-rule" aria-hidden="true" />
-          <span className="hero__sig-name">{t.signature}</span>
-        </div>
+        <p className="hero__closer-line">
+          <span className="hero__closer">{t.closer}</span>
+        </p>
 
         <div className="hero__actions">
           <a className="hero__cta hero__cta--primary" href={intakeHref}>
@@ -59,15 +54,8 @@ export function Hero({ lang }: { lang: Lang }) {
           </a>
           <span
             className={`hero__slot-pill mono${atCap ? ' hero__slot-pill--full' : ' hero__slot-pill--open'}`}
-            aria-live="polite"
           >
-            {atCap
-              ? lang === 'fr'
-                ? 'plein — liste d’attente ouverte'
-                : 'currently full — waitlist open'
-              : lang === 'fr'
-                ? '1 place ouverte'
-                : '1 slot open'}
+            {atCap ? t.slotFull : t.slotOpen}
           </span>
           {email && (
             <a className="hero__sessions-link mono" href={sessionsHref}>
