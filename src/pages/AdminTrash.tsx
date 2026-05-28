@@ -147,41 +147,43 @@ export function AdminTrash({ lang }: { lang: Lang }) {
           ) : sessions.length === 0 ? (
             <p>{t.none}</p>
           ) : (
-            <table className="inbox-table">
-              <thead>
-                <tr>
-                  <th>{t.headerEmail}</th>
-                  <th>{t.headerStatus}</th>
-                  <th>{t.headerWithdrawn}</th>
-                  <th>{t.headerActions}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sessions.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.email}</td>
-                    <td>
-                      <span className={`status-pill status-pill--${s.status}`}>{s.status}</span>
-                    </td>
-                    <td className="mono">
-                      {s.deleted_at ? formatDateTime(s.deleted_at, lang) : '—'}
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="link-btn mono"
-                        onClick={() => onRestore(s.id)}
-                        disabled={pending.has(s.id)}
-                      >
-                        {pending.has(s.id) ? t.restoring : t.restore}
-                      </button>
-                      {' · '}
-                      <a href={`${langPrefix}/session/${s.id}`}>open</a>
-                    </td>
+            <div className="table-scroll">
+              <table className="inbox-table">
+                <thead>
+                  <tr>
+                    <th>{t.headerEmail}</th>
+                    <th>{t.headerStatus}</th>
+                    <th>{t.headerWithdrawn}</th>
+                    <th>{t.headerActions}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {sessions.map((s) => (
+                    <tr key={s.id}>
+                      <td>{s.email}</td>
+                      <td>
+                        <span className={`status-pill status-pill--${s.status}`}>{s.status}</span>
+                      </td>
+                      <td className="mono">
+                        {s.deleted_at ? formatDateTime(s.deleted_at, lang) : '—'}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="link-btn mono"
+                          onClick={() => onRestore(s.id)}
+                          disabled={pending.has(s.id)}
+                        >
+                          {pending.has(s.id) ? t.restoring : t.restore}
+                        </button>
+                        {' · '}
+                        <a href={`${langPrefix}/session/${s.id}`}>open</a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
 
           <button

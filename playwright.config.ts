@@ -83,9 +83,10 @@ export default defineConfig({
     {
       // Dark theme — screenshots only. Dark-mode bugs are colour/contrast,
       // not layout, so one viewport is enough signal. colorScheme: 'dark'
-      // makes both theme-bootstrap.js and React pick the night theme.
+      // makes both theme-bootstrap.js and React pick the night theme. Matches
+      // both the public gallery and the authenticated/app gallery.
       name: 'dark',
-      testMatch: /screenshots\.spec\.ts/,
+      testMatch: /(screenshots|app-screenshots)\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1440, height: 900 },

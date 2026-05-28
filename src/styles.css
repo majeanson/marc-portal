@@ -2703,6 +2703,23 @@ button.intake__progress-step:focus-visible {
   padding: 0;
   overflow: hidden;
 }
+/* Operator data tables carry more columns than a phone width holds. Their
+   card (.fleet-block / .page__panel) clips overflow, so without a scroll
+   wrapper the rightmost columns (actions, timestamps) get silently cut off at
+   the card edge on mobile — the bug the app-screenshots audit caught. Wrap the
+   table so it scrolls horizontally inside the card; the min-width keeps the
+   columns readable rather than crushing them to fit. Desktop card width
+   exceeds the min-width, so the scroll only kicks in where it's needed. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll > .fleet-table {
+  min-width: 600px;
+}
+.table-scroll > .inbox-table {
+  min-width: 520px;
+}
 .fleet-table {
   width: 100%;
   border-collapse: collapse;
@@ -10723,6 +10740,16 @@ button.intake__progress-step:disabled {
   width: 100%;
   height: auto;
 }
+/* Shown in place of the PNG when its R2 object is gone (stale attachment id)
+   or the data URL won't decode — keeps the paper frame from collapsing to a
+   broken-image glyph. */
+.session-napkin__unavailable {
+  margin: 0;
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
 
 /* Napkin replay — the canvas plus a quiet control strip along its foot.
    The strip sits inside .session-napkin__frame, so its rounded bottom
@@ -10859,6 +10886,10 @@ button.intake__progress-step:disabled {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 10px;
+  /* Wrap so the Hide/Remove actions drop below the title on a phone instead
+     of running off the right edge of the panel (the bug Marc hit on the voice
+     note: "Remove the voice note" was clipped). */
+  flex-wrap: wrap;
 }
 .intake__sketch-title {
   font-family: var(--display);
@@ -10871,6 +10902,8 @@ button.intake__progress-step:disabled {
   display: flex;
   gap: 14px;
   flex-shrink: 0;
+  /* And let the two links themselves stack if even one line is too tight. */
+  flex-wrap: wrap;
 }
 .intake__sketch-link {
   appearance: none;

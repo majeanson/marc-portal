@@ -192,61 +192,65 @@ export function AdminEmailOutbox({ lang }: { lang: Lang }) {
           <p style={{ color: 'var(--text-mid)', padding: 18 }}>{t.empty}</p>
         )}
         {entries && entries.length > 0 && (
-          <table className="fleet-table">
-            <thead>
-              <tr>
-                <th>{t.cols.to}</th>
-                <th>{t.cols.kind}</th>
-                <th>{t.cols.attempts}</th>
-                <th>{t.cols.lastError}</th>
-                <th>{t.cols.created}</th>
-                <th>{t.cols.action}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((e) => {
-                const stuck = e.attempts >= STUCK_AT_ATTEMPTS
-                const result = lastResult[e.id]
-                const isBusy = !!busy[e.id]
-                return (
-                  <tr key={e.id}>
-                    <td className="mono fleet-table__primary">{e.toEmail}</td>
-                    <td>
-                      <div className="fleet-table__primary mono">{e.kind}</div>
-                      <div className="fleet-table__secondary">{e.subject}</div>
-                    </td>
-                    <td className="mono">
-                      {e.attempts}
-                      <span className="mono fleet-table__secondary" style={{ marginLeft: 8 }}>
-                        {stuck ? t.stuckTag : t.pendingTag}
-                      </span>
-                    </td>
-                    <td className="mono fleet-table__secondary">{e.lastError ?? '—'}</td>
-                    <td className="mono fleet-table__secondary">{formatTime(e.createdAt, lang)}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="link-btn mono"
-                        onClick={() => void retry(e.id)}
-                        disabled={isBusy}
-                      >
-                        {isBusy ? t.retrying : t.retry}
-                      </button>
-                      {result && (
-                        <div className="fleet-table__secondary mono" style={{ marginTop: 4 }}>
-                          {result.alreadySent
-                            ? t.alreadySent
-                            : result.delivered
-                              ? t.delivered
-                              : t.retryFailed(result.error ?? 'unknown')}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <div className="table-scroll">
+            <table className="fleet-table">
+              <thead>
+                <tr>
+                  <th>{t.cols.to}</th>
+                  <th>{t.cols.kind}</th>
+                  <th>{t.cols.attempts}</th>
+                  <th>{t.cols.lastError}</th>
+                  <th>{t.cols.created}</th>
+                  <th>{t.cols.action}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map((e) => {
+                  const stuck = e.attempts >= STUCK_AT_ATTEMPTS
+                  const result = lastResult[e.id]
+                  const isBusy = !!busy[e.id]
+                  return (
+                    <tr key={e.id}>
+                      <td className="mono fleet-table__primary">{e.toEmail}</td>
+                      <td>
+                        <div className="fleet-table__primary mono">{e.kind}</div>
+                        <div className="fleet-table__secondary">{e.subject}</div>
+                      </td>
+                      <td className="mono">
+                        {e.attempts}
+                        <span className="mono fleet-table__secondary" style={{ marginLeft: 8 }}>
+                          {stuck ? t.stuckTag : t.pendingTag}
+                        </span>
+                      </td>
+                      <td className="mono fleet-table__secondary">{e.lastError ?? '—'}</td>
+                      <td className="mono fleet-table__secondary">
+                        {formatTime(e.createdAt, lang)}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="link-btn mono"
+                          onClick={() => void retry(e.id)}
+                          disabled={isBusy}
+                        >
+                          {isBusy ? t.retrying : t.retry}
+                        </button>
+                        {result && (
+                          <div className="fleet-table__secondary mono" style={{ marginTop: 4 }}>
+                            {result.alreadySent
+                              ? t.alreadySent
+                              : result.delivered
+                                ? t.delivered
+                                : t.retryFailed(result.error ?? 'unknown')}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     </div>

@@ -172,39 +172,41 @@ export function AdminAudit({ lang }: { lang: Lang }) {
             {shown === 0 ? (
               <p style={{ color: 'var(--text-mid)', padding: 18 }}>{t.noMatch}</p>
             ) : (
-              <table className="fleet-table">
-                <thead>
-                  <tr>
-                    <th>{t.cols.when}</th>
-                    <th>{t.cols.actor}</th>
-                    <th>{t.cols.tenant}</th>
-                    <th>{t.cols.action}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((e) => (
-                    <tr key={e.id}>
-                      <td className="mono fleet-table__secondary">{formatTime(e.ts, lang)}</td>
-                      <td className="mono fleet-table__secondary">{e.actorEmail}</td>
-                      <td>
-                        {e.tenantSlug ? (
-                          <span className="fleet-table__primary">{e.tenantSlug}</span>
-                        ) : (
-                          <span className="fleet-table__secondary">—</span>
-                        )}
-                      </td>
-                      <td>
-                        <div className="fleet-table__primary mono">{e.action}</div>
-                        {e.payload !== null && (
-                          <div className="fleet-table__secondary mono">
-                            {summarizePayload(e.payload)}
-                          </div>
-                        )}
-                      </td>
+              <div className="table-scroll">
+                <table className="fleet-table">
+                  <thead>
+                    <tr>
+                      <th>{t.cols.when}</th>
+                      <th>{t.cols.actor}</th>
+                      <th>{t.cols.tenant}</th>
+                      <th>{t.cols.action}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filtered.map((e) => (
+                      <tr key={e.id}>
+                        <td className="mono fleet-table__secondary">{formatTime(e.ts, lang)}</td>
+                        <td className="mono fleet-table__secondary">{e.actorEmail}</td>
+                        <td>
+                          {e.tenantSlug ? (
+                            <span className="fleet-table__primary">{e.tenantSlug}</span>
+                          ) : (
+                            <span className="fleet-table__secondary">—</span>
+                          )}
+                        </td>
+                        <td>
+                          <div className="fleet-table__primary mono">{e.action}</div>
+                          {e.payload !== null && (
+                            <div className="fleet-table__secondary mono">
+                              {summarizePayload(e.payload)}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </>
         )}
