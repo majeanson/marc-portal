@@ -36,11 +36,14 @@ describe('IntakeSummary read mode', () => {
 })
 
 describe('IntakeSummary edit mode', () => {
-  it('shows required pill on empty required fields', () => {
+  it('shows no required pill — intake fields are all optional', () => {
+    // Sketch + voice note are alternative input channels, so no intake
+    // question is required (intakeSchemas carries no `required: true`). The
+    // "required" flag must never render, even on an empty editable summary.
+    // This guards Marc's requirement against a schema re-adding `required`.
     const empty = { ...baseProps, values: {} }
     render(<IntakeSummary {...empty} editable />)
-    // Multiple required fields → multiple "required" labels visible
-    expect(screen.getAllByText(/required/i).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/required/i)).not.toBeInTheDocument()
   })
 
   it('clicking a value swaps to an input and onChange fires on commit', async () => {

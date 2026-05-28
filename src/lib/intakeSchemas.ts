@@ -86,7 +86,6 @@ const PAPERASSE_FIELDS: FieldDef[] = [
       fr: 'Ex : facture clients, suivi des heures, état de paie pour 4 employés, rapports TPS/TVQ, soumissions répétitives, relevés de fin de mois...',
       en: 'Ex: client invoices, hours tracking, payroll for 4 employees, GST/QST reports, repetitive quotes, end-of-month statements...',
     },
-    required: true,
   },
   {
     id: 'currentMethod',
@@ -101,7 +100,6 @@ const PAPERASSE_FIELDS: FieldDef[] = [
       { value: 'app', label: { fr: "Une app que je n'aime pas", en: "An app I don't like" } },
       { value: 'mix', label: { fr: 'Un mélange des trois', en: 'A mix of the three' } },
     ],
-    required: true,
   },
   {
     id: 'frequency',
@@ -113,7 +111,6 @@ const PAPERASSE_FIELDS: FieldDef[] = [
       { value: 'monthly', label: { fr: 'Chaque mois', en: 'Every month' } },
       { value: 'sporadic', label: { fr: 'Quand ça arrive', en: 'When it comes up' } },
     ],
-    required: true,
   },
   {
     id: 'painPoint',
@@ -127,7 +124,6 @@ const PAPERASSE_FIELDS: FieldDef[] = [
       fr: "Ex : le dimanche soir à 22h en train de retrouver mes notes, ou la facture qu'on oublie d'envoyer pendant 3 mois, ou recopier les mêmes données dans 3 endroits différents...",
       en: 'Ex: Sunday night at 10pm digging through my notes, or the invoice we forget to send for 3 months, or retyping the same data in 3 different places...',
     },
-    required: true,
   },
   {
     id: 'idealOutcome',
@@ -141,7 +137,6 @@ const PAPERASSE_FIELDS: FieldDef[] = [
       fr: 'Ex : un bouton qui sort la facture en PDF, ou un fichier toujours à jour pour la comptable, ou plus jamais y penser le dimanche soir...',
       en: "Ex: a button that spits out the PDF invoice, or a file that's always up-to-date for the accountant, or never thinking about it on Sunday night again...",
     },
-    required: true,
     hint: {
       fr: "Pas besoin de techno — décris juste l'effet.",
       en: 'No tech needed — just describe the effect.',
@@ -162,7 +157,6 @@ const SUIVI_FIELDS: FieldDef[] = [
       fr: "Ex : 40 clients, ce qu'on leur a livré, ce qu'ils nous doivent, l'état de l'inventaire qui bouge chaque jour, les projets en cours et qui s'occupe de quoi...",
       en: "Ex: 40 clients, what we delivered to them, what they owe us, inventory levels that shift every day, ongoing projects and who's on each...",
     },
-    required: true,
   },
   {
     id: 'recordCount',
@@ -174,7 +168,6 @@ const SUIVI_FIELDS: FieldDef[] = [
       { value: 'thousands', label: { fr: 'Plus que 1000', en: 'More than 1000' } },
       { value: 'unknown', label: { fr: 'Aucune idée', en: 'No idea' } },
     ],
-    required: true,
   },
   {
     id: 'currentSource',
@@ -188,7 +181,6 @@ const SUIVI_FIELDS: FieldDef[] = [
       fr: 'Ex : un Excel sur mon bureau, un autre dans le drive, un cahier au comptoir, des post-its, et le reste dans ma tête...',
       en: 'Ex: one Excel on my desk, another on the drive, a notebook at the counter, sticky notes, and the rest in my head...',
     },
-    required: true,
   },
   {
     id: 'painPoint',
@@ -202,7 +194,6 @@ const SUIVI_FIELDS: FieldDef[] = [
       fr: 'Ex : on perd des clients dans les craques, le fichier crashe quand on est plusieurs dedans, je suis le seul à comprendre comment ça marche, on rappelle des gens deux fois...',
       en: "Ex: clients fall through the cracks, the file crashes when several of us are in it, I'm the only one who understands how it works, we call people back twice...",
     },
-    required: true,
   },
   {
     id: 'idealOutcome',
@@ -216,7 +207,6 @@ const SUIVI_FIELDS: FieldDef[] = [
       fr: 'Ex : tout le monde voit la même chose en temps réel, je peux répondre « où on est rendu? » en 5 secondes, plus jamais perdre une info...',
       en: "Ex: everyone sees the same thing in real time, I can answer 'where are we at?' in 5 seconds, never losing info again...",
     },
-    required: true,
   },
 ]
 
@@ -233,7 +223,6 @@ const COORDINATION_FIELDS: FieldDef[] = [
       fr: "Ex : rotation de pelletage de la rue, plan d'événement, équipe de bénévoles, horaire d'arrosage du potager communautaire, comité de parents, ligue de hockey amicale...",
       en: "Ex: street snow-shoveling rotation, event plan, volunteer team, community garden watering schedule, parents' committee, friendly hockey league...",
     },
-    required: true,
   },
   {
     id: 'groupSize',
@@ -245,7 +234,6 @@ const COORDINATION_FIELDS: FieldDef[] = [
       { value: 'medium', label: { fr: '16 à 50', en: '16 to 50' } },
       { value: 'big', label: { fr: '50+', en: '50+' } },
     ],
-    required: true,
   },
   {
     id: 'currentMethod',
@@ -259,7 +247,6 @@ const COORDINATION_FIELDS: FieldDef[] = [
       fr: "Ex : un groupe Facebook qui scrolle trop vite, un fil de texto à 12 personnes, on s'organise sur le perron le samedi matin, un courriel chaîne qu'on perd...",
       en: 'Ex: a Facebook group that scrolls too fast, a text thread with 12 people, we sort it out on the front porch Saturday morning, a chain email that gets lost...',
     },
-    required: true,
   },
   {
     id: 'frequency',
@@ -271,7 +258,6 @@ const COORDINATION_FIELDS: FieldDef[] = [
       { value: 'seasonal', label: { fr: 'Saisonnier', en: 'Seasonal' } },
       { value: 'occasional', label: { fr: 'Quand ça adonne', en: 'When it comes up' } },
     ],
-    required: true,
   },
   {
     id: 'idealOutcome',
@@ -285,7 +271,6 @@ const COORDINATION_FIELDS: FieldDef[] = [
       fr: "Ex : chacun sait son tour sans qu'on ait à le redire, on voit l'horaire d'un coup d'œil, plus de doublon ni d'oubli, les nouveaux comprennent en 30 secondes...",
       en: 'Ex: everyone knows their turn without us having to repeat it, the schedule is visible at a glance, no more duplicates or misses, newcomers get it in 30 seconds...',
     },
-    required: true,
   },
 ]
 
@@ -302,7 +287,6 @@ const AUTRE_FIELDS: FieldDef[] = [
       fr: "Ex : raconte-moi le dernier moment où ça t'a tapé sur les nerfs. Pas besoin d'être technique — dis-le comme tu le dirais à un ami au café. Ça peut être long ou court, brouillon ou clair, ça me va.",
       en: "Ex: tell me about the last time it got on your nerves. No need to be technical — say it like you'd tell a friend at the café. Long or short, messy or clean, that's fine.",
     },
-    required: true,
   },
   {
     id: 'whoFeelsIt',
@@ -316,7 +300,6 @@ const AUTRE_FIELDS: FieldDef[] = [
       fr: "Ex : moi seul, mon associé aussi, toute l'équipe, mes clients quand ils appellent, les bénévoles qui abandonnent...",
       en: 'Ex: just me, my partner too, the whole team, my clients when they call, volunteers who give up...',
     },
-    required: true,
   },
   {
     id: 'whatTried',
@@ -330,7 +313,6 @@ const AUTRE_FIELDS: FieldDef[] = [
       fr: "Ex : un Excel qui a vieilli, une app abandonnée après 2 mois, demander à mon neveu, un consultant qui a livré quelque chose qu'on n'utilise pas, rien encore...",
       en: 'Ex: an Excel that aged out, an app abandoned after 2 months, asking my nephew, a consultant who delivered something we never use, nothing yet...',
     },
-    required: false,
   },
 ]
 
@@ -363,7 +345,6 @@ const RESCUE_FIELDS: FieldDef[] = [
         },
       },
     ],
-    required: true,
     hint: {
       fr: "Ça m'aide à savoir dans quoi je m'embarque : nettoyer une app générée par une IA et moderniser du vrai code, c'est deux jobs pas mal différentes.",
       en: "It tells me what I'm walking into — cleaning up AI-generated output and modernizing a real codebase are two different jobs.",
@@ -380,7 +361,6 @@ const RESCUE_FIELDS: FieldDef[] = [
       fr: 'Ex : Lovable, Bolt, Bubble... ou React, un vieux WordPress, du PHP de 2015.',
       en: 'Ex: Lovable, Bolt, Bubble... or React, an old WordPress, PHP from 2015.',
     },
-    required: true,
     hint: {
       fr: "Pas sûr? Nomme juste l'outil que tu as utilisé, ou écris « aucune idée ».",
       en: "Not sure? Just name the tool you used, or write 'no idea.'",
@@ -398,7 +378,6 @@ const RESCUE_FIELDS: FieldDef[] = [
       fr: "Ex : un lien vers l'app, un dépôt GitHub, un fichier exporté. Et comment entrer — un login, une invitation, un zip à m'envoyer.",
       en: 'Ex: a link to the app, a GitHub repo, an exported file. And how to get in — a login, an invite, a zip to send me.',
     },
-    required: true,
   },
   {
     id: 'whatsBroken',
@@ -412,7 +391,6 @@ const RESCUE_FIELDS: FieldDef[] = [
       fr: "Ex : ça plante quand plusieurs personnes l'utilisent, les données se perdent, je suis bloqué sur la seule fonction qu'il me faut, personne ne sait l'héberger, le dev d'avant a disparu.",
       en: "Ex: it crashes when several people use it, the data vanishes, I'm stuck on the one feature I need, nobody can host it, the previous dev disappeared.",
     },
-    required: true,
   },
   {
     id: 'inUse',
@@ -442,7 +420,6 @@ const RESCUE_FIELDS: FieldDef[] = [
         },
       },
     ],
-    required: true,
   },
   {
     id: 'idealOutcome',
@@ -456,7 +433,6 @@ const RESCUE_FIELDS: FieldDef[] = [
       fr: "Ex : ça tient quand 10 personnes l'utilisent, je peux ajouter mes affaires sans tout casser, c'est à moi et hébergé pour de bon.",
       en: "Ex: it holds up when 10 people use it, I can add my own things without breaking it, it's mine and hosted for good.",
     },
-    required: true,
     hint: {
       fr: "Pas besoin de techno — décris juste l'effet.",
       en: 'No tech needed — just describe the effect.',

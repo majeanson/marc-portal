@@ -79,6 +79,26 @@ export function VoiceRecorder({
   const streamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<BlobPart[]>([])
   const timerRef = useRef<number | null>(null)
+  const previewRef = useRef<HTMLAudioElement | null>(null)
+
+  // MediaRecorder's webm/opus output ships with no duration in its header, so
+  // the browser reports `duration: Infinity` and refuses to seek — the clip
+  // plays through once and then can't be replayed or scrubbed (the bug: a
+  // recorded note that won't play a second time). Forcing a seek to a huge
+  // timestamp makes the engine read to the real end and backfill the
+  // duration; we snap back to 0 once it lands. After that the native controls
+  // seek + replay normally. No-op on formats that already carry a duration
+  // (Safari's mp4), so it's safe to run on every clip.
+  const makeReplayable = useCallback(() => {
+    const el = previewRef.current
+    if (!el || el.duration !== Infinity) return
+    const onTimeUpdate = () => {
+      el.removeEventListener('timeupdate', onTimeUpdate)
+      el.currentTime = 0
+    }
+    el.addEventListener('timeupdate', onTimeUpdate)
+    el.currentTime = 1e101
+  }, [])
 
   // Release the mic track + the interval. Safe to call repeatedly.
   const teardown = useCallback(() => {
@@ -206,7 +226,14 @@ export function VoiceRecorder({
               visitor just recorded — there is no caption file for it, and the
               recording is about to become a transcript anyway. */}
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          <audio className="voice-rec__preview" src={previewUrl} controls preload="metadata" />
+          <audio
+            ref={previewRef}
+            className="voice-rec__preview"
+            src={previewUrl}
+            controls
+            preload="metadata"
+            onLoadedMetadata={makeReplayable}
+          />
           <span className="mono voice-rec__len">{formatElapsed(elapsed)}</span>
           <div className="voice-rec__actions">
             <button
