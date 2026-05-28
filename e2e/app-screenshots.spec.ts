@@ -42,59 +42,51 @@ test.describe('app screenshots', () => {
         await settle(page)
       }
 
-      // Opt-in horizontal-overflow audit (OVERFLOW_AUDIT=1). Reports elements
-      // whose right edge spills past the viewport — the "checkbox/title
-      // spreading out of view" class of mobile bug — without failing the run.
-      if (process.env.OVERFLOW_AUDIT) {
-        const vw = page.viewportSize()!.width
-        const report = await page.evaluate((vw) => {
-          const desc = (el: Element) => {
-            const cls =
-              typeof el.className === 'string'
-                ? el.className.trim().split(/\s+/).slice(0, 3).join('.')
-                : ''
-            return `${el.tagName.toLowerCase()}${cls ? '.' + cls : ''}`
-          }
-          // Classify an overflowing element by walking ancestors: a horizontal
-          // scroll ancestor means the overflow is intentional (scrollable tab
-          // bar etc.); an overflow:hidden/clip ancestor means the content is
-          // silently CLIPPED — the real "spreading out of the fieldview" bug.
-          const clipped: string[] = []
-          for (const el of Array.from(document.body.querySelectorAll('*'))) {
-            const r = el.getBoundingClientRect()
-            if (r.width === 0 || r.height === 0 || r.right <= vw + 1) continue
-            const cs = getComputedStyle(el)
-            if (cs.visibility === 'hidden' || cs.position === 'fixed') continue
-            // Skip elements that are themselves *configured* horizontal
-            // scrollers (overflow-x auto/scroll). An overflowing <table> has
-            // scrollWidth > clientWidth too but overflow-x:visible, so it
-            // stays in scope — that's the clip we want to catch.
-            if (
-              el.scrollWidth > el.clientWidth + 1 &&
-              (cs.overflowX === 'auto' || cs.overflowX === 'scroll')
-            )
-              continue
-            let intentionalScroll = false
-            let clipper: Element | null = null
-            for (let p = el.parentElement; p; p = p.parentElement) {
-              const pcs = getComputedStyle(p)
-              if (pcs.overflowX === 'auto' || pcs.overflowX === 'scroll') {
-                intentionalScroll = true
-                break
-              }
-              if (!clipper && (pcs.overflowX === 'hidden' || pcs.overflowX === 'clip')) clipper = p
-            }
-            if (intentionalScroll || !clipper) continue
-            clipped.push(`${desc(el)}@${Math.round(r.right)}⊂${desc(clipper)}`)
-          }
-          return { clipped: [...new Set(clipped)] }
-        }, vw)
-        if (report.clipped.length) {
-          console.log(
-            `[clipped] ${scenario.name} (vw=${vw}): ${report.clipped.slice(0, 20).join(' | ')}`,
-          )
+      // Horizontal-overflow guard — the "content spreading out of the
+      // fieldview" class of mobile bug this suite was built to catch
+      // (operator tables clipped in their card, the intake sketch/voice
+      // header running off the edge). A configured horizontal scroller is
+      // allowed (a scrollable tab bar, .table-scroll); content silently
+      // clipped by an overflow:hidden/clip ancestor is a real bug and fails.
+      const vw = page.viewportSize()!.width
+      const { clipped } = await page.evaluate((vw) => {
+        const desc = (el: Element) => {
+          const cls =
+            typeof el.className === 'string'
+              ? el.className.trim().split(/\s+/).slice(0, 3).join('.')
+              : ''
+          return `${el.tagName.toLowerCase()}${cls ? '.' + cls : ''}`
         }
-      }
+        const clipped: string[] = []
+        for (const el of Array.from(document.body.querySelectorAll('*'))) {
+          const r = el.getBoundingClientRect()
+          if (r.width === 0 || r.height === 0 || r.right <= vw + 1) continue
+          const cs = getComputedStyle(el)
+          if (cs.visibility === 'hidden' || cs.position === 'fixed') continue
+          // Skip elements that are themselves *configured* horizontal scrollers
+          // (overflow-x auto/scroll). An overflowing <table> has scrollWidth >
+          // clientWidth too but overflow-x:visible, so it stays in scope.
+          if (
+            el.scrollWidth > el.clientWidth + 1 &&
+            (cs.overflowX === 'auto' || cs.overflowX === 'scroll')
+          )
+            continue
+          let intentionalScroll = false
+          let clipper: Element | null = null
+          for (let p = el.parentElement; p; p = p.parentElement) {
+            const pcs = getComputedStyle(p)
+            if (pcs.overflowX === 'auto' || pcs.overflowX === 'scroll') {
+              intentionalScroll = true
+              break
+            }
+            if (!clipper && (pcs.overflowX === 'hidden' || pcs.overflowX === 'clip')) clipper = p
+          }
+          if (intentionalScroll || !clipper) continue
+          clipped.push(`${desc(el)}@${Math.round(r.right)} clipped by ${desc(clipper)}`)
+        }
+        return { clipped: [...new Set(clipped)] }
+      }, vw)
+      expect(clipped, `content clipped past the ${vw}px viewport`).toEqual([])
 
       // `app-` prefix namespaces these baselines so they never collide with
       // the public suite's (screenshots.spec.ts) — e.g. both have a
