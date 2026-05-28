@@ -157,10 +157,7 @@ export function SectionRail({ lang }: { lang: Lang }) {
   if (total === 0) return null
 
   return (
-    <nav
-      className="section-rail"
-      aria-label={lang === 'fr' ? 'Index de la page' : 'Page index'}
-    >
+    <nav className="section-rail" aria-label={lang === 'fr' ? 'Index de la page' : 'Page index'}>
       <span className="section-rail__indicator mono" aria-live="polite">
         <span className="section-rail__indicator-active">{activeFolio}</span>
         <span className="section-rail__indicator-sep" aria-hidden="true">
