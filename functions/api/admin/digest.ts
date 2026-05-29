@@ -20,6 +20,7 @@ import type { SessionRow } from '../../_lib/sessions'
 import { ok, serverError, unauthorized } from '../../_lib/json'
 import { getLang } from '../../_lib/userPrefs'
 import { sweepEmailOutbox } from '../../_lib/email'
+import { reconcileCustodians } from '../../_lib/custodianReconcile'
 
 interface DigestEnv extends Env {
   DIGEST_TOKEN?: string
@@ -202,6 +203,25 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     }
   } catch (err) {
     console.warn('digest: outbox sweep failed (continuing)', err)
+  }
+
+  // Piggyback housekeeping #4: reconcile custodian subscriptions against Stripe
+  // (gap #10). The webhook keeps custodian_status live, but a missed delivery
+  // leaves us out of sync — a lapsed sub still shown active, or a recovered one
+  // still shown past_due. This cross-checks Stripe's active set and writes an
+  // admin_alert on drift (alert-only; Marc reconciles in the Dashboard). No-op
+  // when STRIPE_SECRET_KEY is unset. Best-effort: a Stripe API hiccup must not
+  // fail the triage digest, which is the user-facing point of this cron.
+  try {
+    const rec = await reconcileCustodians(env)
+    if (rec.drift.length > 0) {
+      console.warn(
+        `digest: custodian reconcile — ${rec.drift.length} drift, alerted=${rec.alerted}`,
+        rec.drift.map((d) => `${d.subscriptionId}:${d.kind}`),
+      )
+    }
+  } catch (err) {
+    console.warn('digest: custodian reconcile failed (continuing)', err)
   }
 
   let rows: SessionRow[] = []
