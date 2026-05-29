@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>marc.portal — walkthrough</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Self-hosted webfonts (Loi 25: no Google Fonts CDN — visitor IP never
+         reaches Google). Same /fonts/webfonts.css the SPA loads; absolute path
+         so it still resolves when this page is iframed from /carte or any
+         route. Covers the three families used below: Libre Franklin, Source
+         Serif 4, JetBrains Mono. -->
+    <link rel="stylesheet" href="/fonts/webfonts.css" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0a0a0a;
+        overflow: hidden;
+      }
+      #stage {
+        position: fixed;
+        inset: 0;
+      }
+      .vid-cap {
+        font-family: 'Source Serif 4', Georgia, serif;
+      }
+      .vid-mono {
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .vid-disp {
+        font-family: 'Libre Franklin', system-ui, sans-serif;
+      }
+      #err {
+        position: fixed;
+        inset: 0;
+        display: none;
+        place-items: center;
+        color: #f6f1e6;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 15px;
+        text-align: center;
+        padding: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="err"></div>
+    <!-- timeline.js = creative layer (shots/camera/cursor/captions); player.js =
+     the engine. Both are external (not inline) so the production CSP's
+     `script-src 'self'` covers them — an inline block would be blocked on any
+     server that ships the _headers CSP (the Functions backend and the live
+     site), leaving a blank player. player.js reads window.MP_TIMELINE, so
+     timeline.js must load first. -->
+    <script src="timeline.js"></script>
+    <script src="player.js"></script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+{
+  "featureKey": "feat-2026-108",
+  "title": "/carte walkthrough film — self-shooting guided tour embedded under the atlas",
+  "status": "active",
+  "schemaVersion": 1,
+  "domain": "marc-portal/map",
+  "componentFile": "src/components/Map/WalkthroughFilm.tsx",
+  "problem": "The /carte atlas shows the product's structure as a static graph, but a first-time visitor still has to imagine the actual journey (home → intake → login → magic link → /me → a real session with Marc's reply). A demo video would communicate it, but a baked MP4 drifts from the product the moment any copy or layout changes, and a per-language cut doubles the asset. There was no moving demo of the real flow.",
+  "tags": ["map", "marketing", "demo", "i18n", "loi25", "click-to-play"],
+  "analysis": "WalkthroughFilm renders below MapCanvas on /carte (FR) and /en/map (EN) as a coda — the interactive atlas stays the page's lead. A poster frame (committed capture) shows until an explicit click, which then mounts an iframe of public/walkthrough/player.html. The player animates a camera + cursor over freshly-captured, committed screenshots, reading captions live from timeline.js by ?lang — so one player serves both languages with no per-language video file. Chapter chips re-key the iframe to play the full cut or a single scene (?scene=). The capture pipeline (scripts/walkthrough/) names ANCHORS, never pixels: capture.mjs records each anchor's bounding box from the live DOM into manifest.json, so layout can move and the shot still lands.",
+  "decisions": [
+    {
+      "decision": "Iframe the live player instead of a baked <video>",
+      "rationale": "Captions render live from timeline.js keyed on ?lang, so a single player serves FR + EN. A baked video would need one file per language and would re-render stale the moment copy or styling changed. The iframe player aims a camera over freshly-captured frames, so re-capturing (not re-editing) keeps the tour honest to the product.",
+      "recommendation": "Keep timeline.js pixel-free (anchors only). To re-cut pacing/captions edit timeline.js; to track product changes just re-run npm run walkthrough:capture.",
+      "date": "2026-05-29"
+    },
+    {
+      "decision": "Click-to-play: the iframe only mounts after an explicit click",
+      "rationale": "Defers the player load off the /carte critical path, and means nothing animates for a prefers-reduced-motion visitor until they ask for it. The poster is a committed frame; if it 404s the panel still works (posterFailed fallback).",
+      "recommendation": "If autoplay is ever wanted, gate it behind a matchMedia('(prefers-reduced-motion: reduce)') check, never unconditionally.",
+      "date": "2026-05-29"
+    },
+    {
+      "decision": "Commit frames/ + manifest.json, gitignore video/",
+      "rationale": "The embedded player animates over frames + manifest at runtime, so those must ship to prod — same discipline as the committed e2e visual baselines. The rendered *.webm files are a heavier share/export artifact the embed never loads, so they stay out of git.",
+      "recommendation": "Refresh committed frames with npm run walkthrough:capture and re-commit whenever the app's look changes, the same way visual baselines are regenerated.",
+      "date": "2026-05-29"
+    },
+    {
+      "decision": "CSP-clean player (external player.js, self-hosted fonts)",
+      "rationale": "The player loads under the production _headers CSP with no inline script and no Google Fonts CDN — visitor IP never reaches a third party, holding the Loi 25 line the rest of the site keeps.",
+      "recommendation": "Any new player asset must stay same-origin; do not add a third-party font or script tag to player.html.",
+      "date": "2026-05-29"
+    }
+  ],
+  "successCriteria": "- Renders below the atlas on /carte and /en/map\n- Poster shows until click; click mounts the iframe player on the selected chapter\n- Chapter chips switch scenes (full cut + 6 per-page shorts) and re-key the iframe cleanly\n- Captions render in the visitor's language live (?lang), no per-language video file\n- Poster 404 → panel still works (play button alone)\n- Loads under the production CSP; no third-party font or script\n- FR + EN copy in Québécois register, em-dash-free captions",
+  "implementation": "src/components/Map/WalkthroughFilm.tsx, rendered by src/pages/Map.tsx under MapCanvas. Player + assets in public/walkthrough/ (player.html, player.js, timeline.js, manifest.json, frames/). Capture/render scripts in scripts/walkthrough/ (capture.mjs, render-video.mjs, seed.mjs) wired as npm run walkthrough:capture / :video. Styles: .walkfilm__* in src/styles.css. Docs: walkthrough/README.md.",
+  "userGuide": "On /carte (FR) or /en/map (EN), scroll past the atlas to the guided-tour film. Click the poster to play the full tour, or pick a chapter chip (Accueil, La demande, Connexion, Le lien, Ton espace, La session) to play that scene as a short. Captions follow the page language. Operator: when the app's look changes, refresh the committed frames with `npm run walkthrough:capture` and re-commit (same as the e2e visual baselines); capturing /me and /session needs the backend e2e harness + a seeded session (scripts/walkthrough/seed.mjs, see walkthrough/README.md).",
+  "knownLimitations": [
+    "Capture is manual (npm run walkthrough:capture) — not yet wired into CI or the build, so committed frames can go stale if the app changes and nobody re-captures. The README carries a CI sketch for automating it against the backend e2e harness.",
+    "The /me and /session frames can only be captured against the Functions backend with a seeded, signed session (the public routes shoot fine against vite preview alone).",
+    "The rendered video/*.webm share clips are gitignored; regenerate locally with npm run walkthrough:video.",
+    "Embedding on /carte shifts the page screenshot — the e2e visual baselines must be regenerated on the PR."
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-29",
+      "reason": "Shipped: guided-tour film embedded on /carte ÷ /en/map with the self-shooting capture pipeline and FR/EN live captions."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-29",
+  "revisions": [],
+  "annotations": []
+}

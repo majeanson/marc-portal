@@ -13878,6 +13878,114 @@ button.intake__progress-step:disabled {
   max-width: 72ch;
   margin: 0;
 }
+
+/* /carte guided-tour film (WalkthroughFilm.tsx) — iframes the walkthrough
+   player as a coda under the atlas. Capped narrower than the wide map canvas
+   so it reads as one featured clip, not a wall. All colours are tokens, so it
+   tracks the day/night surface automatically. */
+.walkfilm {
+  max-width: 920px;
+  margin: 44px auto 4px;
+}
+.walkfilm__title {
+  font-family: var(--display);
+  font-size: clamp(22px, 3.4vw, 30px);
+  line-height: 1.15;
+  margin: 6px 0 4px;
+  color: var(--text);
+}
+.walkfilm__sub {
+  color: var(--text-mid);
+  font-size: 14.5px;
+  max-width: 64ch;
+  margin: 0;
+}
+.walkfilm__stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #15130f; /* matches the player's own stage backdrop */
+}
+.walkfilm__frame,
+.walkfilm__poster-btn {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.walkfilm__poster-btn {
+  display: block;
+  padding: 0;
+  cursor: pointer;
+  background: #15130f;
+}
+.walkfilm__poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  opacity: 0.55; /* dimmed so the play affordance reads over any frame */
+}
+.walkfilm__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 12px 22px;
+  background: rgba(31, 29, 24, 0.82);
+  color: #f6f1e6;
+  border: 1px solid rgba(246, 241, 230, 0.4);
+  border-radius: 999px;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+.walkfilm__poster-btn:hover .walkfilm__poster {
+  opacity: 0.7;
+}
+.walkfilm__poster-btn:hover .walkfilm__play {
+  background: rgba(31, 29, 24, 0.92);
+}
+.walkfilm__chapters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  align-items: center;
+}
+.walkfilm__chip {
+  padding: 6px 12px;
+  font-size: 12.5px;
+  color: var(--text-mid);
+  background: var(--bg-section);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.walkfilm__chip:hover {
+  border-color: var(--accent);
+  color: var(--accent-warm);
+}
+.walkfilm__chip--active {
+  background: var(--bg-active);
+  border-color: var(--accent);
+  color: var(--accent-warm);
+}
+.walkfilm__back {
+  margin-left: auto;
+  padding: 6px 4px;
+  font-size: 12.5px;
+  color: var(--text-soft);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.walkfilm__back:hover {
+  color: var(--accent);
+}
 .map-page__canvas {
   margin-top: 24px;
   background: var(--bg-section);
