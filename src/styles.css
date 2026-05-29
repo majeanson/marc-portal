@@ -1128,10 +1128,6 @@ html:not([data-lang-nudge='en']) .en-nudge {
   gap: 16px;
 }
 .step {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 20px;
 }
 .step__num {
@@ -1192,10 +1188,6 @@ html:not([data-lang-nudge='en']) .en-nudge {
   gap: 12px;
 }
 .tier {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 20px;
 }
 .tier--anchor {
@@ -1704,11 +1696,7 @@ html:not([data-lang-nudge='en']) .en-nudge {
 .intake__sheet {
   margin-top: 18px;
   padding: 32px 36px 36px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
   border-left: 3px solid var(--feat-intake);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 @media (max-width: 600px) {
   .intake__sheet {
@@ -1883,10 +1871,6 @@ button.intake__progress-step:focus-visible {
 .intake__signin {
   margin: 8px 0 24px;
   padding: 12px 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   font-size: 15px;
   color: var(--text-mid);
   display: flex;
@@ -1975,11 +1959,7 @@ button.intake__progress-step:focus-visible {
 .page__panel {
   width: 100%;
   max-width: 520px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
   padding: 36px 36px 32px;
-  box-shadow: var(--edge-shadow);
 }
 .page__panel h1 {
   font-size: clamp(26px, 3.4vw, 32px);
@@ -2543,10 +2523,6 @@ button.intake__progress-step:focus-visible {
 .admin-block {
   margin-bottom: 36px;
   padding: 24px 26px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 .admin-block h2 {
   font-size: 18px;
@@ -3206,10 +3182,6 @@ button.intake__progress-step:focus-visible {
 }
 .type-card {
   text-align: left;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 18px 20px;
   cursor: pointer;
   color: var(--text);
@@ -3271,10 +3243,6 @@ button.intake__progress-step:focus-visible {
 .summary {
   margin: 0;
   padding: 16px 20px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 .summary dt {
   font-size: 11px;
@@ -3578,10 +3546,6 @@ button.intake__progress-step:focus-visible {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   text-decoration: none;
   color: inherit;
   transition: box-shadow 120ms ease;
@@ -3650,10 +3614,6 @@ button.intake__progress-step:focus-visible {
   gap: 14px;
 }
 .me-portal__tile {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   transition:
     box-shadow 160ms ease,
     background 160ms ease;
@@ -3860,10 +3820,6 @@ button.intake__progress-step:focus-visible {
 
 .me-portal__help {
   margin-bottom: 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 14px 18px;
 }
 .me-portal__help-summary {
@@ -4011,10 +3967,6 @@ button.intake__progress-step:focus-visible {
   gap: 12px;
 }
 .me-portal__card {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   transition:
     box-shadow 120ms ease,
     background 120ms ease;
@@ -4635,10 +4587,7 @@ button.intake__progress-step:focus-visible {
   }
 }
 .scorecard__tile {
-  border: 1px solid var(--edge);
   border-left: 3px solid var(--border-soft);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   background: var(--bg-section);
   padding: 14px 16px;
   display: flex;
@@ -4693,9 +4642,6 @@ button.intake__progress-step:focus-visible {
   }
 }
 .meta-feature {
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   background: var(--bg-section);
 }
 .meta-feature--active {
@@ -5063,9 +5009,6 @@ button.intake__progress-step:focus-visible {
 /* Each glyph card is a link into /carte?feature=X — follow the colour. */
 .atelier-glyph__link {
   width: 100%;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 18px;
   background: var(--bg-section);
   display: flex;
@@ -5162,9 +5105,6 @@ button.intake__progress-step:focus-visible {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 8px 10px;
   background: var(--bg-section);
 }
@@ -5336,11 +5276,7 @@ button.intake__progress-step:focus-visible {
   padding: 0;
   width: 100%;
   text-align: left;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   overflow: hidden;
-  background: var(--bg-card);
   display: flex;
   flex-direction: column;
   transition:
@@ -5418,10 +5354,7 @@ button.intake__progress-step:focus-visible {
   flex-direction: column;
   max-height: 92vh;
   background: var(--bg);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
   overflow: hidden;
-  box-shadow: var(--edge-shadow);
 }
 .atelier-lightbox__bar {
   display: flex;
@@ -5992,10 +5925,6 @@ button:focus-visible,
   align-items: stretch;
   margin: 24px 0;
   padding: 14px 18px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 .eng-status__node {
   position: relative;
@@ -6155,11 +6084,7 @@ button:focus-visible,
   gap: 16px;
 }
 .pattern {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
   border-left: 4px solid var(--border);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 20px 22px;
   transition:
     border-color 0.18s ease,
@@ -6612,10 +6537,6 @@ button:focus-visible,
 }
 .project-card {
   position: relative;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  background: var(--bg-card);
-  box-shadow: var(--edge-shadow);
   transition:
     background 0.12s,
     box-shadow 0.1s;
@@ -7189,10 +7110,6 @@ button:focus-visible,
 .session-frame__panel {
   margin-bottom: 28px;
   padding: 28px 28px 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 .session-frame__panel h2 {
   margin: 0 0 16px;
@@ -9282,10 +9199,6 @@ button.intake__progress-step:disabled {
    editorial feel with a subtle hover lift and inline arrow reveal.
    ────────────────────────────────────────────────────────────────────────── */
 .home .featured-projects__grid .project-card {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   transition:
     box-shadow 0.2s ease,
     background 0.2s ease;
@@ -9793,10 +9706,6 @@ button.intake__progress-step:disabled {
 }
 .inline-teaser__card {
   appearance: none;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 18px 18px 16px;
   cursor: pointer;
   display: flex;
@@ -10192,14 +10101,11 @@ button.intake__progress-step:disabled {
 }
 .share-modal {
   background: var(--bg);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
   padding: 24px;
   max-width: 640px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--edge-shadow);
 }
 .share-modal__head {
   display: flex;
@@ -10394,10 +10300,6 @@ button.intake__progress-step:disabled {
   gap: 22px;
 }
 .admin-showcase__card {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -10654,10 +10556,6 @@ button.intake__progress-step:disabled {
   gap: 16px;
 }
 .admin-hub__tile {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   transition:
     box-shadow 160ms ease,
     background 160ms ease;
@@ -10771,9 +10669,6 @@ button.intake__progress-step:disabled {
   gap: 8px;
   padding: 20px;
   background: var(--bg-active);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 .session-arc__shipped-title {
   margin: 0;
@@ -10882,9 +10777,6 @@ button.intake__progress-step:disabled {
   gap: 4px 14px;
   padding: 12px 14px;
   background: var(--bg-section);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 .decline-panel__pointer p {
   margin: 0;
@@ -10932,10 +10824,6 @@ button.intake__progress-step:disabled {
 .session-napkin {
   margin-top: 32px;
   padding: 20px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 .session-napkin__head {
   display: flex;
@@ -11509,10 +11397,6 @@ button.intake__progress-step:disabled {
   }
 }
 .handoff-mode {
-  border: 1px solid var(--edge);
-  background: var(--bg-card);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 20px 22px;
   display: flex;
   flex-direction: column;
@@ -11752,11 +11636,7 @@ button.intake__progress-step:disabled {
    cards above. */
 .tier__custodian-note {
   margin: 24px 0 0;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
   border-left: 3px solid var(--accent);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 18px 22px 16px;
 }
 .tier__custodian-heading {
@@ -11786,11 +11666,7 @@ button.intake__progress-step:disabled {
    treatment as the custodian note (left-bordered card). */
 .tier__rescue-note {
   margin: 24px 0 0;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
   border-left: 3px solid var(--accent);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 18px 22px 16px;
 }
 .tier__rescue-heading {
@@ -11820,11 +11696,7 @@ button.intake__progress-step:disabled {
    card treatment as the rescue/custodian notes; carries no CTA. */
 .tier__hardware-note {
   margin: 24px 0 0;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
   border-left: 3px solid var(--accent);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 18px 22px 16px;
 }
 .tier__hardware-heading {
@@ -12055,10 +11927,6 @@ button.intake__progress-step:disabled {
   margin: 40px 0 24px;
 }
 .journey__stat {
-  border: 1px solid var(--edge);
-  background: var(--bg-card);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 22px 16px;
   text-align: center;
   display: flex;
@@ -12342,10 +12210,6 @@ button.intake__progress-step:disabled {
 
 /* The card itself */
 .journey__card {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 20px 24px;
   position: relative;
   transition:
@@ -12717,10 +12581,6 @@ button.intake__progress-step:disabled {
 }
 
 .vouch-card {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 22px 24px;
 }
 /* Staggered fade-in on mount — cards settle in sequentially (opacity only,
@@ -12834,11 +12694,8 @@ button.intake__progress-step:disabled {
 }
 .share-testimonials__cta {
   background: var(--bg-section);
-  border: 1px solid var(--edge);
   border-left: 3px solid var(--accent-warm);
   padding: 18px 22px;
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   margin-top: 16px;
 }
 .share-testimonials__cta-title {
@@ -12923,10 +12780,6 @@ button.intake__progress-step:disabled {
   gap: 16px;
 }
 .admin-vouches__row {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 18px 22px;
 }
 .admin-vouches__row-head {
@@ -13014,10 +12867,6 @@ button.intake__progress-step:disabled {
   max-width: var(--max-w);
   margin: 24px auto 0;
   padding: 22px var(--gutter);
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 /* FirstNameCard reuses .lang-pref outer chrome; its row is its own layout. */
 .first-name__row {
@@ -13088,9 +12937,6 @@ button.intake__progress-step:disabled {
   gap: 14px;
   padding: 14px 16px;
   background: var(--bg);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   cursor: pointer;
   text-align: left;
   transition:
@@ -13300,14 +13146,11 @@ button.intake__progress-step:disabled {
   top: -22px;
   left: -6px;
   background: var(--bg);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
   padding: 10px 14px;
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: var(--edge-shadow);
 }
 .journey__cartouche-row {
   display: flex;
@@ -13605,11 +13448,7 @@ button.intake__progress-step:disabled {
 .bring-anything__note {
   scroll-snap-align: start;
   flex: 0 0 clamp(258px, 80vw, 318px);
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
   border-left: 3px solid var(--accent);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 20px 22px 22px;
   /* Faint horizontal rule pattern reads as ruled-notepad paper. Kept very
      low contrast — texture, not graph paper. */
@@ -13830,10 +13669,6 @@ button.intake__progress-step:disabled {
   gap: 8px;
 }
 .runbook-step {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 12px 14px;
   transition:
     box-shadow 160ms ease,
@@ -14031,9 +13866,6 @@ button.intake__progress-step:disabled {
   gap: 18px;
   padding: 14px 16px;
   background: var(--bg-section);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   flex-wrap: wrap;
 }
 .runbook-parallel__lede {
@@ -14146,9 +13978,6 @@ button.intake__progress-step:disabled {
 .map-page__canvas {
   margin-top: 24px;
   background: var(--bg-section);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 16px;
   overflow-x: auto;
 }
@@ -14289,10 +14118,6 @@ button.intake__progress-step:disabled {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   color: var(--text);
   text-decoration: none;
   font-size: 13.5px;
@@ -14431,10 +14256,6 @@ a.map-node:focus-visible {
   gap: 14px;
 }
 .map-admin__tile {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   transition:
     box-shadow 160ms ease,
     background 160ms ease;
@@ -14671,11 +14492,7 @@ a.map-node:focus-visible {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
   border-left: 3px solid var(--ft-color, var(--border));
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   text-decoration: none;
   color: var(--text);
   transition:
@@ -15522,9 +15339,6 @@ a.feature-dot:focus-visible {
 }
 .mydata__intake {
   background: var(--bg-section);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 4px 18px 14px;
 }
 .mydata__muted {
@@ -15584,9 +15398,6 @@ a.feature-dot:focus-visible {
   margin-top: 36px;
   padding: 20px 22px;
   background: var(--bg-section);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
 }
 .mydata__rights h2 {
   margin: 0 0 8px;
@@ -15626,10 +15437,6 @@ a.feature-dot:focus-visible {
 
 /* Voice recorder — shared by the intake form and the thread compose box. */
 .voice-rec {
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-  background: var(--bg-card);
   padding: 14px 16px;
 }
 .voice-rec__consent {
@@ -15813,10 +15620,7 @@ a.feature-dot:focus-visible {
 .session-voicenapkin {
   margin-top: 14px;
   padding: 12px 14px;
-  border: 1px solid var(--edge);
   border-left: 3px solid var(--accent);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   background: var(--bg-section);
 }
 .session-voicenapkin__label {
@@ -15844,10 +15648,6 @@ a.feature-dot:focus-visible {
   align-items: center;
   gap: 6px;
   padding: 5px 9px;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-  background: var(--bg-card);
   color: var(--text-mid);
   cursor: pointer;
   transition:
@@ -15911,10 +15711,6 @@ a.feature-dot:focus-visible {
   max-height: 76vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   overflow: hidden;
   animation: site-search-rise 160ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
@@ -16120,10 +15916,6 @@ a.feature-dot:focus-visible {
   width: fit-content;
   margin: 0 auto 22px;
   padding: 8px 16px 8px 11px;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-  background: var(--bg-card);
   transform: rotate(-1.5deg);
   color: var(--text-soft);
   /* The stamp is a "back to home" link (see StudioSign.tsx); strip the anchor
@@ -16296,12 +16088,8 @@ a.feature-dot:focus-visible {
   margin-top: 4px;
 }
 .passage-receipt {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
   padding: 32px 28px;
   margin-top: 32px;
-  box-shadow: var(--edge-shadow);
   background-image:
     radial-gradient(circle at 18% 22%, rgba(0, 0, 0, 0.018), transparent 38%),
     radial-gradient(circle at 78% 62%, rgba(0, 0, 0, 0.014), transparent 42%);
@@ -16723,10 +16511,6 @@ a.feature-dot:focus-visible {
 }
 
 .admin-today__panel {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 18px 20px;
   margin-bottom: 18px;
 }
@@ -16766,9 +16550,6 @@ a.feature-dot:focus-visible {
   margin-bottom: 8px;
 }
 .admin-today__cap-cell {
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 12px 14px;
   background: var(--bg-section);
 }
@@ -16807,9 +16588,6 @@ a.feature-dot:focus-visible {
   gap: 10px;
 }
 .admin-today__session {
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   background: var(--bg-section);
   transition:
     box-shadow 140ms ease,
@@ -16964,9 +16742,6 @@ a.feature-dot:focus-visible {
   gap: 6px;
 }
 .admin-today__row {
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   background: var(--bg-section);
 }
 .admin-today__row--urgent {
@@ -17013,9 +16788,6 @@ a.feature-dot:focus-visible {
   gap: 10px;
 }
 .admin-today__metric {
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 10px 12px;
   background: var(--bg-section);
 }

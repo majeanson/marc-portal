@@ -53,7 +53,7 @@ export function Tier0({ lang }: { lang: Lang }) {
 
             <ul className="patterns">
               {patterns.map((p) => (
-                <li key={p.id} className={`pattern pattern--${p.tone}`}>
+                <li key={p.id} className={`surface pattern pattern--${p.tone}`}>
                   <div className="pattern__head">
                     <span className={`pattern__tag pattern__tag--${p.tone} mono`}>
                       {localizedPattern(p.tag, lang)}

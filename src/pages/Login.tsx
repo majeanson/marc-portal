@@ -5,6 +5,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
 import { PAGE_FEATURE } from '../lib/features'
+import { Surface } from '../components/Surface'
 
 const COPY = {
   fr: {
@@ -70,7 +71,7 @@ export function Login({ lang }: { lang: Lang }) {
       <>
         <Header lang={lang} />
         <main className="page" data-feature={PAGE_FEATURE['page.login']}>
-          <section className="page__panel">
+          <Surface as="section" className="page__panel">
             <h1>{t.title}</h1>
             <p>
               {t.alreadyLoggedIn} <strong>{currentEmail}</strong>.
@@ -86,7 +87,7 @@ export function Login({ lang }: { lang: Lang }) {
                 {t.goToMe}
               </a>
             </p>
-          </section>
+          </Surface>
         </main>
         <Footer lang={lang} />
       </>
@@ -97,7 +98,7 @@ export function Login({ lang }: { lang: Lang }) {
     <>
       <Header lang={lang} />
       <main className="page" data-feature={PAGE_FEATURE['page.login']}>
-        <section className="page__panel">
+        <Surface as="section" className="page__panel">
           <h1>{t.title}</h1>
           <p>{t.intro}</p>
           {reason && t.reasons[reason] && (
@@ -123,7 +124,7 @@ export function Login({ lang }: { lang: Lang }) {
               {submitting ? t.sending : t.submit}
             </button>
           </form>
-        </section>
+        </Surface>
       </main>
       <Footer lang={lang} />
     </>

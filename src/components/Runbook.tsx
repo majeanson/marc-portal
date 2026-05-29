@@ -132,7 +132,7 @@ function RunbookStep({ step, lang, forcedOpen, showDependencies }: StepRowProps)
 
   return (
     <li
-      className={`runbook-step${checked ? ' runbook-step--done' : ''}${isOpen ? ' runbook-step--open' : ''}${depBroken ? ' runbook-step--dep-broken' : ''}`}
+      className={`surface runbook-step${checked ? ' runbook-step--done' : ''}${isOpen ? ' runbook-step--open' : ''}${depBroken ? ' runbook-step--dep-broken' : ''}`}
     >
       <div className="runbook-step__row">
         <label className="runbook-step__check">

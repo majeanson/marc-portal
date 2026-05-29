@@ -23,6 +23,7 @@ import { isUnread, seedIfMissing } from '../lib/unread'
 import { PaymentActions } from '../components/PaymentActions'
 import { LangPrefCard } from '../components/LangPrefCard'
 import { FirstNameCard } from '../components/FirstNameCard'
+import { Surface } from '../components/Surface'
 
 const COPY = {
   fr: {
@@ -424,7 +425,7 @@ export function MePortal({ lang }: { lang: Lang }) {
       <>
         <Header lang={lang} />
         <main className="page" data-feature={PAGE_FEATURE['page.me-portal']}>
-          <section className="page__panel">
+          <Surface as="section" className="page__panel">
             <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.me-portal']}>
               {t.eyebrow}
             </SectionEyebrow>
@@ -435,7 +436,7 @@ export function MePortal({ lang }: { lang: Lang }) {
                 {t.signIn}
               </a>
             </p>
-          </section>
+          </Surface>
         </main>
         <Footer lang={lang} />
       </>
@@ -484,7 +485,7 @@ export function MePortal({ lang }: { lang: Lang }) {
             session list below is the working surface; tiles handle the
             "what else can I do here?" question without scrolling. */}
         <ul className="me-portal__tiles">
-          <li className="me-portal__tile">
+          <Surface as="li" className="me-portal__tile">
             <a href="#sessions" className="me-portal__tile-link">
               <div className="me-portal__tile-head">
                 <h2 className="me-portal__tile-title">{t.tileSessionsTitle}</h2>
@@ -497,9 +498,9 @@ export function MePortal({ lang }: { lang: Lang }) {
               </p>
               <span className="mono me-portal__tile-action">{t.tileSessionsAction}</span>
             </a>
-          </li>
+          </Surface>
 
-          <li className="me-portal__tile me-portal__tile--accent">
+          <Surface as="li" className="me-portal__tile me-portal__tile--accent">
             <a href={`${langPrefix}/intake`} className="me-portal__tile-link">
               <div className="me-portal__tile-head">
                 <h2 className="me-portal__tile-title">{t.tileNewTitle}</h2>
@@ -507,9 +508,9 @@ export function MePortal({ lang }: { lang: Lang }) {
               <p className="me-portal__tile-body">{t.tileNewBody}</p>
               <span className="mono me-portal__tile-action">{t.tileNewAction}</span>
             </a>
-          </li>
+          </Surface>
 
-          <li className="me-portal__tile">
+          <Surface as="li" className="me-portal__tile">
             <a href={`${langPrefix}/me/data`} className="me-portal__tile-link">
               <div className="me-portal__tile-head">
                 <h2 className="me-portal__tile-title">{t.tileDataTitle}</h2>
@@ -517,9 +518,9 @@ export function MePortal({ lang }: { lang: Lang }) {
               <p className="me-portal__tile-body">{t.tileDataBody}</p>
               <span className="mono me-portal__tile-action">{t.tileDataAction}</span>
             </a>
-          </li>
+          </Surface>
 
-          <li className="me-portal__tile">
+          <Surface as="li" className="me-portal__tile">
             <a href={privacyHref} target="_blank" rel="noreferrer" className="me-portal__tile-link">
               <div className="me-portal__tile-head">
                 <h2 className="me-portal__tile-title">{t.tilePrivacyTitle}</h2>
@@ -527,12 +528,12 @@ export function MePortal({ lang }: { lang: Lang }) {
               <p className="me-portal__tile-body">{t.tilePrivacyBody}</p>
               <span className="mono me-portal__tile-action">{t.tilePrivacyAction}</span>
             </a>
-          </li>
+          </Surface>
         </ul>
 
         <section className="me-portal__list-section" id="sessions">
           <h2 className="me-portal__section-title mono">{t.sectionSessionsTitle}</h2>
-          <details className="me-portal__help">
+          <Surface as="details" className="me-portal__help">
             <summary className="me-portal__help-summary mono">{t.helpToggle}</summary>
             <ul className="me-portal__help-list">
               {t.helpItems.map((item) => (
@@ -542,7 +543,7 @@ export function MePortal({ lang }: { lang: Lang }) {
                 </li>
               ))}
             </ul>
-          </details>
+          </Surface>
           {sessionsError ? (
             <div className="me-portal__empty">
               <p role="alert" className="form__error me-portal__empty-title">
@@ -758,7 +759,7 @@ function SessionCard({
   const sla = computeSla(session)
   const unread = isUnread(session)
   return (
-    <li className={`me-portal__card${unread ? ' me-portal__card--unread' : ''}`}>
+    <Surface as="li" className={`me-portal__card${unread ? ' me-portal__card--unread' : ''}`}>
       <a href={href} className="me-portal__card-link" aria-label={title}>
         <div className="me-portal__card-main">
           <div className="me-portal__card-meta">
@@ -792,6 +793,6 @@ function SessionCard({
       {session.status === 'active' && (
         <PaymentActions session={session} lang={lang} variant="compact" />
       )}
-    </li>
+    </Surface>
   )
 }

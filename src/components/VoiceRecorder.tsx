@@ -193,7 +193,7 @@ export function VoiceRecorder({
   }, [])
 
   return (
-    <div className="voice-rec" aria-live="polite">
+    <div className="surface voice-rec" aria-live="polite">
       {phase === 'idle' && (
         <div className="voice-rec__idle">
           <p className="voice-rec__consent">{consent}</p>

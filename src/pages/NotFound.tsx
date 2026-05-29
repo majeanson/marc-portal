@@ -4,6 +4,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { FeatureGlyph } from '../lib/featureGlyphs'
 import { DICT, type Lang } from '../i18n'
+import { Surface } from '../components/Surface'
 
 /**
  * Catch-all 404 page. Replaces the previous silent <Navigate to="/"> which
@@ -53,7 +54,7 @@ export function NotFound() {
     <div className="app">
       <Header lang={lang} />
       <main id="main-content" className="page">
-        <section className="page__panel page__panel--centered error-panel">
+        <Surface as="section" className="page__panel page__panel--centered error-panel">
           <ErrorStamp label={lang === 'fr' ? 'PAS LÀ' : 'NOT HERE'} sub="404 · MARC.PORTAL" />
           <div className="mono section__eyebrow">404</div>
           <h1>{t.title}</h1>
@@ -106,7 +107,7 @@ export function NotFound() {
               {t.intakeCta}
             </a>
           </div>
-        </section>
+        </Surface>
       </main>
       <Footer lang={lang} />
     </div>

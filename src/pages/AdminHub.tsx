@@ -55,7 +55,7 @@ export function AdminHub({ lang }: { lang: Lang }) {
           <h2 className="admin-hub__section-title mono">{s.title}</h2>
           <ul className="admin-hub__grid">
             {s.tiles.map((tile) => (
-              <li key={tile.href} className="admin-hub__tile">
+              <li key={tile.href} className="surface admin-hub__tile">
                 {tile.external ? (
                   <a
                     className="admin-hub__tile-link"
@@ -83,10 +83,10 @@ export function AdminHub({ lang }: { lang: Lang }) {
       <section className="admin-hub__section">
         <h2 className="admin-hub__section-title mono">{lang === 'en' ? 'Tools' : 'Outils'}</h2>
         <ul className="admin-hub__grid">
-          <li className="admin-hub__tile admin-hub__tile--tool">
+          <li className="surface admin-hub__tile admin-hub__tile--tool">
             <ProposalProof lang={lang} />
           </li>
-          <li className="admin-hub__tile admin-hub__tile--tool">
+          <li className="surface admin-hub__tile admin-hub__tile--tool">
             <EmailTestCard lang={lang} />
           </li>
         </ul>

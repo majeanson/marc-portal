@@ -100,7 +100,7 @@ export function ShareModal({
     >
       <div
         ref={dialogRef}
-        className="share-modal"
+        className="surface share-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-modal-title"

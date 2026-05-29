@@ -210,7 +210,7 @@ export function Map({ lang }: { lang: Lang }) {
           )}
 
           <div
-            className="map-page__canvas"
+            className="surface map-page__canvas"
             data-active-feature={activeFeature ?? undefined}
             data-layer={layer}
           >

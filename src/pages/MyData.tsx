@@ -23,6 +23,7 @@ import { formatDate } from '../lib/format'
 import type { ProblemType } from '../lib/intakeSchemas'
 import type { SessionStatus } from '../lib/sessionsApi'
 import { attachmentUrl } from '../lib/attachmentsApi'
+import { Surface } from '../components/Surface'
 
 interface ParsedIntake {
   type: ProblemType
@@ -183,7 +184,7 @@ export function MyData({ lang }: { lang: Lang }) {
       <>
         <Header lang={lang} />
         <main className="page">
-          <section className="page__panel">
+          <Surface as="section" className="page__panel">
             <SectionEyebrow lang={lang} feature={undefined}>
               {t.eyebrow}
             </SectionEyebrow>
@@ -194,7 +195,7 @@ export function MyData({ lang }: { lang: Lang }) {
                 {t.signIn}
               </a>
             </p>
-          </section>
+          </Surface>
         </main>
         <Footer lang={lang} />
       </>
@@ -260,7 +261,7 @@ export function MyData({ lang }: { lang: Lang }) {
             </p>
 
             {intake ? (
-              <div className="mydata__intake">
+              <Surface className="mydata__intake">
                 <IntakeSummary
                   lang={lang}
                   account={intake.account}
@@ -268,7 +269,7 @@ export function MyData({ lang }: { lang: Lang }) {
                   values={intake.formData}
                   submittedAt={intake.submittedAt}
                 />
-              </div>
+              </Surface>
             ) : (
               <p className="mydata__muted">{t.intakeUnavailable}</p>
             )}
@@ -301,7 +302,7 @@ export function MyData({ lang }: { lang: Lang }) {
         )
       })}
 
-      <section className="mydata__rights">
+      <Surface as="section" className="mydata__rights">
         <h2>{t.rightsHeading}</h2>
         <p>{t.rightsBody}</p>
         <p className="mydata__rights-links">
@@ -314,7 +315,7 @@ export function MyData({ lang }: { lang: Lang }) {
             {t.privacyLink}
           </a>
         </p>
-      </section>
+      </Surface>
     </>,
   )
 }

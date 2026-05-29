@@ -181,7 +181,7 @@ export function AdminEmailOutbox({ lang }: { lang: Lang }) {
         </div>
       </header>
 
-      <section className="admin-block fleet-block">
+      <section className="surface admin-block fleet-block">
         {error === 'other' && <p className="form__error">{t.failed}</p>}
         {!entries && !error && (
           <p className="mono" style={{ color: 'var(--text-soft)' }}>

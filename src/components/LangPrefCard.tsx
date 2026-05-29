@@ -87,7 +87,7 @@ export function LangPrefCard({ lang }: { lang: Lang }) {
   }
 
   return (
-    <section id="prefs" className="lang-pref" aria-labelledby="lang-pref-title">
+    <section id="prefs" className="surface lang-pref" aria-labelledby="lang-pref-title">
       <div className="lang-pref__head">
         <div className="section__eyebrow">{t.eyebrow}</div>
         <h2 id="lang-pref-title" className="lang-pref__title">
@@ -149,7 +149,7 @@ function LangChoice({
       aria-checked={active}
       disabled={disabled}
       onClick={() => onPick(value)}
-      className={`lang-pref__choice${active ? ' lang-pref__choice--active' : ''}`}
+      className={`surface lang-pref__choice${active ? ' lang-pref__choice--active' : ''}`}
     >
       <span className="lang-pref__choice-flag mono" aria-hidden="true">
         {flag}

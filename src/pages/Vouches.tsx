@@ -15,6 +15,7 @@ import { cssVars } from '../lib/styleVars'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
+import { Surface } from '../components/Surface'
 
 export function Vouches({ lang }: { lang: Lang }) {
   const t = DICT[lang].vouches
@@ -105,7 +106,7 @@ function VouchCard({ v, lang, index }: { v: PublicVouch; lang: Lang; index: numb
   // --i powers the staggered fade-in animation defined on .vouch-card —
   // CSS reads it via calc(var(--i) * 60ms) for animation-delay.
   return (
-    <li className="vouch-card" style={cssVars({ '--i': index })}>
+    <Surface as="li" className="vouch-card" style={cssVars({ '--i': index })}>
       <blockquote className="vouch-card__body">
         <p>{v.body}</p>
       </blockquote>
@@ -121,6 +122,6 @@ function VouchCard({ v, lang, index }: { v: PublicVouch; lang: Lang; index: numb
         </span>
         <span className="vouch-card__rel"> · {relLabel}</span>
       </footer>
-    </li>
+    </Surface>
   )
 }

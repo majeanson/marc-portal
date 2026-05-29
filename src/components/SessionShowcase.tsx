@@ -73,7 +73,7 @@ export function SessionShowcase({
   }
 
   return (
-    <section className="intake__step session-frame__panel session-showcase">
+    <section className="surface intake__step session-frame__panel session-showcase">
       <h2>{t.sectionHeading}</h2>
       <p className="field__hint">{t.sectionHint}</p>
 

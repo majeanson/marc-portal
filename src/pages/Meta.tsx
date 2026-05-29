@@ -226,7 +226,7 @@ export function Meta({ lang }: { lang: Lang }) {
                 return (
                   <li
                     key={f.featureKey}
-                    className={`meta-feature meta-feature--${f.status} meta-feature--${fresh}`}
+                    className={`surface meta-feature meta-feature--${f.status} meta-feature--${fresh}`}
                   >
                     <details className="meta-feature__details">
                       <summary className="meta-feature__summary">

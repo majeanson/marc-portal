@@ -46,7 +46,7 @@ export function NapkinArc({
     : null
   return (
     <section
-      className="intake__step session-frame__panel session-arc"
+      className="surface intake__step session-frame__panel session-arc"
       data-shipped={shipped || undefined}
     >
       <h2>{shipped ? copy.arcShippedHeading : copy.arcPinnedHeading}</h2>
@@ -67,7 +67,7 @@ export function NapkinArc({
             </div>
             <div className="session-arc__col session-arc__col--shipped">
               <span className="mono session-arc__col-label">{copy.arcShippedLabel}</span>
-              <div className="session-arc__shipped">
+              <div className="surface session-arc__shipped">
                 <h3 className="session-arc__shipped-title">
                   {session.showcase_title?.trim() || copy.arcShippedFallback}
                 </h3>

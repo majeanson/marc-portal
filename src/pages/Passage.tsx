@@ -258,7 +258,7 @@ export function Passage({ lang }: { lang: Lang }) {
               </p>
             </PageMast>
 
-            <section className="passage-receipt" aria-label={t.receiptHeader}>
+            <section className="surface passage-receipt" aria-label={t.receiptHeader}>
               <header className="passage-receipt__head">
                 <p className="passage-receipt__café mono">{t.receiptHeader}</p>
                 <p className="passage-receipt__meta mono">

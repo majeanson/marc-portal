@@ -73,7 +73,7 @@ export function SessionAdvancements({
 
   if (items === null && loading) {
     return (
-      <section className="intake__step session-frame__panel session-advancements">
+      <section className="surface intake__step session-frame__panel session-advancements">
         <h2>{t.heading}</h2>
         <p className="mono">{t.loading}</p>
       </section>
@@ -85,7 +85,7 @@ export function SessionAdvancements({
   const current = items?.find((i) => i.flags.showAsCurrentBuild) ?? null
 
   return (
-    <section className="intake__step session-frame__panel session-advancements">
+    <section className="surface intake__step session-frame__panel session-advancements">
       <h2>{t.heading}</h2>
       <p className="field__hint session-advancements__hint">{t.subtitle}</p>
 

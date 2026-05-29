@@ -111,7 +111,7 @@ export function StudioSign({ lang }: { lang: Lang }) {
   const homeHref = lang === 'fr' ? '/' : '/en'
 
   return (
-    <a className={`studio-sign studio-sign--${status}`} href={homeHref} aria-label={t.home}>
+    <a className={`surface studio-sign studio-sign--${status}`} href={homeHref} aria-label={t.home}>
       <CoffeeCup steaming={status !== 'waitlist'} />
       <span className="studio-sign__text">
         <span className="studio-sign__eyebrow mono">{t.eyebrow}</span>

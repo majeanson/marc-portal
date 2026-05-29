@@ -67,7 +67,7 @@ export function InlineIntakeTeaser({ lang }: { lang: Lang }) {
             <button
               key={type}
               type="button"
-              className={`inline-teaser__card${isPicked ? ' is-picked' : ''}${isSecondary ? ' inline-teaser__card--secondary' : ''}`}
+              className={`surface inline-teaser__card${isPicked ? ' is-picked' : ''}${isSecondary ? ' inline-teaser__card--secondary' : ''}`}
               onClick={() => commit(type)}
               disabled={picked !== null && !isPicked}
             >

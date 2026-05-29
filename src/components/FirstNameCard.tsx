@@ -91,7 +91,7 @@ export function FirstNameCard({ lang }: { lang: Lang }) {
   }
 
   return (
-    <section id="first-name" className="lang-pref" aria-labelledby="first-name-title">
+    <section id="first-name" className="surface lang-pref" aria-labelledby="first-name-title">
       <div className="lang-pref__head">
         <div className="section__eyebrow">{t.eyebrow}</div>
         <h2 id="first-name-title" className="lang-pref__title">

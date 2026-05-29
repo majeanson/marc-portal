@@ -81,7 +81,7 @@ export function AccountStep({
       <h2>{t.title}</h2>
       <p>{t.body}</p>
 
-      <p className="intake__signin">
+      <p className="surface intake__signin">
         <span>{t.alreadyHaveAccount}</span>{' '}
         <a href={loginHref} className="intake__signin-link">
           {t.signIn}

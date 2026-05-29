@@ -30,7 +30,7 @@ export function MapNodeView({ pos, lang, dim }: Props) {
   const link = pickHref(node, lang)
   const label = node.label[lang]
   const desc = node.desc?.[lang]
-  const className = `map-node map-node--${node.kind}${node.teaser ? ' map-node--teaser' : ''}${
+  const className = `surface map-node map-node--${node.kind}${node.teaser ? ' map-node--teaser' : ''}${
     dim ? ' map-node--dim' : ''
   }`
 

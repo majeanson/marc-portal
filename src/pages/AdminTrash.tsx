@@ -6,6 +6,7 @@ import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
 import { listSessions, undeleteSession, type SessionRow } from '../lib/sessionsApi'
 import { formatDateTime } from '../lib/format'
+import { Surface } from '../components/Surface'
 
 const COPY = {
   fr: {
@@ -129,9 +130,9 @@ export function AdminTrash({ lang }: { lang: Lang }) {
       <>
         <Header lang={lang} />
         <main className="page">
-          <section className="page__panel">
+          <Surface as="section" className="page__panel">
             <p>{t.forbidden}</p>
-          </section>
+          </Surface>
         </main>
         <Footer lang={lang} />
       </>
@@ -142,7 +143,7 @@ export function AdminTrash({ lang }: { lang: Lang }) {
     <>
       <Header lang={lang} />
       <main className="page">
-        <section className="page__panel">
+        <Surface as="section" className="page__panel">
           <p>
             <a href={`${langPrefix}/admin/inbox`}>{t.backToInbox}</a>
           </p>
@@ -211,7 +212,7 @@ export function AdminTrash({ lang }: { lang: Lang }) {
           >
             ↻ {t.refreshing.replace('…', '')}
           </button>
-        </section>
+        </Surface>
       </main>
       <Footer lang={lang} />
     </>

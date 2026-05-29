@@ -32,7 +32,7 @@ export function TypePicker({
             <button
               key={type}
               type="button"
-              className={`type-card${isSelected ? ' type-card--selected' : ''}`}
+              className={`surface type-card${isSelected ? ' type-card--selected' : ''}`}
               onClick={() => onPick(type)}
             >
               <div className="type-card__name mono">{type}</div>

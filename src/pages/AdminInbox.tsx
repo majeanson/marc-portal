@@ -7,6 +7,7 @@ import { useAuth } from '../lib/authContext'
 import { listSessions, type SessionRow, type SessionStatus } from '../lib/sessionsApi'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDate, formatRelativeWindow } from '../lib/format'
+import { Surface } from '../components/Surface'
 
 const COPY = {
   fr: {
@@ -160,7 +161,7 @@ function AdminCard({
   const sla = computeSla(session)
   const href = `${langPrefix}/session/${session.id}`
   return (
-    <li className="me-portal__card">
+    <Surface as="li" className="me-portal__card">
       <a href={href} className="me-portal__card-link" aria-label={`${session.email} — ${title}`}>
         <div className="me-portal__card-main">
           <div className="me-portal__card-meta">
@@ -188,7 +189,7 @@ function AdminCard({
           <span className="me-portal__open mono">{copy.open}</span>
         </div>
       </a>
-    </li>
+    </Surface>
   )
 }
 

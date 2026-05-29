@@ -113,7 +113,7 @@ export function NapkinSection({ lang, napkin, sessionId, onReplaced }: NapkinSec
   const isEditing = edit.kind === 'editing' || edit.kind === 'saving'
 
   return (
-    <div className="session-napkin">
+    <div className="surface session-napkin">
       <div className="session-napkin__head">
         <span className="section__eyebrow">{t.eyebrow}</span>
         <div className="session-napkin__actions">

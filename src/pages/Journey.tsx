@@ -74,21 +74,21 @@ export function Journey({ lang }: { lang: Lang }) {
                   instead of "left-mast, centered-stats, alternating-cards". */}
               <div className="journey__head journey__head--in-mast">
                 <dl className="journey__stats" aria-label={j.eyebrow}>
-                  <div className="journey__stat journey__stat--you">
+                  <div className="surface journey__stat journey__stat--you">
                     <dt className="journey__stat-label">{j.statYou}</dt>
                     <dd className="journey__stat-val">
                       <span className="journey__stat-num">{j.statYouVal}</span>
                       <span className="journey__stat-unit">{j.statYouUnit}</span>
                     </dd>
                   </div>
-                  <div className="journey__stat journey__stat--time">
+                  <div className="surface journey__stat journey__stat--time">
                     <dt className="journey__stat-label">{j.statTime}</dt>
                     <dd className="journey__stat-val">
                       <span className="journey__stat-num">{j.statTimeVal}</span>
                       <span className="journey__stat-unit">{j.statTimeUnit}</span>
                     </dd>
                   </div>
-                  <div className="journey__stat journey__stat--calls">
+                  <div className="surface journey__stat journey__stat--calls">
                     <dt className="journey__stat-label">{j.statCalls}</dt>
                     <dd className="journey__stat-val">
                       <span className="journey__stat-num">{j.statCallsVal}</span>
@@ -121,7 +121,7 @@ export function Journey({ lang }: { lang: Lang }) {
                   scroll (scroll-driven CSS animation); chrome shrinks/folds
                   on narrow viewports so the cards never get crowded. */}
               <div className="journey__chart-frame" aria-hidden="true" />
-              <div className="journey__cartouche" aria-hidden="true">
+              <div className="surface journey__cartouche" aria-hidden="true">
                 <div className="journey__cartouche-row mono">
                   <span>{lang === 'fr' ? 'CARTE' : 'CHART'}</span>
                   <span>№ {PAGE_FOLIOS.journey}</span>
@@ -227,7 +227,7 @@ export function Journey({ lang }: { lang: Lang }) {
                           className={`journey__step journey__step--${step.actor} journey__step--${side}`}
                         >
                           <span className="journey__step-dot" aria-hidden="true" />
-                          <article className="journey__card">
+                          <article className="surface journey__card">
                             <div className="journey__card-head">
                               <span className="journey__step-num mono" aria-hidden="true">
                                 {step.num}

@@ -37,7 +37,7 @@ export function MapNodeCard({ node, lang, dim, leadBadge }: Props) {
   const label = node.label[lang]
   const desc = node.desc?.[lang]
   const badge = leadBadge ?? node.folio ?? node.badge
-  const className = `map-card map-card--${node.kind}${node.teaser ? ' map-card--teaser' : ''}${
+  const className = `surface map-card map-card--${node.kind}${node.teaser ? ' map-card--teaser' : ''}${
     dim ? ' map-card--dim' : ''
   }`
 

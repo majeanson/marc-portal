@@ -56,7 +56,7 @@ export function IntakeSummary({
   return (
     <>
       <h3 style={{ marginBottom: 12 }}>{t.summaryTitle}</h3>
-      <dl className="summary">
+      <dl className="surface summary">
         <dt>{t.summaryEmail}</dt>
         <dd className="mono">{account.email}</dd>
         {(editable || account.name) && (
@@ -100,7 +100,7 @@ export function IntakeSummary({
       </dl>
 
       <h3 style={{ marginTop: 24, marginBottom: 12 }}>{t.summaryAnswers}</h3>
-      <dl className="summary">
+      <dl className="surface summary">
         {schema.fields.map((field) => {
           const v = values[field.id] ?? ''
           if (!editable && !v) return null

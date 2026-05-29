@@ -363,7 +363,7 @@ export function Atelier({ lang }: { lang: Lang }) {
                 {FEATURE_IDS.map((id) => (
                   <li key={id} className="atelier-glyph" data-feature={id}>
                     <Link
-                      className="atelier-glyph__link"
+                      className="surface atelier-glyph__link"
                       to={lang === 'fr' ? `/carte?feature=${id}` : `/en/map?feature=${id}`}
                       aria-label={t.glyphFilterAria(FEATURES[id].label[lang])}
                     >
@@ -384,7 +384,7 @@ export function Atelier({ lang }: { lang: Lang }) {
               <p className="atelier-section__lead">{t.paletteNote}</p>
               <ul className="atelier-swatches">
                 {CORE_TOKENS.map(({ token, role }) => (
-                  <li key={token} className="atelier-swatch">
+                  <li key={token} className="surface atelier-swatch">
                     <span
                       className="atelier-swatch__chip"
                       style={{ background: `var(${token})` }}
@@ -473,7 +473,7 @@ export function Atelier({ lang }: { lang: Lang }) {
                       >
                         <button
                           type="button"
-                          className="atelier-shot__btn"
+                          className="surface atelier-shot__btn"
                           onClick={() => showShot(shot)}
                         >
                           <img
@@ -519,7 +519,7 @@ export function Atelier({ lang }: { lang: Lang }) {
         onClose={closeLightbox}
       >
         {active && (
-          <div className="atelier-lightbox__inner">
+          <div className="surface atelier-lightbox__inner">
             <div className="atelier-lightbox__bar">
               <span className="atelier-lightbox__title">
                 {active.label[lang]}

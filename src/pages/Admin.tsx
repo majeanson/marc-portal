@@ -12,6 +12,7 @@ import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { useAuth } from '../lib/authContext'
 import { useTenant } from '../lib/tenantContext'
+import { Surface } from '../components/Surface'
 
 const COPY = {
   fr: {
@@ -76,9 +77,9 @@ export function Admin({ lang }: { lang: Lang }) {
   if (authLoading || tenantLoading) {
     return (
       <main className="page">
-        <section className="page__panel">
+        <Surface as="section" className="page__panel">
           <p>{t.loading}</p>
-        </section>
+        </Surface>
       </main>
     )
   }

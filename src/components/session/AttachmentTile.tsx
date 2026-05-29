@@ -69,7 +69,13 @@ export function AttachmentTile({
   }
   return (
     <li className="thread__attach-tile thread__attach-tile--file">
-      <a href={url} target="_blank" rel="noopener noreferrer" download={att.filename}>
+      <a
+        className="surface"
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        download={att.filename}
+      >
         <span className="thread__attach-icon" aria-hidden="true">
           ⎙
         </span>

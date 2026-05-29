@@ -11,6 +11,7 @@ import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
+import { Surface } from '../components/Surface'
 import { PAGE_FEATURE } from '../lib/features'
 import { DICT, type Lang } from '../i18n'
 import { ApiError } from '../lib/api'
@@ -167,7 +168,7 @@ export function Vouch({ lang }: { lang: Lang }) {
       <>
         <Header lang={lang} />
         <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
-          <section className="page__panel">
+          <Surface as="section" className="page__panel">
             <h1>{ts.successHeading}</h1>
             <p>{ts.successBody}</p>
             <p>
@@ -189,7 +190,7 @@ export function Vouch({ lang }: { lang: Lang }) {
               )}
               <Link to={langPrefix || '/'}>{ts.backHome}</Link>
             </p>
-          </section>
+          </Surface>
         </main>
         <Footer lang={lang} />
       </>
@@ -200,7 +201,7 @@ export function Vouch({ lang }: { lang: Lang }) {
     <>
       <Header lang={lang} />
       <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
-        <section className="page__panel">
+        <Surface as="section" className="page__panel">
           <h1>{frPunct(ts.heading)}</h1>
           <p>{ts.lead}</p>
           {sessionFor && (
@@ -336,7 +337,7 @@ export function Vouch({ lang }: { lang: Lang }) {
               {submitting ? ts.submitting : ts.submitButton}
             </button>
           </form>
-        </section>
+        </Surface>
       </main>
       <Footer lang={lang} />
     </>

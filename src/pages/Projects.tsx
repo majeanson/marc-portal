@@ -286,7 +286,7 @@ function TierPlaceholders({ lang, langPrefix }: { lang: Lang; langPrefix: string
       </header>
       <ul className="projects__grid projects-placeholders__grid">
         {tiers.map((slot) => (
-          <li key={slot.tier} className="project-card project-card--placeholder">
+          <li key={slot.tier} className="surface project-card project-card--placeholder">
             <a href={slot.href} className="project-card__link">
               <div className="project-card__head">
                 <span
@@ -327,7 +327,7 @@ function ProjectCard({
   const isTransitioning = useViewTransitionState(shareHref)
   const cardStyle = isTransitioning ? { viewTransitionName: 'project-detail' } : undefined
   return (
-    <li className="project-card" style={cardStyle}>
+    <li className="surface project-card" style={cardStyle}>
       <Link to={shareHref} className="project-card__link" viewTransition>
         <ProjectCardPreview
           buildHref={buildHref}

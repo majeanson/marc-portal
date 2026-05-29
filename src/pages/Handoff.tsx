@@ -377,7 +377,7 @@ export function Handoff({ lang }: { lang: Lang }) {
                   <article
                     key={m.name}
                     id={'id' in m ? m.id : undefined}
-                    className={`handoff-mode${i === 0 ? ' handoff-mode--default' : ' handoff-mode--managed'}`}
+                    className={`surface handoff-mode${i === 0 ? ' handoff-mode--default' : ' handoff-mode--managed'}`}
                   >
                     <div className="handoff-mode__eyebrow mono">{m.eyebrow}</div>
                     <h3 className="handoff-mode__name">{m.name}</h3>
