@@ -14,11 +14,14 @@ import { SectionEyebrow } from './SectionEyebrow'
  * permission instead.
  *
  * Visual: editorial section in the home's section--editorial cadence. The
- * examples are a horizontal scroller of ruled-notepad cards — one card per
- * theme (everyday, gifts, work, hardware, weird). Range matters more than a
- * single tidy list: a visitor scans across categories and finds the one
- * that sounds like their idea. Scroll-snap, keyboard-scrollable, peeks the
- * next card so the scroll affordance is obvious.
+ * examples are a horizontal scroller of ruled-notepad cards, one card per
+ * pricing tier (0 free → 4 platform). Grouping by tier instead of by life-
+ * domain makes the section visibly span the whole price ladder: a visitor
+ * with a tiny idea and a visitor with a multi-role platform both find a card
+ * that sounds like their problem, so the high end never reads as out of
+ * scope. The ideas inside each card stay mixed (home, family, small-biz,
+ * hardware) so it reads like a person's notepad, not a price sheet. Scroll-
+ * snap, keyboard-scrollable, peeks the next card so the affordance is obvious.
  */
 export function BringAnything({ lang }: { lang: Lang }) {
   const t = DICT[lang].bringAnything

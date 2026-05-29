@@ -20,12 +20,19 @@
       "rationale": "The practice hasn't built a multi-year client history yet. Falsely-historic examples would be dishonest; aspirational examples ('things I'd happily take') are structurally true.",
       "recommendation": "Once the showcase has 6+ shipped projects, revisit — maybe the section can use real anonymized examples. Until then, aspirational copy.",
       "date": "2026-05-07"
+    },
+    {
+      "decision": "Example cards grouped by pricing tier (0→4), not by life-domain theme",
+      "rationale": "Originally one card per theme (everyday, gifts, work, hardware, weird). That structure showed range across life domains but left the set clustered in Tier 0-2 with no Tier 4 platform-scale idea, so the section quietly under-sold the high end. Regrouping by tier makes the examples reflect every pricing level: a visitor with a tiny idea and one with a multi-role platform both see a matching card. The example prices in each label mirror the Pricing section exactly (Niveau 0 free, 1 750$, 2 1800$, 3 3600$, 4 7500$+); hardware is placed in Tier 3 per the pricing hardwareNote. Ideas inside each card stay mixed (home/family/small-biz/hardware) so it still reads like a notepad, not a price sheet.",
+      "recommendation": "If the Pricing tier amounts change, update these labels in lockstep. Keep at least one warm/personal idea per card so the tier ladder doesn't read as a cold price grid.",
+      "date": "2026-05-28"
     }
   ],
-  "successCriteria": "- Renders directly after VibeFilter in home order\n- Copy positions Marc as the triager, not the visitor\n- Examples are aspirational (not falsely historic)\n- Bilingual at full parity\n- Feature-coloured as intake (pushes toward intake form)",
+  "successCriteria": "- Renders directly after VibeFilter in home order\n- Copy positions Marc as the triager, not the visitor\n- Examples are aspirational (not falsely historic)\n- Example cards span every pricing tier (0 free → 4 platform), labels matching the Pricing section\n- Bilingual at full parity\n- Feature-coloured as intake (pushes toward intake form)",
   "implementation": "src/components/BringAnything.tsx — DICT[lang].bringAnything. SectionEyebrow + HOME_FOLIOS for chrome.",
-  "userGuide": "Edit copy via DICT.fr.bringAnything / DICT.en.bringAnything. If reordering Home sections, keep BringAnything immediately after VibeFilter.",
+  "userGuide": "Edit copy via DICT.fr.bringAnything / DICT.en.bringAnything. The five exampleGroups map 1:1 to the Pricing tiers (Niveau/Tier 0→4); the group label carries the tier price. If reordering Home sections, keep BringAnything immediately after VibeFilter.",
   "knownLimitations": [
+    "Example prices in the labels duplicate the Pricing section; they must be updated by hand if a tier amount changes",
     "Examples may go stale; revisit periodically",
     "No CTA button (intentional — the section is messaging, not conversion)"
   ],
@@ -43,8 +50,16 @@
       "reason": "Code-first doc co-located. Adjacency-to-VibeFilter decision stable."
     }
   ],
-  "lastVerifiedDate": "2026-05-23",
+  "lastVerifiedDate": "2026-05-28",
   "revisions": [
+    {
+      "date": "2026-05-28",
+      "author": "marc+claude",
+      "fields_changed": ["decisions", "successCriteria", "userGuide", "knownLimitations"],
+      "reason": "Regrouped example cards by pricing tier (0→4) so the section reflects every tier; rewrote the ideas to be original and grounded in real everyday problems.",
+      "commit": "pending",
+      "buildUrl": "pending"
+    },
     {
       "date": "2026-05-23",
       "author": "marc+claude",

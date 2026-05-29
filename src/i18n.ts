@@ -202,53 +202,48 @@ const FR = {
     scrollHint: 'glisse pour en voir plus →',
     exampleGroups: [
       {
-        label: 'Le quotidien',
+        label: 'Niveau 0 · Gratuit',
         items: [
-          'Tes notes vocales du truck → un brouillon de facture qui t’attend le dimanche matin',
-          'Un tableau de bord pour la cuisine : météo, soupers de la semaine, anniversaires',
-          'Une calculatrice qui résout exactement UN problème plate dans ta job',
-          'Un compteur « jours sans… » : cigarette, jeu vidéo, peu importe',
-          'Un suivi de tes plantes qui te texte quand vient le temps d’arroser',
+          'La rotation de déneigement de l’entrée partagée : à qui la pelle cette semaine',
+          'Le « qui apporte quoi » d’un potluck de famille, sans compte à créer',
+          'Un compteur « jours sans… » : cigarette, scroll, sucre, peu importe',
+          'Une roue qui tranche « on mange quoi à soir » une fois pour toutes',
         ],
       },
       {
-        label: 'Pour quelqu’un que t’aimes',
-        items: [
-          'Un site une-page pour les 30 ans de ton/ta partenaire, avec un mot de chaque ami',
-          'Une page mémorial avec photos pour ton chat décédé',
-          'Un outil pour aider ta grand-mère à organiser ses recettes',
-          'Un livre de recettes de famille que tout le monde peut remplir',
-          'Une chasse au trésor numérique pour la fête d’un enfant',
-        ],
-      },
-      {
-        label: 'Ta job, ta business',
+        label: 'Niveau 1 · 750 $',
         items: [
           'Un formulaire web qui rentre direct dans ton chiffrier, sans rien retaper',
-          'Un outil de gestion sur mesure pour ta petite équipe',
-          'Un système de réservation pour ton salon, sans frais de plateforme',
-          'Un générateur de soumissions qui sort un PDF propre en 30 secondes',
-          'Un tableau de quarts que l’équipe consulte sur son téléphone',
+          'Le menu de ton food truck avec les allergènes, un code QR collé sur le comptoir',
+          'Un site une-page pour les 30 ans de ton/ta partenaire, avec un mot de chaque ami',
+          'Une page mémorial avec photos pour ton chat décédé',
         ],
       },
       {
-        label: 'Hardware & objets',
+        label: 'Niveau 2 · 1 800 $',
         items: [
-          'Un Raspberry Pi qui affiche le prochain autobus sur un écran à l’entrée',
-          'Un capteur qui allume une lumière quand le sous-sol prend l’eau',
-          'Un bouton physique sur le bureau qui log tes heures d’un seul clic',
-          'Un cadre numérique qui affiche les nouvelles photos de la famille',
-          'Une sonnette qui t’envoie une photo au lieu de juste sonner',
+          'Tes notes vocales du truck → un brouillon de facture qui t’attend le dimanche matin',
+          'Un tableau de bord familial : soupers de la semaine, anniversaires, qui a l’auto',
+          'Le tour de collation et de covoiturage de l’équipe de soccer, qui texte le parent en devoir',
+          'Un suivi de stock pour ta business de marché : ce qu’il reste, une alerte quand c’est bas',
         ],
       },
       {
-        label: 'Bizarre & merveilleux',
+        label: 'Niveau 3 · 3 600 $',
         items: [
-          'Un catalogue des blagues internes de ta gang d’amis',
-          'Une carte des bons cafés sur le bord de la 132',
-          'Un générateur de noms pour le band qui n’existe pas encore',
-          'Un site qui tranche les chicanes du chalet : à qui la vaisselle ?',
-          'Un oracle magique pour les décisions plates de ta journée',
+          'Un outil de réservation et de suivi clients pour ton studio : trois employés se connectent, chacun voit sa journée',
+          'Un cahier de leçons pour ta prof de musique : les élèves se connectent, les rappels de paiement partent tout seuls',
+          'Un tableau de quarts avec demandes d’échange, que toute l’équipe gère sur son téléphone',
+          'Un capteur qui allume une lumière quand le sous-sol prend l’eau (le hardware démarre ici)',
+        ],
+      },
+      {
+        label: 'Niveau 4 · 7 500 $+',
+        items: [
+          'Un portail de membres pour une coop : rôles, paiements, calendrier partagé',
+          'L’inscription d’une ligue de hockey mineur : parents, coachs, arbitres, chacun son accès',
+          'Le portail parents d’une garderie : présences, photos, facturation, salle du personnel',
+          'Une place de marché qui relie les producteurs d’ici aux restos du coin',
         ],
       },
     ],
@@ -289,7 +284,7 @@ const FR = {
         scope:
           'Ton problème est trop petit pour engager un dev. Je te redirige vers un patron (modèle prêt-à-utiliser) ou un template no-code.',
         example:
-          'Ex. la rotation de pelletage du voisinage, ou le RSVP d’un party : un patron, et tu pars avec.',
+          'Ex. la rotation de déneigement de l’entrée partagée, ou le potluck de la famille : un patron, et tu pars avec.',
         after: 'aucun paiement',
       },
       {
@@ -1237,53 +1232,48 @@ const EN: Copy = {
     scrollHint: 'drag to see more →',
     exampleGroups: [
       {
-        label: 'Everyday life',
+        label: 'Tier 0 · Free',
         items: [
-          'Your truck voice-notes → a draft invoice waiting for you Sunday morning',
-          'A kitchen dashboard: weather, the week’s dinners, birthdays',
-          'A calculator that solves exactly ONE annoying problem in your job',
-          'A "days without…" counter: cigarettes, video games, whatever',
-          'A plant tracker that texts you when something needs watering',
+          'The shared-driveway snow rotation: whose turn to shovel this week',
+          'A family potluck "who’s bringing what" signup, no account to create',
+          'A "days without…" counter: cigarettes, doomscrolling, sugar, whatever',
+          'A wheel that settles "what’s for supper" once and for all',
         ],
       },
       {
-        label: 'For someone you love',
-        items: [
-          "A one-page site for your partner's 30th, with a note from each friend",
-          'A memorial page with photos for your cat who passed',
-          'A tool to help your grandma organize her recipes',
-          'A family cookbook everyone in the family can add to',
-          "A digital scavenger hunt for a kid's birthday",
-        ],
-      },
-      {
-        label: 'Your work, your business',
+        label: 'Tier 1 · $750',
         items: [
           'A web form that drops straight into your spreadsheet, no retyping',
-          'A tailored management tool for your small team',
-          'A booking system for your salon, with no platform fees',
-          'A quote generator that spits out a clean PDF in 30 seconds',
-          'A shift board the whole team can check from their phone',
+          'Your food-truck menu with allergens, a QR code stuck on the counter',
+          "A one-page site for your partner's 30th, with a note from each friend",
+          'A memorial page with photos for your cat who passed',
         ],
       },
       {
-        label: 'Hardware & physical things',
+        label: 'Tier 2 · $1,800',
         items: [
-          'A Raspberry Pi showing the next bus on a screen by the door',
-          'A sensor that flips a light on when the basement takes on water',
-          'A physical desk button that logs your hours with one press',
-          "A digital frame that shows the family's newest photos",
-          'A doorbell that sends you a photo instead of just ringing',
+          'Your truck voice-notes → a draft invoice waiting for you Sunday morning',
+          "A household dashboard: the week's dinners, birthdays, who's got the car",
+          'The soccer team’s snack and carpool rotation, texting the parent whose turn it is',
+          "A stock tracker for your market stall: what's left, an alert when it runs low",
         ],
       },
       {
-        label: 'Weird & wonderful',
+        label: 'Tier 3 · $3,600',
         items: [
-          "A catalog of your friend group's inside jokes",
-          'A map of the good coffee shops along Route 132',
-          "A name generator for the band that doesn't exist yet",
-          'A site that settles cottage arguments: whose turn for dishes?',
-          'A magic oracle for the dumb little decisions of your day',
+          'A booking and client-tracking tool for your studio: three staff log in, each sees their own day',
+          'A lesson book for your music teacher: students log in, payment reminders go out on their own',
+          'A shift board with swap requests, the whole team runs it from their phones',
+          'A sensor that flips a light on when the basement takes on water (hardware starts here)',
+        ],
+      },
+      {
+        label: 'Tier 4 · $7,500+',
+        items: [
+          'A members portal for a co-op: roles, payments, shared calendar',
+          "A minor hockey league's registration: parents, coaches, refs, each with their own access",
+          "A daycare's parent portal: attendance, photos, billing, a staff room",
+          'A marketplace linking local producers to the restaurants nearby',
         ],
       },
     ],
@@ -1324,7 +1314,7 @@ const EN: Copy = {
         scope:
           'Your problem is too small to hire a dev. I redirect you to a similar pattern (a ready-made recipe) or a no-code template.',
         example:
-          'e.g. neighbourhood snow-shovel rotation, or a party RSVP: pick a recipe, you’re done.',
+          'e.g. the shared-driveway snow rotation, or a family potluck signup: pick a recipe, you’re done.',
         after: 'no payment',
       },
       {
