@@ -52,6 +52,51 @@
       "lastTransitionDate": "2026-05-29"
     },
     {
+      "featureKey": "feat-2026-107",
+      "title": "Sentry quota watchdog (digest-cron piggyback)",
+      "status": "active",
+      "domain": "marc-portal/observability",
+      "tags": [
+        "observability",
+        "sentry",
+        "cron",
+        "quota",
+        "operator-gated"
+      ],
+      "componentFile": "functions/_lib/sentryQuota.ts",
+      "liveUrl": null,
+      "problem": "Sentry is the practice's only error-reporting processor, on the free plan (~5000 errors/month). A bad deploy that throws on every request burns the quota silently, and once it's exhausted Sentry DROPS events — the one tool that would flag the problem goes blind exactly when it matters. Nothing watched the quota. Closes prod-readiness gap #8.",
+      "analysis": "Two pure helpers + a thin IO wrapper, same shape as the custodian reconciliation. evaluateQuota(used, quota, threshold) decides whether 30-day usage crossed the threshold (guards quota<=0 so a misconfig can't divide-by-zero into an alert storm). sumErrorQuantity(json) extracts the total from a Sentry stats_v2 response, tolerant of a missing/changed shape (returns 0 rather than throwing). checkSentryQuota(env) does the IO: skip when SENTRY_AUTH_TOKEN/SENTRY_ORG unset, timed fetch of /organizations/{org}/stats_v2 (category=error, 30d), evaluate against SENTRY_MONTHLY_ERROR_QUOTA (default 5000), and write one admin_alerts row (kind sentry-quota) when over, deduped to one open alert. Runs from the daily digest cron as housekeeping #5.",
+      "decisions": [
+        {
+          "decision": "Configured monthly quota (default 5000) rather than introspecting Sentry's plan quota",
+          "rationale": "Sentry's actual quota cap lives behind plan/subscription endpoints that vary by tier and are fragile to scrape. A single SENTRY_MONTHLY_ERROR_QUOTA var (defaulting to the free-plan 5000) is robust, obvious, and one edit away from matching a plan change.",
+          "recommendation": "If the plan changes, update SENTRY_MONTHLY_ERROR_QUOTA in wrangler.toml [vars]. If Sentry ships a stable quota endpoint, swap the constant for a live read."
+        },
+        {
+          "decision": "Alert-only, deduped, on the digest cron — no dashboard, no new endpoint",
+          "rationale": "Same reasoning as the custodian reconciliation: lowest surface, no new auth/CSRF path, and the daily digest is where the other housekeeping sweeps already live. One open alert at a time keeps the operator inbox honest.",
+          "recommendation": "If quota pressure becomes a frequent, time-sensitive concern, add a /admin/today tile reading the same evaluation."
+        }
+      ],
+      "successCriteria": "- No-op (skipped:unconfigured) when SENTRY_AUTH_TOKEN or SENTRY_ORG is unset\n- usage >= 80% of quota → over, one admin_alerts row (kind sentry-quota)\n- usage < 80% → no alert\n- over while an open sentry-quota alert exists → no second row\n- quota<=0 misconfig never reports over\n- malformed Sentry response → 0 usage (treated as not-over), no crash\n- a Sentry API failure must not fail the digest",
+      "knownLimitations": [
+        "Quota cap is a configured constant, not read live from Sentry (deliberate — see decisions)",
+        "Threshold is a fixed 80%; not env-tunable (one constant change if it should be)",
+        "Counts category=error only — does not watch transaction/replay/attachment quotas",
+        "Requires a Sentry auth token with org:read; that token + the cron registration are manual setup steps"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-29",
+          "reason": "Shipped as BACKLOG.md B9 / prod-readiness gap #8."
+        }
+      ],
+      "lastTransitionDate": "2026-05-29"
+    },
+    {
       "featureKey": "feat-2026-093",
       "title": "Hero — the home-page cover (manifesto paragraph + live capacity)",
       "status": "active",
@@ -4969,5 +5014,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-29T19:26:11.689Z"
+  "generatedAt": "2026-05-29T20:44:00.189Z"
 }

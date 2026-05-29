@@ -1980,3 +1980,36 @@ real-time state correct and is preferable to hand-editing D1.
 `STRIPE_SECRET_KEY` is set and the digest cron is running (see the digest
 setup in this runbook). It piggybacks the daily digest — no separate
 schedule to register.
+
+---
+
+## 24. Sentry quota alert (`kind = sentry-quota`)
+
+**Symptom:** the daily digest lists a "Sentry error usage is at N% of the
+monthly quota" alert, or `admin_alerts` has an unresolved row with
+`kind = 'sentry-quota'`.
+
+**What it means:** Sentry's 30-day accepted-error count crossed 80% of the
+configured monthly quota (`SENTRY_MONTHLY_ERROR_QUOTA`, default 5000 on the
+free plan). If usage hits 100%, Sentry **drops** further events — so a real
+incident would stop being reported. The alert is the early warning while
+there's still headroom.
+
+**Fix:**
+
+1. Open Sentry → Issues, sorted by event count over the last 7–30 days.
+   One or two issues almost always dominate a quota spike.
+2. Deal with the noisy issue: fix the underlying error, or if it's benign
+   noise, add an inbound filter / ignore rule in Sentry so it stops counting
+   against the quota.
+3. If the volume is legitimate and sustained, raise the plan (and bump
+   `SENTRY_MONTHLY_ERROR_QUOTA` in `wrangler.toml [vars]` to the new cap so
+   the threshold tracks reality).
+4. Resolve the alert so the watchdog re-arms (a new one is suppressed while
+   an open one exists): `UPDATE admin_alerts SET resolved_at = unixepoch()
+   WHERE kind = 'sentry-quota' AND resolved_at IS NULL;`
+
+**No alerts ever firing?** The watchdog is a no-op until `SENTRY_AUTH_TOKEN`
+(a token with `org:read`, via `wrangler secret put`) and `SENTRY_ORG` (the
+org slug, in `wrangler.toml [vars]`) are both set and the digest cron is
+running. It piggybacks the daily digest — no separate schedule.

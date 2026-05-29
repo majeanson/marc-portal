@@ -67,6 +67,16 @@ binding = "AI"
 STRIPE_CUSTODIAN_WATCH_PRICE_ID = "price_1TZzrhGnRBlK2p4G3pPXSyP3"
 STRIPE_CUSTODIAN_CARE_PRICE_ID = "price_1TZzrtGnRBlK2p4GfZx3BgeK"
 
+# Sentry quota watchdog (gap #8 — functions/_lib/sentryQuota.ts). The daily
+# digest cron reads 30-day error usage from the Sentry stats API and alerts
+# when it crosses 80% of the monthly quota. Plaintext here: the org slug and
+# the quota cap. The auth token is a SECRET — `wrangler secret put
+# SENTRY_AUTH_TOKEN` (a token with org:read). All unset = watchdog is a no-op.
+#   SENTRY_ORG                 - org slug (the …/organizations/<slug>/ segment)
+#   SENTRY_MONTHLY_ERROR_QUOTA - errors/month cap; defaults to 5000 (free plan)
+# SENTRY_ORG = "your-org-slug"
+# SENTRY_MONTHLY_ERROR_QUOTA = "5000"
+
 # Optional env vars (feat-2026-018 — automate buyer custom-domain attach).
 # When all three are set, /admin/fleet/new attaches the buyer's domain to this
 # Pages project automatically. When any is unset, the wizard falls back to

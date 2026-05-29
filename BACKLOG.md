@@ -88,11 +88,15 @@
   standalone endpoint+button (lower surface) and alert-only over auto-heal
   (won't race the webhook).
 
-- ⬜ **B9 · M · manual: register the cron later** — Sentry quota watchdog
-  (gap-queue **#8**). Endpoint polls
-  `sentry.io/api/0/organizations/{org}/stats_v2/`, alerts (admin_alerts +
-  `/admin/today` tile) when usage > 80 %. Same shape as B8 — handler + manual
-  trigger now, cron later. Degrade cleanly when the Sentry API token is unset.
+- ✅ **B9 · manual: set SENTRY_AUTH_TOKEN + SENTRY_ORG later** — Sentry quota
+  watchdog (gap **#8**). `_lib/sentryQuota.ts`: pure `evaluateQuota` +
+  `sumErrorQuantity`, and `checkSentryQuota` that reads 30-day error usage from
+  the Sentry stats API and alerts via `admin_alerts` (kind `sentry-quota`,
+  deduped) when usage ≥ 80% of `SENTRY_MONTHLY_ERROR_QUOTA` (default 5000).
+  Piggybacks the daily digest (housekeeping #5) — same shape/rationale as B8.
+  No-op until the token + org are set. 11 tests, feature.json (feat-2026-107),
+  RUNBOOK §24, env vars documented in `wrangler.toml`. Used a configured quota
+  constant over fragile plan-introspection.
 
 - ⬜ **B10 · M · manual: lawyer review before it's binding** — Terms-of-Service
   route (gap-queue **#15**). Author the FR/EN page behind the existing inline
