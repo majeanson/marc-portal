@@ -20,6 +20,11 @@
     if (theme === 'night') document.documentElement.setAttribute('data-theme', 'night')
     var meta = document.querySelector('meta[name="theme-color"]')
     if (meta) meta.setAttribute('content', theme === 'night' ? '#181613' : '#f6f1e6')
+    // Accent is the second, orthogonal axis (sage default | violet | …). Applied
+    // here too so the chosen accent paints on first load with no flash. Sage is
+    // the :root default, so only a non-sage accent needs the attribute.
+    var accent = localStorage.getItem('marc-portal:accent')
+    if (accent && accent !== 'sage') document.documentElement.setAttribute('data-accent', accent)
   } catch (e) {
     /* localStorage unavailable in some embedded contexts — silently fall back */
   }

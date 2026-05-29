@@ -357,6 +357,11 @@ const FR = {
     switchToDay: 'Mode jour',
     switchToNight: 'Mode nuit',
   },
+  accentToggle: {
+    label: 'Couleur',
+    sage: 'Sauge',
+    violet: 'Violet',
+  },
 
   napkin: {
     eyebrow: 'sur un napperon',
@@ -1388,6 +1393,11 @@ const EN: Copy = {
   themeToggle: {
     switchToDay: 'Day mode',
     switchToNight: 'Night mode',
+  },
+  accentToggle: {
+    label: 'Accent',
+    sage: 'Sage',
+    violet: 'Violet',
   },
 
   napkin: {

@@ -32,6 +32,25 @@
   --radius: 12px;
   --radius-lg: 16px;
 
+  /* Crisp "physical object" edge — the design language shared by every
+     pressable/raised surface (buttons, cards, inputs, chips, ledger tags).
+     One recipe: a 1px hard border + a 1px hard bottom shadow. No soft drop
+     shadow, no gradient, no glow — the hard bottom edge is what makes a
+     surface read as a keycap set onto the paper rather than floating above
+     it. --edge is true black on the light surface, near-black on dark (where
+     true black would disappear into the dark bg). Press-down (active) drops
+     the bottom shadow and nudges +1px, so the object presses into its own
+     edge. */
+  --edge: #000;
+  --edge-shadow: 0 1px 0 var(--edge);
+  --btn-h: 34px;
+  --btn-radius: 6px;
+  /* Text colour ON a filled accent surface. White reads on the deep day
+     accents; at night the accent flips light (light sage / bright violet) so
+     white falls below AA — night overrides this to a dark ink. One token
+     keeps every primary button + CTA legible across both axes. */
+  --on-accent: #fff;
+
   --max-w: 880px;
   --gutter: 24px;
 
@@ -119,7 +138,37 @@
   --feat-shipped-soft: #173733;
   --feat-meta: #9aa7b4;
   --feat-meta-soft: #2a3038;
+  /* Near-black edge on the dark surface: true #000 would vanish into the
+     dark bg, so the hard border is a hair off-black, dark enough to read as
+     a recessed keycap edge against the raised card surface. */
+  --edge: #0a0613;
+  /* Dark ink for text on the light night accents (light sage / bright
+     violet) — white would fail AA there. */
+  --on-accent: #14110c;
   color-scheme: dark;
+}
+
+/* ── Accent axis (orthogonal to day/night) ───────────────────────────────────
+   Surface tokens above are owned by data-theme (day/night). The ACCENT — the
+   signature colour worn by buttons, links, and primary marks — is a SEPARATE
+   axis set by data-accent, so each accent works in both day and night. Sage is
+   the default (defined inline in :root / night above); data-accent='sage' is a
+   no-op alias. Adding an accent = one day block + one night block here and a
+   chip in the picker, nothing else. The seven --feat-* dot hues are a separate
+   taxonomy and intentionally do NOT track the accent. See
+   src/components/AccentToggle.tsx + public/theme-bootstrap.js
+   (marc-portal:accent). */
+:root[data-accent='violet'] {
+  --accent: #6c45c9; /* violet primary (day) */
+  --accent-warm: #54339c; /* deeper — hover/headings on accent */
+  --accent-soft: #e8ddf7;
+  --status-active: #6c45c9;
+}
+:root[data-theme='night'][data-accent='violet'] {
+  --accent: #9d83ff; /* brighter so it reads on the dark surface */
+  --accent-warm: #c2adff;
+  --accent-soft: #2c2350;
+  --status-active: #9d83ff;
 }
 /* Sticky header glass — re-tinted in night so the blur doesn't read white. */
 :root[data-theme='night'] .site-header {
@@ -811,6 +860,56 @@ html:not([data-lang-nudge='en']) .en-nudge {
   }
 }
 
+/* Accent picker — the second theme axis (sage default | violet | …). A row of
+   crisp swatch keycaps, the same 1px hard edge + bottom shadow as a button so
+   it reads as part of the same control family. The chosen swatch wears a
+   neutral ink ring (selected ≠ focused); focus is the accent ring. */
+.accent-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.accent-toggle__swatch {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 5px;
+  border: 1px solid var(--edge);
+  background: var(--swatch);
+  box-shadow: var(--edge-shadow);
+  cursor: pointer;
+  transition:
+    transform 0.04s,
+    box-shadow 0.1s,
+    filter 0.1s;
+}
+.accent-toggle__swatch:hover {
+  filter: brightness(1.08);
+}
+.accent-toggle__swatch:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+.accent-toggle__swatch--active {
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 3px var(--text);
+}
+.accent-toggle__swatch:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .accent-toggle__swatch {
+    transition: none;
+  }
+}
+
 .lang {
   display: inline-flex;
   gap: 4px;
@@ -847,58 +946,139 @@ html:not([data-lang-nudge='en']) .en-nudge {
   color: var(--text);
   margin-bottom: 18px;
 }
+/* The shared primary CTA. Crisp design language: a 1px hard --edge border, a
+   1px hard bottom shadow, and a 1px inner top highlight — the keycap recipe.
+   No soft drop shadow, no lift-on-hover (that read AI-y). Hover lightens the
+   fill ~8% (color-mix, accent-agnostic so it works for any accent); active
+   presses +1px into its own bottom edge. Slightly taller than the base .btn
+   because it's the page's lead action. */
 .hero__cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-  padding: 14px 22px;
-  border: 1.5px solid var(--accent);
-  border-radius: var(--radius);
-  color: #fff;
+  padding: 13px 22px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  color: var(--on-accent);
   font-family: var(--display);
   font-weight: 600;
   font-size: 16px;
   background: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
   transition:
-    background 0.15s,
-    transform 0.08s,
-    box-shadow 0.15s;
+    background 0.1s,
+    transform 0.04s,
+    box-shadow 0.1s;
 }
 .hero__cta:hover {
-  background: var(--accent-warm);
-  border-color: var(--accent-warm);
-  color: #fff;
+  background: color-mix(in srgb, var(--accent), #fff 8%);
+  color: var(--on-accent);
   text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(61, 110, 78, 0.25);
+}
+.hero__cta:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .hero__cta:focus-visible {
-  outline: 2px solid var(--accent-warm);
-  outline-offset: 3px;
+  outline: none;
+  /* keep the hard bottom edge, then float a 2px accent ring above the border,
+     offset by a bg-coloured ring so it reads as a halo, not a second border. */
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
   text-decoration: none;
 }
-/* Night-mode contrast fix: the day-mode CTA is white text on deep sage
-   (#3d6e4e → high contrast). At night, --accent flips to light sage
-   (#87bd97) and white text on it falls to ~1.6:1 — fails AA. Swap text to
-   the dark night-bg ink so the contrast is high on the light surface.
-   R3 design pass flagged this. */
-:root[data-theme='night'] .hero__cta,
-:root[data-theme='night'] .hero__cta:hover {
-  color: var(--bg);
-}
 
-/* Primary CTA — promoted per §2.2(a). Larger, slightly elevated, more
-   typographic weight. Only applied on the hero so we don't bulk up the
-   same .hero__cta class used elsewhere (e.g. /me, /handoff). */
+/* Primary CTA — the page lead. Larger + more typographic weight; same crisp
+   edge (no elevation shadow). Only on the hero so the shared .hero__cta used
+   elsewhere (/me, /handoff) stays compact. */
 .hero__cta--primary {
-  padding: 18px 28px;
+  padding: 16px 28px;
   font-size: 18px;
   letter-spacing: 0.01em;
-  box-shadow: 0 4px 12px rgba(61, 110, 78, 0.18);
 }
-.hero__cta--primary:hover {
-  box-shadow: 0 8px 22px rgba(61, 110, 78, 0.28);
+
+/* ── .btn — the canonical crisp button (Sentry keycap) ───────────────────────
+   The reusable button used for new/secondary actions across the app. Same
+   edge recipe as .hero__cta but compact (34px), so a row of them reads as a
+   keyboard, not a stack of pills. Primary = filled accent; --ghost = raised
+   card surface. Border + bottom-shadow + radius are identical on both so
+   every button reads as the same physical object, only the fill changes.
+   Icons inside should be stroke-only, 14px (stroke-width 2.4 for + / →). */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: var(--btn-h);
+  padding: 0 13px;
+  border-radius: var(--btn-radius);
+  border: 1px solid var(--edge);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13.5px;
+  line-height: 1;
+  color: var(--on-accent);
+  background: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    transform 0.04s,
+    box-shadow 0.1s;
+}
+.btn:hover {
+  background: color-mix(in srgb, var(--accent), #fff 8%);
+  text-decoration: none;
+}
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+/* Secondary: raised card surface, same hard edge. The inner highlight is
+   fainter (.04) so it doesn't read as glossy on the quiet surface. */
+.btn--ghost {
+  background: var(--bg-card);
+  color: var(--text);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.btn--ghost:hover {
+  background: var(--bg-hover);
+}
+.btn--ghost:active {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+.btn--ghost:focus-visible {
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+/* Stroke-only icon sizing for the verbs that sit in buttons. */
+.btn svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* Steps */
@@ -912,8 +1092,9 @@ html:not([data-lang-nudge='en']) .en-nudge {
 }
 .step {
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   padding: 20px;
 }
 .step__num {
