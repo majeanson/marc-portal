@@ -15,6 +15,8 @@ const COPY = {
     intro: 'Toutes les sessions, toutes statuts confondus.',
     forbidden: 'Réservé à l’admin.',
     loading: 'Chargement…',
+    loadError: 'Impossible de charger les sessions. Réessaie.',
+    retry: 'Réessayer',
     none: 'Aucune session.',
     open: 'Ouvrir →',
     refreshing: 'Mise à jour…',
@@ -39,6 +41,8 @@ const COPY = {
     intro: 'All sessions, every status.',
     forbidden: 'Admin only.',
     loading: 'Loading…',
+    loadError: 'Could not load sessions. Try again.',
+    retry: 'Retry',
     none: 'No sessions.',
     open: 'Open →',
     refreshing: 'Refreshing…',
@@ -193,6 +197,10 @@ export function AdminInbox({ lang }: { lang: Lang }) {
   const navigate = useNavigate()
   const { email, isAdmin, loading: authLoading, logout } = useAuth()
   const [sessions, setSessions] = useState<SessionRow[] | null>(null)
+  // Distinct from sessions===null (loading) and length===0 (genuinely empty):
+  // a failed fetch must read as "the list broke", not "no sessions" — the
+  // latter would hide a backend problem behind a calm empty state.
+  const [loadError, setLoadError] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [attentionFilter, setAttentionFilter] = useState<AttentionFilter>('all')
   // Captured once at mount. Coarse-grained — only used as the reference for
@@ -215,8 +223,9 @@ export function AdminInbox({ lang }: { lang: Lang }) {
     try {
       const r = await listSessions()
       setSessions(sortInboxRows(r.sessions))
+      setLoadError(false)
     } catch {
-      setSessions([])
+      setLoadError(true)
     } finally {
       setRefreshing(false)
     }
@@ -240,8 +249,9 @@ export function AdminInbox({ lang }: { lang: Lang }) {
         const r = await listSessions()
         if (cancelled) return
         setSessions(sortInboxRows(r.sessions))
+        setLoadError(false)
       } catch {
-        if (!cancelled) setSessions([])
+        if (!cancelled) setLoadError(true)
       }
     })()
     return () => {
@@ -369,7 +379,14 @@ export function AdminInbox({ lang }: { lang: Lang }) {
               </div>
             )}
 
-            {sessions === null ? (
+            {loadError ? (
+              <p role="alert" className="form__error">
+                {t.loadError}{' '}
+                <button type="button" className="link-btn mono" onClick={refresh}>
+                  {t.retry}
+                </button>
+              </p>
+            ) : sessions === null ? (
               <p className="session-frame__pending">{t.loading}</p>
             ) : sessions.length === 0 ? (
               <div className="me-portal__empty">

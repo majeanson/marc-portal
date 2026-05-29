@@ -55,6 +55,8 @@ const COPY = {
     none: 'Aucune session pour l’instant.',
     noneCta: 'Démarre une nouvelle proposition de projet.',
     newBtn: 'Nouvelle proposition',
+    loadError: 'Impossible de charger tes sessions.',
+    retry: 'Réessayer',
     finalizing: 'Finalisation de ton intake…',
     statusLabel: 'Statut',
     openBtn: 'Ouvrir →',
@@ -157,6 +159,8 @@ const COPY = {
     none: 'No sessions yet.',
     noneCta: 'Start a new project proposal.',
     newBtn: 'New proposal',
+    loadError: 'Could not load your sessions.',
+    retry: 'Retry',
     finalizing: 'Finalizing your intake…',
     statusLabel: 'Status',
     openBtn: 'Open →',
@@ -252,6 +256,10 @@ export function MePortal({ lang }: { lang: Lang }) {
   const navigate = useNavigate()
   const { email, loading, logout } = useAuth()
   const [sessions, setSessions] = useState<SessionRow[] | null>(null)
+  // A failed session fetch must not fall through to the "no sessions yet,
+  // start one" empty state — a signed-in visitor with real sessions would
+  // think theirs vanished. Surface a retryable error instead.
+  const [sessionsError, setSessionsError] = useState(false)
   // Initialise from localStorage at construction time. If a pending intake is
   // stashed, we render the "finalizing" spinner straight away — no setState
   // in an effect (that would trip react-hooks/set-state-in-effect).
@@ -370,14 +378,27 @@ export function MePortal({ lang }: { lang: Lang }) {
         // "NEW" pill on first /me load.
         for (const s of r.sessions) seedIfMissing(s)
         setSessions(r.sessions)
+        setSessionsError(false)
       })
       .catch(() => {
-        if (!cancelled) setSessions([])
+        if (!cancelled) setSessionsError(true)
       })
     return () => {
       cancelled = true
     }
   }, [email, finalizing])
+
+  // Retry handler for the error state — re-runs the same fetch on demand.
+  const reloadSessions = () => {
+    setSessionsError(false)
+    setSessions(null)
+    listSessions()
+      .then((r) => {
+        for (const s of r.sessions) seedIfMissing(s)
+        setSessions(r.sessions)
+      })
+      .catch(() => setSessionsError(true))
+  }
 
   if (loading || finalizing) {
     return (
@@ -522,7 +543,16 @@ export function MePortal({ lang }: { lang: Lang }) {
               ))}
             </ul>
           </details>
-          {sessions === null ? (
+          {sessionsError ? (
+            <div className="me-portal__empty">
+              <p role="alert" className="form__error me-portal__empty-title">
+                {t.loadError}
+              </p>
+              <button type="button" className="hero__cta" onClick={reloadSessions}>
+                {t.retry}
+              </button>
+            </div>
+          ) : sessions === null ? (
             <ul className="me-portal__cards" aria-busy="true">
               {Array.from({ length: 3 }).map((_, i) => (
                 <li key={i} className="me-portal__skeleton">
