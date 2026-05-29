@@ -56,6 +56,17 @@ jobs:
         run: |
           subject=$(git log -1 --format=%s)
           safe=$(printf '%s' "$subject" | iconv -f utf-8 -t ascii//TRANSLIT 2>/dev/null || printf '%s' "$subject" | tr -cd '\11\12\15\40-\176')
+          # ASCII alone isn't enough: the wrangler-action interpolates this value
+          # into a double-quoted `--commit-message="…"` arg, so a literal " in the
+          # subject (e.g. a quoted PR title like 'regroup "Bring me anything"') closes
+          # that quote early and wrangler parses the tail as stray positionals — the
+          # deploy dies with "Unknown arguments". Drop the four chars that can break
+          # out of, or expand inside, a double-quoted shell word: " ` $ \. Cosmetic
+          # only — the CF dashboard just shows the subject without them.
+          safe="${safe//\"/}"
+          safe="${safe//\`/}"
+          safe="${safe//\$/}"
+          safe="${safe//\\/}"
           echo "safe=$safe" >> "$GITHUB_OUTPUT"
 
       - id: deploy
