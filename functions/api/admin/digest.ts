@@ -21,6 +21,7 @@ import { ok, serverError, unauthorized } from '../../_lib/json'
 import { getLang } from '../../_lib/userPrefs'
 import { sweepEmailOutbox } from '../../_lib/email'
 import { reconcileCustodians } from '../../_lib/custodianReconcile'
+import { checkSentryQuota } from '../../_lib/sentryQuota'
 
 interface DigestEnv extends Env {
   DIGEST_TOKEN?: string
@@ -222,6 +223,22 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     }
   } catch (err) {
     console.warn('digest: custodian reconcile failed (continuing)', err)
+  }
+
+  // Piggyback housekeeping #5: Sentry quota watchdog (gap #8). Reads 30-day
+  // error usage from Sentry and alerts when it crosses 80% of the monthly
+  // quota — a runaway error spike would otherwise burn the free-plan quota and
+  // silently start dropping events. No-op until SENTRY_AUTH_TOKEN + SENTRY_ORG
+  // are set. Best-effort: a Sentry API hiccup must not fail the digest.
+  try {
+    const q = await checkSentryQuota(env)
+    if (q.evaluation?.over) {
+      console.warn(
+        `digest: sentry quota at ${Math.round(q.evaluation.pct * 100)}% (${q.evaluation.used}/${q.evaluation.quota}), alerted=${q.alerted}`,
+      )
+    }
+  } catch (err) {
+    console.warn('digest: sentry quota check failed (continuing)', err)
   }
 
   let rows: SessionRow[] = []

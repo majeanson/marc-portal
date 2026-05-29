@@ -48,6 +48,18 @@ export interface Env {
   STRIPE_CUSTODIAN_WATCH_PRICE_ID?: string
   STRIPE_CUSTODIAN_CARE_PRICE_ID?: string
   // Sentry DSN is hardcoded (see functions/_lib/sentry.ts) — no env var.
+  //
+  // Sentry quota watchdog (functions/_lib/sentryQuota.ts, gap #8). Reads the
+  // org's 30-day error usage from the Sentry stats API and alerts when it
+  // crosses a threshold of the monthly quota — so a runaway error spike on the
+  // free plan doesn't silently exhaust the quota and start dropping events.
+  // SENTRY_AUTH_TOKEN is a secret (`wrangler secret put`); the org slug + quota
+  // are plaintext wrangler.toml [vars]. All unset = the watchdog is a no-op
+  // (graceful degrade, like the bindings above). SENTRY_MONTHLY_ERROR_QUOTA
+  // defaults to 5000 (free-plan errors/mo) when unset.
+  SENTRY_AUTH_TOKEN?: string
+  SENTRY_ORG?: string
+  SENTRY_MONTHLY_ERROR_QUOTA?: string
 }
 
 export function isAdmin(env: Env, email: string): boolean {

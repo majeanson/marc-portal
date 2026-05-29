@@ -599,16 +599,16 @@ class MockPreparedStatement {
       return []
     }
 
-    // Reconcile dedup: SELECT id FROM admin_alerts WHERE kind = 'custodian-reconcile'
-    // AND resolved_at IS NULL LIMIT 1 — must come before the generic unresolved
-    // matcher below, which ignores kind.
-    if (
-      sql.includes('FROM admin_alerts') &&
-      sql.includes("kind = 'custodian-reconcile'") &&
-      sql.includes('resolved_at IS NULL')
-    ) {
+    // Alert dedup: SELECT id FROM admin_alerts WHERE kind = '<kind>' AND
+    // resolved_at IS NULL LIMIT 1 (custodian-reconcile, sentry-quota, …). Must
+    // come before the generic unresolved matcher below, which ignores kind.
+    const alertKindMatch = sql.match(
+      /FROM admin_alerts WHERE kind = '([a-z-]+)' AND resolved_at IS NULL/,
+    )
+    if (alertKindMatch) {
+      const wantKind = alertKindMatch[1]
       for (const v of this.db.admin_alerts.values()) {
-        if (v.kind === 'custodian-reconcile' && v.resolved_at == null) return [{ id: v.id }]
+        if (v.kind === wantKind && v.resolved_at == null) return [{ id: v.id }]
       }
       return []
     }
