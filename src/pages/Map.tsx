@@ -28,6 +28,7 @@ import { Footer } from '../components/Footer'
 import { MapCanvas } from '../components/Map/MapCanvas'
 import { MapLegend } from '../components/Map/MapLegend'
 import { FeatureIndex } from '../components/Map/FeatureIndex'
+import { WalkthroughFilm } from '../components/Map/WalkthroughFilm'
 
 const COPY = {
   fr: {
@@ -234,6 +235,11 @@ export function Map({ lang }: { lang: Lang }) {
               onSelectFeature={selectFeature}
             />
           </div>
+
+          {/* The atlas is the static structure; this is the same journey
+              played out. Sits below the canvas as a coda so the interactive
+              map stays the page's lead. */}
+          <WalkthroughFilm lang={lang} />
         </article>
       </main>
       <FeatureContinue page="page.map-page" lang={lang} />

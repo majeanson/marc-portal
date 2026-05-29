@@ -702,7 +702,7 @@
       "full": "/atelier/full/phone/meta.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 40869,
+      "fullH": 41306,
       "cropped": true
     },
     {
@@ -720,7 +720,7 @@
       "full": "/atelier/full/phone/en-meta.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 40873,
+      "fullH": 41311,
       "cropped": true
     },
     {
@@ -738,7 +738,7 @@
       "full": "/atelier/full/phone/carte.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1846,
+      "fullH": 2357,
       "cropped": true
     },
     {
@@ -756,7 +756,7 @@
       "full": "/atelier/full/phone/en-map.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1828,
+      "fullH": 2339,
       "cropped": true
     },
     {
@@ -1494,7 +1494,7 @@
       "full": "/atelier/full/narrow/meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19182,
+      "fullH": 19103,
       "cropped": true
     },
     {
@@ -1512,7 +1512,7 @@
       "full": "/atelier/full/narrow/en-meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19133,
+      "fullH": 19055,
       "cropped": true
     },
     {
@@ -1530,7 +1530,7 @@
       "full": "/atelier/full/narrow/carte.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1728,
+      "fullH": 2473,
       "cropped": true
     },
     {
@@ -1548,7 +1548,7 @@
       "full": "/atelier/full/narrow/en-map.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 1728,
+      "fullH": 2473,
       "cropped": true
     },
     {
@@ -2286,7 +2286,7 @@
       "full": "/atelier/full/wide/meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19123,
+      "fullH": 19044,
       "cropped": true
     },
     {
@@ -2304,7 +2304,7 @@
       "full": "/atelier/full/wide/en-meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19074,
+      "fullH": 18995,
       "cropped": true
     },
     {
@@ -2321,9 +2321,9 @@
       "thumb": "/atelier/thumbs/wide/carte.webp",
       "full": "/atelier/full/wide/carte.png",
       "thumbW": 600,
-      "thumbH": 772,
-      "fullH": 1853,
-      "cropped": false
+      "thumbH": 960,
+      "fullH": 2598,
+      "cropped": true
     },
     {
       "slug": "en-map",
@@ -2339,9 +2339,9 @@
       "thumb": "/atelier/thumbs/wide/en-map.webp",
       "full": "/atelier/full/wide/en-map.png",
       "thumbW": 600,
-      "thumbH": 772,
-      "fullH": 1853,
-      "cropped": false
+      "thumbH": 960,
+      "fullH": 2598,
+      "cropped": true
     },
     {
       "slug": "confidentialite",
@@ -3006,7 +3006,7 @@
       "full": "/atelier/full/dark/meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19123,
+      "fullH": 19044,
       "cropped": true
     },
     {
@@ -3024,7 +3024,7 @@
       "full": "/atelier/full/dark/en-meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19074,
+      "fullH": 18995,
       "cropped": true
     },
     {
@@ -3041,9 +3041,9 @@
       "thumb": "/atelier/thumbs/dark/carte.webp",
       "full": "/atelier/full/dark/carte.png",
       "thumbW": 600,
-      "thumbH": 772,
-      "fullH": 1853,
-      "cropped": false
+      "thumbH": 960,
+      "fullH": 2598,
+      "cropped": true
     },
     {
       "slug": "en-map",
@@ -3059,9 +3059,9 @@
       "thumb": "/atelier/thumbs/dark/en-map.webp",
       "full": "/atelier/full/dark/en-map.png",
       "thumbW": 600,
-      "thumbH": 772,
-      "fullH": 1853,
-      "cropped": false
+      "thumbH": 960,
+      "fullH": 2598,
+      "cropped": true
     },
     {
       "slug": "confidentialite",

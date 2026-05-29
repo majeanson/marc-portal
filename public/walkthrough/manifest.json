@@ -1,0 +1,84 @@
+{
+  "viewportW": 1620,
+  "generatedAt": "2026-05-29T20:05:29.754Z",
+  "frames": {
+    "home__default": {
+      "src": "frames/home__default.png",
+      "w": 1620,
+      "h": 8726,
+      "anchors": {
+        "cta": [370, 364, 271, 60]
+      }
+    },
+    "intake__empty": {
+      "src": "frames/intake__empty.png",
+      "w": 1620,
+      "h": 2277,
+      "anchors": {
+        "field": [409, 767, 804, 92],
+        "submit": [1067, 1822, 146, 51]
+      }
+    },
+    "intake__filled": {
+      "src": "frames/intake__filled.png",
+      "w": 1620,
+      "h": 2237,
+      "anchors": {
+        "field": [409, 767, 804, 92],
+        "submit": [1067, 1782, 146, 51]
+      }
+    },
+    "login__empty": {
+      "src": "frames/login__empty.png",
+      "w": 1620,
+      "h": 1261,
+      "anchors": {
+        "field": [587, 524, 446, 51],
+        "submit": [587, 605, 446, 49]
+      }
+    },
+    "login__filled": {
+      "src": "frames/login__filled.png",
+      "w": 1620,
+      "h": 1261,
+      "anchors": {
+        "field": [587, 524, 446, 51],
+        "submit": [587, 605, 446, 49]
+      }
+    },
+    "magic__default": {
+      "src": "frames/magic__default.png",
+      "w": 1620,
+      "h": 1261,
+      "anchors": {
+        "mark": [760, 323, 100, 80]
+      }
+    },
+    "me__default": {
+      "src": "frames/me__default.png",
+      "w": 1620,
+      "h": 2198,
+      "anchors": {
+        "card": [395, 805, 830, 91],
+        "cardOpen": [1144, 859, 61, 19]
+      }
+    },
+    "session__pending": {
+      "src": "frames/session__pending.png",
+      "w": 1620,
+      "h": 2528,
+      "anchors": {
+        "visitor": [613, 1729, 548, 121]
+      }
+    },
+    "session__reply": {
+      "src": "frames/session__reply.png",
+      "w": 1620,
+      "h": 2664,
+      "anchors": {
+        "visitor": [613, 1729, 548, 121],
+        "marc": [459, 1865, 548, 121]
+      }
+    }
+  }
+}
