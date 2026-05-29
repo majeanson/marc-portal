@@ -11007,31 +11007,15 @@ button.intake__progress-step:disabled {
   font-size: 12px;
   letter-spacing: 0.06em;
 }
-.session-napkin__edit-save,
-.session-napkin__edit-cancel {
-  appearance: none;
-  font: inherit;
+/* Layout-only: the skin (border/shadow/radius/fill/states) comes from .btn.
+   These keep the compact mono sizing the edit bar wants — smaller and tighter
+   than the default keycap so the pair sits inside the napkin frame. */
+.session-napkin__edit-btn {
+  font-family: var(--mono);
   font-size: 12px;
   letter-spacing: 0.06em;
+  height: auto;
   padding: 6px 12px;
-  border-radius: var(--btn-radius);
-  border: 1px solid var(--edge);
-  box-shadow: var(--edge-shadow);
-  cursor: pointer;
-}
-.session-napkin__edit-save {
-  background: var(--accent);
-  color: var(--bg);
-  border-color: var(--accent);
-}
-.session-napkin__edit-save:disabled,
-.session-napkin__edit-cancel:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.session-napkin__edit-cancel {
-  background: transparent;
-  color: var(--text-muted);
 }
 .session-napkin__edit-error {
   margin: 8px 0 0;
@@ -13071,24 +13055,6 @@ button.intake__progress-step:disabled {
 .first-name__input:disabled {
   opacity: 0.7;
   cursor: progress;
-}
-.first-name__save {
-  font-family: var(--display);
-  font-size: 14px;
-  color: var(--bg);
-  background: var(--accent);
-  border: 0;
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-  padding: 10px 18px;
-  cursor: pointer;
-}
-.first-name__save:hover:not(:disabled) {
-  background: var(--accent-warm);
-}
-.first-name__save:disabled {
-  opacity: 0.5;
-  cursor: default;
 }
 .lang-pref__head {
   margin-bottom: 16px;

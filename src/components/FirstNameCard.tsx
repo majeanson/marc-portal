@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { getPrefs, updateFirstName } from '../lib/prefsApi'
+import { Btn } from './Btn'
 
 /**
  * First-name card on /me. Optional field — visitors who don't set one
@@ -118,14 +119,12 @@ export function FirstNameCard({ lang }: { lang: Lang }) {
             }}
           />
         </label>
-        <button
-          type="button"
-          className="first-name__save"
+        <Btn
           onClick={onCommit}
           disabled={state === 'loading' || state === 'saving' || value.trim() === saved}
         >
           {state === 'saving' ? t.saving : t.save}
-        </button>
+        </Btn>
       </div>
       <p className="lang-pref__status mono" role="status" aria-live="polite">
         {state === 'saved' && t.saved}
