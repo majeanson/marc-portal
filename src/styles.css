@@ -1226,9 +1226,69 @@ html:not([data-lang-nudge='en']) .en-nudge {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
 }
-.featured-projects__loading {
-  color: var(--text-soft);
-  margin: 0;
+/* The loading line is sr-only: sighted visitors get the skeleton grid
+   below (a clearer "content is coming"), screen readers still hear it. */
+.featured-projects__loading-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Featured-strip loading skeleton. Mirrors .project-card so the prerendered
+   first paint (scripts/prerender.mjs freezes this state) and React's boot
+   render share the same card-grid silhouette — the real cards fill in over
+   the placeholders with no layout shift. Reuses the existing skeleton
+   shimmers (card-skeleton-shimmer for the preview slab, portal-skeleton for
+   the text bars) so the treatment matches the per-card preview + /me. */
+.project-card--skeleton {
+  pointer-events: none;
+}
+.project-card__preview--skeleton {
+  background: linear-gradient(100deg, var(--bg-card) 0%, var(--bg-section) 35%, var(--bg-card) 70%);
+  background-size: 200% 100%;
+  animation: card-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+.project-card__skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px 20px;
+}
+.skeleton-bar {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--border-soft) 0%,
+    var(--border) 50%,
+    var(--border-soft) 100%
+  );
+  background-size: 200% 100%;
+  animation: portal-skeleton 1.4s ease-in-out infinite;
+}
+.skeleton-bar--meta {
+  width: 38%;
+  height: 10px;
+}
+.skeleton-bar--title {
+  width: 72%;
+  height: 18px;
+  margin-top: 2px;
+}
+.skeleton-bar--text {
+  width: 90%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .project-card__preview--skeleton,
+  .skeleton-bar {
+    animation: none;
+  }
 }
 
 /* Footer — colophon */

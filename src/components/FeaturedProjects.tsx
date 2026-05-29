@@ -63,7 +63,34 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
           <p className="featured-projects__sub section__lead">{t.sub}</p>
         </header>
 
-        {isLoading && <p className="mono featured-projects__loading">{t.loading}</p>}
+        {isLoading && (
+          <>
+            {/* Skeleton mirrors the real 3-card grid so the loading paint and
+                the eventual cards share the exact silhouette — content fills
+                in over the placeholders with no layout jump. This is also the
+                state the homepage prerender freezes: scripts/prerender.mjs
+                leaves /api/public/projects pending so the snapshot captures
+                this skeleton (matching React's boot first-render), not the
+                backendless error panel that networkidle would otherwise bake
+                in. Same trick Hero/StudioSign get for free (their loading
+                state already equals their neutral default). */}
+            <p className="featured-projects__loading-sr" role="status">
+              {t.loading}
+            </p>
+            <ul className="projects__grid featured-projects__grid" aria-hidden="true">
+              {Array.from({ length: FEATURED_LIMIT }, (_, i) => (
+                <li key={i} className="project-card project-card--skeleton">
+                  <div className="project-card__preview project-card__preview--skeleton" />
+                  <div className="project-card__skeleton-body">
+                    <span className="skeleton-bar skeleton-bar--meta" />
+                    <span className="skeleton-bar skeleton-bar--title" />
+                    <span className="skeleton-bar skeleton-bar--text" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
         {hasProjects && projects && (
           <>
