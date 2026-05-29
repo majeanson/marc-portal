@@ -55,11 +55,6 @@ export function Pricing({ lang }: { lang: Lang }) {
             return (
               <li key={tier.name} className="tier__row">
                 <a className={`${cardClass} tier--link`} href={href}>
-                  {isAnchor && (
-                    <span className="tier__stamp mono" aria-hidden="true">
-                      {recoLabel}
-                    </span>
-                  )}
                   <div className="tier__head">
                     <span className="tier__name mono">{tier.name}</span>
                     <span className="tier__leader" aria-hidden="true" />
@@ -80,6 +75,19 @@ export function Pricing({ lang }: { lang: Lang }) {
                   <p className="tier__example">{tier.example}</p>
                   <div className="tier__after mono">{tier.after}</div>
                 </a>
+                {/* The "sweet spot" stamp is a row child rendered AFTER the
+                    <a>, not inside it. The card carries overflow:hidden to
+                    contain the anchor shimmer, which clipped this sticker
+                    (it floats above the card's top edge) down to a sliver on
+                    desktop and a cut band on mobile — the bug Marc hit.
+                    Outside the card it positions against the row (no overflow
+                    clip) and paints on top; pointer-events:none in the CSS
+                    keeps the whole card clickable through it. */}
+                {isAnchor && (
+                  <span className="tier__stamp mono" aria-hidden="true">
+                    {recoLabel}
+                  </span>
+                )}
               </li>
             )
           })}

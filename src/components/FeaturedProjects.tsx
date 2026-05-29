@@ -98,6 +98,12 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
               {projects.map((p) => (
                 <FeaturedCard key={p.id} project={p} lang={lang} langPrefix={langPrefix} />
               ))}
+              {/* The strip always closes on an open slot: three real builds
+                  plus a standing invitation as the 4th cell. It reads as an
+                  empty seat at the table, not a missing project, and routes
+                  straight to intake so a visitor who likes the work has a
+                  one-click way to put their own idea in the queue. */}
+              <InviteCard lang={lang} href={intakeHref} />
             </ul>
             {/* Shared "go deeper" card — same pattern as #how and
                 #testimonials so every section with a dedicated full page
@@ -135,6 +141,23 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
         )}
       </div>
     </section>
+  )
+}
+
+function InviteCard({ lang, href }: { lang: Lang; href: string }) {
+  const t = DICT[lang].featured.inviteCard
+  return (
+    <li className="featured-projects__invite">
+      <a className="featured-projects__invite-link" href={href}>
+        <span className="featured-projects__invite-mark mono" aria-hidden="true">
+          +
+        </span>
+        <span className="featured-projects__invite-eyebrow mono">{t.eyebrow}</span>
+        <h3 className="featured-projects__invite-title">{t.title}</h3>
+        <p className="featured-projects__invite-body">{t.body}</p>
+        <span className="featured-projects__invite-cta mono">{t.cta}</span>
+      </a>
+    </li>
   )
 }
 

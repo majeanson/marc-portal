@@ -73,7 +73,7 @@ const FR = {
     // Empathy-first opening paragraph. The closer is split out so the
     // component can give it italic + sage emphasis — the eye should land
     // on "Raconte-moi ça." before reaching the CTA.
-    body: "Une affaire plate qui revient chaque semaine, c'est pas un enjeu national. Mais c'est assez tannant pour mériter mieux.",
+    body: "Une affaire plate qui revient chaque semaine, pas un enjeu national, mais c'est assez tannant pour mériter mieux.",
     closer: 'Raconte-moi la tienne.',
     cta: 'Décris ton problème →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
@@ -142,6 +142,12 @@ const FR = {
       title: 'La galerie complète, tous les projets',
       body: 'Au-delà des trois cartes ci-dessus, la galerie filtre par tier et par statut. Chaque carte ouvre le détail du projet avec le dernier build en direct.',
       cta: 'Voir tous les projets →',
+    },
+    inviteCard: {
+      eyebrow: 'la place est libre',
+      title: 'Ton projet pourrait être ici',
+      body: 'Cette carte attend un vrai projet. Le tien, peut-être. Décris ton idée pis on regarde ça ensemble.',
+      cta: 'Lance ton projet →',
     },
     loading: 'Chargement…',
     openBuild: 'Ouvrir le build ↗',
@@ -1172,6 +1178,12 @@ const EN: Copy = {
       title: 'The full gallery, every project',
       body: 'Beyond the three cards above, the gallery filters by tier and by status. Each card opens the project detail with the live build embedded.',
       cta: 'See all projects →',
+    },
+    inviteCard: {
+      eyebrow: 'this spot is open',
+      title: 'Your project could be here',
+      body: 'This card is waiting on a real build. Maybe yours. Tell me your idea and we look at it together.',
+      cta: 'Start your project →',
     },
     loading: 'Loading…',
     openBuild: 'Open the build ↗',

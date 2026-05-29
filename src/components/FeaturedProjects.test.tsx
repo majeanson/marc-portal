@@ -72,6 +72,24 @@ describe('FeaturedProjects', () => {
     expect(document.querySelectorAll('.project-card--skeleton')).toHaveLength(0)
   })
 
+  it('always closes the strip with the invitation card as the 4th cell', async () => {
+    // Three real builds plus a standing "your project could be here" slot that
+    // routes into intake — the strip is never just the projects.
+    mockList.mockResolvedValue({
+      projects: [
+        project({ id: 'a', title: 'First' }),
+        project({ id: 'b', title: 'Second' }),
+        project({ id: 'c', title: 'Third' }),
+      ],
+    })
+    renderStrip()
+    await screen.findByText('First')
+    const invite = document.querySelector('.featured-projects__invite-link')
+    expect(invite).toBeInTheDocument()
+    expect(invite).toHaveAttribute('href', '/en/intake')
+    expect(screen.getByText(/your project could be here/i)).toBeInTheDocument()
+  })
+
   it('falls back to the empty panel below the card threshold', async () => {
     // Fewer than FEATURED_LIMIT cards reads as half-built, so the strip shows
     // the invitation panel instead of a thin one-card row.

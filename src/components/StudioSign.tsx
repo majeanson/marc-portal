@@ -24,12 +24,14 @@ const COPY = {
     open: 'Ouvert aux projets',
     waitlist: 'Sur liste d’attente',
     resting: 'Québec · travail async',
+    home: "Retour en haut de l'accueil",
   },
   en: {
     eyebrow: "Marc's studio",
     open: 'Open for projects',
     waitlist: 'Waitlist open',
     resting: 'Québec · async',
+    home: 'Back to the top of the home page',
   },
 } as const
 
@@ -103,13 +105,18 @@ export function StudioSign({ lang }: { lang: Lang }) {
 
   const line = status === 'open' ? t.open : status === 'waitlist' ? t.waitlist : t.resting
 
+  // The stamp doubles as a "back to home" link, like the header brand: a plain
+  // anchor (not a router <Link>), so the native navigation lands at the top of
+  // the page — including when you're already on the home page.
+  const homeHref = lang === 'fr' ? '/' : '/en'
+
   return (
-    <div className={`studio-sign studio-sign--${status}`}>
+    <a className={`studio-sign studio-sign--${status}`} href={homeHref} aria-label={t.home}>
       <CoffeeCup steaming={status !== 'waitlist'} />
       <span className="studio-sign__text">
         <span className="studio-sign__eyebrow mono">{t.eyebrow}</span>
         <span className="studio-sign__status">{line}</span>
       </span>
-    </div>
+    </a>
   )
 }
