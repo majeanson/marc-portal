@@ -31,22 +31,12 @@ import { signUnsubscribeToken, unsubscribeUrl } from './unsubscribe'
 //     functions/_lib/userPrefs.ts (user_prefs table → session.intake_json
 //     fallback → 'fr'). Callers pass whatever lang getLang() returned.
 //
-// Sender: noreply@marcportal.com. PREREQUISITE before deploying this
-// constant:
-//   1. Add marcportal.com on Resend Dashboard → Domains → Add.
-//   2. Add the 4 records Resend lists into Cloudflare DNS:
-//        TXT  resend._domainkey   p=MIGfMA…QIDAQAB
-//        MX   send                feedback-smtp.us-east-1.amazonses.com (pri 10)
-//        TXT  send                v=spf1 include:amazonses.com ~all
-//        TXT  _dmarc              v=DMARC1; p=none;
-//      Resend uses the `send` subdomain pattern for bounce handling, so
-//      the SPF and MX records do NOT collide with CF Email Routing's
-//      records at the apex.
-//   3. Wait for Resend to flip the domain status to "verified" (2–10 min).
-// Until verified, every send via this FROM fails with 403. To deploy
-// BEFORE verification finishes, temporarily revert to
-// 'Marc Portal <onboarding@resend.dev>' (Resend's shared domain, no DNS
-// required — degrades deliverability but doesn't break sends).
+// Sender: noreply@marcportal.com. The domain is verified on Resend with
+// DKIM/SPF/MX/DMARC live in Cloudflare DNS (since 2026-05-24, AUDIT P1.1),
+// so every send authenticates on its own reputation — no shared-domain drag.
+// A buyer re-pointing this at their own domain follows RUNBOOK §16 (the four
+// DNS records + verification wait); that's also the recovery procedure if the
+// domain ever falls out of "verified" and sends start 403-ing.
 const RESEND_FROM = 'Marc <noreply@marcportal.com>'
 const RESEND_URL = 'https://api.resend.com/emails'
 

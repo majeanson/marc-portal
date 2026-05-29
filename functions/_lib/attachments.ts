@@ -198,9 +198,11 @@ const MAGIC_BYTES: Array<{ prefix: number[]; types: string[] }> = [
 ]
 
 /**
- * Buffer-based twin of verifyMagicBytes, for the voice + sketch paths which
- * read the whole upload into memory anyway (to transcribe / to parse). Same
- * contract: a content type with no known signature passes through.
+ * Verify the leading bytes match the declared content-type's known signature.
+ * Every upload path now buffers the whole body before R2.put (AUDIT P1.10 —
+ * one code path, no Miniflare-vs-Workers stream divergence), so this operates
+ * on the in-memory bytes. A content type with no known signature passes
+ * through (text/*, json, and the offset-signature audio types have no entry).
  */
 export function verifyMagicBytesBuffer(contentType: string, bytes: Uint8Array): boolean {
   const ct = baseContentType(contentType)
@@ -211,70 +213,6 @@ export function verifyMagicBytesBuffer(contentType: string, bytes: Uint8Array): 
     if (bytes[i] !== sig.prefix[i]) return false
   }
   return true
-}
-
-/**
- * Read the first 12 bytes of the stream and verify they match the declared
- * content-type's known magic-byte signature. Returns `{ ok: true, stream }`
- * with a fresh ReadableStream the caller MUST use in place of the original
- * (the original was consumed). Returns `{ ok: false }` on mismatch or when
- * the type has no known signature *and* is one of the high-value classes we
- * insist on verifying. text/plain, application/json, and friends are passed
- * through (no signature exists for them).
- */
-export async function verifyMagicBytes(file: {
-  type: string
-  stream: () => ReadableStream
-}): Promise<{ ok: boolean; stream?: ReadableStream }> {
-  const ct = file.type.toLowerCase().split(';')[0]?.trim() ?? ''
-  const sig = MAGIC_BYTES.find((m) => m.types.includes(ct))
-  if (!sig) {
-    // No signature on file (text/*, json) — accept as-is.
-    return { ok: true, stream: file.stream() }
-  }
-  const reader = file.stream().getReader()
-  const chunks: Uint8Array[] = []
-  let collected = 0
-  // Pull until we have enough bytes for the longest known prefix.
-  while (collected < sig.prefix.length) {
-    const { value, done } = await reader.read()
-    if (done) break
-    if (value) {
-      chunks.push(value)
-      collected += value.byteLength
-    }
-  }
-  // Concatenate the leading bytes we collected.
-  const leading = new Uint8Array(collected)
-  let offset = 0
-  for (const c of chunks) {
-    leading.set(c, offset)
-    offset += c.byteLength
-  }
-  // Match
-  if (leading.length < sig.prefix.length) {
-    reader.releaseLock()
-    return { ok: false }
-  }
-  for (let i = 0; i < sig.prefix.length; i++) {
-    if (leading[i] !== sig.prefix[i]) {
-      reader.releaseLock()
-      return { ok: false }
-    }
-  }
-  // Rewrap: emit the buffered bytes first, then pull the rest of the upstream.
-  const pumped = new ReadableStream({
-    async start(controller) {
-      controller.enqueue(leading)
-      while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
-        if (value) controller.enqueue(value)
-      }
-      controller.close()
-    },
-  })
-  return { ok: true, stream: pumped }
 }
 
 /**
