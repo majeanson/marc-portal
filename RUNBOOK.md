@@ -1933,3 +1933,50 @@ off, the genuine markers are:
 If something feels off, the deciding test: log into `/me` directly
 (type the URL yourself) and check whether the claimed action actually
 happened. The portal is always the source of truth.
+
+---
+
+## 23. Custodian reconciliation alert (`kind = custodian-reconcile`)
+
+**Symptom:** the daily digest email's alerts section lists a "Custodian
+reconciliation found N discrepancies" alert, or `admin_alerts` has an
+unresolved row with `kind = 'custodian-reconcile'`.
+
+**What it means:** our `sessions.custodian_status` disagrees with what
+Stripe reports. The payment webhook normally keeps them in lockstep; an
+unresolved discrepancy means we almost certainly **missed a billing
+webhook** (Stripe delivery failure, or our endpoint was down during a
+deploy). Two shapes:
+
+- *"we show custodian active, but Stripe has no active subscription …"* —
+  the sub lapsed or was cancelled and we never got the
+  `customer.subscription.deleted` event. MRR is over-counted and a
+  non-paying visitor is still in custodian mode.
+- *"we show custodian past_due, but Stripe has subscription … active"* —
+  a failed invoice was retried and paid, but we never got the
+  `invoice.paid` event. A paying visitor is stuck behind a past-due banner.
+
+**Fix (per listed subscription):**
+
+1. Open the subscription in the Stripe Dashboard (search the `sub_…` id).
+2. Confirm its real status + current period.
+3. Update the affected session to match — the session id is in the alert
+   body. From D1:
+   - lapsed/cancelled: `UPDATE sessions SET custodian_status = 'canceled'
+     WHERE id = '…';` (or `'switched_to_tout_a_toi'` if that's what
+     happened).
+   - recovered: `UPDATE sessions SET custodian_status = 'active' WHERE
+     id = '…';`
+4. Resolve the alert so detection re-arms (a new alert is suppressed while
+   an open one exists): `UPDATE admin_alerts SET resolved_at =
+   unixepoch() WHERE kind = 'custodian-reconcile' AND resolved_at IS NULL;`
+
+**Root-cause check:** if reconciliation alerts recur, the webhook
+endpoint is dropping events. Check Stripe Dashboard → Developers →
+Webhooks for failed deliveries and re-send them; that path keeps the
+real-time state correct and is preferable to hand-editing D1.
+
+**No alerts ever firing?** Reconciliation is a no-op until
+`STRIPE_SECRET_KEY` is set and the digest cron is running (see the digest
+setup in this runbook). It piggybacks the daily digest — no separate
+schedule to register.

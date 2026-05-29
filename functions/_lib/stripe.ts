@@ -192,6 +192,70 @@ export async function createBillingPortalSession(opts: PortalOpts): Promise<{ ur
   return { url: data.url }
 }
 
+export interface StripeSubscriptionSummary {
+  id: string // sub_...
+  status: string // active | past_due | canceled | …
+  current_period_end: number | null // unix seconds; renewal boundary
+  customer: string | null // cus_...
+}
+
+/**
+ * List Stripe subscriptions in `active` status, cursor-paginated. Read-only —
+ * the custodian reconciliation cross-checks this against our own
+ * `custodian_status` to catch a billing webhook we never received (Stripe
+ * delivery failure or our endpoint being down): a lapsed sub we still show
+ * active, or a recovered sub we still show past_due. Never writes; the caller
+ * decides what to do with the drift.
+ *
+ * Stub-aware: the e2e sentinel key returns an empty list so the harness never
+ * reaches the live API.
+ */
+export async function listActiveSubscriptions(
+  apiKey: string,
+): Promise<StripeSubscriptionSummary[]> {
+  if (apiKey === E2E_STUB_API_KEY) return []
+  const out: StripeSubscriptionSummary[] = []
+  let startingAfter: string | undefined
+  // Cursor-paginate. The page cap is a runaway guard (100/page × 20 = 2000
+  // active subs), far past this practice's scale — if it ever trips, the
+  // reconciliation under-reports rather than looping forever.
+  for (let page = 0; page < 20; page++) {
+    const qs = new URLSearchParams({ status: 'active', limit: '100' })
+    if (startingAfter) qs.set('starting_after', startingAfter)
+    const res = await fetch(`${STRIPE_API}/subscriptions?${qs.toString()}`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Stripe-Version': STRIPE_API_VERSION,
+      },
+    })
+    const text = await res.text()
+    if (!res.ok) {
+      throw new Error(`stripe subscriptions list failed: ${res.status} ${text}`)
+    }
+    const data = JSON.parse(text) as {
+      data: Array<{
+        id: string
+        status: string
+        current_period_end?: number | null
+        customer?: string | null
+      }>
+      has_more?: boolean
+    }
+    for (const s of data.data) {
+      out.push({
+        id: s.id,
+        status: s.status,
+        current_period_end: s.current_period_end ?? null,
+        customer: typeof s.customer === 'string' ? s.customer : null,
+      })
+    }
+    const last = data.data[data.data.length - 1]
+    if (!data.has_more || !last) break
+    startingAfter = last.id
+  }
+  return out
+}
+
 /**
  * Verify a Stripe-Signature header against the raw request body. Implements
  * Stripe's v1 signing scheme: `signed = ${timestamp}.${rawBody}`, HMAC-SHA256

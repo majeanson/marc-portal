@@ -555,6 +555,27 @@ class MockPreparedStatement {
       return []
     }
 
+    // Custodian reconcile: active/past_due custodian rows that carry a sub id.
+    if (
+      sql.includes('FROM sessions') &&
+      sql.includes('custodian_subscription_id IS NOT NULL') &&
+      sql.includes("custodian_status IN ('active', 'past_due')")
+    ) {
+      const out: Record<string, unknown>[] = []
+      for (const s of this.db.sessions.values()) {
+        if (s.deleted_at !== null) continue
+        if (!s.custodian_subscription_id) continue
+        if (s.custodian_status === 'active' || s.custodian_status === 'past_due') {
+          out.push({
+            id: s.id,
+            custodian_subscription_id: s.custodian_subscription_id,
+            custodian_status: s.custodian_status,
+          })
+        }
+      }
+      return out
+    }
+
     // SELECT id FROM sessions WHERE custodian_subscription_id = ? LIMIT 1
     if (sql.includes('FROM sessions') && sql.includes('WHERE custodian_subscription_id = ?')) {
       const subId = a[0] as string
@@ -574,6 +595,20 @@ class MockPreparedStatement {
       const pi = a[0] as string
       for (const p of this.db.payments.values()) {
         if (p.stripe_payment_intent_id === pi) return [{ id: p.id, amount_cents: p.amount_cents }]
+      }
+      return []
+    }
+
+    // Reconcile dedup: SELECT id FROM admin_alerts WHERE kind = 'custodian-reconcile'
+    // AND resolved_at IS NULL LIMIT 1 — must come before the generic unresolved
+    // matcher below, which ignores kind.
+    if (
+      sql.includes('FROM admin_alerts') &&
+      sql.includes("kind = 'custodian-reconcile'") &&
+      sql.includes('resolved_at IS NULL')
+    ) {
+      for (const v of this.db.admin_alerts.values()) {
+        if (v.kind === 'custodian-reconcile' && v.resolved_at == null) return [{ id: v.id }]
       }
       return []
     }
@@ -1549,12 +1584,15 @@ class MockPreparedStatement {
       return n
     }
 
-    // INSERT INTO admin_alerts (id, kind, body, created_at)
+    // INSERT INTO admin_alerts (id, kind, body, created_at). `kind` is a SQL
+    // literal in the VALUES clause (e.g. 'stripe', 'custodian-reconcile'); parse
+    // it so kind-filtered SELECTs (the reconcile dedup) see the right value.
     if (sql.startsWith('INSERT INTO admin_alerts')) {
       const id = a[0] as string
+      const kindMatch = sql.match(/VALUES\s*\(\?,\s*'([a-z-]+)'/i)
       this.db.admin_alerts.set(id, {
         id,
-        kind: 'stripe',
+        kind: kindMatch ? kindMatch[1] : 'stripe',
         body: a[1] as string,
         created_at: a[2] as number,
         resolved_at: null,

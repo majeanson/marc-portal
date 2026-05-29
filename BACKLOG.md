@@ -75,14 +75,18 @@
 
 ## Tier 3 — Code-only features (the handler/page ships now; activation is later & manual)
 
-- ⬜ **B8 · M · manual: register the cron later** — Custodian-renewal
-  reconciliation (`AUDIT.md`/gap-queue **#10**). Build the endpoint that calls
-  Stripe `GET /v1/subscriptions?status=active` and reconciles
-  `current_period_end` against `sessions.custodian_status`, plus an admin
-  manual-trigger button on a diagnostics surface so it's usable before the cron
-  exists. Graceful-degrade on missing `STRIPE_SECRET_KEY` (503). Tests with the
-  sentinel-stub Stripe pattern. Cron registration on cron-job.org is the only
-  manual follow-up.
+- ✅ **B8 · manual: none (runs in the existing digest cron)** — Custodian-renewal
+  reconciliation (gap **#10**). `_lib/custodianReconcile.ts`: pure
+  `computeCustodianDrift` + `reconcileCustodians` that lists Stripe's active
+  subscriptions (`listActiveSubscriptions` in `_lib/stripe.ts`) and cross-checks
+  `sessions.custodian_status`, catching a missed billing webhook (lapsed sub
+  still shown active, or recovered sub still shown past_due). Alert-only via
+  `admin_alerts` (kind `custodian-reconcile`), deduped to one open alert.
+  Piggybacks the daily digest cron — no new auth/CSRF surface — so it's already
+  "usable before a dedicated cron exists." No-op when `STRIPE_SECRET_KEY` unset.
+  10 tests, co-located feature.json, RUNBOOK §23. Chose digest-piggyback over a
+  standalone endpoint+button (lower surface) and alert-only over auto-heal
+  (won't race the webhook).
 
 - ⬜ **B9 · M · manual: register the cron later** — Sentry quota watchdog
   (gap-queue **#8**). Endpoint polls

@@ -1,0 +1,51 @@
+{
+  "featureKey": "feat-2026-106",
+  "title": "Custodian-subscription reconciliation (digest-cron piggyback)",
+  "status": "active",
+  "schemaVersion": 1,
+  "domain": "marc-portal/payments",
+  "componentFile": "functions/_lib/custodianReconcile.ts",
+  "problem": "The payment webhook keeps sessions.custodian_status in lockstep with Stripe in real time, but a webhook can be missed (Stripe delivery failure, or our endpoint briefly down during a deploy). When that happens our record drifts from Stripe's truth: a lapsed subscription we still show 'active' (over-counted MRR, a non-paying visitor still in custodian mode), or a recovered subscription we still show 'past_due' (a paying visitor stuck behind a past-due banner). Nothing caught that drift. Closes prod-readiness gap #10.",
+  "tags": ["payments", "custodian", "stripe", "cron", "reconciliation", "operator-gated"],
+  "analysis": "Split into a pure comparator and a thin IO wrapper. computeCustodianDrift(rows, activeSubIds) is pure: it walks our active/past_due custodian rows and flags the two drift directions against the set of subscription ids Stripe reports active. reconcileCustodians(env) does the IO: graceful no-op when STRIPE_SECRET_KEY is unset, listActiveSubscriptions() (cursor-paginated GET /v1/subscriptions?status=active), the SELECT of active/past_due custodian rows, computeCustodianDrift, and a single admin_alerts write. It runs from the daily digest cron as piggyback housekeeping #4 — no new auth surface, no new schedule.",
+  "decisions": [
+    {
+      "decision": "Alert-only — never auto-flip custodian_status",
+      "rationale": "Auto-healing would race the webhook (which may deliver the same event moments later) and could move a visitor between paying states with no human glance. Writing one admin_alerts row and letting Marc reconcile in the Stripe Dashboard matches the manual-review shape already used for refunds.",
+      "recommendation": "If drift becomes frequent and the safe direction is unambiguous (e.g. past_due→active when Stripe confirms active), revisit a narrow auto-heal for that one case only.",
+      "date": "2026-05-29"
+    },
+    {
+      "decision": "Piggyback the daily digest cron instead of a new endpoint",
+      "rationale": "A standalone endpoint would need either CSRF exemption (for a token cron) or a dedicated admin button — new surface for a low-frequency check. The digest cron already runs daily, is token-gated, and is where the other housekeeping sweeps live. Reconciliation is idempotent and one Stripe API call at this scale.",
+      "recommendation": "If reconciliation needs a cadence independent of the digest (e.g. hourly during a billing incident), promote it to its own token-gated endpoint then.",
+      "date": "2026-05-29"
+    },
+    {
+      "decision": "One open alert at a time (dedup on unresolved kind='custodian-reconcile')",
+      "rationale": "A daily cron would otherwise stack an identical alert every 24h while the same drift persists. Suppressing a new insert while an open one exists keeps the operator inbox honest; resolving the alert (after reconciling) re-arms detection.",
+      "recommendation": "If multiple distinct drifts should each be tracked separately, key the dedup on subscription id instead of kind.",
+      "date": "2026-05-29"
+    }
+  ],
+  "successCriteria": "- No-op (skipped:no_stripe_key) when STRIPE_SECRET_KEY is unset\n- active row absent from Stripe's active set → drift db_active_not_in_stripe\n- past_due row present in Stripe's active set → drift db_past_due_active_in_stripe\n- consistent rows → no drift, no alert\n- drift → exactly one admin_alerts row (kind custodian-reconcile)\n- drift while an open alert exists → no second row\n- a Stripe API failure must not fail the digest (best-effort in the cron)",
+  "implementation": "functions/_lib/custodianReconcile.ts (computeCustodianDrift + reconcileCustodians), functions/_lib/stripe.ts (listActiveSubscriptions), wired in functions/api/admin/digest.ts as housekeeping #4. Tests: functions/_lib/custodianReconcile.test.ts (6 pure-comparator specs + 4 wrapper specs against D1Mock + a mocked Stripe list).",
+  "userGuide": "Runs automatically inside the daily digest cron once STRIPE_SECRET_KEY is configured. When it finds drift it writes an operator alert (kind custodian-reconcile) that surfaces in the digest email's alerts section. Reconcile each listed subscription in the Stripe Dashboard, fix the affected session, then resolve the alert (UPDATE admin_alerts SET resolved_at = unixepoch() WHERE id = '…'). See RUNBOOK §23.",
+  "knownLimitations": [
+    "Alert-only: drift is reported, not auto-corrected (deliberate — see decisions)",
+    "Runs at the digest's daily cadence, not the weekly cadence originally scoped (daily is cheap at this volume and catches drift sooner)",
+    "current_period_end is captured but not yet used — the check is presence-in-active-set, not renewal-date comparison",
+    "Cron registration on cron-job.org is a manual step (same as the digest itself); until then it runs whenever the digest is invoked"
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-05-29",
+      "reason": "Shipped as BACKLOG.md B8 / prod-readiness gap #10."
+    }
+  ],
+  "lastVerifiedDate": "2026-05-29",
+  "revisions": [],
+  "annotations": []
+}
