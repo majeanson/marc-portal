@@ -910,26 +910,30 @@ html:not([data-lang-nudge='en']) .en-nudge {
   }
 }
 
+/* Crisp segmented control: a single hard-edged keycap split into FR/EN, the
+   active segment filled with the accent. Segments butt together (no gap) so it
+   reads as one physical switch, not two pills. */
 .lang {
   display: inline-flex;
-  gap: 4px;
+  gap: 0;
   font-family: var(--display);
   font-size: 13px;
-  background: var(--bg-hover);
-  padding: 3px;
-  border-radius: 999px;
+  background: var(--bg-card);
+  padding: 2px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
 }
 .lang a {
-  padding: 5px 12px;
+  padding: 4px 11px;
   border: none;
-  border-radius: 999px;
+  border-radius: 4px;
   color: var(--text-soft);
   font-weight: 600;
 }
 .lang a.active {
-  color: var(--text);
-  background: var(--bg-card);
-  box-shadow: 0 1px 3px rgba(31, 29, 24, 0.08);
+  color: var(--on-accent);
+  background: var(--accent);
 }
 
 /* Hero — base styles. `.hero` is only worn by the home hero (one
@@ -2996,17 +3000,18 @@ button.intake__progress-step:focus-visible {
   font-size: 16px;
   color: var(--text);
   background: var(--bg-section);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
+  padding: 13px 14px;
   outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+  transition: box-shadow 0.12s;
 }
 .form__input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(61, 110, 78, 0.15);
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
 }
 .form__error {
   margin: 0 0 4px;
@@ -3150,25 +3155,32 @@ button.intake__progress-step:focus-visible {
 .type-card {
   text-align: left;
   background: var(--bg-card);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   padding: 18px 20px;
   cursor: pointer;
   color: var(--text);
   font-family: var(--sans);
   transition:
-    border-color 0.15s,
-    background 0.15s,
-    transform 0.08s;
+    background 0.12s,
+    transform 0.04s,
+    box-shadow 0.1s;
 }
 .type-card:hover {
-  border-color: var(--accent);
-  background: var(--bg-card);
-  transform: translateY(-1px);
+  background: var(--bg-hover);
 }
+.type-card:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+/* Selected = pressed key: accent-tinted fill + an inset accent ring over the
+   hard edge, so the choice reads without relying on a colour-only border. */
 .type-card--selected {
-  border-color: var(--accent);
-  background: var(--bg-active);
+  background: var(--accent-soft);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .type-card__name {
   font-size: 11px;
@@ -6526,16 +6538,16 @@ button:focus-visible,
 }
 .project-card {
   position: relative;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
   background: var(--bg-card);
+  box-shadow: var(--edge-shadow);
   transition:
-    border-color 0.15s,
-    transform 0.15s;
+    background 0.12s,
+    box-shadow 0.1s;
 }
 .project-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+  background: var(--bg-hover);
 }
 .project-card__link {
   display: block;
