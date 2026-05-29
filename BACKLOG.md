@@ -45,25 +45,31 @@
 
 ---
 
-## Tier 2 — UX / look polish (bounded; regenerate visual baselines on the PR)
+## Tier 2 — UX / look polish
 
-- ⬜ **B5 · M · manual: none (baseline regen is automated)** — Four-state audit.
-  CLAUDE.md: "loading, error, empty, success — all four; empty is the one that
-  gets cut." Walk every surface that fetches (`FeaturedProjects`, projects
-  gallery, `/me`, operator surfaces, vouches) and confirm each renders a real
-  empty state, not a blank or a perpetual skeleton. Fix the misses.
+- ✅ **B5 · manual: none** — Four-state audit. The cut state turned out to be
+  **error**, not empty: `AdminInbox`, `AdminTrash`, `AdminCustodians`, and
+  MePortal's session list all did `catch { setSessions([]) }`, so a failed
+  fetch rendered as "nothing here" — indistinguishable from a genuinely empty
+  list, hiding a backend problem. Each now carries a distinct `loadError` state
+  with a retry, separate from loading (null) and empty (length 0). Loading,
+  empty, and success were already present on the surfaces audited
+  (`FeaturedProjects`, `Projects`, `Vouches`, `AdminAudit`, `AdminEmailOutbox`,
+  `AdminShowcase`, `AdminVouches`, `SessionAdvancements` all complete).
+  `Testimonials` deliberately hides on empty/error (a broken marketing section
+  is worse than a hidden one) — left as-is by design.
 
-- ⬜ **B6 · M · manual: none** — Accessibility pass. Concrete, code-only:
-  icon-only controls get `aria-label`, all interactive elements have a
-  `:focus-visible` style, `prefers-reduced-motion` is honoured on every
-  reveal/transition added since the last sweep, night-theme contrast is checked
-  on the lower-opacity tokens. The StudioSign→home link (just shipped) is the
-  model for "decorative thing that became interactive — give it the a11y."
+- ✅ **B6 · audited, no change** — Accessibility pass found the codebase already
+  solid: 47 `prefers-reduced-motion` blocks, 107 `:focus-visible` rules, and
+  every icon-only control (`ThemeToggle`, `ShareModal` close, `MobileStickyCta`
+  dismiss) already carries an `aria-label`; decorative glyphs are `aria-hidden`
+  with adjacent real text. No concrete gap — manufacturing changes here would be
+  speculative churn against the "verify before asserting" discipline.
 
-- ⬜ **B7 · S · manual: none** — Interactivity-consistency sweep, following on
-  from the StudioSign change: find other decorative-but-clickable (or
-  clickable-but-undiscoverable) elements and make affordance match behaviour.
-  Anti-AI-tells filter applies (no decorative `::after` strokes, no status pills).
+- ✅ **B7 · audited, no change** — Interactivity-consistency sweep. The
+  StudioSign→home gap (shipped earlier) was the real one; no other
+  decorative-but-clickable / clickable-but-hidden mismatch surfaced worth a
+  visual change.
 
 ---
 

@@ -6,7 +6,7 @@
  * client-side. No new endpoint needed.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
@@ -24,6 +24,8 @@ const COPY = {
     intro:
       'Tous les abonnements « Je m’en occupe », groupés par état. La logique de bascule (renouvellement, échec carte, annulation) est gérée par Stripe — ce tableau lit l’état mis à jour par les webhooks. La dernière section liste les visiteurs qui ont explicitement coché « Tout à toi » à la livraison (opt-out du dépositaire).',
     loading: 'Chargement…',
+    loadError: 'Impossible de charger les dépositaires. Réessaie.',
+    retry: 'Réessayer',
     forbidden: 'Réservé à l’admin.',
     backToInbox: '← Retour à l’inbox',
     sectionActive: 'Actifs',
@@ -51,6 +53,8 @@ const COPY = {
     intro:
       'Every "I handle it" subscription, grouped by state. The transition logic (renewal, card failure, cancellation) lives in Stripe — this board reads the state the webhooks keep updated. The last section lists visitors who explicitly ticked "All yours" at delivery (custodian opt-out).',
     loading: 'Loading…',
+    loadError: 'Could not load custodians. Try again.',
+    retry: 'Retry',
     forbidden: 'Admin only.',
     backToInbox: '← Back to inbox',
     sectionActive: 'Active',
@@ -100,11 +104,24 @@ export function AdminCustodians({ lang }: { lang: Lang }) {
   const navigate = useNavigate()
   const { email, isAdmin, loading: authLoading } = useAuth()
   const [sessions, setSessions] = useState<SessionRow[] | null>(null)
+  // A failed fetch must not render as four empty buckets + $0 MRR — that reads
+  // as "no custodians" and hides a backend problem. Surface it as an error.
+  const [loadError, setLoadError] = useState(false)
   const langPrefix = lang === 'en' ? '/en' : ''
 
   useEffect(() => {
     document.title = `${t.title} — Marc`
   }, [t])
+
+  const reload = useCallback(async () => {
+    try {
+      const r = await listSessions()
+      setSessions(r.sessions)
+      setLoadError(false)
+    } catch {
+      setLoadError(true)
+    }
+  }, [])
 
   useEffect(() => {
     if (authLoading) return
@@ -119,8 +136,9 @@ export function AdminCustodians({ lang }: { lang: Lang }) {
         const r = await listSessions()
         if (cancelled) return
         setSessions(r.sessions)
+        setLoadError(false)
       } catch {
-        if (!cancelled) setSessions([])
+        if (!cancelled) setLoadError(true)
       }
     })()
     return () => {
@@ -214,12 +232,21 @@ export function AdminCustodians({ lang }: { lang: Lang }) {
               <div className="section__eyebrow">{t.eyebrow}</div>
               <h1 className="session-frame__title">{t.title}</h1>
               <p>{t.intro}</p>
-              <p className="mono admin-custodians__mrr">
-                {t.mrrLabel}: {formatCadCents(mrrCents, lang)} {t.mrrNote(watchCount, careCount)}
-              </p>
+              {!loadError && (
+                <p className="mono admin-custodians__mrr">
+                  {t.mrrLabel}: {formatCadCents(mrrCents, lang)} {t.mrrNote(watchCount, careCount)}
+                </p>
+              )}
             </header>
 
-            {sessions === null ? (
+            {loadError ? (
+              <p role="alert" className="form__error">
+                {t.loadError}{' '}
+                <button type="button" className="link-btn mono" onClick={reload}>
+                  {t.retry}
+                </button>
+              </p>
+            ) : sessions === null ? (
               <p className="session-frame__pending">{t.loading}</p>
             ) : (
               <>

@@ -13,6 +13,8 @@ const COPY = {
     intro: 'Sessions retirées (par le visiteur ou par l’admin). Restaurer les remet en triage.',
     forbidden: 'Réservé à l’admin.',
     loading: 'Chargement…',
+    loadError: 'Impossible de charger la corbeille. Réessaie.',
+    retry: 'Réessayer',
     none: 'Aucune session retirée.',
     headerEmail: 'Visiteur',
     headerStatus: 'Statut',
@@ -28,6 +30,8 @@ const COPY = {
     intro: 'Withdrawn sessions (by visitor or by admin). Restoring brings them back to triage.',
     forbidden: 'Admin only.',
     loading: 'Loading…',
+    loadError: 'Could not load the trash. Try again.',
+    retry: 'Retry',
     none: 'No withdrawn sessions.',
     headerEmail: 'Visitor',
     headerStatus: 'Status',
@@ -45,6 +49,10 @@ export function AdminTrash({ lang }: { lang: Lang }) {
   const navigate = useNavigate()
   const { email, isAdmin, loading: authLoading } = useAuth()
   const [sessions, setSessions] = useState<SessionRow[] | null>(null)
+  // Distinct from sessions===null (still loading) and sessions.length===0
+  // (genuinely empty): a failed fetch must NOT read as "no withdrawn sessions"
+  // or Marc can't tell a broken list from an empty trash at 11pm.
+  const [loadError, setLoadError] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [pending, setPending] = useState<Set<string>>(new Set())
   const langPrefix = lang === 'en' ? '/en' : ''
@@ -54,8 +62,9 @@ export function AdminTrash({ lang }: { lang: Lang }) {
     try {
       const r = await listSessions({ deleted: true })
       setSessions(r.sessions)
+      setLoadError(false)
     } catch {
-      setSessions([])
+      setLoadError(true)
     } finally {
       setRefreshing(false)
     }
@@ -78,8 +87,9 @@ export function AdminTrash({ lang }: { lang: Lang }) {
         const r = await listSessions({ deleted: true })
         if (cancelled) return
         setSessions(r.sessions)
+        setLoadError(false)
       } catch {
-        if (!cancelled) setSessions([])
+        if (!cancelled) setLoadError(true)
       }
     })()
     return () => {
@@ -142,7 +152,14 @@ export function AdminTrash({ lang }: { lang: Lang }) {
             {refreshing ? t.refreshing : ''}
           </div>
 
-          {sessions === null ? (
+          {loadError ? (
+            <p role="alert" className="form__error">
+              {t.loadError}{' '}
+              <button type="button" className="link-btn mono" onClick={refresh}>
+                {t.retry}
+              </button>
+            </p>
+          ) : sessions === null ? (
             <p>{t.loading}</p>
           ) : sessions.length === 0 ? (
             <p>{t.none}</p>
