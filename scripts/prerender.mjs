@@ -135,15 +135,34 @@ async function applyCriticalCss(html) {
 async function snapshot(browser, url) {
   const page = await browser.newPage()
   try {
-    // networkidle: the homepage fires /api/public/projects + /api/capacity;
-    // `vite preview` has no Functions backend so those settle as failures —
-    // which is fine, the components fall back gracefully. We just need the
-    // requests to stop so the DOM is stable before we read it.
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 30_000 })
-    // The homepage root wrapper — present once <Home> has mounted.
+    // Freeze FeaturedProjects in its *loading* (skeleton) state, not its
+    // error state. `vite preview` has no Functions backend, so left alone
+    // /api/public/projects fails and the component renders its error panel
+    // ("couldn't load projects") — which then gets baked into the static
+    // first paint. On a real visit React boots into its loading state
+    // (skeleton), so the visitor would see error → skeleton → cards: a
+    // three-step flicker, and an error message as the fast paint. Holding
+    // the request open keeps the snapshot in the skeleton state, which is
+    // exactly what React renders first on boot → the cards fill in over the
+    // placeholders with no visible swap. (Hero/StudioSign need no such help:
+    // their loading state already equals their neutral default, and /capacity
+    // is left to fail fast into that same neutral state.)
+    await page.route('**/api/public/projects*', () => {
+      // Intentionally never fulfilled/aborted — the pending fetch holds the
+      // component in `isLoading`. Playwright tears it down when the page
+      // closes. This is also why we can't waitUntil:'networkidle' below.
+    })
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    // The homepage root wrapper — present once <Home> has mounted. Because
+    // isLoading is FeaturedProjects' initial state, the skeleton is in the
+    // DOM the moment `.app` appears.
     await page.waitForSelector('.app', { timeout: 30_000 })
     // Webfonts resolved, so the snapshot reflects the final layout.
     await page.evaluate(() => document.fonts.ready)
+    // Let the other backendless fetches (/capacity, /vouches, /tenant) reject
+    // and settle into their neutral frozen states before we read the DOM —
+    // networkidle used to give us this for free.
+    await page.waitForTimeout(600)
     // outerHTML omits the doctype — prepend it so the file is a valid
     // standards-mode document. The <script type="module"> tag stays in the
     // captured markup, so the SPA still boots and re-renders over the

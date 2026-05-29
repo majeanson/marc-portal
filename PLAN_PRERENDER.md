@@ -94,3 +94,38 @@ Fix — keep a clean shell for the fallback:
 1 → 2 → 3, then deploy and run Phase 4. Each phase green on `npm run build`.
 Treat as its own session: Phase 4 is several deploy→verify cycles, and a
 routing mistake here is site-wide.
+
+## Phase 4d result — boot flicker (resolved)
+
+The "no visible flash on boot" check found one real flicker, now fixed.
+
+`createRoot` (not hydrate) clears `#root` and re-renders in one synchronous
+commit, so the swap itself paints no blank frame. The flicker risk is
+*content*: the snapshot freezes whatever state each homepage data fetch
+reached, but `vite preview` has no Functions backend, so every fetch fails at
+snapshot time. The fix principle is **frozen state must equal React's boot
+first-render** (always `isLoading`):
+
+- **Hero** (LCP element) — `atCap` defaults to `false`, catch is a no-op.
+  Frozen paint and boot both show the "open" CTA. Flicker-free, no change.
+- **StudioSign** — `loading` and `unknown` both render the neutral "resting"
+  line + steaming cup. Flicker-free, no change.
+- **Testimonials** — renders `null` while loading *and* on failure, so the
+  section is simply absent from the snapshot and appears below the fold once
+  vouches load. Existing self-hide behaviour, no change.
+- **FeaturedProjects** — was the one offender. Its fetch-failure branch is a
+  dedicated *error panel*, distinct from its boot `isLoading` state, so a real
+  visitor saw error → loading → cards. **Fix:** gave it a skeleton loading
+  state mirroring the 3-card grid, and `scripts/prerender.mjs` now holds
+  `/api/public/projects` pending (a `page.route` that never fulfills) so the
+  snapshot freezes that skeleton. Because the hung request makes
+  `networkidle` impossible, the snapshot wait switched to `domcontentloaded`
+  + `.app` + `fonts.ready` + a short settle for the other (fast-failing)
+  fetches. Frozen skeleton == boot skeleton → the cards fill in over the
+  placeholders with no swap or layout shift. Covered by
+  `src/components/FeaturedProjects.test.tsx`.
+
+Follow-up if the homepage screenshot baseline ever goes red: the e2e suite
+mocks `/api/public/projects` with real fixtures (`e2e/mocks.ts`), so it
+screenshots the *booted* card grid, not the skeleton — baselines should be
+unaffected, but regenerate via `e2e-snapshots.yml` if a diff appears.
