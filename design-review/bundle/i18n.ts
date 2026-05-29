@@ -74,7 +74,7 @@ const FR = {
     // Empathy-first opening paragraph. The closer is split out so the
     // component can give it italic + sage emphasis — the eye should land
     // on "Raconte-moi ça." before reaching the CTA.
-    body: "Tu as une affaire plate qui revient chaque semaine. C'est pas un enjeu national, mais c'est assez tannant pour mériter mieux.",
+    body: "Tu as une affaire plate qui revient chaque semaine, pas un enjeu national, mais c'est assez tannant pour mériter mieux.",
     closer: 'Raconte-moi ça.',
     cta: 'Crée ton compte gratuit →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',

@@ -869,10 +869,16 @@
           "decision": "Aspirational examples, not 'projects I've shipped'",
           "rationale": "The practice hasn't built a multi-year client history yet. Falsely-historic examples would be dishonest; aspirational examples ('things I'd happily take') are structurally true.",
           "recommendation": "Once the showcase has 6+ shipped projects, revisit — maybe the section can use real anonymized examples. Until then, aspirational copy."
+        },
+        {
+          "decision": "Example cards grouped by pricing tier (0→4), not by life-domain theme",
+          "rationale": "Originally one card per theme (everyday, gifts, work, hardware, weird). That structure showed range across life domains but left the set clustered in Tier 0-2 with no Tier 4 platform-scale idea, so the section quietly under-sold the high end. Regrouping by tier makes the examples reflect every pricing level: a visitor with a tiny idea and one with a multi-role platform both see a matching card. The example prices in each label mirror the Pricing section exactly (Niveau 0 free, 1 750$, 2 1800$, 3 3600$, 4 7500$+); hardware is placed in Tier 3 per the pricing hardwareNote. Ideas inside each card stay mixed (home/family/small-biz/hardware) so it still reads like a notepad, not a price sheet.",
+          "recommendation": "If the Pricing tier amounts change, update these labels in lockstep. Keep at least one warm/personal idea per card so the tier ladder doesn't read as a cold price grid."
         }
       ],
-      "successCriteria": "- Renders directly after VibeFilter in home order\n- Copy positions Marc as the triager, not the visitor\n- Examples are aspirational (not falsely historic)\n- Bilingual at full parity\n- Feature-coloured as intake (pushes toward intake form)",
+      "successCriteria": "- Renders directly after VibeFilter in home order\n- Copy positions Marc as the triager, not the visitor\n- Examples are aspirational (not falsely historic)\n- Example cards span every pricing tier (0 free → 4 platform), labels matching the Pricing section\n- Bilingual at full parity\n- Feature-coloured as intake (pushes toward intake form)",
       "knownLimitations": [
+        "Example prices in the labels duplicate the Pricing section; they must be updated by hand if a tier amount changes",
         "Examples may go stale; revisit periodically",
         "No CTA button (intentional — the section is messaging, not conversion)"
       ],
@@ -4912,5 +4918,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-28T16:44:24.850Z"
+  "generatedAt": "2026-05-29T11:01:19.873Z"
 }

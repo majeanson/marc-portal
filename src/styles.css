@@ -950,19 +950,6 @@ html:not([data-lang-nudge='en']) .en-nudge {
   font-family: var(--display);
   font-size: 20px;
   letter-spacing: -0.01em;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.vibe__col--do h3::before {
-  content: '✓';
-  color: var(--accent);
-  font-weight: 700;
-}
-.vibe__col--dont h3::before {
-  content: '✗';
-  color: var(--warm);
-  font-weight: 700;
 }
 .vibe__col ul {
   list-style: none;
@@ -1391,34 +1378,16 @@ html:not([data-lang-nudge='en']) .en-nudge {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
-/* Live Quebec wall-clock — sits inside the meta row alongside build hash. */
-.site-footer__qctime {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.site-footer__qctime-label {
-  font-style: italic;
-}
-.site-footer__qctime-value {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-}
 /* Hand-drawn arrow lang switch — sage stroke, scribbled-arrow doodle, the
-   target language code in mono. Sits on its own row at the bottom of the
-   footer so it doesn't compete with the legal/build line. */
-.site-footer__lang-line {
-  margin-top: 4px;
-  display: flex;
-  justify-content: center;
-}
+   target language code in mono. Sits on the meta line beside the copyright +
+   build hash. */
 .site-footer__lang {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   text-decoration: none;
   color: var(--text-soft);
-  padding: 4px 8px;
+  padding: 2px 8px;
   border-radius: 999px;
   transition:
     color 0.18s ease,
@@ -1438,34 +1407,6 @@ html:not([data-lang-nudge='en']) .en-nudge {
 .site-footer__lang-label {
   font-size: 12px;
   letter-spacing: 0.12em;
-}
-
-/* Operator-only shortcut row in the footer (CF Pages + Sentry).
-   Only rendered when realIsAdmin — invisible to non-admin visitors. Styled
-   even quieter than the build line so it reads as "ops chrome" rather than
-   "site content." */
-.site-footer__ops {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-  font-size: 11px;
-  opacity: 0.55;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.site-footer__ops-link {
-  color: inherit;
-  text-decoration: none;
-  border-bottom: 1px dashed var(--border);
-  padding-bottom: 1px;
-  transition:
-    color 0.18s ease,
-    border-color 0.18s ease;
-}
-.site-footer__ops-link:hover {
-  color: var(--accent-warm);
-  border-bottom-color: var(--accent-warm);
 }
 
 /* Showcase page */
@@ -5739,13 +5680,9 @@ button:focus-visible,
     position: relative;
     z-index: 1;
   }
-  /* The stamp is already position:absolute (see .tier__stamp below); only
-     bump its z-index so the shimmer band passes behind it. Including it in
-     the rule above forced it into flow and pushed the price row ~40px down,
-     which made the anchor card's price stop aligning with the others. */
-  .tier--anchor .tier__stamp {
-    z-index: 1;
-  }
+  /* The stamp no longer lives inside the card — it's a .tier__row child (so
+     the card's overflow:hidden can't clip it) and carries its own z-index in
+     the base .tier__stamp rule. Nothing to lift here anymore. */
   @keyframes tier-anchor-shimmer {
     0% {
       left: -45%;
@@ -7807,10 +7744,13 @@ button.intake__progress-step:disabled {
    Left-aligned, wraps on narrow viewports. */
 .hero__actions {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 22px;
-  flex-wrap: wrap;
+  /* Stack vertically: the CTA on its own line, the capacity tag (and the
+     signed-in "my sessions" link) beneath it. The tag used to sit on the
+     same row as the button; it read as a competing second element rather
+     than an annotation, so it now drops underneath. */
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   margin-top: 4px;
 }
 .hero__sessions-link {
@@ -7827,7 +7767,7 @@ button.intake__progress-step:disabled {
   outline: none;
 }
 
-/* Capacity tag — sits next to the primary CTA so the visitor reads
+/* Capacity tag — sits directly beneath the primary CTA so the visitor reads
    capacity state at the moment of clicking. Reads /api/capacity on mount
    via the existing atCap useEffect on Hero. Deliberately NOT a rounded
    status badge: set in mono like the folio/eyebrow voice, with a small
@@ -7868,14 +7808,10 @@ button.intake__progress-step:disabled {
 :root[data-theme='night'] .hero__slot-pill--full {
   color: var(--feat-iterative);
 }
-/* Mobile: the actions row stacks CTA, pill, sessions-link as three rows on
-   narrow widths and the pill was reading as a second-row banner competing
-   with the CTA. Make the pill smaller + quieter so it reads as a small
-   annotation under the CTA, not as a peer element. R3 design pass. */
+/* Mobile: the actions already stack (CTA, pill, sessions-link), but the pill
+   was reading as a banner competing with the CTA. Make it smaller + quieter
+   so it stays a small annotation under the CTA, not a peer element. R3 pass. */
 @media (max-width: 640px) {
-  .hero__actions {
-    gap: 14px;
-  }
   .hero__slot-pill {
     font-size: 10px;
     opacity: 0.78;
@@ -8278,6 +8214,12 @@ button.intake__progress-step:disabled {
      lived in the same plane. */
   top: -18px;
   left: 18px;
+  /* The stamp sits in .tier__row (not the <a>) so the card's overflow:hidden
+     — there to clip the anchor shimmer — can't shave it down to a sliver.
+     z-index lifts it over the card; pointer-events:none lets a click on the
+     sticker fall through to the link underneath. */
+  z-index: 3;
+  pointer-events: none;
   background: var(--accent);
   color: var(--bg);
   font-size: 10.5px;
@@ -8351,34 +8293,6 @@ button.intake__progress-step:disabled {
 }
 .vibe--ledger .vibe__col {
   position: relative;
-}
-/* Hand-drawn ledger marks — red-pen check on the "do" side, charcoal cross
-   on the "don't" side. SVG paths instead of typographic glyphs so the marks
-   read as wobbly napperon doodles rather than UI chrome. Marks sit in the
-   corner at low opacity so they never overlap the words. */
-.vibe--ledger .vibe__mark {
-  position: absolute;
-  top: -14px;
-  right: -10px;
-  width: 110px;
-  height: 110px;
-  color: var(--accent);
-  opacity: 0.24;
-  pointer-events: none;
-  transform: rotate(-6deg);
-}
-.vibe--ledger .vibe__mark--dont {
-  color: #c84242;
-  transform: rotate(8deg);
-  opacity: 0.26;
-}
-/* Night theme — the day red at 26% on a dark surface reads as a bright
-   corner accent (the dark page makes saturated colours pop). Drop to the
-   warmer feature token at lower opacity so it stays a faint affordance,
-   not an emphasis. */
-:root[data-theme='night'] .vibe--ledger .vibe__mark--dont {
-  color: var(--feat-keys);
-  opacity: 0.18;
 }
 .vibe--ledger .vibe__col h3 {
   font-family: var(--display);
@@ -8893,11 +8807,6 @@ button.intake__progress-step:disabled {
   .vibe--ledger {
     padding: 22px 0;
   }
-  .vibe--ledger .vibe__mark {
-    width: 64px;
-    height: 64px;
-    opacity: 0.22;
-  }
   .vibe--ledger .vibe__col li {
     font-size: 15.5px;
   }
@@ -9015,11 +8924,6 @@ button.intake__progress-step:disabled {
   }
   .home .step--editorial p {
     font-size: 16px;
-  }
-  .vibe--ledger .vibe__mark {
-    top: -2px;
-    width: 52px;
-    height: 52px;
   }
   /* Further tighten the header at very narrow widths. */
   .site-header__inner {
@@ -9222,6 +9126,72 @@ button.intake__progress-step:disabled {
   border-bottom-color: var(--accent);
   text-decoration: none;
   outline: none;
+}
+
+/* Featured invite card — always the 4th cell of the strip alongside the three
+   real builds. Dashed (vs the solid project cards) so it reads as an open slot
+   inviting a project, not a project that failed to load. Links into intake. */
+.featured-projects__invite {
+  list-style: none;
+}
+.featured-projects__invite-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  gap: 6px;
+  padding: 24px 22px;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+.featured-projects__invite-link:hover,
+.featured-projects__invite-link:focus-visible {
+  border-color: var(--accent-warm);
+  background: var(--bg-card);
+  transform: translateY(-2px);
+  outline: none;
+}
+.featured-projects__invite-mark {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--accent-warm);
+}
+.featured-projects__invite-eyebrow {
+  margin-top: 4px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+.featured-projects__invite-title {
+  margin: 2px 0 0;
+  font-family: var(--display);
+  font-size: clamp(18px, 2.2vw, 21px);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+.featured-projects__invite-body {
+  margin: 0;
+  color: var(--text-mid);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.featured-projects__invite-cta {
+  margin-top: auto;
+  padding-top: 12px;
+  font-size: 13px;
+  color: var(--accent-warm);
+  transition: transform 0.2s ease;
+}
+.featured-projects__invite-link:hover .featured-projects__invite-cta,
+.featured-projects__invite-link:focus-visible .featured-projects__invite-cta {
+  transform: translateX(2px);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -10794,6 +10764,9 @@ button.intake__progress-step:disabled {
   color: var(--text);
   font-style: italic;
   font-size: 15px;
+  /* The visitor's one-line sketch caption is free text; break a long word so
+     it can't widen the napkin frame past the viewport on a phone. */
+  overflow-wrap: break-word;
 }
 .session-napkin__frame {
   background: #fbf7ec;
@@ -10939,6 +10912,15 @@ button.intake__progress-step:disabled {
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 3px;
+  /* A <button> defaults to text-align:center, so the wrapped second line of a
+     long teaser ("…note vocale →") lands centered while every other line in
+     the form is left-aligned. Pin it left and let it read like body copy.
+     inline-block keeps the click target tight to a short teaser, but still
+     fills the line and wraps left-aligned when the text is long. */
+  display: inline-block;
+  text-align: left;
+  line-height: 1.5;
+  overflow-wrap: break-word;
 }
 .intake__sketch-toggle:hover,
 .intake__sketch-toggle:focus-visible {
@@ -10964,6 +10946,12 @@ button.intake__progress-step:disabled {
   letter-spacing: -0.01em;
   margin: 0;
   color: var(--text);
+  /* It's a flex item in a space-between head; without min-width:0 a long
+     title (or a future translation with a long word) can't shrink and shoves
+     the Hide/Remove actions off the panel. Let it take the line and wrap. */
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-wrap: break-word;
 }
 .intake__sketch-actions {
   display: flex;
@@ -15512,6 +15500,10 @@ a.feature-dot:focus-visible {
   color: var(--text-mid);
   padding-left: 10px;
   border-left: 2px solid var(--border);
+  /* Whisper output is unbounded text — a dictated URL or a long token would
+     otherwise push the message bubble past the viewport on a phone. Break the
+     long word instead, same as .thread__body does for typed messages. */
+  overflow-wrap: break-word;
 }
 .thread__transcript-pending {
   margin: 6px 0 0;
@@ -15552,6 +15544,9 @@ a.feature-dot:focus-visible {
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-mid);
+  /* Same reason as .thread__transcript-text — the transcribed intake note is
+     free text; a long unbroken string must wrap, not overflow the panel. */
+  overflow-wrap: break-word;
 }
 
 /* ─── Site search ─────────────────────────────────────────────────────────
@@ -15838,6 +15833,21 @@ a.feature-dot:focus-visible {
   background: var(--bg-card);
   transform: rotate(-1.5deg);
   color: var(--text-soft);
+  /* The stamp is a "back to home" link (see StudioSign.tsx); strip the anchor
+     defaults and give it a quiet hover so it reads as pressable without
+     becoming a button. */
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+.studio-sign:hover {
+  border-color: var(--text-faint);
+  transform: rotate(0deg);
+}
+.studio-sign:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 .studio-sign--open {
   color: var(--accent);
