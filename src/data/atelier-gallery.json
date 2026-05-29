@@ -126,7 +126,7 @@
       "full": "/atelier/full/phone/root.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 13352,
+      "fullH": 13384,
       "cropped": true
     },
     {
@@ -216,7 +216,7 @@
       "full": "/atelier/full/phone/en.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 12822,
+      "fullH": 12831,
       "cropped": true
     },
     {
@@ -918,7 +918,7 @@
       "full": "/atelier/full/narrow/root.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11604,
+      "fullH": 11614,
       "cropped": true
     },
     {
@@ -1008,7 +1008,7 @@
       "full": "/atelier/full/narrow/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11403,
+      "fullH": 11390,
       "cropped": true
     },
     {
@@ -1710,7 +1710,7 @@
       "full": "/atelier/full/wide/root.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11700,
+      "fullH": 11709,
       "cropped": true
     },
     {
@@ -1800,7 +1800,7 @@
       "full": "/atelier/full/wide/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11499,
+      "fullH": 11486,
       "cropped": true
     },
     {
@@ -2502,7 +2502,7 @@
       "full": "/atelier/full/dark/root.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11700,
+      "fullH": 11709,
       "cropped": true
     },
     {
@@ -2592,7 +2592,7 @@
       "full": "/atelier/full/dark/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11499,
+      "fullH": 11486,
       "cropped": true
     },
     {
