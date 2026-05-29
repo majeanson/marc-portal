@@ -1,6 +1,62 @@
 {
   "features": [
     {
+      "featureKey": "feat-2026-108",
+      "title": "/carte walkthrough film — self-shooting guided tour embedded under the atlas",
+      "status": "active",
+      "domain": "marc-portal/map",
+      "tags": [
+        "map",
+        "marketing",
+        "demo",
+        "i18n",
+        "loi25",
+        "click-to-play"
+      ],
+      "componentFile": "src/components/Map/WalkthroughFilm.tsx",
+      "liveUrl": null,
+      "problem": "The /carte atlas shows the product's structure as a static graph, but a first-time visitor still has to imagine the actual journey (home → intake → login → magic link → /me → a real session with Marc's reply). A demo video would communicate it, but a baked MP4 drifts from the product the moment any copy or layout changes, and a per-language cut doubles the asset. There was no moving demo of the real flow.",
+      "analysis": "WalkthroughFilm renders below MapCanvas on /carte (FR) and /en/map (EN) as a coda — the interactive atlas stays the page's lead. A poster frame (committed capture) shows until an explicit click, which then mounts an iframe of public/walkthrough/player.html. The player animates a camera + cursor over freshly-captured, committed screenshots, reading captions live from timeline.js by ?lang — so one player serves both languages with no per-language video file. Chapter chips re-key the iframe to play the full cut or a single scene (?scene=). The capture pipeline (scripts/walkthrough/) names ANCHORS, never pixels: capture.mjs records each anchor's bounding box from the live DOM into manifest.json, so layout can move and the shot still lands.",
+      "decisions": [
+        {
+          "decision": "Iframe the live player instead of a baked <video>",
+          "rationale": "Captions render live from timeline.js keyed on ?lang, so a single player serves FR + EN. A baked video would need one file per language and would re-render stale the moment copy or styling changed. The iframe player aims a camera over freshly-captured frames, so re-capturing (not re-editing) keeps the tour honest to the product.",
+          "recommendation": "Keep timeline.js pixel-free (anchors only). To re-cut pacing/captions edit timeline.js; to track product changes just re-run npm run walkthrough:capture."
+        },
+        {
+          "decision": "Click-to-play: the iframe only mounts after an explicit click",
+          "rationale": "Defers the player load off the /carte critical path, and means nothing animates for a prefers-reduced-motion visitor until they ask for it. The poster is a committed frame; if it 404s the panel still works (posterFailed fallback).",
+          "recommendation": "If autoplay is ever wanted, gate it behind a matchMedia('(prefers-reduced-motion: reduce)') check, never unconditionally."
+        },
+        {
+          "decision": "Commit frames/ + manifest.json, gitignore video/",
+          "rationale": "The embedded player animates over frames + manifest at runtime, so those must ship to prod — same discipline as the committed e2e visual baselines. The rendered *.webm files are a heavier share/export artifact the embed never loads, so they stay out of git.",
+          "recommendation": "Refresh committed frames with npm run walkthrough:capture and re-commit whenever the app's look changes, the same way visual baselines are regenerated."
+        },
+        {
+          "decision": "CSP-clean player (external player.js, self-hosted fonts)",
+          "rationale": "The player loads under the production _headers CSP with no inline script and no Google Fonts CDN — visitor IP never reaches a third party, holding the Loi 25 line the rest of the site keeps.",
+          "recommendation": "Any new player asset must stay same-origin; do not add a third-party font or script tag to player.html."
+        }
+      ],
+      "successCriteria": "- Renders below the atlas on /carte and /en/map\n- Poster shows until click; click mounts the iframe player on the selected chapter\n- Chapter chips switch scenes (full cut + 6 per-page shorts) and re-key the iframe cleanly\n- Captions render in the visitor's language live (?lang), no per-language video file\n- Poster 404 → panel still works (play button alone)\n- Loads under the production CSP; no third-party font or script\n- FR + EN copy in Québécois register, em-dash-free captions",
+      "knownLimitations": [
+        "Capture is manual (npm run walkthrough:capture) — not yet wired into CI or the build, so committed frames can go stale if the app changes and nobody re-captures. The README carries a CI sketch for automating it against the backend e2e harness.",
+        "The /me and /session frames can only be captured against the Functions backend with a seeded, signed session (the public routes shoot fine against vite preview alone).",
+        "The rendered video/*.webm share clips are gitignored; regenerate locally with npm run walkthrough:video.",
+        "Embedding on /carte shifts the page screenshot — the e2e visual baselines must be regenerated on the PR."
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-29",
+          "reason": "Shipped: guided-tour film embedded on /carte ÷ /en/map with the self-shooting capture pipeline and FR/EN live captions."
+        }
+      ],
+      "lastTransitionDate": "2026-05-29"
+    },
+    {
       "featureKey": "feat-2026-106",
       "title": "Custodian-subscription reconciliation (digest-cron piggyback)",
       "status": "active",
@@ -47,6 +103,51 @@
           "to": "active",
           "date": "2026-05-29",
           "reason": "Shipped as BACKLOG.md B8 / prod-readiness gap #10."
+        }
+      ],
+      "lastTransitionDate": "2026-05-29"
+    },
+    {
+      "featureKey": "feat-2026-107",
+      "title": "Sentry quota watchdog (digest-cron piggyback)",
+      "status": "active",
+      "domain": "marc-portal/observability",
+      "tags": [
+        "observability",
+        "sentry",
+        "cron",
+        "quota",
+        "operator-gated"
+      ],
+      "componentFile": "functions/_lib/sentryQuota.ts",
+      "liveUrl": null,
+      "problem": "Sentry is the practice's only error-reporting processor, on the free plan (~5000 errors/month). A bad deploy that throws on every request burns the quota silently, and once it's exhausted Sentry DROPS events — the one tool that would flag the problem goes blind exactly when it matters. Nothing watched the quota. Closes prod-readiness gap #8.",
+      "analysis": "Two pure helpers + a thin IO wrapper, same shape as the custodian reconciliation. evaluateQuota(used, quota, threshold) decides whether 30-day usage crossed the threshold (guards quota<=0 so a misconfig can't divide-by-zero into an alert storm). sumErrorQuantity(json) extracts the total from a Sentry stats_v2 response, tolerant of a missing/changed shape (returns 0 rather than throwing). checkSentryQuota(env) does the IO: skip when SENTRY_AUTH_TOKEN/SENTRY_ORG unset, timed fetch of /organizations/{org}/stats_v2 (category=error, 30d), evaluate against SENTRY_MONTHLY_ERROR_QUOTA (default 5000), and write one admin_alerts row (kind sentry-quota) when over, deduped to one open alert. Runs from the daily digest cron as housekeeping #5.",
+      "decisions": [
+        {
+          "decision": "Configured monthly quota (default 5000) rather than introspecting Sentry's plan quota",
+          "rationale": "Sentry's actual quota cap lives behind plan/subscription endpoints that vary by tier and are fragile to scrape. A single SENTRY_MONTHLY_ERROR_QUOTA var (defaulting to the free-plan 5000) is robust, obvious, and one edit away from matching a plan change.",
+          "recommendation": "If the plan changes, update SENTRY_MONTHLY_ERROR_QUOTA in wrangler.toml [vars]. If Sentry ships a stable quota endpoint, swap the constant for a live read."
+        },
+        {
+          "decision": "Alert-only, deduped, on the digest cron — no dashboard, no new endpoint",
+          "rationale": "Same reasoning as the custodian reconciliation: lowest surface, no new auth/CSRF path, and the daily digest is where the other housekeeping sweeps already live. One open alert at a time keeps the operator inbox honest.",
+          "recommendation": "If quota pressure becomes a frequent, time-sensitive concern, add a /admin/today tile reading the same evaluation."
+        }
+      ],
+      "successCriteria": "- No-op (skipped:unconfigured) when SENTRY_AUTH_TOKEN or SENTRY_ORG is unset\n- usage >= 80% of quota → over, one admin_alerts row (kind sentry-quota)\n- usage < 80% → no alert\n- over while an open sentry-quota alert exists → no second row\n- quota<=0 misconfig never reports over\n- malformed Sentry response → 0 usage (treated as not-over), no crash\n- a Sentry API failure must not fail the digest",
+      "knownLimitations": [
+        "Quota cap is a configured constant, not read live from Sentry (deliberate — see decisions)",
+        "Threshold is a fixed 80%; not env-tunable (one constant change if it should be)",
+        "Counts category=error only — does not watch transaction/replay/attachment quotas",
+        "Requires a Sentry auth token with org:read; that token + the cron registration are manual setup steps"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-29",
+          "reason": "Shipped as BACKLOG.md B9 / prod-readiness gap #8."
         }
       ],
       "lastTransitionDate": "2026-05-29"
@@ -4969,5 +5070,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-29T19:26:11.689Z"
+  "generatedAt": "2026-05-29T21:50:24.337Z"
 }

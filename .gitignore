@@ -24,6 +24,13 @@ e2e/.cache
 # The manifest src/data/atelier-gallery.json IS committed; these assets aren't.
 public/atelier
 
+# Walkthrough — committed: the source (timeline.js, player.html, player.js) AND
+# the capture output (manifest.json + frames/), so the /carte iframe player
+# ships to prod. Refresh with `npm run walkthrough:capture` and re-commit —
+# same discipline as the e2e visual baselines. Only the heavier rendered
+# videos (a share/export artifact the embed doesn't use) stay out of git.
+public/walkthrough/video/
+
 # Local scratch — preview server log + throwaway screenshot scripts/output.
 *.log
 shot*

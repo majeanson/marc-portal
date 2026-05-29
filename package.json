@@ -32,7 +32,10 @@
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run lac-lint && npm run test:run",
     "db:migrate:local": "wrangler d1 migrations apply marc-portal-db --local",
     "db:migrate:prod": "wrangler d1 migrations apply marc-portal-db --remote",
-    "prod-smoke": "node scripts/prod-smoke.mjs"
+    "prod-smoke": "node scripts/prod-smoke.mjs",
+    "walkthrough:capture": "node scripts/walkthrough/capture.mjs",
+    "walkthrough:video": "node scripts/walkthrough/render-video.mjs",
+    "walkthrough": "npm run walkthrough:capture && npm run walkthrough:video"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
@@ -69,6 +72,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "happy-dom": "^20.9.0",
+    "playwright": "^1.60.0",
     "prettier": "^3.4.2",
     "sharp": "^0.34.5",
     "typescript": "~5.9.3",
@@ -76,6 +80,7 @@
     "vite": "^8.0.1",
     "vite-plugin-checker": "^0.10.0",
     "vitest": "^4.1.6",
+    "wait-on": "^9.0.10",
     "wrangler": "^4.0.0"
   }
 }
