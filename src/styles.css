@@ -1085,6 +1085,39 @@ html:not([data-lang-nudge='en']) .en-nudge {
   height: 14px;
 }
 
+/* ── .surface / .input — shared crisp non-button surfaces ────────────────────
+   The card/panel/tile edge recipe lives here once (consumed by <Surface> or
+   the class directly), so a per-surface rule only owns its own padding, layout,
+   and colour — not the border/radius/shadow. Same single-source-of-truth idea
+   as .btn for buttons. Selected/feature state is layered on top as an inset
+   ring by the consuming rule. */
+.surface {
+  background: var(--bg-card);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
+}
+/* Shared crisp text input. Focus is the accent ring (bg-offset halo) so it
+   tracks the accent axis. Consumed by <Field> or applied directly. */
+.input {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--text);
+  background: var(--bg-section);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
+  padding: 13px 14px;
+  outline: none;
+  transition: box-shadow 0.12s;
+}
+.input:focus {
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+
 /* Steps */
 .steps {
   list-style: none;
