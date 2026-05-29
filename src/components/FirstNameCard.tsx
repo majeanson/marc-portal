@@ -104,7 +104,7 @@ export function FirstNameCard({ lang }: { lang: Lang }) {
           <span className="first-name__label-text mono">{t.label}</span>
           <input
             type="text"
-            className="first-name__input"
+            className="input first-name__input"
             placeholder={t.placeholder}
             value={value}
             maxLength={80}

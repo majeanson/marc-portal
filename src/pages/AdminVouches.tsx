@@ -693,7 +693,7 @@ function VouchEditForm({
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="field__input"
+          className="input field__input"
           maxLength={VOUCH_LIMITS.nameMax}
           required
         />
@@ -706,7 +706,7 @@ function VouchEditForm({
           id={`v-rel-${v.id}`}
           value={rel}
           onChange={(e) => setRel(e.target.value as VouchRelationship)}
-          className="field__input"
+          className="input field__input"
         >
           {VOUCH_RELATIONSHIPS.map((r) => (
             <option key={r} value={r}>
@@ -723,7 +723,7 @@ function VouchEditForm({
           id={`v-body-${v.id}`}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          className="field__input"
+          className="input field__input"
           rows={5}
           maxLength={VOUCH_LIMITS.bodyMax}
           required
@@ -741,7 +741,7 @@ function VouchEditForm({
           type="url"
           value={linkUrl}
           onChange={(e) => setLinkUrl(e.target.value)}
-          className="field__input"
+          className="input field__input"
           maxLength={VOUCH_LIMITS.linkUrlMax}
         />
       </div>

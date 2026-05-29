@@ -1364,7 +1364,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder={t.placeholder}
                   rows={3}
-                  className="field__input thread__input"
+                  className="input field__input thread__input"
                 />
                 {pendingAttachments.length > 0 && (
                   <ul className="thread__attach-pending" aria-label="pending attachments">

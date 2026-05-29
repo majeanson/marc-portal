@@ -86,7 +86,7 @@ export function SessionShowcase({
         <span className="field__label">{t.titleLabel}</span>
         <input
           type="text"
-          className="field__input"
+          className="input field__input"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t.titlePlaceholder}
@@ -97,7 +97,7 @@ export function SessionShowcase({
       <label className="field">
         <span className="field__label">{t.taglineLabel}</span>
         <textarea
-          className="field__input"
+          className="input field__input"
           value={tagline}
           onChange={(e) => setTagline(e.target.value)}
           placeholder={t.taglinePlaceholder}
@@ -110,7 +110,7 @@ export function SessionShowcase({
         <span className="field__label">{t.tierLabel}</span>
         <span className="field__hint">{t.tierHint}</span>
         <select
-          className="field__input"
+          className="input field__input"
           value={tier === null ? '' : String(tier)}
           onChange={(e) => {
             const v = e.target.value

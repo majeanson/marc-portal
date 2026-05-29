@@ -133,7 +133,7 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
       ) : (
         <>
           <textarea
-            className="operator-notes__textarea"
+            className="input operator-notes__textarea"
             value={body}
             onChange={(e) => setBody(e.target.value.slice(0, MAX_CHARS))}
             placeholder={t.placeholder}

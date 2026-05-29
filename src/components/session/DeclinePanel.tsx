@@ -98,7 +98,7 @@ export function DeclinePanel({
           {!note && <p className="mono decline-panel__editor-empty">{copy.declineNoteEmpty}</p>}
           <textarea
             id="decline-note"
-            className="field__input decline-panel__textarea"
+            className="input field__input decline-panel__textarea"
             rows={5}
             value={draft}
             placeholder={copy.declineNoteEditorPlaceholder}

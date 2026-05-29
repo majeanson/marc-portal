@@ -578,7 +578,7 @@ export function MePortal({ lang }: { lang: Lang }) {
               <div className="me-portal__toolbar">
                 <input
                   type="search"
-                  className="me-portal__search field__input"
+                  className="input me-portal__search field__input"
                   placeholder={t.searchPlaceholder}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}

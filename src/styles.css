@@ -3019,24 +3019,6 @@ button.intake__progress-step:focus-visible {
   color: var(--text);
   margin-bottom: -10px;
 }
-.form__input {
-  font-family: var(--mono);
-  font-size: 16px;
-  color: var(--text);
-  background: var(--bg-section);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-  padding: 13px 14px;
-  outline: none;
-  transition: box-shadow 0.12s;
-}
-.form__input:focus {
-  box-shadow:
-    var(--edge-shadow),
-    0 0 0 2px var(--bg),
-    0 0 0 4px var(--accent);
-}
 .form__error {
   margin: 0 0 4px;
   padding: 12px 16px;
@@ -3110,23 +3092,14 @@ button.intake__progress-step:focus-visible {
   color: var(--warm);
   font-weight: 500;
 }
+/* Recipe + accent focus ring come from .input. Kept here: the sans face
+   (vs .input's mono), the card surface, the 12px padding the field layout
+   wants, and resize for the textarea uses. */
 .field__input {
   font-family: var(--sans);
-  font-size: 16px;
-  color: var(--text);
   background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 12px 14px;
   resize: vertical;
-}
-.field__input:focus {
-  outline: none;
-  box-shadow:
-    var(--edge-shadow),
-    0 0 0 2px var(--bg),
-    0 0 0 4px var(--accent);
 }
 .field__input.mono {
   font-family: var(--mono);
@@ -7092,16 +7065,21 @@ button:focus-visible,
   color: var(--text-soft);
   font-size: 14px;
 }
+/* Border/radius/shadow + base font come from .input. Kept here: the fixed
+   narrow width, tight 6px padding, the card surface, the 14px scale, and the
+   outline focus (this field uses an outline, not .input's box-shadow ring). */
 .session-frame__tier3-input {
   flex: 0 0 auto;
   width: 110px;
   padding: 6px 8px;
-  border: 1px solid var(--edge);
   background: var(--bg-card);
-  color: var(--text);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   font-size: 14px;
+}
+/* This field keeps its own outline focus, so cancel .input:focus's accent
+   box-shadow ring (it would otherwise stack underneath the outline, and show
+   on mouse focus where this field showed nothing before). */
+.session-frame__tier3-input:focus {
+  box-shadow: var(--edge-shadow);
 }
 .session-frame__tier3-input:focus-visible {
   outline: 2px solid var(--accent);
@@ -10167,17 +10145,19 @@ button.intake__progress-step:disabled {
   gap: 8px;
   margin-bottom: 12px;
 }
+/* Border/radius/shadow + mono face come from .input. Kept here: the flex
+   sizing so the readonly URL fills the row beside the copy button, the card
+   surface, the tighter 10px padding, and the 13px scale. */
 .share-modal__url {
   flex: 1 1 auto;
   min-width: 0;
   padding: 10px 12px;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   background: var(--bg-card);
-  color: var(--text);
   font-size: 13px;
-  font-family: var(--mono);
+}
+/* Keeps its own outline focus; cancel .input:focus's box-shadow ring. */
+.share-modal__url:focus {
+  box-shadow: var(--edge-shadow);
 }
 .share-modal__url:focus-visible {
   outline: 2px solid var(--accent-soft);
@@ -11023,20 +11003,24 @@ button.intake__progress-step:disabled {
   color: var(--text-soft);
   margin-bottom: 6px;
 }
+/* Border/radius/shadow come from .input. Kept here: full width, the card
+   surface, the inherited (non-mono) face, the prose line-height + resize +
+   min-height for a comfortable sketch caption box. */
 .napkin__desc-input {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   background: var(--bg-card);
-  color: var(--text);
   font: inherit;
   font-size: 16px;
   line-height: 1.5;
   resize: vertical;
   min-height: 60px;
   transition: box-shadow 140ms ease;
+}
+/* Keeps its own outline focus; cancel .input:focus's box-shadow ring so the
+   two don't stack. */
+.napkin__desc-input:focus {
+  box-shadow: var(--edge-shadow);
 }
 .napkin__desc-input:focus-visible {
   border-color: var(--accent);
@@ -12887,18 +12871,17 @@ button.intake__progress-step:disabled {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+/* Border/radius/shadow + base scale come from .input. Kept here: the sans
+   face, the bare --bg surface this card uses, and the tighter 10px padding. */
 .first-name__input {
   font-family: var(--sans);
-  font-size: 16px;
-  color: var(--text);
   background: var(--bg);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   padding: 10px 12px;
 }
+/* Keeps its border-color focus; cancel .input:focus's box-shadow ring. */
 .first-name__input:focus {
   outline: none;
+  box-shadow: var(--edge-shadow);
   border-color: var(--accent);
 }
 .first-name__input:disabled {
@@ -16879,6 +16862,9 @@ a.feature-dot:focus-visible {
   margin: 6px 0;
   color: var(--text-soft);
 }
+/* Border/radius/shadow + section surface come from .input. Kept here: full
+   width, the tall min-height, the inherited (non-mono) face at 14px, prose
+   line-height, and resize for a roomy notes box. */
 .operator-notes__textarea {
   width: 100%;
   min-height: 120px;
@@ -16886,12 +16872,11 @@ a.feature-dot:focus-visible {
   font: inherit;
   font-size: 14px;
   line-height: 1.5;
-  background: var(--bg-section);
-  color: var(--text);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
   resize: vertical;
+}
+/* Keeps its own outline focus; cancel .input:focus's box-shadow ring. */
+.operator-notes__textarea:focus {
+  box-shadow: var(--edge-shadow);
 }
 .operator-notes__textarea:focus-visible {
   outline: 2px solid var(--accent);

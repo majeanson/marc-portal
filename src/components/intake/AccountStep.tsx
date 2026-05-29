@@ -101,7 +101,7 @@ export function AccountStep({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="ex: marie@drummondville-pavage.qc.ca"
-          className="field__input mono"
+          className="input field__input mono"
         />
       </label>
 
@@ -113,7 +113,7 @@ export function AccountStep({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t.namePlaceholder}
-          className="field__input"
+          className="input field__input"
         />
       </label>
 

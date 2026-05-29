@@ -230,7 +230,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={ts.fields.namePlaceholder}
-                className="field__input"
+                className="input field__input"
                 autoComplete="name"
                 maxLength={VOUCH_LIMITS.nameMax}
                 required
@@ -252,7 +252,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={ts.fields.emailPlaceholder}
-                className="field__input"
+                className="input field__input"
                 autoComplete="email"
                 maxLength={VOUCH_LIMITS.emailMax}
                 required
@@ -273,7 +273,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 id="v-rel"
                 value={relationship}
                 onChange={(e) => setRelationship(e.target.value as VouchRelationship | '')}
-                className="field__input"
+                className="input field__input"
                 required
               >
                 <option value="">—</option>
@@ -299,7 +299,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder={ts.fields.bodyPlaceholder}
-                className="field__input"
+                className="input field__input"
                 rows={6}
                 maxLength={VOUCH_LIMITS.bodyMax}
                 required
@@ -322,7 +322,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 placeholder={ts.fields.linkPlaceholder}
-                className="field__input"
+                className="input field__input"
                 maxLength={VOUCH_LIMITS.linkUrlMax}
               />
               <p className="field__hint">{ts.fields.linkHint}</p>
