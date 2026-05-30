@@ -970,7 +970,7 @@ html:not([data-lang-nudge='en']) .en-nudge {
   font-size: 16px;
   background: var(--accent);
   box-shadow:
-    var(--edge-shadow),
+    0 2px 0 var(--edge),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
   transition:
     background 0.1s,
@@ -1029,7 +1029,7 @@ html:not([data-lang-nudge='en']) .en-nudge {
   color: var(--on-accent);
   background: var(--accent);
   box-shadow:
-    var(--edge-shadow),
+    0 2px 0 var(--edge),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
   cursor: pointer;
   transition:
@@ -4326,15 +4326,14 @@ button.intake__progress-step:focus-visible {
   margin-top: 2px;
   flex-shrink: 0;
 }
+/* Ghost keycap — inherits the crisp --edge border + bottom shadow from the
+   base; only the fill changes. */
 .me-portal__pay-btn--secondary {
-  background: var(--bg-app);
+  background: var(--bg-card);
   color: var(--text);
-  border: 1px solid var(--text);
 }
-.me-portal__pay-btn--secondary:hover:not(:disabled),
-.me-portal__pay-btn--secondary:focus-visible:not(:disabled) {
-  background: var(--text);
-  color: var(--bg-app);
+.me-portal__pay-btn--secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
 }
 .me-portal__pay-acked-on {
   display: block;
@@ -5481,23 +5480,43 @@ button.intake__progress-step:focus-visible {
 }
 
 /* Primary CTA — used by tier payments + custodian activate. */
+/* Crisp keycap like every other primary action (was a 999px pill — the one
+   shape that didn't match the reskin). Keeps its mono-uppercase identity. */
 .me-portal__pay-btn {
   appearance: none;
-  border: 1px solid var(--accent-warm);
-  background: var(--accent-warm);
-  color: #fff;
-  padding: 7px 16px;
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--edge);
+  background: var(--accent);
+  color: var(--on-accent);
+  height: var(--btn-h);
+  padding: 0 15px;
+  border-radius: var(--btn-radius);
+  box-shadow:
+    0 2px 0 var(--edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
   font: 600 12.5px/1 var(--mono);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: filter 120ms ease;
+  transition:
+    background 0.1s,
+    transform 0.04s,
+    box-shadow 0.1s;
 }
-.me-portal__pay-btn:hover:not(:disabled),
+.me-portal__pay-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent), #fff 8%);
+}
 .me-portal__pay-btn:focus-visible:not(:disabled) {
-  filter: brightness(1.08);
   outline: none;
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+.me-portal__pay-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .me-portal__pay-btn:disabled {
   opacity: 0.6;
@@ -7984,22 +8003,15 @@ button.intake__progress-step:disabled {
   }
 }
 
-/* Home-page CTA — slightly larger padding than the shared button. No
-   wax-stamp shadow here: the open hero is calm and flat, the paper is
-   the surface, the button doesn't pretend to lift off it. Hover is
-   the colour shift only — no lift, no shadow. The shared .hero__cta
-   carries those on other pages where the elevated look is warranted;
-   on the home it's an AI-y tell, so it gets explicitly disabled here. */
+/* Home-page CTA — slightly larger padding than the shared .hero__cta, but the
+   SAME crisp keycap edge as every other button. The old rule killed the shadow
+   here because the pre-reskin lift was a soft AI-y drop shadow; the reskin
+   replaced that with the hard 1px bottom edge, which is now the house look — so
+   the home CTA keeps it and matches the header controls. Only the size differs. */
 .home .hero__cta {
   padding: 16px 26px;
   font-size: 16px;
   letter-spacing: 0.005em;
-  box-shadow: none;
-}
-.home .hero__cta:hover {
-  transform: none;
-  box-shadow: none;
-  background: var(--accent-warm);
 }
 /* ── HowItWorks — editorial steps ─────────────────────────────────────────── */
 .home .steps--editorial {
