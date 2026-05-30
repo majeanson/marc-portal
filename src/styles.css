@@ -91,13 +91,19 @@
 }
 
 :root[data-theme='night'] {
-  --bg: #181613;
-  --bg-section: #1e1b17;
-  --bg-card: #25211c;
-  --bg-hover: #2e2924;
-  --bg-active: #2a3a30;
-  --border: #3a3530;
-  --border-soft: #2c2823;
+  /* Lifted slate, not flat near-black (Sentry-style: the dark surface reads
+     "raised", not a void). Cooler + lighter than the old warm-brown ramp, with
+     a faint sage cast so the default night carries its accent on the surface
+     itself, not only on the marks. Warm-cream TEXT below is kept — warm type on
+     a cool-dark surface is the pairing we want; only the surfaces lifted.
+     The violet accent overrides these with a violet cast further down. */
+  --bg: #1a1922;
+  --bg-section: #211f2b;
+  --bg-card: #2a2835;
+  --bg-hover: #332f3f;
+  --bg-active: #2c3a34;
+  --border: #423d52;
+  --border-soft: #2f2c3a;
   --text: #f3ecd9;
   --text-mid: #c9c0aa;
   --text-soft: #8d8674;
@@ -169,10 +175,20 @@
   --accent-warm: #c2adff;
   --accent-soft: #2c2350;
   --status-active: #9d83ff;
+  /* Violet-cast surfaces (Sentry's signature): when the accent is violet, the
+     dark surface picks up a faint violet tint instead of the default sage cast,
+     so the whole UI reads violet, not just the buttons. Same lightness ramp as
+     the default night, hue shifted toward the accent. */
+  --bg: #1b1726;
+  --bg-section: #221d31;
+  --bg-card: #2b2540;
+  --bg-hover: #342c4c;
+  --border: #463c63;
+  --border-soft: #2f2942;
 }
 /* Sticky header glass — re-tinted in night so the blur doesn't read white. */
 :root[data-theme='night'] .site-header {
-  background: rgba(24, 22, 19, 0.86);
+  background: rgba(26, 25, 34, 0.86);
 }
 /* Paper grain — the cream paper grain reads wrong on dark bg; soften it. */
 :root[data-theme='night'] .home::before {
@@ -482,7 +498,7 @@ p {
 }
 
 :root[data-theme='night'] .session-subheader {
-  background: rgba(24, 22, 19, 0.86);
+  background: rgba(26, 25, 34, 0.86);
 }
 
 @media (max-width: 1180px) {
@@ -1759,15 +1775,16 @@ html:not([data-lang-nudge='en']) .en-nudge {
 .intake__progress-step {
   display: inline-block;
   padding: 5px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   color: var(--text-soft);
   font-family: var(--display);
   font-weight: 500;
   font-size: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
-  background: transparent;
+  background: var(--bg-card);
 }
 button.intake__progress-step {
   cursor: pointer;
