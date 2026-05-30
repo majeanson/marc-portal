@@ -970,7 +970,7 @@ html:not([data-lang-nudge='en']) .en-nudge {
   font-size: 16px;
   background: var(--accent);
   box-shadow:
-    var(--edge-shadow),
+    0 2px 0 var(--edge),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
   transition:
     background 0.1s,
@@ -1029,7 +1029,7 @@ html:not([data-lang-nudge='en']) .en-nudge {
   color: var(--on-accent);
   background: var(--accent);
   box-shadow:
-    var(--edge-shadow),
+    0 2px 0 var(--edge),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
   cursor: pointer;
   transition:
@@ -5493,7 +5493,7 @@ button.intake__progress-step:focus-visible {
   padding: 0 15px;
   border-radius: var(--btn-radius);
   box-shadow:
-    var(--edge-shadow),
+    0 2px 0 var(--edge),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
   font: 600 12.5px/1 var(--mono);
   letter-spacing: 0.04em;
