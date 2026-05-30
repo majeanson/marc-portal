@@ -1775,15 +1775,16 @@ html:not([data-lang-nudge='en']) .en-nudge {
 .intake__progress-step {
   display: inline-block;
   padding: 5px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   color: var(--text-soft);
   font-family: var(--display);
   font-weight: 500;
   font-size: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
-  background: transparent;
+  background: var(--bg-card);
 }
 button.intake__progress-step {
   cursor: pointer;
