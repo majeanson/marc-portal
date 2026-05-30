@@ -317,7 +317,7 @@ export function TypeForm({
                   onChange={(e) => setCaption(e.target.value)}
                   placeholder={tNapkin.descPlaceholder}
                   rows={2}
-                  className="napkin__desc-input"
+                  className="input napkin__desc-input"
                 />
               </label>
             </div>
@@ -378,7 +378,7 @@ export function TypeForm({
                     }
                     placeholder={tMedia.intake.transcriptPlaceholder}
                     rows={4}
-                    className="napkin__desc-input"
+                    className="input napkin__desc-input"
                   />
                 </label>
               ) : (
@@ -456,7 +456,7 @@ function FieldControl({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="field__input"
+          className="input field__input"
         />
         {hint && <span className="field__hint">{hint}</span>}
       </label>
@@ -473,7 +473,7 @@ function FieldControl({
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="field__input mono"
+          className="input field__input mono"
         >
           <option value="">—</option>
           {field.options?.map((opt) => (
@@ -524,7 +524,7 @@ function FieldControl({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="field__input"
+        className="input field__input"
       />
       {hint && <span className="field__hint">{hint}</span>}
     </label>

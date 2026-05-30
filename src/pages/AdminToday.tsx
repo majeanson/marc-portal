@@ -329,7 +329,7 @@ export function AdminToday({ lang }: { lang: Lang }) {
 function CapacityPanel({ lang, t, health }: { lang: Lang; t: CopyT; health: SystemHealthEntry }) {
   const { active, triage, activeCap, triageCap } = health.capacity
   return (
-    <section className="admin-today__panel">
+    <section className="surface admin-today__panel">
       <h2 className="admin-today__panel-title mono">{t.capacityHeading}</h2>
       <div className="admin-today__capacity">
         <CapacityCell label={t.capacityActive} n={active} cap={activeCap} lang={lang} />
@@ -353,7 +353,7 @@ function CapacityCell({
 }) {
   const full = n >= cap
   return (
-    <div className={`admin-today__cap-cell${full ? ' admin-today__cap-cell--full' : ''}`}>
+    <div className={`surface admin-today__cap-cell${full ? ' admin-today__cap-cell--full' : ''}`}>
       <div className="mono admin-today__cap-label">{label}</div>
       <div className="admin-today__cap-figure">
         {n}
@@ -379,7 +379,7 @@ function LiveSessionsPanel({
   nowMs: number
 }) {
   return (
-    <section className="admin-today__panel">
+    <section className="surface admin-today__panel">
       <h2 className="admin-today__panel-title mono">
         {t.sessionsHeading} <span className="admin-today__count">({entries.length})</span>
       </h2>
@@ -430,7 +430,7 @@ function SessionRow({
         ? { label: t.lastReply, atS: lastMarcMessageAt, urgent: false }
         : null
   return (
-    <li className={`admin-today__session admin-today__session--${nextAction.severity}`}>
+    <li className={`surface admin-today__session admin-today__session--${nextAction.severity}`}>
       <Link to={href} className="admin-today__session-link">
         <div className="admin-today__session-head">
           <span className="mono admin-today__session-status">{statusLabel}</span>
@@ -502,7 +502,7 @@ function OverduePaymentsPanel({
   langPrefix: string
 }) {
   return (
-    <section className="admin-today__panel">
+    <section className="surface admin-today__panel">
       <h2 className="admin-today__panel-title mono">
         {t.overdueHeading} <span className="admin-today__count">({rows.length})</span>
       </h2>
@@ -512,7 +512,10 @@ function OverduePaymentsPanel({
       ) : (
         <ul className="admin-today__rows">
           {rows.map((r) => (
-            <li key={`${r.sessionId}-${r.installmentLabel ?? 'one'}`} className="admin-today__row">
+            <li
+              key={`${r.sessionId}-${r.installmentLabel ?? 'one'}`}
+              className="surface admin-today__row"
+            >
               <Link to={`${langPrefix}/session/${r.sessionId}`} className="admin-today__row-link">
                 <span className="mono admin-today__row-email">{r.email}</span>
                 <span className="mono admin-today__row-amount">
@@ -539,7 +542,7 @@ function SlaBreachesPanel({
   langPrefix: string
 }) {
   return (
-    <section className="admin-today__panel">
+    <section className="surface admin-today__panel">
       <h2 className="admin-today__panel-title mono">
         {t.slaHeading} <span className="admin-today__count">({rows.length})</span>
       </h2>
@@ -549,7 +552,7 @@ function SlaBreachesPanel({
       ) : (
         <ul className="admin-today__rows">
           {rows.map((r) => (
-            <li key={r.sessionId} className="admin-today__row admin-today__row--urgent">
+            <li key={r.sessionId} className="surface admin-today__row admin-today__row--urgent">
               <Link
                 to={`${langPrefix}/admin/inbox/${r.sessionId}`}
                 className="admin-today__row-link"
@@ -576,7 +579,7 @@ function UnansweredPanel({
   langPrefix: string
 }) {
   return (
-    <section className="admin-today__panel">
+    <section className="surface admin-today__panel">
       <h2 className="admin-today__panel-title mono">
         {t.unansweredHeading} <span className="admin-today__count">({rows.length})</span>
       </h2>
@@ -586,7 +589,7 @@ function UnansweredPanel({
       ) : (
         <ul className="admin-today__rows">
           {rows.map((r) => (
-            <li key={r.sessionId} className="admin-today__row admin-today__row--urgent">
+            <li key={r.sessionId} className="surface admin-today__row admin-today__row--urgent">
               <Link to={`${langPrefix}/session/${r.sessionId}`} className="admin-today__row-link">
                 <span className="mono admin-today__row-email">{r.email}</span>
                 <span className="mono admin-today__row-age">{formatAge(r.ageSeconds, t)}</span>
@@ -621,14 +624,14 @@ function SystemHealthPanel({
     health.openAdminAlerts === 0 &&
     !health.digestStale
   return (
-    <section className="admin-today__panel">
+    <section className="surface admin-today__panel">
       <h2 className="admin-today__panel-title mono">{t.healthHeading}</h2>
       {allClear ? (
         <p className="admin-today__empty">{t.healthAllGood}</p>
       ) : (
         <ul className="admin-today__metrics">
           {health.digestStale && (
-            <li className="admin-today__metric admin-today__metric--urgent">
+            <li className="surface admin-today__metric admin-today__metric--urgent">
               <div className="mono admin-today__metric-label">{t.digestStaleHeading}</div>
               <div className="admin-today__metric-figure">
                 {health.lastDigestAtS === null
@@ -640,7 +643,7 @@ function SystemHealthPanel({
             </li>
           )}
           {(health.outboxPending > 0 || health.outboxStuck > 0) && (
-            <li className="admin-today__metric">
+            <li className="surface admin-today__metric">
               <div className="mono admin-today__metric-label">{t.healthOutbox}</div>
               <div className="admin-today__metric-figure">
                 {health.outboxPending}
@@ -656,7 +659,7 @@ function SystemHealthPanel({
             </li>
           )}
           {(health.emailBouncesLast7d > 0 || health.emailComplaintsLast7d > 0) && (
-            <li className="admin-today__metric">
+            <li className="surface admin-today__metric">
               <div className="mono admin-today__metric-label">{t.healthEmail}</div>
               <div className="admin-today__metric-figure">
                 {health.emailBouncesLast7d}{' '}
@@ -672,7 +675,7 @@ function SystemHealthPanel({
             </li>
           )}
           {health.openAdminAlerts > 0 && (
-            <li className="admin-today__metric admin-today__metric--urgent">
+            <li className="surface admin-today__metric admin-today__metric--urgent">
               <div className="mono admin-today__metric-label">{t.healthAlerts}</div>
               <div className="admin-today__metric-figure">{health.openAdminAlerts}</div>
             </li>
@@ -693,7 +696,7 @@ function CustodianPanel({
   langPrefix: string
 }) {
   return (
-    <section className="admin-today__panel">
+    <section className="surface admin-today__panel">
       <h2 className="admin-today__panel-title mono">{t.custodianHeading}</h2>
       <div className="admin-today__custodian-grid">
         <div className="admin-today__custodian-col">
@@ -705,7 +708,7 @@ function CustodianPanel({
           ) : (
             <ul className="admin-today__rows">
               {alerts.pastDue.map((r) => (
-                <li key={r.sessionId} className="admin-today__row admin-today__row--urgent">
+                <li key={r.sessionId} className="surface admin-today__row admin-today__row--urgent">
                   <Link
                     to={`${langPrefix}/session/${r.sessionId}`}
                     className="admin-today__row-link"
@@ -726,7 +729,7 @@ function CustodianPanel({
           ) : (
             <ul className="admin-today__rows">
               {alerts.recentSwitches.map((r) => (
-                <li key={r.sessionId} className="admin-today__row">
+                <li key={r.sessionId} className="surface admin-today__row">
                   <Link
                     to={`${langPrefix}/session/${r.sessionId}`}
                     className="admin-today__row-link"

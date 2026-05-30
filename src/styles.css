@@ -32,6 +32,25 @@
   --radius: 12px;
   --radius-lg: 16px;
 
+  /* Crisp "physical object" edge — the design language shared by every
+     pressable/raised surface (buttons, cards, inputs, chips, ledger tags).
+     One recipe: a 1px hard border + a 1px hard bottom shadow. No soft drop
+     shadow, no gradient, no glow — the hard bottom edge is what makes a
+     surface read as a keycap set onto the paper rather than floating above
+     it. --edge is true black on the light surface, near-black on dark (where
+     true black would disappear into the dark bg). Press-down (active) drops
+     the bottom shadow and nudges +1px, so the object presses into its own
+     edge. */
+  --edge: #000;
+  --edge-shadow: 0 1px 0 var(--edge);
+  --btn-h: 34px;
+  --btn-radius: 6px;
+  /* Text colour ON a filled accent surface. White reads on the deep day
+     accents; at night the accent flips light (light sage / bright violet) so
+     white falls below AA — night overrides this to a dark ink. One token
+     keeps every primary button + CTA legible across both axes. */
+  --on-accent: #fff;
+
   --max-w: 880px;
   --gutter: 24px;
 
@@ -119,7 +138,37 @@
   --feat-shipped-soft: #173733;
   --feat-meta: #9aa7b4;
   --feat-meta-soft: #2a3038;
+  /* Near-black edge on the dark surface: true #000 would vanish into the
+     dark bg, so the hard border is a hair off-black, dark enough to read as
+     a recessed keycap edge against the raised card surface. */
+  --edge: #0a0613;
+  /* Dark ink for text on the light night accents (light sage / bright
+     violet) — white would fail AA there. */
+  --on-accent: #14110c;
   color-scheme: dark;
+}
+
+/* ── Accent axis (orthogonal to day/night) ───────────────────────────────────
+   Surface tokens above are owned by data-theme (day/night). The ACCENT — the
+   signature colour worn by buttons, links, and primary marks — is a SEPARATE
+   axis set by data-accent, so each accent works in both day and night. Sage is
+   the default (defined inline in :root / night above); data-accent='sage' is a
+   no-op alias. Adding an accent = one day block + one night block here and a
+   chip in the picker, nothing else. The seven --feat-* dot hues are a separate
+   taxonomy and intentionally do NOT track the accent. See
+   src/components/AccentToggle.tsx + public/theme-bootstrap.js
+   (marc-portal:accent). */
+:root[data-accent='violet'] {
+  --accent: #6c45c9; /* violet primary (day) */
+  --accent-warm: #54339c; /* deeper — hover/headings on accent */
+  --accent-soft: #e8ddf7;
+  --status-active: #6c45c9;
+}
+:root[data-theme='night'][data-accent='violet'] {
+  --accent: #9d83ff; /* brighter so it reads on the dark surface */
+  --accent-warm: #c2adff;
+  --accent-soft: #2c2350;
+  --status-active: #9d83ff;
 }
 /* Sticky header glass — re-tinted in night so the blur doesn't read white. */
 :root[data-theme='night'] .site-header {
@@ -811,26 +860,80 @@ html:not([data-lang-nudge='en']) .en-nudge {
   }
 }
 
+/* Accent picker — the second theme axis (sage default | violet | …). A row of
+   crisp swatch keycaps, the same 1px hard edge + bottom shadow as a button so
+   it reads as part of the same control family. The chosen swatch wears a
+   neutral ink ring (selected ≠ focused); focus is the accent ring. */
+.accent-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.accent-toggle__swatch {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 5px;
+  border: 1px solid var(--edge);
+  background: var(--swatch);
+  box-shadow: var(--edge-shadow);
+  cursor: pointer;
+  transition:
+    transform 0.04s,
+    box-shadow 0.1s,
+    filter 0.1s;
+}
+.accent-toggle__swatch:hover {
+  filter: brightness(1.08);
+}
+.accent-toggle__swatch:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+.accent-toggle__swatch--active {
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 3px var(--text);
+}
+.accent-toggle__swatch:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .accent-toggle__swatch {
+    transition: none;
+  }
+}
+
+/* Crisp segmented control: a single hard-edged keycap split into FR/EN, the
+   active segment filled with the accent. Segments butt together (no gap) so it
+   reads as one physical switch, not two pills. */
 .lang {
   display: inline-flex;
-  gap: 4px;
+  gap: 0;
   font-family: var(--display);
   font-size: 13px;
-  background: var(--bg-hover);
-  padding: 3px;
-  border-radius: 999px;
+  background: var(--bg-card);
+  padding: 2px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
 }
 .lang a {
-  padding: 5px 12px;
+  padding: 4px 11px;
   border: none;
-  border-radius: 999px;
+  border-radius: 4px;
   color: var(--text-soft);
   font-weight: 600;
 }
 .lang a.active {
-  color: var(--text);
-  background: var(--bg-card);
-  box-shadow: 0 1px 3px rgba(31, 29, 24, 0.08);
+  color: var(--on-accent);
+  background: var(--accent);
 }
 
 /* Hero — base styles. `.hero` is only worn by the home hero (one
@@ -847,58 +950,172 @@ html:not([data-lang-nudge='en']) .en-nudge {
   color: var(--text);
   margin-bottom: 18px;
 }
+/* The shared primary CTA. Crisp design language: a 1px hard --edge border, a
+   1px hard bottom shadow, and a 1px inner top highlight — the keycap recipe.
+   No soft drop shadow, no lift-on-hover (that read AI-y). Hover lightens the
+   fill ~8% (color-mix, accent-agnostic so it works for any accent); active
+   presses +1px into its own bottom edge. Slightly taller than the base .btn
+   because it's the page's lead action. */
 .hero__cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-  padding: 14px 22px;
-  border: 1.5px solid var(--accent);
-  border-radius: var(--radius);
-  color: #fff;
+  padding: 13px 22px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  color: var(--on-accent);
   font-family: var(--display);
   font-weight: 600;
   font-size: 16px;
   background: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
   transition:
-    background 0.15s,
-    transform 0.08s,
-    box-shadow 0.15s;
+    background 0.1s,
+    transform 0.04s,
+    box-shadow 0.1s;
 }
 .hero__cta:hover {
-  background: var(--accent-warm);
-  border-color: var(--accent-warm);
-  color: #fff;
+  background: color-mix(in srgb, var(--accent), #fff 8%);
+  color: var(--on-accent);
   text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(61, 110, 78, 0.25);
+}
+.hero__cta:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .hero__cta:focus-visible {
-  outline: 2px solid var(--accent-warm);
-  outline-offset: 3px;
+  outline: none;
+  /* keep the hard bottom edge, then float a 2px accent ring above the border,
+     offset by a bg-coloured ring so it reads as a halo, not a second border. */
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
   text-decoration: none;
 }
-/* Night-mode contrast fix: the day-mode CTA is white text on deep sage
-   (#3d6e4e → high contrast). At night, --accent flips to light sage
-   (#87bd97) and white text on it falls to ~1.6:1 — fails AA. Swap text to
-   the dark night-bg ink so the contrast is high on the light surface.
-   R3 design pass flagged this. */
-:root[data-theme='night'] .hero__cta,
-:root[data-theme='night'] .hero__cta:hover {
-  color: var(--bg);
-}
 
-/* Primary CTA — promoted per §2.2(a). Larger, slightly elevated, more
-   typographic weight. Only applied on the hero so we don't bulk up the
-   same .hero__cta class used elsewhere (e.g. /me, /handoff). */
+/* Primary CTA — the page lead. Larger + more typographic weight; same crisp
+   edge (no elevation shadow). Only on the hero so the shared .hero__cta used
+   elsewhere (/me, /handoff) stays compact. */
 .hero__cta--primary {
-  padding: 18px 28px;
+  padding: 16px 28px;
   font-size: 18px;
   letter-spacing: 0.01em;
-  box-shadow: 0 4px 12px rgba(61, 110, 78, 0.18);
 }
-.hero__cta--primary:hover {
-  box-shadow: 0 8px 22px rgba(61, 110, 78, 0.28);
+
+/* ── .btn — the canonical crisp button (Sentry keycap) ───────────────────────
+   The reusable button used for new/secondary actions across the app. Same
+   edge recipe as .hero__cta but compact (34px), so a row of them reads as a
+   keyboard, not a stack of pills. Primary = filled accent; --ghost = raised
+   card surface. Border + bottom-shadow + radius are identical on both so
+   every button reads as the same physical object, only the fill changes.
+   Icons inside should be stroke-only, 14px (stroke-width 2.4 for + / →). */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: var(--btn-h);
+  padding: 0 13px;
+  border-radius: var(--btn-radius);
+  border: 1px solid var(--edge);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13.5px;
+  line-height: 1;
+  color: var(--on-accent);
+  background: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    transform 0.04s,
+    box-shadow 0.1s;
+}
+.btn:hover {
+  background: color-mix(in srgb, var(--accent), #fff 8%);
+  text-decoration: none;
+}
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+/* Secondary: raised card surface, same hard edge. The inner highlight is
+   fainter (.04) so it doesn't read as glossy on the quiet surface. */
+.btn--ghost {
+  background: var(--bg-card);
+  color: var(--text);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.btn--ghost:hover {
+  background: var(--bg-hover);
+}
+.btn--ghost:active {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+.btn--ghost:focus-visible {
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+/* Stroke-only icon sizing for the verbs that sit in buttons. */
+.btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── .surface / .input — shared crisp non-button surfaces ────────────────────
+   The card/panel/tile edge recipe lives here once (consumed by <Surface> or
+   the class directly), so a per-surface rule only owns its own padding, layout,
+   and colour — not the border/radius/shadow. Same single-source-of-truth idea
+   as .btn for buttons. Selected/feature state is layered on top as an inset
+   ring by the consuming rule. */
+.surface {
+  background: var(--bg-card);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
+}
+/* Shared crisp text input. Focus is the accent ring (bg-offset halo) so it
+   tracks the accent axis. Consumed by <Field> or applied directly. */
+.input {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--text);
+  background: var(--bg-section);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
+  padding: 13px 14px;
+  outline: none;
+  transition: box-shadow 0.12s;
+}
+.input:focus {
+  box-shadow:
+    var(--edge-shadow),
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
 }
 
 /* Steps */
@@ -911,9 +1128,6 @@ html:not([data-lang-nudge='en']) .en-nudge {
   gap: 16px;
 }
 .step {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 20px;
 }
 .step__num {
@@ -974,9 +1188,6 @@ html:not([data-lang-nudge='en']) .en-nudge {
   gap: 12px;
 }
 .tier {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 20px;
 }
 .tier--anchor {
@@ -1029,8 +1240,9 @@ html:not([data-lang-nudge='en']) .en-nudge {
   padding: 8px 14px;
   background: transparent;
   color: var(--text);
-  border: 1px solid var(--border-soft);
-  border-radius: 4px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   cursor: pointer;
 }
 .me-portal__danger-btn:hover {
@@ -1484,13 +1696,7 @@ html:not([data-lang-nudge='en']) .en-nudge {
 .intake__sheet {
   margin-top: 18px;
   padding: 32px 36px 36px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
   border-left: 3px solid var(--feat-intake);
-  border-radius: var(--radius-lg);
-  box-shadow:
-    0 1px 2px rgba(31, 29, 24, 0.04),
-    0 8px 24px rgba(31, 29, 24, 0.06);
 }
 @media (max-width: 600px) {
   .intake__sheet {
@@ -1531,7 +1737,8 @@ html:not([data-lang-nudge='en']) .en-nudge {
   padding: 14px 18px;
   background: var(--accent-soft);
   border: 1px solid var(--accent);
-  border-radius: var(--radius);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   font-size: 14px;
   color: var(--text);
 }
@@ -1622,7 +1829,8 @@ button.intake__progress-step:focus-visible {
   padding: 18px 20px;
   background: var(--accent-soft);
   border: 1px solid var(--accent);
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
 }
 .intake__draft-prompt-title {
   font-family: var(--display);
@@ -1663,9 +1871,6 @@ button.intake__progress-step:focus-visible {
 .intake__signin {
   margin: 8px 0 24px;
   padding: 12px 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   font-size: 15px;
   color: var(--text-mid);
   display: flex;
@@ -1692,7 +1897,8 @@ button.intake__progress-step:focus-visible {
   margin: 8px 0 16px;
   background: var(--accent-soft, var(--bg-card));
   border: 1px solid var(--accent, var(--border));
-  border-radius: var(--radius);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   max-width: 62ch;
 }
 .intake__signed-in-check {
@@ -1753,11 +1959,7 @@ button.intake__progress-step:focus-visible {
 .page__panel {
   width: 100%;
   max-width: 520px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   padding: 36px 36px 32px;
-  box-shadow: 0 4px 16px rgba(31, 29, 24, 0.04);
 }
 .page__panel h1 {
   font-size: clamp(26px, 3.4vw, 32px);
@@ -2141,8 +2343,9 @@ button.intake__progress-step:focus-visible {
     align-items: center;
     min-height: 40px;
     padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border: 1px solid var(--edge);
+    border-radius: var(--btn-radius);
+    box-shadow: var(--edge-shadow);
     background: var(--bg);
     color: var(--text-mid);
     font-size: 12px;
@@ -2320,9 +2523,6 @@ button.intake__progress-step:focus-visible {
 .admin-block {
   margin-bottom: 36px;
   padding: 24px 26px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
 }
 .admin-block h2 {
   font-size: 18px;
@@ -2362,8 +2562,9 @@ button.intake__progress-step:focus-visible {
   gap: 12px;
   padding: 14px 16px;
   background: var(--bg-section);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   cursor: pointer;
   font-family: var(--display);
   font-size: 14px;
@@ -2371,17 +2572,21 @@ button.intake__progress-step:focus-visible {
   color: var(--text);
   text-align: left;
   transition:
-    border-color 0.15s,
-    background 0.15s,
-    transform 0.08s;
+    box-shadow 0.15s,
+    background 0.15s;
 }
 .theme-preset:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+  background: var(--bg-hover);
+}
+.theme-preset:active {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 .theme-preset--active {
-  border-color: var(--accent);
   background: var(--accent-soft);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   color: var(--accent-warm);
   font-weight: 600;
 }
@@ -2528,8 +2733,9 @@ button.intake__progress-step:focus-visible {
 }
 .app-shell-clip {
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   padding: 18px 22px;
 }
 .app-shell-clip__head {
@@ -2635,8 +2841,9 @@ button.intake__progress-step:focus-visible {
   gap: 14px;
   padding: 12px 14px;
   background: var(--bg-section);
-  border-radius: var(--radius);
-  border: 1px solid var(--border-soft);
+  border-radius: var(--btn-radius);
+  border: 1px solid var(--edge);
+  box-shadow: var(--edge-shadow);
 }
 .team-list__avatar {
   width: 40px;
@@ -2675,8 +2882,9 @@ button.intake__progress-step:focus-visible {
 .billing-cell {
   padding: 16px 18px;
   background: var(--bg-section);
-  border-radius: var(--radius);
-  border: 1px solid var(--border-soft);
+  border-radius: var(--btn-radius);
+  border: 1px solid var(--edge);
+  box-shadow: var(--edge-shadow);
 }
 .billing-cell__label {
   font-family: var(--mono);
@@ -2785,8 +2993,9 @@ button.intake__progress-step:focus-visible {
   width: 44px;
   height: 44px;
   padding: 2px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   background: var(--bg-section);
   cursor: pointer;
   flex-shrink: 0;
@@ -2810,29 +3019,13 @@ button.intake__progress-step:focus-visible {
   color: var(--text);
   margin-bottom: -10px;
 }
-.form__input {
-  font-family: var(--mono);
-  font-size: 16px;
-  color: var(--text);
-  background: var(--bg-section);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-}
-.form__input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(61, 110, 78, 0.15);
-}
 .form__error {
   margin: 0 0 4px;
   padding: 12px 16px;
   background: var(--warm-soft);
   border: 1px solid var(--warm);
-  border-radius: var(--radius);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   color: var(--warm);
   font-size: 15px;
   font-weight: 500;
@@ -2899,20 +3092,14 @@ button.intake__progress-step:focus-visible {
   color: var(--warm);
   font-weight: 500;
 }
+/* Recipe + accent focus ring come from .input. Kept here: the sans face
+   (vs .input's mono), the card surface, the 12px padding the field layout
+   wants, and resize for the textarea uses. */
 .field__input {
   font-family: var(--sans);
-  font-size: 16px;
-  color: var(--text);
   background: var(--bg-card);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
   padding: 12px 14px;
   resize: vertical;
-}
-.field__input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(61, 110, 78, 0.15);
 }
 .field__input.mono {
   font-family: var(--mono);
@@ -2968,26 +3155,29 @@ button.intake__progress-step:focus-visible {
 }
 .type-card {
   text-align: left;
-  background: var(--bg-card);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
   padding: 18px 20px;
   cursor: pointer;
   color: var(--text);
   font-family: var(--sans);
   transition:
-    border-color 0.15s,
-    background 0.15s,
-    transform 0.08s;
+    background 0.12s,
+    transform 0.04s,
+    box-shadow 0.1s;
 }
 .type-card:hover {
-  border-color: var(--accent);
-  background: var(--bg-card);
-  transform: translateY(-1px);
+  background: var(--bg-hover);
 }
+.type-card:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+/* Selected = pressed key: accent-tinted fill + an inset accent ring over the
+   hard edge, so the choice reads without relying on a colour-only border. */
 .type-card--selected {
-  border-color: var(--accent);
-  background: var(--bg-active);
+  background: var(--accent-soft);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .type-card__name {
   font-size: 11px;
@@ -3026,9 +3216,6 @@ button.intake__progress-step:focus-visible {
 .summary {
   margin: 0;
   padding: 16px 20px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
 }
 .summary dt {
   font-size: 11px;
@@ -3100,7 +3287,7 @@ button.intake__progress-step:focus-visible {
   padding: 10px 14px;
   background: var(--warm-soft);
   border-left: 3px solid var(--warm);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: 0 var(--btn-radius) var(--btn-radius) 0;
   color: var(--warm);
   font-size: 13px;
 }
@@ -3332,15 +3519,14 @@ button.intake__progress-step:focus-visible {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   text-decoration: none;
   color: inherit;
-  transition: border-color 120ms ease;
+  transition: box-shadow 120ms ease;
 }
 .thread__attach-tile--file a:hover {
-  border-color: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .thread__attach-icon {
   font-size: 18px;
@@ -3401,23 +3587,21 @@ button.intake__progress-step:focus-visible {
   gap: 14px;
 }
 .me-portal__tile {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   transition:
-    border-color 160ms ease,
     box-shadow 160ms ease,
-    transform 160ms ease;
+    background 160ms ease;
 }
 .me-portal__tile:hover,
 .me-portal__tile:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 12px 24px -16px rgba(31, 29, 24, 0.18);
-  transform: translateY(-1px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .me-portal__tile--accent {
-  border-color: var(--accent);
   background: var(--accent-soft);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .me-portal__tile-link {
   display: flex;
@@ -3609,9 +3793,6 @@ button.intake__progress-step:focus-visible {
 
 .me-portal__help {
   margin-bottom: 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius);
   padding: 14px 18px;
 }
 .me-portal__help-summary {
@@ -3759,18 +3940,14 @@ button.intake__progress-step:focus-visible {
   gap: 12px;
 }
 .me-portal__card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius);
   transition:
-    border-color 120ms ease,
     box-shadow 120ms ease,
-    transform 120ms ease;
+    background 120ms ease;
 }
 .me-portal__card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 2px 16px -8px rgba(60, 110, 78, 0.25);
-  transform: translateY(-1px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .me-portal__card-link {
   display: flex;
@@ -3841,7 +4018,8 @@ button.intake__progress-step:focus-visible {
   max-width: 720px;
   margin: 12px auto 0;
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   font: 500 14px/1.4 var(--mono);
 }
 .me-portal__toast--paid {
@@ -4382,9 +4560,7 @@ button.intake__progress-step:focus-visible {
   }
 }
 .scorecard__tile {
-  border: 1px solid var(--border-soft);
   border-left: 3px solid var(--border-soft);
-  border-radius: 8px;
   background: var(--bg-section);
   padding: 14px 16px;
   display: flex;
@@ -4439,8 +4615,6 @@ button.intake__progress-step:focus-visible {
   }
 }
 .meta-feature {
-  border: 1px solid var(--border-soft);
-  border-radius: 8px;
   background: var(--bg-section);
 }
 .meta-feature--active {
@@ -4463,7 +4637,7 @@ button.intake__progress-step:focus-visible {
   flex-direction: column;
   gap: 8px;
   padding: 18px 20px;
-  border-radius: 8px;
+  border-radius: var(--btn-radius);
 }
 .meta-feature__summary::-webkit-details-marker {
   display: none;
@@ -4808,8 +4982,6 @@ button.intake__progress-step:focus-visible {
 /* Each glyph card is a link into /carte?feature=X — follow the colour. */
 .atelier-glyph__link {
   width: 100%;
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
   padding: 18px;
   background: var(--bg-section);
   display: flex;
@@ -4817,13 +4989,14 @@ button.intake__progress-step:focus-visible {
   gap: 6px;
   text-decoration: none;
   transition:
-    border-color 0.15s ease,
-    transform 0.15s ease;
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 .atelier-glyph__link:hover,
 .atelier-glyph__link:focus-visible {
-  border-color: var(--gl);
-  transform: translateY(-2px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--gl);
   outline: none;
 }
 /* Per-feature accent pair — the tile paints the glyph in the feature hue
@@ -4859,7 +5032,7 @@ button.intake__progress-step:focus-visible {
 .atelier-glyph__tile {
   width: 64px;
   height: 64px;
-  border-radius: 10px;
+  border-radius: var(--btn-radius);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4905,8 +5078,6 @@ button.intake__progress-step:focus-visible {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--border-soft);
-  border-radius: 8px;
   padding: 8px 10px;
   background: var(--bg-section);
 }
@@ -5078,20 +5249,18 @@ button.intake__progress-step:focus-visible {
   padding: 0;
   width: 100%;
   text-align: left;
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
   overflow: hidden;
-  background: var(--bg-card);
   display: flex;
   flex-direction: column;
   transition:
-    border-color 0.15s ease,
-    transform 0.15s ease;
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 .atelier-shot__btn:hover,
 .atelier-shot__btn:focus-visible {
-  border-color: var(--accent);
-  transform: translateY(-2px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   outline: none;
 }
 .atelier-shot__img {
@@ -5158,10 +5327,7 @@ button.intake__progress-step:focus-visible {
   flex-direction: column;
   max-height: 92vh;
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
 }
 .atelier-lightbox__bar {
   display: flex;
@@ -5234,15 +5400,18 @@ button.intake__progress-step:focus-visible {
   cursor: pointer;
   width: 28px;
   height: 28px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--edge);
   background: var(--bg-card);
   color: var(--text-mid);
-  border-radius: 6px;
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   font-size: 15px;
   line-height: 1;
 }
 .atelier-lightbox__step:hover:not(:disabled) {
-  border-color: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   color: var(--text);
 }
 .atelier-lightbox__step:disabled {
@@ -5501,14 +5670,14 @@ button.intake__progress-step:focus-visible {
   color: #fff;
 }
 .me-portal__card--unread {
-  border-color: var(--warm);
-  box-shadow: 0 0 0 1px var(--warm);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--warm);
 }
 .me-portal__card--unread:hover {
-  border-color: var(--warm);
   box-shadow:
-    0 0 0 1px var(--warm),
-    0 2px 16px -8px rgba(193, 105, 61, 0.4);
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--warm);
 }
 
 @media (max-width: 560px) {
@@ -5582,7 +5751,7 @@ button.intake__progress-step:focus-visible {
   padding: 14px 18px;
   background: var(--accent-soft);
   border-left: 3px solid var(--status-active);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-radius: 0 var(--btn-radius) var(--btn-radius) 0;
 }
 
 /* Accessibility */
@@ -5593,7 +5762,8 @@ button.intake__progress-step:focus-visible {
   padding: 10px 16px;
   background: var(--accent);
   color: #fff;
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   font-family: var(--display);
   font-size: 14px;
   font-weight: 600;
@@ -5630,10 +5800,10 @@ button:focus-visible,
     box-shadow 0.22s ease;
 }
 .tier--link:hover {
-  border-color: var(--accent);
   background: var(--bg-hover);
-  transform: translateY(-3px);
-  box-shadow: 0 14px 28px -18px rgba(31, 29, 24, 0.22);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .tier--link::after {
   content: '→';
@@ -5728,9 +5898,6 @@ button:focus-visible,
   align-items: stretch;
   margin: 24px 0;
   padding: 14px 18px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
 }
 .eng-status__node {
   position: relative;
@@ -5890,19 +6057,14 @@ button:focus-visible,
   gap: 16px;
 }
 .pattern {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
   border-left: 4px solid var(--border);
-  border-radius: var(--radius);
   padding: 20px 22px;
   transition:
     border-color 0.18s ease,
-    transform 0.18s ease,
-    box-shadow 0.18s ease;
+    background 0.18s ease;
 }
 .pattern:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px -14px rgba(31, 29, 24, 0.18);
+  background: var(--bg-hover);
 }
 /* Per-tone accent — colored left border + matching tag chip. The tones
    are picked from the brand palette so each card reads as part of the
@@ -6079,8 +6241,11 @@ button:focus-visible,
 .session-advancements__current {
   margin: 18px 0;
   padding: 14px;
-  border: 2px solid var(--accent);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   background: var(--accent-soft, var(--bg-card));
 }
 .session-advancements__current-eyebrow {
@@ -6345,16 +6510,12 @@ button:focus-visible,
 }
 .project-card {
   position: relative;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
   transition:
-    border-color 0.15s,
-    transform 0.15s;
+    background 0.12s,
+    box-shadow 0.1s;
 }
 .project-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+  background: var(--bg-hover);
 }
 .project-card__link {
   display: block;
@@ -6386,8 +6547,8 @@ button:focus-visible,
   aspect-ratio: 16 / 10;
   overflow: hidden;
   background: var(--bg);
-  border-top-left-radius: calc(var(--radius-sm) - 1px);
-  border-top-right-radius: calc(var(--radius-sm) - 1px);
+  border-top-left-radius: calc(var(--btn-radius) - 1px);
+  border-top-right-radius: calc(var(--btn-radius) - 1px);
   border-bottom: 1px solid var(--border-soft);
 }
 .project-card__preview--empty {
@@ -6616,12 +6777,15 @@ button:focus-visible,
   color: var(--accent-warm);
   text-decoration: none;
   padding: 4px 8px;
-  border: 1px solid var(--border-soft);
-  border-radius: 4px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   background: var(--bg);
 }
 .project-card__build-link:hover {
-  border-color: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   background: var(--accent-soft, var(--bg-card));
 }
 
@@ -6665,7 +6829,6 @@ button:focus-visible,
   border-style: solid;
   border-color: var(--accent);
   background: var(--bg-card);
-  transform: translateY(-2px);
 }
 .project-card--placeholder .project-card__title {
   font-size: 18px;
@@ -6807,9 +6970,10 @@ button:focus-visible,
 }
 .iteration {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--edge);
   border-left: 3px solid var(--text-soft);
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   padding: 16px 18px;
 }
 .iteration__header {
@@ -6901,15 +7065,21 @@ button:focus-visible,
   color: var(--text-soft);
   font-size: 14px;
 }
+/* Border/radius/shadow + base font come from .input. Kept here: the fixed
+   narrow width, tight 6px padding, the card surface, the 14px scale, and the
+   outline focus (this field uses an outline, not .input's box-shadow ring). */
 .session-frame__tier3-input {
   flex: 0 0 auto;
   width: 110px;
   padding: 6px 8px;
-  border: 1px solid var(--border);
   background: var(--bg-card);
-  color: var(--text);
-  border-radius: 4px;
   font-size: 14px;
+}
+/* This field keeps its own outline focus, so cancel .input:focus's accent
+   box-shadow ring (it would otherwise stack underneath the outline, and show
+   on mouse focus where this field showed nothing before). */
+.session-frame__tier3-input:focus {
+  box-shadow: var(--edge-shadow);
 }
 .session-frame__tier3-input:focus-visible {
   outline: 2px solid var(--accent);
@@ -6918,10 +7088,6 @@ button:focus-visible,
 .session-frame__panel {
   margin-bottom: 28px;
   padding: 28px 28px 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 14px rgba(31, 29, 24, 0.04);
 }
 .session-frame__panel h2 {
   margin: 0 0 16px;
@@ -7141,7 +7307,7 @@ button.intake__progress-step:disabled {
 @media (max-width: 480px) {
   .session-frame__panel {
     padding: 20px 16px 18px;
-    border-radius: var(--radius);
+    border-radius: var(--btn-radius);
   }
   .session-frame__title {
     font-size: clamp(24px, 7vw, 30px);
@@ -7197,7 +7363,7 @@ button.intake__progress-step:disabled {
   padding: 10px 14px;
   background: var(--accent-soft);
   border-left: 3px solid var(--accent);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: 0 var(--btn-radius) var(--btn-radius) 0;
   color: var(--accent-warm);
   font-size: 14px;
   font-style: normal;
@@ -9011,25 +9177,20 @@ button.intake__progress-step:disabled {
    editorial feel with a subtle hover lift and inline arrow reveal.
    ────────────────────────────────────────────────────────────────────────── */
 .home .featured-projects__grid .project-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: 4px;
   transition:
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 .home .featured-projects__grid .project-card:hover,
 .home .featured-projects__grid .project-card:focus-within {
-  /* Louder hover per §2.2: stronger lift, accent-warm border (vs neutral
-     accent), deeper shadow with a warm tint so the eye reads "this is
-     active, click me." Triggered by :focus-within too for keyboard. */
-  border-color: var(--accent-warm);
-  border-width: 1px;
-  transform: translateY(-4px);
+  /* Louder hover per §2.2: an accent-warm inset ring over the hard edge +
+     a fill change so the eye reads "this is active, click me." No lift, no
+     soft shadow — the keycap edge stays. Triggered by :focus-within too for
+     keyboard. */
+  background: var(--bg-hover);
   box-shadow:
-    0 1px 0 var(--border-soft),
-    0 20px 36px -16px rgba(122, 76, 28, 0.28);
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent-warm);
 }
 .home .featured-projects__grid .project-card__title {
   font-family: var(--display);
@@ -9523,9 +9684,6 @@ button.intake__progress-step:disabled {
 }
 .inline-teaser__card {
   appearance: none;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   padding: 18px 18px 16px;
   cursor: pointer;
   display: flex;
@@ -9535,20 +9693,26 @@ button.intake__progress-step:disabled {
   font: inherit;
   color: inherit;
   transition:
-    transform 160ms cubic-bezier(0.32, 0.72, 0.24, 1),
-    border-color 160ms ease,
+    box-shadow 160ms ease,
     background 160ms ease,
     opacity 160ms ease;
 }
 .inline-teaser__card:hover,
 .inline-teaser__card:focus-visible {
-  border-color: var(--accent);
-  transform: translateY(-2px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   outline: none;
 }
+.inline-teaser__card:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
 .inline-teaser__card.is-picked {
-  border-color: var(--accent-warm);
   background: var(--accent-soft, var(--bg-card));
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent-warm);
 }
 .inline-teaser__card:disabled {
   cursor: default;
@@ -9799,8 +9963,9 @@ button.intake__progress-step:disabled {
   margin: 16px 0 8px;
   padding: 10px 12px 10px 10px;
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
 }
 .napkin-badge__thumb {
   width: 56px;
@@ -9914,16 +10079,11 @@ button.intake__progress-step:disabled {
 }
 .share-modal {
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 24px;
   max-width: 640px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow:
-    0 4px 8px rgba(31, 29, 24, 0.08),
-    0 24px 40px -16px rgba(31, 29, 24, 0.3);
 }
 .share-modal__head {
   display: flex;
@@ -9985,16 +10145,19 @@ button.intake__progress-step:disabled {
   gap: 8px;
   margin-bottom: 12px;
 }
+/* Border/radius/shadow + mono face come from .input. Kept here: the flex
+   sizing so the readonly URL fills the row beside the copy button, the card
+   surface, the tighter 10px padding, and the 13px scale. */
 .share-modal__url {
   flex: 1 1 auto;
   min-width: 0;
   padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   background: var(--bg-card);
-  color: var(--text);
   font-size: 13px;
-  font-family: var(--mono);
+}
+/* Keeps its own outline focus; cancel .input:focus's box-shadow ring. */
+.share-modal__url:focus {
+  box-shadow: var(--edge-shadow);
 }
 .share-modal__url:focus-visible {
   outline: 2px solid var(--accent-soft);
@@ -10005,7 +10168,8 @@ button.intake__progress-step:disabled {
   background: var(--accent-warm);
   color: #fffaf0;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   padding: 10px 18px;
   font-family: var(--display);
   font-weight: 600;
@@ -10116,22 +10280,18 @@ button.intake__progress-step:disabled {
   gap: 22px;
 }
 .admin-showcase__card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   transition:
-    border-color 160ms ease,
     box-shadow 160ms ease,
-    transform 160ms ease;
+    background 160ms ease;
 }
 .admin-showcase__card:hover,
 .admin-showcase__card:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 14px 28px -16px rgba(31, 29, 24, 0.2);
-  transform: translateY(-2px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .admin-showcase__card-link {
   text-decoration: none;
@@ -10277,19 +10437,18 @@ button.intake__progress-step:disabled {
 }
 .share-site__preview {
   display: block;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
   overflow: hidden;
   background: var(--bg-card);
-  box-shadow: 0 18px 36px -22px rgba(31, 29, 24, 0.3);
-  transition:
-    border-color 160ms ease,
-    transform 160ms ease;
+  box-shadow: var(--edge-shadow);
+  transition: box-shadow 160ms ease;
 }
 .share-site__preview:hover,
 .share-site__preview:focus-visible {
-  border-color: var(--accent);
-  transform: translateY(-2px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   outline: none;
 }
 .share-site__preview-img {
@@ -10377,28 +10536,22 @@ button.intake__progress-step:disabled {
   gap: 16px;
 }
 .admin-hub__tile {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   transition:
-    border-color 160ms ease,
     box-shadow 160ms ease,
-    transform 160ms ease;
+    background 160ms ease;
 }
 .admin-hub__tile:hover,
 .admin-hub__tile:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 12px 24px -16px rgba(31, 29, 24, 0.18);
-  transform: translateY(-1px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 /* Non-link variant for operator tools. The card holds its own interactive
-   widgets (a button, maybe a lang toggle), so the whole-tile hover lift
+   widgets (a button, maybe a lang toggle), so the whole-tile hover ring
    would mislead — the card itself is not clickable. */
 .admin-hub__tile--tool:hover,
 .admin-hub__tile--tool:focus-within {
-  border-color: var(--border);
-  box-shadow: none;
-  transform: none;
+  box-shadow: var(--edge-shadow);
 }
 .admin-hub__tile-link {
   display: flex;
@@ -10496,8 +10649,6 @@ button.intake__progress-step:disabled {
   gap: 8px;
   padding: 20px;
   background: var(--bg-active);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
 }
 .session-arc__shipped-title {
   margin: 0;
@@ -10570,7 +10721,7 @@ button.intake__progress-step:disabled {
   margin: 14px 0 0;
   padding: 14px 18px;
   background: var(--warm-soft);
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
   border: none;
 }
 .decline-panel__note-from {
@@ -10606,8 +10757,6 @@ button.intake__progress-step:disabled {
   gap: 4px 14px;
   padding: 12px 14px;
   background: var(--bg-section);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
 }
 .decline-panel__pointer p {
   margin: 0;
@@ -10655,9 +10804,6 @@ button.intake__progress-step:disabled {
 .session-napkin {
   margin-top: 32px;
   padding: 20px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
 }
 .session-napkin__head {
   display: flex;
@@ -10729,30 +10875,15 @@ button.intake__progress-step:disabled {
   font-size: 12px;
   letter-spacing: 0.06em;
 }
-.session-napkin__edit-save,
-.session-napkin__edit-cancel {
-  appearance: none;
-  font: inherit;
+/* Layout-only: the skin (border/shadow/radius/fill/states) comes from .btn.
+   These keep the compact mono sizing the edit bar wants — smaller and tighter
+   than the default keycap so the pair sits inside the napkin frame. */
+.session-napkin__edit-btn {
+  font-family: var(--mono);
   font-size: 12px;
   letter-spacing: 0.06em;
+  height: auto;
   padding: 6px 12px;
-  border-radius: 3px;
-  border: 1px solid var(--border-soft);
-  cursor: pointer;
-}
-.session-napkin__edit-save {
-  background: var(--accent);
-  color: var(--bg);
-  border-color: var(--accent);
-}
-.session-napkin__edit-save:disabled,
-.session-napkin__edit-cancel:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.session-napkin__edit-cancel {
-  background: transparent;
-  color: var(--text-muted);
 }
 .session-napkin__edit-error {
   margin: 8px 0 0;
@@ -10872,19 +11003,24 @@ button.intake__progress-step:disabled {
   color: var(--text-soft);
   margin-bottom: 6px;
 }
+/* Border/radius/shadow come from .input. Kept here: full width, the card
+   surface, the inherited (non-mono) face, the prose line-height + resize +
+   min-height for a comfortable sketch caption box. */
 .napkin__desc-input {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   background: var(--bg-card);
-  color: var(--text);
   font: inherit;
   font-size: 16px;
   line-height: 1.5;
   resize: vertical;
   min-height: 60px;
-  transition: border-color 140ms ease;
+  transition: box-shadow 140ms ease;
+}
+/* Keeps its own outline focus; cancel .input:focus's box-shadow ring so the
+   two don't stack. */
+.napkin__desc-input:focus {
+  box-shadow: var(--edge-shadow);
 }
 .napkin__desc-input:focus-visible {
   border-color: var(--accent);
@@ -11245,16 +11381,14 @@ button.intake__progress-step:disabled {
   }
 }
 .handoff-mode {
-  border: 1px solid var(--border-soft);
-  background: var(--bg-card);
-  border-radius: 8px;
   padding: 20px 22px;
   display: flex;
   flex-direction: column;
 }
 .handoff-mode--default {
-  border-color: var(--accent-warm);
-  box-shadow: 0 0 0 1px var(--accent-warm) inset;
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent-warm);
 }
 .handoff-mode__eyebrow {
   font-size: 11px;
@@ -11288,7 +11422,7 @@ button.intake__progress-step:disabled {
   margin: 0 0 14px;
   padding: 12px 14px;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: var(--btn-radius);
   background: var(--bg-elev);
 }
 .handoff-mode__skills-intro {
@@ -11447,7 +11581,7 @@ button.intake__progress-step:disabled {
   padding: 14px 18px;
   background: var(--bg-card);
   border-left: 3px solid var(--accent-warm);
-  border-radius: 4px;
+  border-radius: var(--btn-radius);
   max-width: 70ch;
 }
 .handoff-legend h2 {
@@ -11486,10 +11620,7 @@ button.intake__progress-step:disabled {
    cards above. */
 .tier__custodian-note {
   margin: 24px 0 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
   border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
   padding: 18px 22px 16px;
 }
 .tier__custodian-heading {
@@ -11519,10 +11650,7 @@ button.intake__progress-step:disabled {
    treatment as the custodian note (left-bordered card). */
 .tier__rescue-note {
   margin: 24px 0 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
   border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
   padding: 18px 22px 16px;
 }
 .tier__rescue-heading {
@@ -11552,10 +11680,7 @@ button.intake__progress-step:disabled {
    card treatment as the rescue/custodian notes; carries no CTA. */
 .tier__hardware-note {
   margin: 24px 0 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
   border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
   padding: 18px 22px 16px;
 }
 .tier__hardware-heading {
@@ -11609,8 +11734,9 @@ button.intake__progress-step:disabled {
   text-transform: uppercase;
   color: var(--text-soft);
   font-weight: 600;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   background: transparent;
   user-select: none;
 }
@@ -11619,7 +11745,7 @@ button.intake__progress-step:disabled {
 }
 .tier__more-summary:hover {
   color: var(--text);
-  border-color: var(--border);
+  background: var(--bg-hover);
 }
 .tier__more-marker {
   font-size: 14px;
@@ -11785,9 +11911,6 @@ button.intake__progress-step:disabled {
   margin: 40px 0 24px;
 }
 .journey__stat {
-  border: 1px solid var(--border-soft);
-  background: var(--bg-card);
-  border-radius: var(--radius);
   padding: 22px 16px;
   text-align: center;
   display: flex;
@@ -11967,8 +12090,8 @@ button.intake__progress-step:disabled {
   width: fit-content;
   max-width: 360px;
   text-align: left;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
   box-shadow: 0 0 0 6px var(--bg);
 }
 .journey__phase-roman {
@@ -12071,20 +12194,14 @@ button.intake__progress-step:disabled {
 
 /* The card itself */
 .journey__card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius);
   padding: 20px 24px;
   position: relative;
   transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
+    background 0.2s ease,
     box-shadow 0.2s ease;
 }
 .journey__step:hover .journey__card {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(31, 29, 24, 0.08);
-  border-color: var(--border);
+  background: var(--bg-hover);
 }
 .journey__step--you .journey__card {
   border-left: 3px solid var(--accent);
@@ -12448,9 +12565,6 @@ button.intake__progress-step:disabled {
 }
 
 .vouch-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 22px 24px;
 }
 /* Staggered fade-in on mount — cards settle in sequentially (opacity only,
@@ -12564,10 +12678,8 @@ button.intake__progress-step:disabled {
 }
 .share-testimonials__cta {
   background: var(--bg-section);
-  border: 1px solid var(--border-soft);
   border-left: 3px solid var(--accent-warm);
   padding: 18px 22px;
-  border-radius: var(--radius);
   margin-top: 16px;
 }
 .share-testimonials__cta-title {
@@ -12652,9 +12764,6 @@ button.intake__progress-step:disabled {
   gap: 16px;
 }
 .admin-vouches__row {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 18px 22px;
 }
 .admin-vouches__row-head {
@@ -12742,9 +12851,6 @@ button.intake__progress-step:disabled {
   max-width: var(--max-w);
   margin: 24px auto 0;
   padding: 22px var(--gutter);
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: 12px;
 }
 /* FirstNameCard reuses .lang-pref outer chrome; its row is its own layout. */
 .first-name__row {
@@ -12765,39 +12871,22 @@ button.intake__progress-step:disabled {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+/* Border/radius/shadow + base scale come from .input. Kept here: the sans
+   face, the bare --bg surface this card uses, and the tighter 10px padding. */
 .first-name__input {
   font-family: var(--sans);
-  font-size: 16px;
-  color: var(--text);
   background: var(--bg);
-  border: 1.5px solid var(--border-soft);
-  border-radius: 10px;
   padding: 10px 12px;
 }
+/* Keeps its border-color focus; cancel .input:focus's box-shadow ring. */
 .first-name__input:focus {
   outline: none;
+  box-shadow: var(--edge-shadow);
   border-color: var(--accent);
 }
 .first-name__input:disabled {
   opacity: 0.7;
   cursor: progress;
-}
-.first-name__save {
-  font-family: var(--display);
-  font-size: 14px;
-  color: var(--bg);
-  background: var(--accent);
-  border: 0;
-  border-radius: 10px;
-  padding: 10px 18px;
-  cursor: pointer;
-}
-.first-name__save:hover:not(:disabled) {
-  background: var(--accent-warm);
-}
-.first-name__save:disabled {
-  opacity: 0.5;
-  cursor: default;
 }
 .lang-pref__head {
   margin-bottom: 16px;
@@ -12831,27 +12920,26 @@ button.intake__progress-step:disabled {
   gap: 14px;
   padding: 14px 16px;
   background: var(--bg);
-  border: 1.5px solid var(--border-soft);
-  border-radius: 10px;
   cursor: pointer;
   text-align: left;
   transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    transform 120ms ease;
+    box-shadow 120ms ease,
+    background 120ms ease;
 }
 .lang-pref__choice:hover:not(:disabled) {
-  border-color: var(--forest, #3d6e4e);
-  transform: translateY(-1px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .lang-pref__choice:disabled {
   opacity: 0.6;
   cursor: progress;
 }
 .lang-pref__choice--active {
-  border-color: var(--warm, #d97706);
   background: var(--bg-card);
-  box-shadow: 0 4px 14px rgba(217, 118, 6, 0.12);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--warm, #d97706);
 }
 .lang-pref__choice-flag {
   display: inline-flex;
@@ -12859,7 +12947,7 @@ button.intake__progress-step:disabled {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--btn-radius);
   background: linear-gradient(135deg, #fbf7ec 0%, #fadfb8 100%);
   color: #5a554b;
   font-size: 12px;
@@ -13041,14 +13129,11 @@ button.intake__progress-step:disabled {
   top: -22px;
   left: -6px;
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
   padding: 10px 14px;
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: 0 2px 8px rgba(31, 29, 24, 0.06);
 }
 .journey__cartouche-row {
   display: flex;
@@ -13233,7 +13318,7 @@ button.intake__progress-step:disabled {
     top: -64px;
     left: 0;
     padding: 6px 9px;
-    border-radius: 8px;
+    border-radius: var(--btn-radius);
   }
   .journey__cartouche-title {
     font-size: 12px;
@@ -13346,10 +13431,7 @@ button.intake__progress-step:disabled {
 .bring-anything__note {
   scroll-snap-align: start;
   flex: 0 0 clamp(258px, 80vw, 318px);
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
   border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
   padding: 20px 22px 22px;
   /* Faint horizontal rule pattern reads as ruled-notepad paper. Kept very
      low contrast — texture, not graph paper. */
@@ -13463,19 +13545,22 @@ button.intake__progress-step:disabled {
 .runbook-reset {
   appearance: none;
   background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   padding: 8px 12px;
   font-size: 12px;
   color: var(--text-soft);
   cursor: pointer;
   transition:
-    border-color 160ms ease,
+    box-shadow 160ms ease,
     color 160ms ease;
   white-space: nowrap;
 }
 .runbook-reset:hover {
-  border-color: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   color: var(--text);
 }
 
@@ -13526,8 +13611,9 @@ button.intake__progress-step:disabled {
 /* ── Summary/detail view toggle ────────────────────────────────────────── */
 .runbook-toggle {
   display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   overflow: hidden;
   background: var(--bg-card);
 }
@@ -13566,21 +13652,17 @@ button.intake__progress-step:disabled {
   gap: 8px;
 }
 .runbook-step {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   padding: 12px 14px;
   transition:
-    border-color 160ms ease,
+    box-shadow 160ms ease,
     background 160ms ease;
 }
 .runbook-step:hover {
-  border-color: var(--border-soft);
+  background: var(--bg-hover);
 }
 .runbook-step--done {
   background:
     linear-gradient(0deg, rgba(61, 110, 78, 0.04), rgba(61, 110, 78, 0.04)), var(--bg-card);
-  border-color: var(--accent-soft);
 }
 .runbook-step--done .runbook-step__title {
   text-decoration: line-through;
@@ -13699,7 +13781,7 @@ button.intake__progress-step:disabled {
 }
 .runbook-detail {
   background: var(--bg-section);
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
   padding: 10px 12px;
   border-left: 3px solid var(--border);
 }
@@ -13767,8 +13849,6 @@ button.intake__progress-step:disabled {
   gap: 18px;
   padding: 14px 16px;
   background: var(--bg-section);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   flex-wrap: wrap;
 }
 .runbook-parallel__lede {
@@ -13989,8 +14069,6 @@ button.intake__progress-step:disabled {
 .map-page__canvas {
   margin-top: 24px;
   background: var(--bg-section);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-lg);
   padding: 16px;
   overflow-x: auto;
 }
@@ -14044,8 +14122,9 @@ button.intake__progress-step:disabled {
   padding: 4px 8px;
   background: var(--bg-card);
   color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
 }
 .map-legend__preview {
   margin-left: auto;
@@ -14130,25 +14209,21 @@ button.intake__progress-step:disabled {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   color: var(--text);
   text-decoration: none;
   font-size: 13.5px;
   line-height: 1.35;
   position: relative;
   transition:
-    border-color 140ms ease,
-    transform 140ms ease,
-    box-shadow 140ms ease;
+    box-shadow 140ms ease,
+    background 140ms ease;
   overflow: hidden;
 }
 a.map-node:hover,
 a.map-node:focus-visible {
-  border-color: var(--accent);
-  box-shadow: 0 8px 16px -12px rgba(31, 29, 24, 0.18);
-  transform: translateY(-1px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   outline: none;
 }
 .map-node__folio {
@@ -14272,19 +14347,15 @@ a.map-node:focus-visible {
   gap: 14px;
 }
 .map-admin__tile {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   transition:
-    border-color 160ms ease,
     box-shadow 160ms ease,
-    transform 160ms ease;
+    background 160ms ease;
 }
 .map-admin__tile:hover,
 .map-admin__tile:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 12px 24px -16px rgba(31, 29, 24, 0.18);
-  transform: translateY(-1px);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .map-admin__tile-link {
   display: flex;
@@ -14395,7 +14466,8 @@ a.map-node:focus-visible {
   padding: 10px 14px;
   background: var(--warm-soft);
   border: 1px solid var(--warm);
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   color: var(--warm);
   font-family: var(--mono);
   font-size: 12.5px;
@@ -14511,21 +14583,19 @@ a.map-node:focus-visible {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
   border-left: 3px solid var(--ft-color, var(--border));
-  border-radius: var(--radius-sm);
   text-decoration: none;
   color: var(--text);
   transition:
-    border-color 140ms ease,
-    background 140ms ease,
-    transform 140ms ease;
+    box-shadow 140ms ease,
+    background 140ms ease;
 }
 a.map-card:hover,
 a.map-card:focus-visible {
   outline: none;
-  border-color: var(--ft-color, var(--accent-warm));
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--ft-color, var(--accent-warm));
   background: var(--bg-hover);
 }
 .map-card--dim {
@@ -14728,10 +14798,12 @@ a.map-card:focus-visible {
 }
 .map-vision__card {
   background: var(--ft-soft, var(--bg-card));
-  border: 1.5px solid var(--ft-color, var(--border));
-  border-radius: var(--radius);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--ft-color, var(--border));
   transition:
-    transform 160ms ease,
     box-shadow 160ms ease,
     opacity 200ms ease;
 }
@@ -14759,8 +14831,9 @@ a.map-card:focus-visible {
 }
 .map-vision__card:hover,
 .map-vision__card:focus-within {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px -16px color-mix(in srgb, var(--ft-color) 50%, transparent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--ft-color, var(--accent));
 }
 .map-vision__card-index {
   font-size: 13px;
@@ -14964,8 +15037,11 @@ a.page-folio-mark:focus-visible .page-folio-mark__dot {
   margin-top: 18px;
   padding: 14px 16px 16px;
   background: var(--ft-soft);
-  border: 1px solid var(--ft-color);
-  border-radius: var(--radius);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--ft-color);
   color: var(--text);
 }
 .feature-index__head {
@@ -15213,18 +15289,24 @@ a.feature-dot:focus-visible {
   align-self: flex-start;
   padding: 14px 20px;
   background: var(--ft-soft);
-  border: 1px solid var(--ft-color);
-  border-radius: var(--radius);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--ft-color);
   text-decoration: none;
   transition:
-    transform 140ms ease,
-    box-shadow 140ms ease;
+    box-shadow 140ms ease,
+    background 140ms ease;
 }
 .feature-continue__link:hover,
 .feature-continue__link:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px -16px rgba(31, 29, 24, 0.3);
+  background: var(--bg-hover);
   outline: none;
+}
+.feature-continue__link:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 0 0 2px var(--ft-color);
 }
 .feature-continue__dot {
   flex-shrink: 0;
@@ -15348,8 +15430,6 @@ a.feature-dot:focus-visible {
 }
 .mydata__intake {
   background: var(--bg-section);
-  border: 1px solid var(--border-soft);
-  border-radius: 8px;
   padding: 4px 18px 14px;
 }
 .mydata__muted {
@@ -15409,8 +15489,6 @@ a.feature-dot:focus-visible {
   margin-top: 36px;
   padding: 20px 22px;
   background: var(--bg-section);
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
 }
 .mydata__rights h2 {
   margin: 0 0 8px;
@@ -15450,9 +15528,6 @@ a.feature-dot:focus-visible {
 
 /* Voice recorder — shared by the intake form and the thread compose box. */
 .voice-rec {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-card);
   padding: 14px 16px;
 }
 .voice-rec__consent {
@@ -15636,9 +15711,7 @@ a.feature-dot:focus-visible {
 .session-voicenapkin {
   margin-top: 14px;
   padding: 12px 14px;
-  border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
-  border-radius: var(--radius-sm);
   background: var(--bg-section);
 }
 .session-voicenapkin__label {
@@ -15666,17 +15739,16 @@ a.feature-dot:focus-visible {
   align-items: center;
   gap: 6px;
   padding: 5px 9px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
   color: var(--text-mid);
   cursor: pointer;
   transition:
-    border-color 140ms ease,
+    box-shadow 140ms ease,
     color 140ms ease;
 }
 .site-search__trigger:hover {
-  border-color: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
   color: var(--accent);
 }
 .site-search__trigger:focus-visible {
@@ -15730,10 +15802,6 @@ a.feature-dot:focus-visible {
   max-height: 76vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 24px 60px -16px rgba(31, 29, 24, 0.45);
   overflow: hidden;
   animation: site-search-rise 160ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
@@ -15773,8 +15841,9 @@ a.feature-dot:focus-visible {
 .site-search__close {
   flex: none;
   padding: 3px 7px;
-  border: 1px solid var(--border);
-  border-radius: 5px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   background: var(--bg-section);
   color: var(--text-soft);
   font-size: 11px;
@@ -15782,7 +15851,9 @@ a.feature-dot:focus-visible {
 }
 .site-search__close:hover {
   color: var(--accent);
-  border-color: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .site-search__close:focus-visible {
   outline: 2px solid var(--accent);
@@ -15813,7 +15884,7 @@ a.feature-dot:focus-visible {
   display: flex;
   align-items: stretch;
   gap: 4px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
 }
 .site-search__result.is-active {
   background: var(--bg-active);
@@ -15825,7 +15896,7 @@ a.feature-dot:focus-visible {
   align-items: baseline;
   gap: 10px;
   padding: 9px 10px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
   text-decoration: none;
   color: inherit;
 }
@@ -15866,7 +15937,7 @@ a.feature-dot:focus-visible {
   font-size: 10.5px;
   color: var(--text-faint);
   text-decoration: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
   white-space: nowrap;
 }
 .site-search__result:hover .site-search__on-map,
@@ -15936,9 +16007,6 @@ a.feature-dot:focus-visible {
   width: fit-content;
   margin: 0 auto 22px;
   padding: 8px 16px 8px 11px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
   transform: rotate(-1.5deg);
   color: var(--text-soft);
   /* The stamp is a "back to home" link (see StudioSign.tsx); strip the anchor
@@ -15947,10 +16015,9 @@ a.feature-dot:focus-visible {
   text-decoration: none;
   transition:
     transform 0.15s ease,
-    border-color 0.15s ease;
+    box-shadow 0.15s ease;
 }
 .studio-sign:hover {
-  border-color: var(--text-faint);
   transform: rotate(0deg);
 }
 .studio-sign:focus-visible {
@@ -16112,14 +16179,8 @@ a.feature-dot:focus-visible {
   margin-top: 4px;
 }
 .passage-receipt {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 4px;
   padding: 32px 28px;
   margin-top: 32px;
-  box-shadow:
-    0 1px 0 var(--border-soft),
-    0 6px 18px -12px rgba(0, 0, 0, 0.12);
   background-image:
     radial-gradient(circle at 18% 22%, rgba(0, 0, 0, 0.018), transparent 38%),
     radial-gradient(circle at 78% 62%, rgba(0, 0, 0, 0.014), transparent 42%);
@@ -16525,7 +16586,8 @@ a.feature-dot:focus-visible {
 .admin-today__error {
   background: var(--warm-soft);
   border: 1px solid var(--warm);
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
   padding: 14px 16px;
   display: flex;
   flex-wrap: wrap;
@@ -16540,9 +16602,6 @@ a.feature-dot:focus-visible {
 }
 
 .admin-today__panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 18px 20px;
   margin-bottom: 18px;
 }
@@ -16582,8 +16641,6 @@ a.feature-dot:focus-visible {
   margin-bottom: 8px;
 }
 .admin-today__cap-cell {
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
   padding: 12px 14px;
   background: var(--bg-section);
 }
@@ -16622,14 +16679,16 @@ a.feature-dot:focus-visible {
   gap: 10px;
 }
 .admin-today__session {
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
   background: var(--bg-section);
-  transition: border-color 140ms ease;
+  transition:
+    box-shadow 140ms ease,
+    background 140ms ease;
 }
 .admin-today__session:hover,
 .admin-today__session:focus-within {
-  border-color: var(--accent);
+  box-shadow:
+    var(--edge-shadow),
+    inset 0 0 0 2px var(--accent);
 }
 .admin-today__session--urgent {
   border-left: 3px solid var(--warm);
@@ -16774,8 +16833,6 @@ a.feature-dot:focus-visible {
   gap: 6px;
 }
 .admin-today__row {
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
   background: var(--bg-section);
 }
 .admin-today__row--urgent {
@@ -16822,8 +16879,6 @@ a.feature-dot:focus-visible {
   gap: 10px;
 }
 .admin-today__metric {
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
   padding: 10px 12px;
   background: var(--bg-section);
 }
@@ -16915,6 +16970,9 @@ a.feature-dot:focus-visible {
   margin: 6px 0;
   color: var(--text-soft);
 }
+/* Border/radius/shadow + section surface come from .input. Kept here: full
+   width, the tall min-height, the inherited (non-mono) face at 14px, prose
+   line-height, and resize for a roomy notes box. */
 .operator-notes__textarea {
   width: 100%;
   min-height: 120px;
@@ -16922,11 +16980,11 @@ a.feature-dot:focus-visible {
   font: inherit;
   font-size: 14px;
   line-height: 1.5;
-  background: var(--bg-section);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   resize: vertical;
+}
+/* Keeps its own outline focus; cancel .input:focus's box-shadow ring. */
+.operator-notes__textarea:focus {
+  box-shadow: var(--edge-shadow);
 }
 .operator-notes__textarea:focus-visible {
   outline: 2px solid var(--accent);

@@ -133,7 +133,7 @@ function HomeShowcaseCard({ lang, langPrefix }: { lang: Lang; langPrefix: string
   const homeHref = lang === 'en' ? '/en' : '/'
   const debugHref = `/og/home?debug=1${lang === 'en' ? '&lang=en' : ''}`
   return (
-    <li className="admin-showcase__card admin-showcase__card--home">
+    <li className="surface admin-showcase__card admin-showcase__card--home">
       <a href={homeHref} target="_blank" rel="noreferrer" className="admin-showcase__card-link">
         <div className="admin-showcase__card-frame">
           <img
@@ -205,7 +205,7 @@ function ShowcaseCard({
   const editHref = `${langPrefix}/admin/inbox/${project.id}`
   const shareHref = `${langPrefix}/share/${project.id}`
   return (
-    <li className="admin-showcase__card">
+    <li className="surface admin-showcase__card">
       <Link to={editHref} className="admin-showcase__card-link">
         <div className="admin-showcase__card-frame">
           <img

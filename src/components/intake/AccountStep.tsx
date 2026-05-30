@@ -81,7 +81,7 @@ export function AccountStep({
       <h2>{t.title}</h2>
       <p>{t.body}</p>
 
-      <p className="intake__signin">
+      <p className="surface intake__signin">
         <span>{t.alreadyHaveAccount}</span>{' '}
         <a href={loginHref} className="intake__signin-link">
           {t.signIn}
@@ -101,7 +101,7 @@ export function AccountStep({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="ex: marie@drummondville-pavage.qc.ca"
-          className="field__input mono"
+          className="input field__input mono"
         />
       </label>
 
@@ -113,7 +113,7 @@ export function AccountStep({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t.namePlaceholder}
-          className="field__input"
+          className="input field__input"
         />
       </label>
 

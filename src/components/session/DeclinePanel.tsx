@@ -63,7 +63,7 @@ export function DeclinePanel({
   }
 
   return (
-    <section className="intake__step session-frame__panel decline-panel">
+    <section className="surface intake__step session-frame__panel decline-panel">
       <h2>{copy.declineHeading}</h2>
       {note ? (
         <blockquote className="decline-panel__note">
@@ -76,13 +76,13 @@ export function DeclinePanel({
 
       <div className="decline-panel__pointers">
         <span className="mono decline-panel__pointers-heading">{copy.declinePointersHeading}</span>
-        <div className="decline-panel__pointer">
+        <div className="surface decline-panel__pointer">
           <p>{copy.declinePointerTier0}</p>
           <a className="decline-panel__pointer-link" href={`${langPrefix}/tier-0`}>
             {copy.declinePointerTier0Link}
           </a>
         </div>
-        <div className="decline-panel__pointer">
+        <div className="surface decline-panel__pointer">
           <p>{copy.declinePointerIntake}</p>
           <a className="decline-panel__pointer-link" href={`${langPrefix}/intake`}>
             {copy.declinePointerIntakeLink}
@@ -98,7 +98,7 @@ export function DeclinePanel({
           {!note && <p className="mono decline-panel__editor-empty">{copy.declineNoteEmpty}</p>}
           <textarea
             id="decline-note"
-            className="field__input decline-panel__textarea"
+            className="input field__input decline-panel__textarea"
             rows={5}
             value={draft}
             placeholder={copy.declineNoteEditorPlaceholder}

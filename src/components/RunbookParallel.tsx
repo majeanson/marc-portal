@@ -28,7 +28,7 @@ export function RunbookParallel({ lang }: { lang: Lang }) {
 
   return (
     <div className="runbook-parallel">
-      <div className="runbook-parallel__bar">
+      <div className="surface runbook-parallel__bar">
         <p className="runbook-parallel__lede">
           {lang === 'fr'
             ? 'Deux pistes parallèles. Cocher une étape dev (A) « débloque » l’étape visiteur (B) qui en dépend — les rangées rouges sont des bris silencieux à venir.'

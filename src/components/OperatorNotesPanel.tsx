@@ -125,7 +125,7 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
   }
 
   return (
-    <section className="intake__step session-frame__panel operator-notes">
+    <section className="surface intake__step session-frame__panel operator-notes">
       <h2 className="operator-notes__heading">{t.heading}</h2>
       <p className="operator-notes__sub">{t.sub}</p>
       {loading ? (
@@ -133,7 +133,7 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
       ) : (
         <>
           <textarea
-            className="operator-notes__textarea"
+            className="input operator-notes__textarea"
             value={body}
             onChange={(e) => setBody(e.target.value.slice(0, MAX_CHARS))}
             placeholder={t.placeholder}

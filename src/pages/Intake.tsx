@@ -438,7 +438,7 @@ export function Intake({ lang }: { lang: Lang }) {
                 not browsing. The masthead names that explicitly; it's hidden
                 on the confirmation step, where the Confirmation card owns the
                 screen and the orientation job is already done. */}
-            <div className="intake__sheet">
+            <div className="surface intake__sheet">
               {step !== 'confirmation' && (
                 <header className="intake__mast">
                   <p className="intake__mast-eyebrow mono">{t.intake.mast.eyebrow}</p>

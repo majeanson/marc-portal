@@ -5,6 +5,7 @@ import { HOME_FOLIOS } from '../lib/folios'
 import { SectionEyebrow } from './SectionEyebrow'
 import { HomeDrillCard } from './HomeDrillCard'
 import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
+import { Surface } from './Surface'
 
 export function HowItWorks({ lang }: { lang: Lang }) {
   const t = DICT[lang].how
@@ -28,7 +29,12 @@ export function HowItWorks({ lang }: { lang: Lang }) {
         </header>
         <ol className="steps steps--editorial">
           {t.steps.map((s, i) => (
-            <li key={s.num} className="step step--editorial" style={cssVars({ '--i': i })}>
+            <Surface
+              as="li"
+              key={s.num}
+              className="step step--editorial"
+              style={cssVars({ '--i': i })}
+            >
               <div className="step__numeral" aria-hidden="true">
                 {s.num}
               </div>
@@ -36,7 +42,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
                 <h3 className="step__title">{s.title}</h3>
                 <p>{s.body}</p>
               </div>
-            </li>
+            </Surface>
           ))}
         </ol>
         {/* Drill-card to /parcours (Journey) — that page belongs to the

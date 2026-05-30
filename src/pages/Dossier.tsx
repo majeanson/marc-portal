@@ -33,6 +33,7 @@ import { SectionEyebrow } from '../components/SectionEyebrow'
 import { useAuth } from '../lib/authContext'
 import { PAGE_FEATURE } from '../lib/features'
 import { PAGE_FOLIOS } from '../lib/folios'
+import { Surface } from '../components/Surface'
 
 /**
  * Ledger row. `mine` = what the portal keeps; `theirs` = the comparator
@@ -251,7 +252,7 @@ export function Dossier({ lang }: { lang: Lang }) {
       <div className="app" data-feature={PAGE_FEATURE['page.dossier']}>
         <Header lang={lang} />
         <main className="page">
-          <section className="page__panel">
+          <Surface as="section" className="page__panel">
             <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.dossier']}>
               {t.eyebrow}
             </SectionEyebrow>
@@ -262,7 +263,7 @@ export function Dossier({ lang }: { lang: Lang }) {
                 {t.signIn}
               </a>
             </p>
-          </section>
+          </Surface>
         </main>
         <Footer lang={lang} />
       </div>

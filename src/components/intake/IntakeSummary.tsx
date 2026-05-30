@@ -56,7 +56,7 @@ export function IntakeSummary({
   return (
     <>
       <h3 style={{ marginBottom: 12 }}>{t.summaryTitle}</h3>
-      <dl className="summary">
+      <dl className="surface summary">
         <dt>{t.summaryEmail}</dt>
         <dd className="mono">{account.email}</dd>
         {(editable || account.name) && (
@@ -81,7 +81,7 @@ export function IntakeSummary({
         <dd>
           {editable && editableType ? (
             <select
-              className="field__input mono summary__edit-input"
+              className="input field__input mono summary__edit-input"
               value={type}
               onChange={(e) => handleTypeChange(e.target.value as ProblemType)}
             >
@@ -100,7 +100,7 @@ export function IntakeSummary({
       </dl>
 
       <h3 style={{ marginTop: 24, marginBottom: 12 }}>{t.summaryAnswers}</h3>
-      <dl className="summary">
+      <dl className="surface summary">
         {schema.fields.map((field) => {
           const v = values[field.id] ?? ''
           if (!editable && !v) return null
@@ -226,7 +226,7 @@ function TextInputEditor({
     <input
       ref={ref}
       type="text"
-      className="field__input summary__edit-input"
+      className="input field__input summary__edit-input"
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => onCommit(draft)}
@@ -324,7 +324,7 @@ function TextareaEditor({
     <textarea
       ref={ref}
       rows={field.rows ?? 3}
-      className="field__input summary__edit-input"
+      className="input field__input summary__edit-input"
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => onCommit(draft)}
@@ -358,7 +358,7 @@ function SelectEditor({
   return (
     <select
       ref={ref}
-      className="field__input mono summary__edit-input"
+      className="input field__input mono summary__edit-input"
       defaultValue={initial}
       onChange={(e) => onCommit(e.target.value)}
       onBlur={(e) => onCommit(e.currentTarget.value)}
@@ -426,7 +426,7 @@ function NumberOrTextEditor({
     <input
       ref={ref}
       type={field.type === 'number' ? 'number' : 'text'}
-      className="field__input summary__edit-input"
+      className="input field__input summary__edit-input"
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => onCommit(draft)}

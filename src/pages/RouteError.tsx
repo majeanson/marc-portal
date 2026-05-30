@@ -5,6 +5,7 @@ import { Footer } from '../components/Footer'
 import { DICT, type Lang } from '../i18n'
 import { captureException } from '../lib/sentry'
 import { ErrorStamp } from './NotFound'
+import { Surface } from '../components/Surface'
 
 /**
  * Root-level error boundary. Wired as `errorElement` on the layout route in
@@ -37,7 +38,7 @@ export function RouteError() {
     <div className="app">
       <Header lang={lang} />
       <main id="main-content" className="page">
-        <section className="page__panel page__panel--centered error-panel">
+        <Surface as="section" className="page__panel page__panel--centered error-panel">
           <ErrorStamp
             label={
               isNotFound
@@ -66,7 +67,7 @@ export function RouteError() {
               {t.homeCta}
             </a>
           </div>
-        </section>
+        </Surface>
       </main>
       <Footer lang={lang} />
     </div>

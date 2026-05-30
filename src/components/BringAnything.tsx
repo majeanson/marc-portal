@@ -63,7 +63,7 @@ export function BringAnything({ lang }: { lang: Lang }) {
             tabIndex={0}
           >
             {t.exampleGroups.map((group, gi) => (
-              <div key={gi} className="bring-anything__note">
+              <div key={gi} className="surface bring-anything__note">
                 <div className="bring-anything__note-label mono">{group.label}</div>
                 <ul className="bring-anything__list">
                   {group.items.map((ex, i) => (

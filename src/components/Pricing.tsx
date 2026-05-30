@@ -4,6 +4,7 @@ import { HOME_FOLIOS } from '../lib/folios'
 import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
 import { SectionEyebrow } from './SectionEyebrow'
 import { CrossFeatureLink } from './CrossFeatureLink'
+import { Surface } from './Surface'
 
 export function Pricing({ lang }: { lang: Lang }) {
   const t = DICT[lang].pricing
@@ -54,7 +55,7 @@ export function Pricing({ lang }: { lang: Lang }) {
               : `${langPrefix}/projects?tier=${tierDigit}`
             return (
               <li key={tier.name} className="tier__row">
-                <a className={`${cardClass} tier--link`} href={href}>
+                <a className={`surface ${cardClass} tier--link`} href={href}>
                   <div className="tier__head">
                     <span className="tier__name mono">{tier.name}</span>
                     <span className="tier__leader" aria-hidden="true" />
@@ -111,19 +112,27 @@ export function Pricing({ lang }: { lang: Lang }) {
             </span>
           </summary>
           <div className="tier__more-body">
-            <aside className="tier__hardware-note" aria-labelledby="tier-hardware-heading">
+            <Surface
+              as="aside"
+              className="tier__hardware-note"
+              aria-labelledby="tier-hardware-heading"
+            >
               <h3 id="tier-hardware-heading" className="tier__hardware-heading mono">
                 {t.hardwareNoteHeading}
               </h3>
               <p className="tier__hardware-body">{t.hardwareNote}</p>
-            </aside>
-            <aside className="tier__hardware-note" aria-labelledby="tier-community-heading">
+            </Surface>
+            <Surface
+              as="aside"
+              className="tier__hardware-note"
+              aria-labelledby="tier-community-heading"
+            >
               <h3 id="tier-community-heading" className="tier__hardware-heading mono">
                 {t.communityNoteHeading}
               </h3>
               <p className="tier__hardware-body">{t.communityNote}</p>
-            </aside>
-            <aside className="tier__rescue-note" aria-labelledby="tier-rescue-heading">
+            </Surface>
+            <Surface as="aside" className="tier__rescue-note" aria-labelledby="tier-rescue-heading">
               <h3 id="tier-rescue-heading" className="tier__rescue-heading mono">
                 {t.rescueNoteHeading}
               </h3>
@@ -138,8 +147,12 @@ export function Pricing({ lang }: { lang: Lang }) {
                   {t.rescueNoteCta}
                 </CrossFeatureLink>
               </p>
-            </aside>
-            <aside className="tier__custodian-note" aria-labelledby="tier-custodian-heading">
+            </Surface>
+            <Surface
+              as="aside"
+              className="tier__custodian-note"
+              aria-labelledby="tier-custodian-heading"
+            >
               <h3 id="tier-custodian-heading" className="tier__custodian-heading mono">
                 {t.custodianNoteHeading}
               </h3>
@@ -154,7 +167,7 @@ export function Pricing({ lang }: { lang: Lang }) {
                   {t.custodianNoteCta}
                 </CrossFeatureLink>
               </p>
-            </aside>
+            </Surface>
           </div>
         </details>
         <p className="tier__disclaimer">{t.disclaimer}</p>

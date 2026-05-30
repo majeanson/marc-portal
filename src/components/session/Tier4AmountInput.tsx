@@ -89,7 +89,7 @@ export function Tier4AmountInput({
               if (error) setError(false)
             }}
             disabled={saving}
-            className="session-frame__tier3-input mono"
+            className="input session-frame__tier3-input mono"
           />
           <button
             type="submit"

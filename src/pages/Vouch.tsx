@@ -11,6 +11,7 @@ import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
+import { Surface } from '../components/Surface'
 import { PAGE_FEATURE } from '../lib/features'
 import { DICT, type Lang } from '../i18n'
 import { ApiError } from '../lib/api'
@@ -167,7 +168,7 @@ export function Vouch({ lang }: { lang: Lang }) {
       <>
         <Header lang={lang} />
         <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
-          <section className="page__panel">
+          <Surface as="section" className="page__panel">
             <h1>{ts.successHeading}</h1>
             <p>{ts.successBody}</p>
             <p>
@@ -189,7 +190,7 @@ export function Vouch({ lang }: { lang: Lang }) {
               )}
               <Link to={langPrefix || '/'}>{ts.backHome}</Link>
             </p>
-          </section>
+          </Surface>
         </main>
         <Footer lang={lang} />
       </>
@@ -200,7 +201,7 @@ export function Vouch({ lang }: { lang: Lang }) {
     <>
       <Header lang={lang} />
       <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
-        <section className="page__panel">
+        <Surface as="section" className="page__panel">
           <h1>{frPunct(ts.heading)}</h1>
           <p>{ts.lead}</p>
           {sessionFor && (
@@ -229,7 +230,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={ts.fields.namePlaceholder}
-                className="field__input"
+                className="input field__input"
                 autoComplete="name"
                 maxLength={VOUCH_LIMITS.nameMax}
                 required
@@ -251,7 +252,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={ts.fields.emailPlaceholder}
-                className="field__input"
+                className="input field__input"
                 autoComplete="email"
                 maxLength={VOUCH_LIMITS.emailMax}
                 required
@@ -272,7 +273,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 id="v-rel"
                 value={relationship}
                 onChange={(e) => setRelationship(e.target.value as VouchRelationship | '')}
-                className="field__input"
+                className="input field__input"
                 required
               >
                 <option value="">—</option>
@@ -298,7 +299,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder={ts.fields.bodyPlaceholder}
-                className="field__input"
+                className="input field__input"
                 rows={6}
                 maxLength={VOUCH_LIMITS.bodyMax}
                 required
@@ -321,7 +322,7 @@ export function Vouch({ lang }: { lang: Lang }) {
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 placeholder={ts.fields.linkPlaceholder}
-                className="field__input"
+                className="input field__input"
                 maxLength={VOUCH_LIMITS.linkUrlMax}
               />
               <p className="field__hint">{ts.fields.linkHint}</p>
@@ -336,7 +337,7 @@ export function Vouch({ lang }: { lang: Lang }) {
               {submitting ? ts.submitting : ts.submitButton}
             </button>
           </form>
-        </section>
+        </Surface>
       </main>
       <Footer lang={lang} />
     </>

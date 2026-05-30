@@ -45,7 +45,7 @@ export function AdminLayer({ lang, isAdmin }: Props) {
           <h3 className="map-admin__section-title mono">{s.title}</h3>
           <ul className="map-admin__grid">
             {s.tiles.map((tile) => (
-              <li key={tile.href} className="map-admin__tile">
+              <li key={tile.href} className="surface map-admin__tile">
                 {tile.external ? (
                   <a
                     className="map-admin__tile-link"

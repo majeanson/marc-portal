@@ -4,6 +4,7 @@ import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PAGE_FEATURE } from '../lib/features'
+import { Surface } from '../components/Surface'
 
 const COPY = {
   fr: {
@@ -44,7 +45,7 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
     <>
       <Header lang={lang} />
       <main className="page" data-feature={PAGE_FEATURE['page.magic-link-sent']}>
-        <section className="page__panel magic-link">
+        <Surface as="section" className="page__panel magic-link">
           {/* Hand-drawn envelope mark that "lands" once on mount — celebrates
               the moment the link is in flight without being corny. Decorative,
               aria-hidden. Pairs with a 6-particle confetti burst keyframe. */}
@@ -89,7 +90,7 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
           <p>
             <a href={lang === 'en' ? '/en/login' : '/login'}>{t.again}</a>
           </p>
-        </section>
+        </Surface>
       </main>
       <Footer lang={lang} />
     </>

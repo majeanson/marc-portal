@@ -100,7 +100,7 @@ export function ShareModal({
     >
       <div
         ref={dialogRef}
-        className="share-modal"
+        className="surface share-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-modal-title"
@@ -135,7 +135,7 @@ export function ShareModal({
         <div className="share-modal__row">
           <input
             type="text"
-            className="share-modal__url mono"
+            className="input share-modal__url mono"
             value={shareUrl}
             readOnly
             onFocus={(e) => e.currentTarget.select()}

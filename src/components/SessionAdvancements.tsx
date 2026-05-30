@@ -73,7 +73,7 @@ export function SessionAdvancements({
 
   if (items === null && loading) {
     return (
-      <section className="intake__step session-frame__panel session-advancements">
+      <section className="surface intake__step session-frame__panel session-advancements">
         <h2>{t.heading}</h2>
         <p className="mono">{t.loading}</p>
       </section>
@@ -85,7 +85,7 @@ export function SessionAdvancements({
   const current = items?.find((i) => i.flags.showAsCurrentBuild) ?? null
 
   return (
-    <section className="intake__step session-frame__panel session-advancements">
+    <section className="surface intake__step session-frame__panel session-advancements">
       <h2>{t.heading}</h2>
       <p className="field__hint session-advancements__hint">{t.subtitle}</p>
 
@@ -222,7 +222,7 @@ function AdvancementForm({
         <span className="field__label">{t.formLabel}</span>
         <input
           type="text"
-          className="field__input"
+          className="input field__input"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder={t.formLabelPlaceholder}
@@ -233,7 +233,7 @@ function AdvancementForm({
       <label className="field">
         <span className="field__label">{t.formBody}</span>
         <textarea
-          className="field__input"
+          className="input field__input"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={3}
@@ -244,7 +244,7 @@ function AdvancementForm({
         <span className="field__label">{t.formBuildUrl}</span>
         <input
           type="url"
-          className="field__input"
+          className="input field__input"
           value={buildUrl}
           onChange={(e) => setBuildUrl(e.target.value)}
           placeholder={t.formBuildUrlPlaceholder}
@@ -255,7 +255,7 @@ function AdvancementForm({
         <span className="field__label">{t.formIframePath}</span>
         <input
           type="text"
-          className="field__input"
+          className="input field__input"
           value={iframePath}
           onChange={(e) => setIframePath(e.target.value)}
           placeholder={t.formIframePathPlaceholder}
@@ -503,7 +503,7 @@ function EditPanel({
         <span className="field__label">{t.formLabel}</span>
         <input
           type="text"
-          className="field__input"
+          className="input field__input"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           maxLength={200}
@@ -512,7 +512,7 @@ function EditPanel({
       <label className="field">
         <span className="field__label">{t.formBody}</span>
         <textarea
-          className="field__input"
+          className="input field__input"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={3}
@@ -522,7 +522,7 @@ function EditPanel({
         <span className="field__label">{t.formIframePath}</span>
         <input
           type="text"
-          className="field__input"
+          className="input field__input"
           value={iframePath}
           onChange={(e) => setIframePath(e.target.value)}
         />

@@ -257,7 +257,7 @@ export function SiteSearch({ lang }: { lang: Lang }) {
       <button
         ref={triggerRef}
         type="button"
-        className="site-search__trigger"
+        className="surface site-search__trigger"
         aria-label={t.triggerLabel}
         aria-keyshortcuts="Control+K Meta+K"
         onClick={openSearch}
@@ -280,7 +280,7 @@ export function SiteSearch({ lang }: { lang: Lang }) {
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- a modal dialog legitimately owns its Escape / arrow-key / focus-trap handling */}
             <div
               ref={panelRef}
-              className="site-search__panel"
+              className="surface site-search__panel"
               role="dialog"
               aria-modal="true"
               aria-label={t.dialogLabel}

@@ -21,6 +21,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
+import { Surface } from '../components/Surface'
 import type { Lang } from '../i18n'
 import { useAuth } from '../lib/authContext'
 import { formatDateTime } from '../lib/format'
@@ -320,9 +321,9 @@ export function AdminVouches({ lang }: { lang: Lang }) {
       <>
         <Header lang={lang} />
         <main className="page">
-          <section className="page__panel">
+          <Surface as="section" className="page__panel">
             <p>{t.forbidden}</p>
-          </section>
+          </Surface>
         </main>
         <Footer lang={lang} />
       </>
@@ -338,7 +339,7 @@ export function AdminVouches({ lang }: { lang: Lang }) {
     <>
       <Header lang={lang} />
       <main className="page">
-        <section className="page__panel">
+        <Surface as="section" className="page__panel">
           <p>
             <Link to={`${langPrefix}/admin`}>{t.backToHub}</Link>
           </p>
@@ -439,7 +440,7 @@ export function AdminVouches({ lang }: { lang: Lang }) {
           >
             {t.refresh}
           </button>
-        </section>
+        </Surface>
       </main>
       <Footer lang={lang} />
     </>
@@ -510,7 +511,7 @@ function VouchRow(props: RowProps) {
     t.relationshipLabels[v.author_relationship as VouchRelationship] ?? v.author_relationship
 
   return (
-    <li className="admin-vouches__row">
+    <Surface as="li" className="admin-vouches__row">
       <header className="admin-vouches__row-head">
         <div className="admin-vouches__row-meta">
           <span className={`status-pill status-pill--${v.status}`}>{t.statusLabels[v.status]}</span>
@@ -623,7 +624,7 @@ function VouchRow(props: RowProps) {
           </div>
         </>
       )}
-    </li>
+    </Surface>
   )
 }
 
@@ -692,7 +693,7 @@ function VouchEditForm({
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="field__input"
+          className="input field__input"
           maxLength={VOUCH_LIMITS.nameMax}
           required
         />
@@ -705,7 +706,7 @@ function VouchEditForm({
           id={`v-rel-${v.id}`}
           value={rel}
           onChange={(e) => setRel(e.target.value as VouchRelationship)}
-          className="field__input"
+          className="input field__input"
         >
           {VOUCH_RELATIONSHIPS.map((r) => (
             <option key={r} value={r}>
@@ -722,7 +723,7 @@ function VouchEditForm({
           id={`v-body-${v.id}`}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          className="field__input"
+          className="input field__input"
           rows={5}
           maxLength={VOUCH_LIMITS.bodyMax}
           required
@@ -740,7 +741,7 @@ function VouchEditForm({
           type="url"
           value={linkUrl}
           onChange={(e) => setLinkUrl(e.target.value)}
-          className="field__input"
+          className="input field__input"
           maxLength={VOUCH_LIMITS.linkUrlMax}
         />
       </div>

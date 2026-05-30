@@ -7,6 +7,7 @@ import { FeatureDot } from './FeatureDot'
 import { SessionSubHeader } from './SessionSubHeader'
 import { SiteSearch } from './SiteSearch'
 import { ThemeToggle } from './ThemeToggle'
+import { AccentToggle } from './AccentToggle'
 
 /** Marketing nav links — `id` is the home-section anchor (also the
  *  HOME_SECTION_FEATURE key, so each link borrows the section's feature
@@ -147,6 +148,7 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
                 )}
               </div>
             )}
+            <AccentToggle lang={lang} />
             <ThemeToggle lang={lang} />
             <nav className="lang" aria-label={t.langNavLabel}>
               <a

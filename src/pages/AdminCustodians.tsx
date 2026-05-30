@@ -16,6 +16,7 @@ import { listSessions, type SessionRow } from '../lib/sessionsApi'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { formatDate, formatCadCents } from '../lib/format'
 import { CUSTODIAN_CENTS } from '../lib/pricing'
+import { Surface } from '../components/Surface'
 
 const COPY = {
   fr: {
@@ -366,7 +367,7 @@ function CustodianRow({
         )
       : null
   return (
-    <li className="me-portal__card">
+    <Surface as="li" className="me-portal__card">
       <a
         href={`${langPrefix}/session/${session.id}`}
         className="me-portal__card-link"
@@ -389,7 +390,7 @@ function CustodianRow({
           <span className="me-portal__open mono">{copy.open}</span>
         </div>
       </a>
-    </li>
+    </Surface>
   )
 }
 

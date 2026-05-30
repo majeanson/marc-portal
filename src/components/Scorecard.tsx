@@ -175,32 +175,32 @@ export function Scorecard({ lang }: { lang: Lang }) {
         <p className="scorecard__lead">{t.lead}</p>
       </div>
       <ul className="scorecard__grid">
-        <li className="scorecard__tile">
+        <li className="surface scorecard__tile">
           <span className="scorecard__value">{build.testCount}</span>
           <span className="scorecard__label">{t.tests}</span>
           <span className="scorecard__sub mono">{t.testsSub}</span>
         </li>
-        <li className={`scorecard__tile scorecard__tile--${perfState}`}>
+        <li className={`surface scorecard__tile scorecard__tile--${perfState}`}>
           <span className="scorecard__value">{perfValue}</span>
           <span className="scorecard__label">{t.perf}</span>
           <span className="scorecard__sub mono">{perfSub}</span>
         </li>
-        <li className={`scorecard__tile scorecard__tile--${healthState}`}>
+        <li className={`surface scorecard__tile scorecard__tile--${healthState}`}>
           <span className="scorecard__value scorecard__value--word">{healthValue}</span>
           <span className="scorecard__label">{t.health}</span>
           <span className="scorecard__sub mono">{t.healthSub}</span>
         </li>
-        <li className={`scorecard__tile scorecard__tile--${responseState}`}>
+        <li className={`surface scorecard__tile scorecard__tile--${responseState}`}>
           <span className="scorecard__value">{responseValue}</span>
           <span className="scorecard__label">{t.response}</span>
           <span className="scorecard__sub mono">{responseSub}</span>
         </li>
-        <li className="scorecard__tile">
+        <li className="surface scorecard__tile">
           <span className="scorecard__value">{shippedValue}</span>
           <span className="scorecard__label">{t.shipped}</span>
           <span className="scorecard__sub mono">{t.shippedSub}</span>
         </li>
-        <li className="scorecard__tile">
+        <li className="surface scorecard__tile">
           <span className="scorecard__value scorecard__value--word mono">{build.commit}</span>
           <span className="scorecard__label">{t.build}</span>
           <span className="scorecard__sub mono">{t.buildSub(build.builtAt)}</span>

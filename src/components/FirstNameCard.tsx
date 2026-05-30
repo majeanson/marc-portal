@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { getPrefs, updateFirstName } from '../lib/prefsApi'
+import { Btn } from './Btn'
 
 /**
  * First-name card on /me. Optional field — visitors who don't set one
@@ -90,7 +91,7 @@ export function FirstNameCard({ lang }: { lang: Lang }) {
   }
 
   return (
-    <section id="first-name" className="lang-pref" aria-labelledby="first-name-title">
+    <section id="first-name" className="surface lang-pref" aria-labelledby="first-name-title">
       <div className="lang-pref__head">
         <div className="section__eyebrow">{t.eyebrow}</div>
         <h2 id="first-name-title" className="lang-pref__title">
@@ -103,7 +104,7 @@ export function FirstNameCard({ lang }: { lang: Lang }) {
           <span className="first-name__label-text mono">{t.label}</span>
           <input
             type="text"
-            className="first-name__input"
+            className="input first-name__input"
             placeholder={t.placeholder}
             value={value}
             maxLength={80}
@@ -118,14 +119,12 @@ export function FirstNameCard({ lang }: { lang: Lang }) {
             }}
           />
         </label>
-        <button
-          type="button"
-          className="first-name__save"
+        <Btn
           onClick={onCommit}
           disabled={state === 'loading' || state === 'saving' || value.trim() === saved}
         >
           {state === 'saving' ? t.saving : t.save}
-        </button>
+        </Btn>
       </div>
       <p className="lang-pref__status mono" role="status" aria-live="polite">
         {state === 'saved' && t.saved}

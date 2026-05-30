@@ -1094,7 +1094,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
 
             {/* Handoff certificate — a downloadable keepsake, once shipped. */}
             {session.status === 'shipped' && (
-              <section className="intake__step session-frame__panel session-certificate">
+              <section className="surface intake__step session-frame__panel session-certificate">
                 <h2>{t.certificateHeading}</h2>
                 <p className="session-certificate__body">{t.certificateBody}</p>
                 <a
@@ -1107,7 +1107,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
               </section>
             )}
 
-            <section id="session-intake" className="intake__step session-frame__panel">
+            <section id="session-intake" className="surface intake__step session-frame__panel">
               <header className="session-page__intake-head">
                 <h2>{t.intakeHeading}</h2>
                 <div className="session-page__intake-actions">
@@ -1164,7 +1164,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     onChange={onIntakeChange}
                   />
                   {parsed.voiceNapkin && (
-                    <div className="session-voicenapkin">
+                    <div className="surface session-voicenapkin">
                       <span className="mono session-voicenapkin__label">
                         🎙 {tMedia.thread.voiceLabel}
                       </span>
@@ -1179,7 +1179,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
               )}
             </section>
 
-            <section className="intake__step session-frame__panel">
+            <section className="surface intake__step session-frame__panel">
               <h2>{t.timelineHeading}</h2>
               <ul className="session-timeline">
                 {timelineEntries.map((entry, i) => {
@@ -1284,7 +1284,10 @@ export function SessionPage({ lang }: { lang: Lang }) {
               />
             </div>
 
-            <section id="session-conversation" className="intake__step session-frame__panel">
+            <section
+              id="session-conversation"
+              className="surface intake__step session-frame__panel"
+            >
               <h2>{t.threadHeading}</h2>
               {threadItems.length === 0 ? (
                 <p className="thread__empty">{t.none}</p>
@@ -1361,7 +1364,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder={t.placeholder}
                   rows={3}
-                  className="field__input thread__input"
+                  className="input field__input thread__input"
                 />
                 {pendingAttachments.length > 0 && (
                   <ul className="thread__attach-pending" aria-label="pending attachments">

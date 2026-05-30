@@ -1,13 +1,14 @@
 import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
 import type { EngagementStage, StageEvent } from '../../lib/engagements'
+import { Surface } from '../Surface'
 
 const ORDER: EngagementStage[] = ['triage', 'planning', 'building', 'review', 'shipped']
 
 export function EngagementStatusBar({ lang, stages }: { lang: Lang; stages: StageEvent[] }) {
   const t = DICT[lang].engagement.stages
   return (
-    <div className="eng-status" aria-label={DICT[lang].engagement.statusBarLabel}>
+    <Surface className="eng-status" aria-label={DICT[lang].engagement.statusBarLabel}>
       {ORDER.map((stage) => {
         const event = stages.find((s) => s.stage === stage)
         const isCurrent = event?.current ?? false
@@ -27,6 +28,6 @@ export function EngagementStatusBar({ lang, stages }: { lang: Lang; stages: Stag
           </div>
         )
       })}
-    </div>
+    </Surface>
   )
 }

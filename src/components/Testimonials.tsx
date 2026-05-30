@@ -5,6 +5,7 @@ import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../
 import { SectionEyebrow } from './SectionEyebrow'
 import { HomeDrillCard } from './HomeDrillCard'
 import { HOME_SECTION_FEATURE, PAGE_FEATURE } from '../lib/features'
+import { Surface } from './Surface'
 
 const HOME_LIMIT = 3
 
@@ -80,7 +81,7 @@ export function Testimonials({ lang }: { lang: Lang }) {
             const relKey = v.author_relationship as VouchRelationship
             const relLabel = labels[relKey] ?? v.author_relationship
             return (
-              <li key={v.id} className="vouch-card">
+              <Surface as="li" key={v.id} className="vouch-card">
                 <blockquote className="vouch-card__body">
                   <p>{v.body}</p>
                 </blockquote>
@@ -96,7 +97,7 @@ export function Testimonials({ lang }: { lang: Lang }) {
                   </span>
                   <span className="vouch-card__rel"> · {relLabel}</span>
                 </footer>
-              </li>
+              </Surface>
             )
           })}
         </ul>

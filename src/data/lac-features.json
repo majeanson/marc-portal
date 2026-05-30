@@ -1,6 +1,62 @@
 {
   "features": [
     {
+      "featureKey": "feat-2026-109",
+      "title": "Crisp design system — edge recipe, two-axis themes, Btn/Surface/Field primitives",
+      "status": "active",
+      "domain": "marc-portal/design",
+      "tags": [
+        "design-system",
+        "css",
+        "theming",
+        "primitives",
+        "accessibility",
+        "refactor"
+      ],
+      "componentFile": "src/components/Btn.tsx",
+      "liveUrl": null,
+      "problem": "The portal's surfaces were each styled per-component with soft borders, rounded 12px corners, and soft drop shadows that read AI-generated. Marc wanted a crisp, flat, hard-near-black-border 'keycap' look (Sentry-style) across buttons, cards, panels, inputs, and chips — very readable, feels like a physical object, not an iOS pill — plus user-selectable colour themes (violet one of them) on top of the existing day/night toggle. The visual was repeated by hand on ~20 buttons and ~40 surfaces, so changing the look meant editing dozens of rules.",
+      "analysis": "Three layers. (1) An edge recipe expressed as tokens: --edge (true #000 day / near-black #0a0613 night), --edge-shadow (0 1px 0, the hard bottom edge), --btn-radius (6px), --on-accent (white day / dark ink night for AA on the light night accents). Every surface consumes these, so the whole language changes by editing the tokens. (2) Shared classes built on those tokens — .btn/.btn--ghost (the keycap button: hard border, hard bottom edge, inner top highlight, hover lightens fill ~8% via color-mix, active presses +1px, accent focus ring), .surface (the card/panel/tile edge), .input (the crisp text field). (3) React primitives that hold the markup once — Btn (button|anchor, primary|ghost), Surface (polymorphic raised box), Field (label+input+hint+error with aria wiring) — which the call sites route through. A second axis, data-accent (sage default | violet), is orthogonal to data-theme (day/night): accent tokens are redefined per accent for both day and night, so violet works in either, applied first-paint by theme-bootstrap.js and switched by AccentToggle.tsx.",
+      "decisions": [
+        {
+          "decision": "Recipe as tokens first, shared classes second, primitives third",
+          "rationale": "The real DRY win is at the token level — --edge / --edge-shadow / --btn-radius mean the entire design language changes from three values. The .btn/.surface/.input classes give one CSS source per element kind; the Btn/Surface/Field primitives give one markup source. Each layer removes a different kind of duplication without depending on the one above it.",
+          "recommendation": "To restyle, edit the tokens. To add a surface kind, add a class on the tokens. Reach for a primitive only when the markup (not just the skin) repeats."
+        },
+        {
+          "decision": "Two orthogonal theme axes (day/night × accent), not a flat theme list",
+          "rationale": "Surface tokens belong to day/night; the signature accent is a separate choice. Keeping them orthogonal means each accent works in both day and night for the cost of one extra token block per accent, instead of N×2 full themes. Sage stays the :root default so data-accent is only set for non-default accents.",
+          "recommendation": "Add an accent = one :root[data-accent='x'] day block + one night block + a swatch in AccentToggle. The 7 feature-dot hues intentionally do NOT track the accent (separate taxonomy)."
+        },
+        {
+          "decision": "Only collapse buttons/surfaces that are genuinely identical; leave divergent ones bespoke",
+          "rationale": "The reskin unified the LOOK, but several controls keep a load-bearing difference (the account-erasure button's semantic red, the payment pill, complex-markup buttons, the chat-bubble tail). Forcing those onto .btn/<Surface> would change semantics, not just dedupe — premature abstraction. Conservative routing keeps the diff honest.",
+          "recommendation": "When a control diverges (semantic colour, distinct shape, internal markup), leave it; document why rather than forcing the primitive."
+        },
+        {
+          "decision": "Crisp keycap look replaces soft shadows / gradients / rounded pills",
+          "rationale": "The flat hard-edge treatment is exactly the house anti-AI-tells mandate (no soft drop shadows, no gradient fills, no rounded status pills, no floaty CTA lifts) — so the reskin sharpens the existing voice rather than fighting it. Hover lightens the fill instead of lifting; selection is an inset accent ring over the hard edge, not a colour-only border.",
+          "recommendation": "New surfaces use .surface/<Surface>; new buttons use .btn/<Btn>. Never add a soft drop shadow, gradient fill, or 999px radius to a content surface."
+        }
+      ],
+      "successCriteria": "- Every raised surface reads as the same crisp keycap object (1px hard border + hard bottom edge + 6px radius), in day and night\n- Day/night toggle and the new accent picker (sage/violet) compose: violet works in both day and night, primary buttons stay AA-legible\n- .btn/.surface/.input are the single CSS source for each element kind; Btn/Surface/Field hold the markup\n- Bespoke buttons/surfaces that are genuinely identical collapse onto the primitives; divergent ones stay, documented\n- No soft drop shadows, gradients, or rounded pills remain on content surfaces\n- typecheck/lint/prettier/tests green; renders coherently across home/intake/login/meta/carte in day-sage and night-violet",
+      "knownLimitations": [
+        "Routing Login through <Field> changed its email input from the old mono/bg-section look to the shared sans/bg-card field look — a deliberate consistency gain, reversible via inputClassName.",
+        "Several bespoke controls (account-erasure danger button, the payment pill, complex-markup buttons) were intentionally left off the primitives because they carry a load-bearing divergence; they still consume the edge tokens so the look stays consistent.",
+        "A few orphan CSS surface rules with no current JSX call site in src/ were left untouched rather than guessed at.",
+        "The reskin changes nearly every screenshot, so the full e2e visual baseline set must be regenerated on the PR."
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-29",
+          "reason": "Shipped: crisp edge recipe + two-axis themes + Btn/Surface/Field primitives rolled across the app."
+        }
+      ],
+      "lastTransitionDate": "2026-05-29"
+    },
+    {
       "featureKey": "feat-2026-108",
       "title": "/carte walkthrough film — self-shooting guided tour embedded under the atlas",
       "status": "active",
@@ -5070,5 +5126,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-29T21:50:24.337Z"
+  "generatedAt": "2026-05-29T23:26:59.994Z"
 }

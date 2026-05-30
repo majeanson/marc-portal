@@ -79,7 +79,7 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
             </p>
             <ul className="projects__grid featured-projects__grid" aria-hidden="true">
               {Array.from({ length: FEATURED_LIMIT }, (_, i) => (
-                <li key={i} className="project-card project-card--skeleton">
+                <li key={i} className="surface project-card project-card--skeleton">
                   <div className="project-card__preview project-card__preview--skeleton" />
                   <div className="project-card__skeleton-body">
                     <span className="skeleton-bar skeleton-bar--meta" />
@@ -179,7 +179,7 @@ function FeaturedCard({
   const isTransitioning = useViewTransitionState(shareHref)
   const cardStyle = isTransitioning ? { viewTransitionName: 'project-detail' } : undefined
   return (
-    <li className="project-card" style={cardStyle}>
+    <li className="surface project-card" style={cardStyle}>
       <Link to={shareHref} className="project-card__link" viewTransition aria-label={title}>
         <ProjectCardPreview
           buildHref={buildHref}

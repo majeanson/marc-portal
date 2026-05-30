@@ -25,6 +25,7 @@ import { ApiError } from '../../lib/api'
 import { captureException } from '../../lib/sentry'
 import { NapkinReplay } from '../NapkinReplay'
 import { SceneBoundary } from '../SceneBoundary'
+import { Btn } from '../Btn'
 
 // SketchCanvas pulls in Excalidraw (~600 KB). Lazy so visitors who never
 // click "edit" don't pay the bundle cost.
@@ -112,7 +113,7 @@ export function NapkinSection({ lang, napkin, sessionId, onReplaced }: NapkinSec
   const isEditing = edit.kind === 'editing' || edit.kind === 'saving'
 
   return (
-    <div className="session-napkin">
+    <div className="surface session-napkin">
       <div className="session-napkin__head">
         <span className="section__eyebrow">{t.eyebrow}</span>
         <div className="session-napkin__actions">
@@ -182,22 +183,21 @@ export function NapkinSection({ lang, napkin, sessionId, onReplaced }: NapkinSec
       </div>
       {isEditing && (
         <div className="session-napkin__edit-bar mono">
-          <button
-            type="button"
-            className="session-napkin__edit-save"
+          <Btn
+            className="session-napkin__edit-btn"
             onClick={onSave}
             disabled={edit.kind === 'saving'}
           >
             {edit.kind === 'saving' ? t.editSaving : t.editSave}
-          </button>
-          <button
-            type="button"
-            className="session-napkin__edit-cancel"
+          </Btn>
+          <Btn
+            variant="ghost"
+            className="session-napkin__edit-btn"
             onClick={onCancel}
             disabled={edit.kind === 'saving'}
           >
             {t.editCancel}
-          </button>
+          </Btn>
         </div>
       )}
       {edit.kind === 'error' && <p className="session-napkin__edit-error mono">{edit.message}</p>}

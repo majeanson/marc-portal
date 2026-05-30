@@ -6,6 +6,7 @@ import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FEATURE } from '../lib/features'
 import { TimeTravelScrubber } from '../components/TimeTravelScrubber'
 import { ShareModal } from '../components/ShareModal'
+import { Surface } from '../components/Surface'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicAdvancements, type PublicAdvancementRow } from '../lib/advancementsApi'
@@ -225,7 +226,7 @@ function ShareTestimonials({
             const relKey = v.author_relationship as VouchRelationship
             const relLabel = labels[relKey] ?? v.author_relationship
             return (
-              <li key={v.id} className="vouch-card">
+              <Surface as="li" key={v.id} className="vouch-card">
                 <blockquote className="vouch-card__body">
                   <p>{v.body}</p>
                 </blockquote>
@@ -241,12 +242,12 @@ function ShareTestimonials({
                   </span>
                   <span className="vouch-card__rel"> · {relLabel}</span>
                 </footer>
-              </li>
+              </Surface>
             )
           })}
         </ul>
       )}
-      <aside className="share-testimonials__cta">
+      <aside className="surface share-testimonials__cta">
         <h3 className="share-testimonials__cta-title">{t.ctaTitle}</h3>
         <p className="share-testimonials__cta-body">{t.ctaBody}</p>
         <a className="share-testimonials__cta-link mono" href={vouchHref}>
