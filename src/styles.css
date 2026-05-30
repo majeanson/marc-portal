@@ -7984,22 +7984,15 @@ button.intake__progress-step:disabled {
   }
 }
 
-/* Home-page CTA — slightly larger padding than the shared button. No
-   wax-stamp shadow here: the open hero is calm and flat, the paper is
-   the surface, the button doesn't pretend to lift off it. Hover is
-   the colour shift only — no lift, no shadow. The shared .hero__cta
-   carries those on other pages where the elevated look is warranted;
-   on the home it's an AI-y tell, so it gets explicitly disabled here. */
+/* Home-page CTA — slightly larger padding than the shared .hero__cta, but the
+   SAME crisp keycap edge as every other button. The old rule killed the shadow
+   here because the pre-reskin lift was a soft AI-y drop shadow; the reskin
+   replaced that with the hard 1px bottom edge, which is now the house look — so
+   the home CTA keeps it and matches the header controls. Only the size differs. */
 .home .hero__cta {
   padding: 16px 26px;
   font-size: 16px;
   letter-spacing: 0.005em;
-  box-shadow: none;
-}
-.home .hero__cta:hover {
-  transform: none;
-  box-shadow: none;
-  background: var(--accent-warm);
 }
 /* ── HowItWorks — editorial steps ─────────────────────────────────────────── */
 .home .steps--editorial {
