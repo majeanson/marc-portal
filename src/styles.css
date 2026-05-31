@@ -93,19 +93,21 @@
 }
 
 :root[data-theme='night'] {
-  /* Lifted slate, not flat near-black (Sentry-style: the dark surface reads
-     "raised", not a void). Cooler + lighter than the old warm-brown ramp, with
-     a faint sage cast so the default night carries its accent on the surface
-     itself, not only on the marks. Warm-cream TEXT below is kept — warm type on
-     a cool-dark surface is the pairing we want; only the surfaces lifted.
-     The violet accent overrides these with a violet cast further down. */
-  --bg: #1a1922;
-  --bg-section: #211f2b;
-  --bg-card: #2a2835;
-  --bg-hover: #332f3f;
+  /* Dark SAGE-GREEN surfaces, not neutral slate (Sentry-style: the dark
+     surface reads "raised", and it wears the accent — sage night is a green
+     dark theme, violet night a purple one, so buttons + their light edge read
+     as crisply as they do on the light paper). An earlier pass left these
+     near-neutral cool-grey; the cast is now an explicit dark green so the
+     theme matches its accent. Warm-cream TEXT below is kept — warm type on a
+     dark-green surface is the pairing we want. The violet accent overrides
+     these with a parallel purple ramp further down. */
+  --bg: #131c16;
+  --bg-section: #18241b;
+  --bg-card: #213024;
+  --bg-hover: #2b3c2e;
   --bg-active: #2c3a34;
-  --border: #423d52;
-  --border-soft: #2f2c3a;
+  --border: #3a4d40;
+  --border-soft: #28342b;
   --text: #f3ecd9;
   --text-mid: #c9c0aa;
   --text-soft: #8d8674;
@@ -191,12 +193,21 @@
   --bg-section: #221d31;
   --bg-card: #2b2540;
   --bg-hover: #342c4c;
+  /* Selected/active background — the base night value is sage-green, so the
+     violet cast needs its own or selected nav/tabs read green on a violet UI. */
+  --bg-active: #2f2752;
   --border: #463c63;
   --border-soft: #2f2942;
 }
-/* Sticky header glass — re-tinted in night so the blur doesn't read white. */
+/* Sticky header glass — re-tinted in night so the blur doesn't read white.
+   Accent-aware: it has to match the surface cast (green for sage, violet for
+   violet), or the blurred bar reads as a different theme than the page under
+   it. Tracks --bg of each night cast at 0.86 alpha. */
 :root[data-theme='night'] .site-header {
-  background: rgba(26, 25, 34, 0.86);
+  background: rgba(19, 28, 22, 0.86);
+}
+:root[data-theme='night'][data-accent='violet'] .site-header {
+  background: rgba(27, 23, 38, 0.86);
 }
 /* Paper grain — the cream paper grain reads wrong on dark bg; soften it. */
 :root[data-theme='night'] .home::before {
@@ -506,7 +517,10 @@ p {
 }
 
 :root[data-theme='night'] .session-subheader {
-  background: rgba(26, 25, 34, 0.86);
+  background: rgba(19, 28, 22, 0.86);
+}
+:root[data-theme='night'][data-accent='violet'] .session-subheader {
+  background: rgba(27, 23, 38, 0.86);
 }
 
 @media (max-width: 1180px) {
