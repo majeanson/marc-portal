@@ -7,7 +7,7 @@ type Theme = 'day' | 'night'
 const STORAGE_KEY = 'marc-portal:theme'
 const META_COLOR_BY_THEME: Record<Theme, string> = {
   day: '#f6f1e6',
-  night: '#181613',
+  night: '#1a1922',
 }
 
 function readSavedTheme(): Theme | null {
