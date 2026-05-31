@@ -93,21 +93,22 @@
 }
 
 :root[data-theme='night'] {
-  /* Dark SAGE-GREEN surfaces, not neutral slate (Sentry-style: the dark
-     surface reads "raised", and it wears the accent — sage night is a green
-     dark theme, violet night a purple one, so buttons + their light edge read
-     as crisply as they do on the light paper). An earlier pass left these
-     near-neutral cool-grey; the cast is now an explicit dark green so the
-     theme matches its accent. Warm-cream TEXT below is kept — warm type on a
-     dark-green surface is the pairing we want. The violet accent overrides
-     these with a parallel purple ramp further down. */
-  --bg: #131c16;
-  --bg-section: #18241b;
-  --bg-card: #213024;
-  --bg-hover: #2b3c2e;
-  --bg-active: #2c3a34;
-  --border: #3a4d40;
-  --border-soft: #28342b;
+  /* Dark grey-GREEN surfaces, not neutral slate (Sentry-style: the dark
+     surface reads "raised", and it wears the accent — sage night is a muted
+     green dark theme, violet night a purple one, so buttons + their light edge
+     read as crisply as they do on the light paper). An earlier pass left these
+     near-neutral cool-grey; the cast is now a soft grey-green — clearly green
+     but low-saturation so it stays a calm dark theme, not a saturated forest.
+     Warm-cream TEXT below is kept — warm type on the grey-green surface is the
+     pairing we want. The violet accent overrides these with a parallel purple
+     ramp further down. */
+  --bg: #171c18;
+  --bg-section: #1d231e;
+  --bg-card: #262d27;
+  --bg-hover: #303830;
+  --bg-active: #2f3a32;
+  --border: #3f4a41;
+  --border-soft: #2c332d;
   --text: #f3ecd9;
   --text-mid: #c9c0aa;
   --text-soft: #8d8674;
@@ -204,7 +205,7 @@
    violet), or the blurred bar reads as a different theme than the page under
    it. Tracks --bg of each night cast at 0.86 alpha. */
 :root[data-theme='night'] .site-header {
-  background: rgba(19, 28, 22, 0.86);
+  background: rgba(23, 28, 24, 0.86);
 }
 :root[data-theme='night'][data-accent='violet'] .site-header {
   background: rgba(27, 23, 38, 0.86);
@@ -517,7 +518,7 @@ p {
 }
 
 :root[data-theme='night'] .session-subheader {
-  background: rgba(19, 28, 22, 0.86);
+  background: rgba(23, 28, 24, 0.86);
 }
 :root[data-theme='night'][data-accent='violet'] .session-subheader {
   background: rgba(27, 23, 38, 0.86);
