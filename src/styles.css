@@ -37,8 +37,10 @@
      One recipe: a 1px hard border + a 1px hard bottom shadow. No soft drop
      shadow, no gradient, no glow — the hard bottom edge is what makes a
      surface read as a keycap set onto the paper rather than floating above
-     it. --edge is true black on the light surface, near-black on dark (where
-     true black would disappear into the dark bg). Press-down (active) drops
+     it. --edge is true black on the light day surface; night INVERTS it to a
+     light slate, because an edge defines a surface by contrasting with it and
+     a dark edge vanishes on a dark surface (see the night override below).
+     Press-down (active) drops
      the bottom shadow and nudges +1px, so the object presses into its own
      edge. */
   --edge: #000;
@@ -144,10 +146,16 @@
   --feat-shipped-soft: #173733;
   --feat-meta: #9aa7b4;
   --feat-meta-soft: #2a3038;
-  /* Near-black edge on the dark surface: true #000 would vanish into the
-     dark bg, so the hard border is a hair off-black, dark enough to read as
-     a recessed keycap edge against the raised card surface. */
-  --edge: #0a0613;
+  /* INVERTED on dark: the keycap edge defines a surface by contrasting with
+     it, so on the light day paper it's black (darker than paper) and on the
+     dark night surface it must be LIGHT (lighter than the surface). The old
+     near-black value was darker than --bg-card, so ghost-button and card
+     borders dissolved into the dark — the edge was invisible. A cool light
+     slate reads as a crisp 1px outline + bottom rim on every dark surface,
+     and on the light-accent filled buttons it still sits darker than the
+     fill, so it outlines those too. Neutral-cool works under both the sage
+     and violet surface casts, so it's set once here, not per-accent. */
+  --edge: #6c6588;
   /* Dark ink for text on the light night accents (light sage / bright
      violet) — white would fail AA there. */
   --on-accent: #14110c;
