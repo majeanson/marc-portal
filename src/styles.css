@@ -37,8 +37,10 @@
      One recipe: a 1px hard border + a 1px hard bottom shadow. No soft drop
      shadow, no gradient, no glow — the hard bottom edge is what makes a
      surface read as a keycap set onto the paper rather than floating above
-     it. --edge is true black on the light surface, near-black on dark (where
-     true black would disappear into the dark bg). Press-down (active) drops
+     it. --edge is true black on the light day surface; night INVERTS it to a
+     light slate, because an edge defines a surface by contrasting with it and
+     a dark edge vanishes on a dark surface (see the night override below).
+     Press-down (active) drops
      the bottom shadow and nudges +1px, so the object presses into its own
      edge. */
   --edge: #000;
@@ -91,19 +93,22 @@
 }
 
 :root[data-theme='night'] {
-  /* Lifted slate, not flat near-black (Sentry-style: the dark surface reads
-     "raised", not a void). Cooler + lighter than the old warm-brown ramp, with
-     a faint sage cast so the default night carries its accent on the surface
-     itself, not only on the marks. Warm-cream TEXT below is kept — warm type on
-     a cool-dark surface is the pairing we want; only the surfaces lifted.
-     The violet accent overrides these with a violet cast further down. */
-  --bg: #1a1922;
-  --bg-section: #211f2b;
-  --bg-card: #2a2835;
-  --bg-hover: #332f3f;
-  --bg-active: #2c3a34;
-  --border: #423d52;
-  --border-soft: #2f2c3a;
+  /* Dark grey-GREEN surfaces, not neutral slate (Sentry-style: the dark
+     surface reads "raised", and it wears the accent — sage night is a muted
+     green dark theme, violet night a purple one, so buttons + their light edge
+     read as crisply as they do on the light paper). An earlier pass left these
+     near-neutral cool-grey; the cast is now a soft grey-green — clearly green
+     but low-saturation so it stays a calm dark theme, not a saturated forest.
+     Warm-cream TEXT below is kept — warm type on the grey-green surface is the
+     pairing we want. The violet accent overrides these with a parallel purple
+     ramp further down. */
+  --bg: #171c18;
+  --bg-section: #1d231e;
+  --bg-card: #262d27;
+  --bg-hover: #303830;
+  --bg-active: #2f3a32;
+  --border: #3f4a41;
+  --border-soft: #2c332d;
   --text: #f3ecd9;
   --text-mid: #c9c0aa;
   --text-soft: #8d8674;
@@ -144,10 +149,16 @@
   --feat-shipped-soft: #173733;
   --feat-meta: #9aa7b4;
   --feat-meta-soft: #2a3038;
-  /* Near-black edge on the dark surface: true #000 would vanish into the
-     dark bg, so the hard border is a hair off-black, dark enough to read as
-     a recessed keycap edge against the raised card surface. */
-  --edge: #0a0613;
+  /* INVERTED on dark: the keycap edge defines a surface by contrasting with
+     it, so on the light day paper it's black (darker than paper) and on the
+     dark night surface it must be LIGHT (lighter than the surface). The old
+     near-black value was darker than --bg-card, so ghost-button and card
+     borders dissolved into the dark — the edge was invisible. A cool light
+     slate reads as a crisp 1px outline + bottom rim on every dark surface,
+     and on the light-accent filled buttons it still sits darker than the
+     fill, so it outlines those too. Neutral-cool works under both the sage
+     and violet surface casts, so it's set once here, not per-accent. */
+  --edge: #6c6588;
   /* Dark ink for text on the light night accents (light sage / bright
      violet) — white would fail AA there. */
   --on-accent: #14110c;
@@ -183,12 +194,21 @@
   --bg-section: #221d31;
   --bg-card: #2b2540;
   --bg-hover: #342c4c;
+  /* Selected/active background — the base night value is sage-green, so the
+     violet cast needs its own or selected nav/tabs read green on a violet UI. */
+  --bg-active: #2f2752;
   --border: #463c63;
   --border-soft: #2f2942;
 }
-/* Sticky header glass — re-tinted in night so the blur doesn't read white. */
+/* Sticky header glass — re-tinted in night so the blur doesn't read white.
+   Accent-aware: it has to match the surface cast (green for sage, violet for
+   violet), or the blurred bar reads as a different theme than the page under
+   it. Tracks --bg of each night cast at 0.86 alpha. */
 :root[data-theme='night'] .site-header {
-  background: rgba(26, 25, 34, 0.86);
+  background: rgba(23, 28, 24, 0.86);
+}
+:root[data-theme='night'][data-accent='violet'] .site-header {
+  background: rgba(27, 23, 38, 0.86);
 }
 /* Paper grain — the cream paper grain reads wrong on dark bg; soften it. */
 :root[data-theme='night'] .home::before {
@@ -498,7 +518,10 @@ p {
 }
 
 :root[data-theme='night'] .session-subheader {
-  background: rgba(26, 25, 34, 0.86);
+  background: rgba(23, 28, 24, 0.86);
+}
+:root[data-theme='night'][data-accent='violet'] .session-subheader {
+  background: rgba(27, 23, 38, 0.86);
 }
 
 @media (max-width: 1180px) {
