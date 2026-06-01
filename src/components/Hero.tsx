@@ -11,18 +11,20 @@ export function Hero({ lang }: { lang: Lang }) {
   const intakeHref = `${langPrefix}/intake`
   const sessionsHref = `${langPrefix}${isAdmin ? '/admin/inbox' : '/me'}`
 
-  // Capacity-aware CTA label. atCap defaults to false until /api/capacity
-  // responds — the "loading" state therefore reads identically to "open",
-  // which is the right side of the fence for a hero that should never
-  // look broken on cold-start. Visitors who land while the request is
-  // in-flight see the normal CTA; if the API says we're full, it swaps
-  // to the waitlist label.
+  // Capacity-aware CTA + slot pill. `open` stays null until /api/capacity
+  // answers — the "loading" state reads as a neutral "open for projects"
+  // label and a not-at-cap CTA, which is the right side of the fence for a
+  // hero that should never look broken on cold-start. Once the real numbers
+  // land, the pill shows the actual count of open build slots (cap is 2).
+  const [open, setOpen] = useState<number | null>(null)
   const [atCap, setAtCap] = useState<boolean>(false)
   useEffect(() => {
     let cancelled = false
     getCapacityLive()
       .then((c) => {
-        if (!cancelled) setAtCap(c.atCap)
+        if (cancelled) return
+        setAtCap(c.atCap)
+        setOpen(Math.max(0, c.activeCap - c.active))
       })
       .catch(() => {})
     return () => {
@@ -31,6 +33,7 @@ export function Hero({ lang }: { lang: Lang }) {
   }, [])
 
   const ctaLabel = email ? t.ctaLoggedIn : atCap ? t.ctaWaitlist : t.cta
+  const slotLabel = atCap ? t.slotFull : open === null ? t.slotOpenLoading : t.slotOpen(open)
 
   return (
     <section className="section hero" id="hero" aria-labelledby="hero-title">
@@ -55,7 +58,7 @@ export function Hero({ lang }: { lang: Lang }) {
           <span
             className={`hero__slot-pill mono${atCap ? ' hero__slot-pill--full' : ' hero__slot-pill--open'}`}
           >
-            {atCap ? t.slotFull : t.slotOpen}
+            {slotLabel}
           </span>
           {email && (
             <a className="hero__sessions-link mono" href={sessionsHref}>

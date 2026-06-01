@@ -6,14 +6,9 @@ import { currentEmail } from '../../_lib/auth'
 import { randomTokenB64url } from '../../_lib/bytes'
 import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
-import { badRequest, conflict, ok, tooManyRequests, unauthorized } from '../../_lib/json'
+import { badRequest, ok, tooManyRequests, unauthorized } from '../../_lib/json'
 import { clientIp, rateLimitCheck, rateLimitSweep } from '../../_lib/ratelimit'
-import {
-  countActiveAndTriage,
-  isTriageAtCap,
-  SESSION_SELECT_COLUMNS,
-  type SessionRow,
-} from '../../_lib/sessions'
+import { SESSION_SELECT_COLUMNS, type SessionRow } from '../../_lib/sessions'
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const email = await currentEmail(request, env.SESSION_SECRET)
@@ -67,19 +62,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return badRequest('invalid json')
   }
 
-  // Bedrock cap: 1 active + 1 in triage. New sessions land in `draft`, which
-  // doesn't itself count, but submitting from intake auto-promotes to triage
-  // (see Intake.tsx). To keep the cap honest at the *moment of intake* — when
-  // the visitor sees the "atCap" notice — we refuse new sessions whose intake
-  // payload is non-null (i.e. "real" submissions, not Marc-created drafts) when
-  // triage is already full. Admins are exempt; they may need to seed a draft.
-  const admin = isAdmin(env, email)
-  if (!admin && body.intakeJson !== undefined && body.intakeJson !== null) {
-    const counts = await countActiveAndTriage(env.DB)
-    if (isTriageAtCap(counts)) {
-      return conflict('at capacity — added to waitlist')
-    }
-  }
+  // Capacity note: the only hard cap is on `active` builds (ACTIVE_CAP),
+  // enforced atomically at promotion time in PATCH /sessions/:id. Triage is
+  // uncapped, so intake submissions are never refused for capacity — a
+  // submission made while both build slots are full still creates a real
+  // queued session. The "you're in the queue" framing the visitor sees is
+  // driven client-side off /api/capacity's atCap flag (see Intake.tsx); the
+  // server's job here is just to record the proposal.
 
   // intake_json is stored as text; we accept either a stringified JSON or an
   // object that we serialize. Either way it's opaque to the server.

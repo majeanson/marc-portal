@@ -2,12 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { D1Mock } from '../../tests/d1-mock'
 import {
   ACTIVE_CAP,
-  TRIAGE_CAP,
   appendStatusHistory,
   canAccessSession,
   countActiveAndTriage,
   isActiveAtCap,
-  isTriageAtCap,
   isValidStatus,
   loadSession,
   parseStatusHistory,
@@ -127,7 +125,7 @@ describe('parseStatusHistory + appendStatusHistory', () => {
   })
 })
 
-describe('countActiveAndTriage + isActiveAtCap + isTriageAtCap', () => {
+describe('countActiveAndTriage + isActiveAtCap', () => {
   function seed(
     db: D1Mock,
     rows: Array<{ id: string; status: string; deleted_at?: number | null }>,
@@ -170,11 +168,12 @@ describe('countActiveAndTriage + isActiveAtCap + isTriageAtCap', () => {
     expect(c).toEqual({ active: 0, triage: 1 })
   })
 
-  it('cap predicates match the constants', () => {
+  it('isActiveAtCap matches the constant (now 2) and ignores triage', () => {
+    expect(ACTIVE_CAP).toBe(2)
     expect(isActiveAtCap({ active: ACTIVE_CAP, triage: 0 })).toBe(true)
     expect(isActiveAtCap({ active: ACTIVE_CAP - 1, triage: 0 })).toBe(false)
-    expect(isTriageAtCap({ active: 0, triage: TRIAGE_CAP })).toBe(true)
-    expect(isTriageAtCap({ active: 0, triage: TRIAGE_CAP - 1 })).toBe(false)
+    // Triage is uncapped — a full queue never reads as at-cap.
+    expect(isActiveAtCap({ active: 0, triage: 99 })).toBe(false)
   })
 })
 

@@ -16,6 +16,7 @@ import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
 import { badRequest, conflict, forbidden, notFound, ok, unauthorized } from '../../_lib/json'
 import {
+  ACTIVE_CAP,
   appendStatusHistory,
   canAccessSession,
   isValidStatus,
@@ -136,12 +137,6 @@ export const onRequestPatch: PagesFunction<Env> = async (ctx) => {
     if (!admin) return forbidden('only admin can change status')
     if (!isValidStatus(body.status)) return badRequest('invalid status')
     if (body.status !== session.status) {
-      // Bedrock cap enforcement, atomic: for transitions *into* `triage` or
-      // `active`, the cap check is folded into the UPDATE's WHERE clause via a
-      // subselect. If the count is already at cap, the UPDATE affects 0 rows
-      // and we return 409. This closes the read-then-write race that the prior
-      // two-step pattern had — two admins promoting two drafts to triage at
-      // the same time can no longer both succeed.
       const entry: StatusHistoryEntry = {
         from: session.status,
         to: body.status,
@@ -150,8 +145,14 @@ export const onRequestPatch: PagesFunction<Env> = async (ctx) => {
       }
       const nextHistory = appendStatusHistory(session.status_history, entry)
 
-      if (body.status === 'triage' || body.status === 'active') {
-        const cap = body.status === 'triage' ? 1 : 1 // TRIAGE_CAP / ACTIVE_CAP — both are 1 today
+      if (body.status === 'active') {
+        // Bedrock cap, atomic: a session enters `active` only while fewer than
+        // ACTIVE_CAP builds are already active. The count is folded into the
+        // UPDATE's WHERE via a subselect, so the UPDATE matches 0 rows when at
+        // cap and we 409. This is what closes the read-then-write race — two
+        // admins promoting two drafts at the same time can't both win
+        // (AUDIT P1.7). Triage is uncapped (the queue is not a scarce slot),
+        // so transitions into `triage` skip the guard and take the plain path.
         const result = await env.DB.prepare(
           `UPDATE sessions SET status = ?, status_history = ?, updated_at = ?
            WHERE id = ?
@@ -160,13 +161,10 @@ export const onRequestPatch: PagesFunction<Env> = async (ctx) => {
                WHERE status = ? AND deleted_at IS NULL AND id != ?
              ) < ?`,
         )
-          .bind(body.status, nextHistory, now, id, body.status, id, cap)
+          .bind(body.status, nextHistory, now, id, 'active', id, ACTIVE_CAP)
           .run()
-        const changed = result.meta?.changes ?? 0
-        if (changed === 0) {
-          return body.status === 'triage'
-            ? conflict('triage at capacity — ship or reject the current entry first')
-            : conflict('active at capacity — ship or reject the current build first')
+        if ((result.meta?.changes ?? 0) === 0) {
+          return conflict('active at capacity — ship or reject a current build first')
         }
       } else {
         await env.DB.prepare(

@@ -77,8 +77,8 @@ describe('GET /api/admin/today — shape', () => {
     expect(body.systemHealth.capacity).toEqual({
       active: 0,
       triage: 0,
-      activeCap: 1,
-      triageCap: 1,
+      activeCap: 2,
+      triageCap: null,
     })
     expect(body.custodianAlerts.pastDue).toEqual([])
     expect(body.custodianAlerts.recentSwitches).toEqual([])

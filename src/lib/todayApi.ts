@@ -79,7 +79,8 @@ export interface SystemHealthEntry {
     active: number
     triage: number
     activeCap: number
-    triageCap: number
+    /** null = triage is uncapped; only active builds are capped. */
+    triageCap: number | null
   }
   /** Unix seconds of the last successful digest-cron firing, or null when
    *  the heartbeat has never been written (pre-migration env, fresh deploy

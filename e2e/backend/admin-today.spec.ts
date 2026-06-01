@@ -56,7 +56,7 @@ interface TodayResponseShape {
     emailBouncesLast7d: number
     emailComplaintsLast7d: number
     openAdminAlerts: number
-    capacity: { active: number; triage: number; activeCap: number; triageCap: number }
+    capacity: { active: number; triage: number; activeCap: number; triageCap: number | null }
   }
   custodianAlerts: {
     pastDue: Array<{ sessionId: string; email: string }>
@@ -102,9 +102,10 @@ test.describe('GET /api/admin/today — empty state', () => {
     expect(body.unansweredMessages).toEqual([])
     expect(body.custodianAlerts.pastDue).toEqual([])
     expect(body.custodianAlerts.recentSwitches).toEqual([])
-    // Caps are structural — see CLAUDE.md "capacity cap is structural".
-    expect(body.systemHealth.capacity.activeCap).toBe(1)
-    expect(body.systemHealth.capacity.triageCap).toBe(1)
+    // The active cap is structural — see CLAUDE.md "capacity cap is
+    // structural". Triage is uncapped (null), so only active builds gate.
+    expect(body.systemHealth.capacity.activeCap).toBe(2)
+    expect(body.systemHealth.capacity.triageCap).toBeNull()
     expect(body.systemHealth.capacity.active).toBe(0)
     expect(body.systemHealth.capacity.triage).toBe(0)
     // generatedAtS is the server's clock — within a few seconds of ours.

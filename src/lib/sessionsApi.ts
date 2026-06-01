@@ -226,10 +226,11 @@ export function clearIntakeDraft(): Promise<{ ok: true }> {
 export interface CapacityLive {
   active: number
   triage: number
-  /** Legacy single-cap (== activeCap). Newer callers prefer activeCap/triageCap. */
+  /** Legacy single-cap (== activeCap). Newer callers prefer activeCap. */
   cap: number
   activeCap: number
-  triageCap: number
+  /** null = triage is uncapped; only active builds are capped. */
+  triageCap: number | null
   atCap: boolean
 }
 

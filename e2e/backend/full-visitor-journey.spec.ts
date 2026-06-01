@@ -54,7 +54,7 @@ interface CapacityResponse {
   active: number
   triage: number
   activeCap: number
-  triageCap: number
+  triageCap: number | null
 }
 
 test.describe('first-visitor journey — cold tab to signed-in', () => {
@@ -182,8 +182,8 @@ test.describe('first-visitor journey — cold tab to signed-in', () => {
     const capRes = await fetch(`${E2E_BASE_URL}/api/capacity`)
     expect(capRes.status).toBe(200)
     const cap = (await capRes.json()) as CapacityResponse
-    expect(cap.activeCap).toBe(1)
-    expect(cap.triageCap).toBe(1)
+    expect(cap.activeCap).toBe(2)
+    expect(cap.triageCap).toBeNull()
     expect(cap.active).toBe(0)
     expect(cap.triage).toBe(0)
   })
