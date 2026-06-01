@@ -122,7 +122,15 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     tenant = await resolveTenant(ctx.env.DB, host)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    if (/no such table|tenants/.test(msg)) {
+    // Match ONLY the missing-table signal — the pre-migration window where
+    // 0002 hasn't created tenants/tenant_domains yet. This used to also accept
+    // any message containing "tenants", which was too broad: a real D1 error
+    // that merely mentions the table (a constraint failure, a locked DB that
+    // names the table) would be swallowed as "pre-migration" and the request
+    // served tenant-less — silently bypassing the unknown-host 404 and the
+    // frozen-tenant 503. A genuine error must surface (rethrow → Sentry → 500),
+    // not quietly degrade tenancy.
+    if (/no such table/.test(msg)) {
       // Pre-migration fall-through. Logged once for visibility.
       console.warn('tenancy not yet migrated; legacy handlers in use', { host })
       return ctx.next()
