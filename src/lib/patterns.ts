@@ -193,7 +193,7 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'Shared wedding task list',
     },
     problem: {
-      fr: 'Vous vous mariez dans 4 mois. La belle-mère veut aider mais sait pas où, ton chum oublie la moitié des courriels, et toi tu veux pas tout porter toute seule.',
+      fr: 'Vous vous mariez dans 4 mois. La belle-mère veut aider mais ne sait pas où, ton conjoint oublie la moitié des courriels, et toi tu ne veux pas tout porter toute seule.',
       en: "You're getting married in 4 months. Your mother-in-law wants to help but doesn't know where, your partner forgets half the emails, and you don't want to carry it all alone.",
     },
     recipe: {
