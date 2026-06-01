@@ -149,15 +149,15 @@
   --feat-shipped-soft: #173733;
   --feat-meta: #9aa7b4;
   --feat-meta-soft: #2a3038;
-  /* INVERTED on dark: the keycap edge defines a surface by contrasting with
-     it, so on the light day paper it's black (darker than paper); on the dark
-     night surface it's straight WHITE — the maximum-contrast mirror of the
-     day edge, a crisp 1px outline + bottom rim that reads on every dark
-     surface (cards, inputs, ghost buttons) and, being brighter than the light
-     accent fill, still rims the filled buttons. White is accent-independent,
-     so it's one value for both casts. Day stays #000 — the light-theme
-     anchor. */
-  --edge: #fff;
+  /* INVERTED on dark + accent-tinted: the keycap edge defines a surface by
+     contrasting with it, so on the light day paper it's black (darker than
+     paper); on the dark night surface it's a LIGHT, VIBRANT accent colour —
+     bright sage-green here, bright violet in the accent override below — so
+     the crisp 1px outline + bottom rim reads in the theme's own colour, not a
+     flat white. Kept brighter than the light accent FILL (#87bd97), so on
+     filled buttons it still reads as a light rim rather than blending into the
+     fill. Day stays #000 — the light-theme anchor. */
+  --edge: #a6e6ba;
   /* Dark ink for text on the light night accents (light sage / bright
      violet) — white would fail AA there. */
   --on-accent: #14110c;
@@ -185,6 +185,10 @@
   --accent-warm: #c2adff;
   --accent-soft: #2c2350;
   --status-active: #9d83ff;
+  /* Vibrant violet keycap edge — the night edge wears the accent (see --edge
+     in the base night block). Brighter than the violet fill (#9d83ff) so
+     filled buttons keep a light rim instead of blending. */
+  --edge: #cbb8ff;
   /* Violet-cast surfaces (Sentry's signature): when the accent is violet, the
      dark surface picks up a faint violet tint instead of the default sage cast,
      so the whole UI reads violet, not just the buttons. Same lightness ramp as
