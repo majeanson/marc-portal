@@ -43,7 +43,7 @@ const TREMBLAY_LANDSCAPING: Engagement = {
     en: 'Tremblay Landscaping — 40-client tracking without the broken Excel',
   },
   problem: {
-    fr: 'Marie suit 40 clients avec un Excel partagé entre son chum et elle. Trois fois par mois, elle oublie de facturer un déneigement et perd ~$3000/an. Elle ne veut pas une nouvelle app — elle veut que la prochaine visite chez Lavoie déclenche automatiquement la facture.',
+    fr: 'Marie suit 40 clients avec un Excel partagé entre son conjoint et elle. Trois fois par mois, elle oublie de facturer un déneigement et perd ~$3000/an. Elle ne veut pas une nouvelle app — elle veut que la prochaine visite chez Lavoie déclenche automatiquement la facture.',
     en: "Marie tracks 40 clients in an Excel shared between her and her partner. Three times a month she forgets to invoice a snow-clearing job and loses ~$3000/yr. She doesn't want another app — she wants the next visit at Lavoie's place to auto-trigger an invoice.",
   },
   tier: 'Tier 2',
@@ -117,7 +117,7 @@ const TREMBLAY_LANDSCAPING: Engagement = {
       type: 'question',
       author: 'marc',
       body: {
-        fr: "Question pour le déclencheur — quand tu dis 'visite faite', c'est toi qui coches dans une liste, ou ton chum aussi peut le faire? J'avais supposé toi seulement.",
+        fr: "Question pour le déclencheur — quand tu dis 'visite faite', c'est toi qui coches dans une liste, ou ton conjoint aussi peut le faire? J'avais supposé toi seulement.",
         en: "Question on the trigger — when you say 'visit done,' is it you who checks it off, or can your partner too? I assumed only you.",
       },
     },
@@ -137,7 +137,7 @@ const TREMBLAY_LANDSCAPING: Engagement = {
       type: 'decision',
       author: 'marc',
       body: {
-        fr: "Compris — j'ajoute deux comptes (toi + ton chum) avec accès partagé. Aucun coût additionnel, c'était dans le scope original.",
+        fr: "Compris — j'ajoute deux comptes (toi + ton conjoint) avec accès partagé. Aucun coût additionnel, c'était dans le scope original.",
         en: 'Understood — adding two accounts (you + partner) with shared access. No additional cost, that was within original scope.',
       },
     },

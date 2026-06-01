@@ -73,7 +73,7 @@ const FR = {
     // Empathy-first opening paragraph. The closer is split out so the
     // component can give it italic + sage emphasis — the eye should land
     // on "Raconte-moi ça." before reaching the CTA.
-    body: "Une affaire plate qui revient chaque semaine, pas un enjeu national, mais c'est assez tannant pour mériter mieux.",
+    body: "Une tâche ennuyeuse qui revient chaque semaine, pas un enjeu national, mais c'est assez agaçant pour mériter mieux.",
     closer: 'Raconte-moi la tienne.',
     cta: 'Décris ton problème →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
@@ -116,7 +116,7 @@ const FR = {
       {
         num: '01',
         title: 'Tu décris ton problème',
-        body: "Tu remplis un formulaire guidé. Aucun appel à planifier. Ça se sauvegarde tout seul à mesure, fait que tu peux fermer l'onglet et revenir quand ça te tente.",
+        body: "Tu remplis un formulaire guidé. Aucun appel à planifier. Ça se sauvegarde tout seul à mesure, alors tu peux fermer l'onglet et revenir quand tu veux.",
       },
       {
         num: '02',
@@ -126,7 +126,7 @@ const FR = {
       {
         num: '03',
         title: 'Tu suis le travail en direct',
-        body: "Une démo cliquable dès la deuxième journée. L'avancée s'écrit direct dans le portail, fait que t'as pas besoin d'une réunion de statut pour suivre.",
+        body: "Une démo cliquable dès la deuxième journée. L'avancée s'écrit direct dans le portail, donc pas besoin d'une réunion de statut pour suivre.",
       },
       {
         num: '04',
@@ -150,7 +150,7 @@ const FR = {
     inviteCard: {
       eyebrow: 'la place est libre',
       title: 'Ton projet pourrait être ici',
-      body: 'Cette carte attend un vrai projet. Le tien, peut-être. Décris ton idée pis on regarde ça ensemble.',
+      body: 'Cette carte attend un vrai projet. Le tien, peut-être. Décris ton idée et on regarde ça ensemble.',
       cta: 'Lance ton projet →',
     },
     loading: 'Chargement…',
@@ -217,7 +217,7 @@ const FR = {
           'La rotation de déneigement de l’entrée partagée : à qui la pelle cette semaine',
           'Le « qui apporte quoi » d’un potluck de famille, sans compte à créer',
           'Un compteur « jours sans… » : cigarette, scroll, sucre, peu importe',
-          'Une roue qui tranche « on mange quoi à soir » une fois pour toutes',
+          'Une roue qui tranche « on mange quoi ce soir » une fois pour toutes',
         ],
       },
       {
@@ -514,7 +514,7 @@ const FR = {
   about: {
     eyebrow: 'qui je suis',
     title: 'À propos',
-    body: 'Ça fait une dizaine d’années que je code. Job de jour à temps plein (37,5 h/sem), une famille à la maison, pis l’envie de dépanner les petites business pis le monde autour de moi sans qu’il faille passer par une agence. Le portail, c’est ce qui rend ça possible, pour toi comme pour moi.',
+    body: 'Ça fait une dizaine d’années que je code. Un emploi de jour à temps plein (37,5 h/sem), une famille à la maison, et l’envie de dépanner les petites entreprises et les gens autour de moi sans qu’il faille passer par une agence. Le portail, c’est ce qui rend ça possible, pour toi comme pour moi.',
     body2:
       'C’est un gars qui décide, avec juste assez de machine pour la logistique : ni agence ni plateforme géante. C’est ça qui nous garde nos soirées, à tous les deux.',
     portraitAlt: 'Marc',
@@ -561,7 +561,7 @@ const FR = {
     },
     thread: {
       title: "Le fil de l'engagement",
-      body: 'Toute la communication tient ici, en ordre chronologique. Personne n’a à fouiller ses courriels ou à céduler un meeting pour savoir où on est rendus.',
+      body: 'Toute la communication tient ici, en ordre chronologique. Personne n’a à fouiller ses courriels ou à planifier une rencontre pour savoir où on en est.',
       label: 'Messages chronologiques entre Marc et le client',
       authors: { marc: 'Marc', client: 'Client', system: 'Système' },
       types: {
@@ -629,7 +629,7 @@ const FR = {
       confirm: "J'ai lu, ça matche, je continue.",
       // Quirky swap-in shown after the visitor ticks the box — same
       // checkbox, warmer text. Non-blocking: the CTA always works.
-      ackThanks: "✓ Merci d'avoir lu, t'as compris la vibe.",
+      ackThanks: "✓ Merci d'avoir lu, tu as compris l'esprit.",
       cta: 'Continuer →',
     },
     account: {

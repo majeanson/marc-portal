@@ -17,7 +17,7 @@ export function printConsoleGreeting(): void {
   const mono = 'font: 500 12px/1.5 "JetBrains Mono", monospace; color: #181613;'
 
   console.log(
-    "%c👋 Salut, t'es dans la console.\n%cHi, you opened the console.\n\n%cMarc-Antoine — Québec, async, soir et fin de semaine.\n%cmarc@marcportal.com",
+    '%c👋 Salut, tu es dans la console.\n%cHi, you opened the console.\n\n%cMarc-Antoine — Québec, async, soir et fin de semaine.\n%cmarc@marcportal.com',
     serif,
     dim,
     dim,
