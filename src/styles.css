@@ -8310,7 +8310,12 @@ button.intake__progress-step:disabled {
   background: transparent;
   border: none;
   border-radius: 0;
-  padding: 26px 0;
+  /* Every row reserves the same 18px left gutter as the "sweet spot" anchor
+     (negative margin + matching padding extends the box left while leaving the
+     content where it was), so the :hover / :focus highlight spans the SAME
+     width as the anchor instead of starting 18px short of it. */
+  padding: 26px 0 26px 18px;
+  margin-left: -18px;
   text-decoration: none;
   color: inherit;
   position: relative;
@@ -8334,8 +8339,8 @@ button.intake__progress-step:disabled {
     rgba(222, 234, 217, 0.15) 80%,
     transparent
   );
-  padding-left: 18px;
-  margin-left: -18px;
+  /* The 18px left gutter is now shared by every .tier--menu row above; the
+     anchor only adds its persistent fill + accent border-left on top. */
   border-left: 3px solid var(--accent);
 }
 :root[data-theme='night'] .home .tier--anchor.tier--menu {
@@ -8999,10 +9004,9 @@ button.intake__progress-step:disabled {
     border-bottom: 1px solid var(--border-soft);
   }
   .home .tier--menu {
-    padding: 22px 0 20px;
-  }
-  .home .tier--anchor.tier--menu {
-    padding-left: 14px;
+    /* Narrower 14px gutter on mobile (matches the old anchor inset), shared by
+       every row so the hover/focus highlight matches the anchor's width. */
+    padding: 22px 0 20px 14px;
     margin-left: -14px;
   }
   /* On mobile, drop the dotted leader and stack name above price. The leader
