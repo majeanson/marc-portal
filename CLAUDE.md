@@ -12,12 +12,16 @@
 
 ## What this app is
 
-Marc's solo-practice client portal. **One active build + one in triage. No
-exceptions.** That capacity rule is enforced server-side in
-`functions/_lib/sessions.ts` (`countActiveAndTriage`, etc.) — and the atomic
-check is folded into the `UPDATE … WHERE` of `PATCH /api/sessions/:id` so two
-simultaneous promotions can't both win. If a feature seems to want to raise
-the cap, stop.
+Marc's solo-practice client portal. **Two active builds, max. The triage
+queue is uncapped.** (Raised from 1 active + 1 triage on 2026-06-01 — a
+deliberate decision change, recorded in `functions/api/capacity.feature.json`.)
+That active cap is enforced server-side in `functions/_lib/sessions.ts`
+(`ACTIVE_CAP`, `countActiveAndTriage`, `isActiveAtCap`) — and the atomic check
+is folded into the `UPDATE … WHERE` of `PATCH /api/sessions/:id` so two
+simultaneous promotions into the last slot can't both win. The number lives in
+ONE constant; don't re-introduce a second source of truth, and don't add a
+runtime toggle that moves it (moving it stays a reviewed code change, by
+design).
 
 Stack: React 19 + Vite (SPA) → Cloudflare Pages. Pages Functions back the
 `/api/*` surface, talking to D1 (SQLite), R2 (attachment blobs, optional),
@@ -81,13 +85,19 @@ reason their cards are correct.
 
 `/api/capacity` is the single read-side source of truth — no static fixture
 exists. The home counter, the intake gate, the operator hub all read it.
-On the write side, every transition that would push past 1+1 is rejected
-with 409 by an atomic SQL guard. When touching session lifecycle code:
+On the write side, a promotion into `active` that would push past `ACTIVE_CAP`
+(2) is rejected with 409 by an atomic SQL guard. Triage is **uncapped**, so
+promotions into `triage` and intake submissions are never refused for
+capacity — `/api/capacity` reports `triageCap: null`, and `atCap` reflects the
+active cap only. When touching session lifecycle code:
 
-- Don't add a code path that creates an `active` or `triage` row outside
-  the existing transition guard.
+- Don't add a code path that creates an `active` row outside the existing
+  transition guard (the only hard cap is on active builds).
 - Don't replace the in-WHERE subselect with a read-then-write — that's the
   race that was closed in P1.7 (see `AUDIT.md`).
+- Don't re-cap triage without a deliberate decision: it was intentionally
+  uncapped on 2026-06-01 so the queue can absorb inbound without dropping
+  proposals.
 
 ---
 

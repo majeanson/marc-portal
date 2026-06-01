@@ -1,8 +1,9 @@
 // Per-session "what should I do next?" inference for /admin/today.
 //
-// The single-operator capacity cap means there's never more than ~2 live
-// sessions to think about. The friction isn't volume — it's reconstructing
-// state after a few days off ("where did this one land?"). This helper
+// The active-build cap (2) keeps the *running* work small, though triage is
+// uncapped so the queue behind it can grow. The friction was never volume,
+// it's reconstructing state after a few days off ("where did this one
+// land?"). This helper
 // answers that in one line by walking the session state, the payments
 // rows, and the last visitor/operator messages.
 //

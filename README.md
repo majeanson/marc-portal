@@ -1,7 +1,7 @@
 # marc-portal
 
-Marc's solo-practice client portal. Quebec-side dev gig, async, 1 active build at
-a time. Deployed at <https://marcportal.com> (Cloudflare Pages custom domain;
+Marc's solo-practice client portal. Quebec-side dev gig, async, up to 2 active
+builds at a time. Deployed at <https://marcportal.com> (Cloudflare Pages custom domain;
 the underlying `marc-portal.pages.dev` URL still resolves but is not the
 canonical surface).
 
@@ -75,16 +75,21 @@ feat-*/feature.json — Life-as-Code feature documents (drives the showcase wall
 
 ## Bedrock rule
 
-**1 active build + 1 in triage. No exceptions.**
+**Two active builds, max. The triage queue is uncapped.**
 
-Enforced server-side in `functions/_lib/sessions.ts` (`countActiveAndTriage`,
-`isActiveAtCap`, `isTriageAtCap`). `POST /api/sessions` and
-`PATCH /api/sessions/:id { status }` return `409` when the cap would be
-exceeded. `/api/capacity` is the single read-side source of truth — there is no
-static fixture.
+(Raised from 1 active + 1 triage on 2026-06-01 — a deliberate decision change,
+recorded in `functions/api/capacity.feature.json`.)
 
-If you find yourself raising the cap, stop and reread Insight #39 in the
-brainstorming session.
+Enforced server-side in `functions/_lib/sessions.ts` (`ACTIVE_CAP`,
+`countActiveAndTriage`, `isActiveAtCap`). `PATCH /api/sessions/:id { status:
+'active' }` returns `409` when both build slots are full. Triage and intake
+submissions are never refused for capacity. `/api/capacity` is the single
+read-side source of truth (it reports `triageCap: null`) — there is no static
+fixture.
+
+The cap is a number in one constant. Moving it stays a reviewed code change —
+there is deliberately no runtime toggle. If you find yourself adding one, stop
+and reread Insight #39 in the brainstorming session.
 
 ## Operations
 

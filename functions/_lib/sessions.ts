@@ -8,12 +8,19 @@ export type SessionStatus = 'draft' | 'triage' | 'active' | 'shipped' | 'rejecte
 
 /**
  * The single load-bearing rule of the practice: no more than ACTIVE_CAP
- * sessions in `active` and no more than TRIAGE_CAP in `triage` at any time.
- * Insight #39 from the brainstorm — if this gets raised, family-time stops
- * being protected. Server enforces it; UI mirrors it.
+ * builds in `active` at any time. Insight #39 from the brainstorm — the cap
+ * is what keeps family-time structural rather than aspirational.
+ *
+ * Raised from 1 to 2 on 2026-06-01. That was a deliberate code change, not a
+ * runtime toggle: there is still no admin endpoint that moves it, by design
+ * (see functions/api/capacity.feature.json — "no soft switch in the code").
+ *
+ * Triage is intentionally NOT capped. The scarce resource is a build slot,
+ * not a spot in line: anyone may sit in the 72h queue, and a submission at
+ * capacity becomes a real queued `triage` session rather than a bare
+ * waitlist acknowledgement. Server enforces the active cap; UI mirrors it.
  */
-export const ACTIVE_CAP = 1
-export const TRIAGE_CAP = 1
+export const ACTIVE_CAP = 2
 
 export interface StatusHistoryEntry {
   from: SessionStatus
@@ -209,8 +216,11 @@ export async function loadSession(db: D1Database, id: string): Promise<SessionRo
 
 /**
  * Live counts of `active` and `triage` sessions (excludes soft-deleted rows).
- * The capacity endpoint reads this; POST /sessions and PATCH status->{triage,
- * active} call it before mutating to enforce the cap.
+ * The capacity endpoint and the admin dashboard read this for display. The
+ * active cap itself is enforced atomically inside PATCH /sessions/:id (the
+ * count is folded into the UPDATE's WHERE), not by reading this first — that
+ * read-then-write shape is the race AUDIT P1.7 closed. Triage isn't capped,
+ * so the `triage` figure here is informational only.
  */
 export interface CapacityCounts {
   active: number
@@ -253,17 +263,10 @@ export async function countActiveAndTriage(
 }
 
 /**
- * True when a *new* triage entry would overflow the bedrock rule. Used at
- * POST /sessions and at PATCH status->triage. (`shipped`/`rejected` and
- * intake `draft` don't count against the cap.)
- */
-export function isTriageAtCap(c: CapacityCounts): boolean {
-  return c.triage >= TRIAGE_CAP
-}
-
-/**
- * True when a transition into `active` would overflow the active cap. Used at
- * PATCH status->active.
+ * True when the practice is at the active-build cap. Drives the public
+ * "full, waitlist open" signal (homepage hero, studio sign, intake notice).
+ * It does NOT gate the atomic PATCH guard — that compares against ACTIVE_CAP
+ * inside the UPDATE itself. Triage has no cap, so it never figures here.
  */
 export function isActiveAtCap(c: CapacityCounts): boolean {
   return c.active >= ACTIVE_CAP

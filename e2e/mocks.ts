@@ -116,9 +116,9 @@ const VOUCHES = {
 const CAPACITY = {
   active: 1,
   triage: 0,
-  cap: 1,
-  activeCap: 1,
-  triageCap: 2,
+  cap: 2,
+  activeCap: 2,
+  triageCap: null,
   atCap: false,
 }
 

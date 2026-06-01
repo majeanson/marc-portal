@@ -49,7 +49,7 @@ const COPY = {
     capacityActive: 'Actif',
     capacityTriage: 'Triage',
     capacityNote:
-      'Plafond : 1 actif + 1 en triage. Le serveur refuse toute promotion qui dépasserait.',
+      'Plafond : 2 builds actifs. Le triage n’a pas de plafond. Le serveur refuse toute promotion vers « actif » qui dépasserait deux.',
 
     sessionsHeading: 'Sessions vivantes',
     sessionsEmpty: 'Aucune session vivante. Pas de feu, profite.',
@@ -125,7 +125,7 @@ const COPY = {
     capacityActive: 'Active',
     capacityTriage: 'Triage',
     capacityNote:
-      'Cap: 1 active + 1 in triage. The server rejects any promotion that would overflow.',
+      'Cap: 2 active builds. Triage is uncapped. The server rejects any promotion to active that would push past two.',
 
     sessionsHeading: 'Live sessions',
     sessionsEmpty: 'No live sessions. Quiet day.',
@@ -348,18 +348,22 @@ function CapacityCell({
 }: {
   label: string
   n: number
-  cap: number
+  /** null = uncapped (triage). The cell then shows a bare count, no
+   *  denominator, and never reads as "full". */
+  cap: number | null
   lang: Lang
 }) {
-  const full = n >= cap
+  const full = cap !== null && n >= cap
   return (
     <div className={`surface admin-today__cap-cell${full ? ' admin-today__cap-cell--full' : ''}`}>
       <div className="mono admin-today__cap-label">{label}</div>
       <div className="admin-today__cap-figure">
         {n}
-        <span className="admin-today__cap-cap" aria-label={lang === 'en' ? 'of' : 'sur'}>
-          /{cap}
-        </span>
+        {cap !== null && (
+          <span className="admin-today__cap-cap" aria-label={lang === 'en' ? 'of' : 'sur'}>
+            /{cap}
+          </span>
+        )}
       </div>
     </div>
   )

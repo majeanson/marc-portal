@@ -18,7 +18,7 @@ afterEach(() => {
 })
 
 function capacity(over: Partial<CapacityLive>): CapacityLive {
-  return { active: 0, triage: 0, cap: 2, activeCap: 2, triageCap: 3, atCap: false, ...over }
+  return { active: 0, triage: 0, cap: 2, activeCap: 2, triageCap: null, atCap: false, ...over }
 }
 
 describe('StudioSign', () => {

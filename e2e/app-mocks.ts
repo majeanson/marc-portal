@@ -220,7 +220,7 @@ const TODAY: TodayResponse = {
     emailBouncesLast7d: 0,
     emailComplaintsLast7d: 0,
     openAdminAlerts: 0,
-    capacity: { active: 1, triage: 0, activeCap: 1, triageCap: 2 },
+    capacity: { active: 1, triage: 0, activeCap: 2, triageCap: null },
     lastDigestAtS: D(0) - 3600,
     digestStale: false,
   },

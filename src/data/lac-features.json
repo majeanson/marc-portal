@@ -1010,6 +1010,83 @@
       "lastTransitionDate": "2026-05-21"
     },
     {
+      "featureKey": "feat-2026-005",
+      "title": "Triage queue with a hard capacity cap",
+      "status": "frozen",
+      "domain": "primitive/capacity-control",
+      "tags": [
+        "capacity-cap",
+        "waitlist",
+        "load-bearing-rule",
+        "family-first",
+        "reusable-pattern"
+      ],
+      "componentFile": "functions/api/capacity.ts",
+      "liveUrl": "/",
+      "problem": "Without a hard limit on concurrent work, a side-practice consultant accepts every engagement that looks 'doable' and ends up with too many clients at once eating evenings and weekends — and family-first, the value the whole practice is built to protect, quietly falsifies. This feature makes the load-bearing rule structural rather than aspirational: at most two active builds running at a time. The triage queue is intentionally uncapped — the scarce resource is a build slot, not a spot in line — so a submission made while both slots are full becomes a real queued proposal rather than a dropped one. The homepage shows the current state so a visitor knows immediately whether a build slot is open, and the server refuses to promote an engagement to active past the cap. The public waitlist is not a flaw to hide — scarcity reads as seriousness. The active cap is the single rule of the portal that does not bend at runtime; moving it is a reviewed code change, never a toggle.",
+      "analysis": "The cap is enforced where it cannot be wished away — in the server, folded into the UPDATE that promotes a session to active so two concurrent promotions can't both win. The current load is not a number someone maintains by hand; it is counted directly from the engagement records, so it is always true and it decrements on its own when a build ships. A public endpoint reports whether the practice is at the active cap, and the homepage hero turns that into a plain-language indicator of how many build slots are open. Triage is uncapped: a visitor submitting while both build slots are full still gets a real queued session, and the at-capacity state only changes the copy they see (you are in the queue, I start when a build frees up) — nothing is dropped. There is still no runtime override: no admin toggle raises the cap, because the rule that must not bend should not have a soft switch in the code. The number lives in a single named constant (ACTIVE_CAP) so raising it is a deliberate, reviewable change.",
+      "decisions": [
+        {
+          "decision": "Hard cap of one active build plus one in triage, with no exception path",
+          "rationale": "This is the bedrock defence. If it breaks, family-first collapses — three concurrent clients against side-practice hours consumes weekends. The failure pattern it structurally prevents is the optimism of 'I can squeeze this one in'.",
+          "recommendation": "Enforce it server-side, not as a soft warning, and provide no override anywhere in the admin surface."
+        },
+        {
+          "decision": "Cap raised to two active builds; the triage queue is uncapped",
+          "rationale": "A deliberate revision of the original 1+1 rule. Two concurrent builds is still small enough to protect family time at side-practice hours, but doubles throughput when both projects have natural wait states (waiting on a client reply, a deploy, a payment). Capping triage turned out to do harm rather than good: it dropped real proposals on the floor at the moment of intake. Decoupling the two — cap the scarce resource (a build slot), let the queue grow — keeps the family-first guarantee intact while never losing an inbound lead. The 'no soft switch' doctrine is preserved: this change moved a constant in a reviewed commit, not a runtime toggle.",
+          "recommendation": "Keep the active cap in the single ACTIVE_CAP constant; report triageCap as null from /api/capacity to mean uncapped; never re-introduce a triage cap or an admin override without an equally deliberate decision."
+        },
+        {
+          "decision": "The public capacity indicator is an asset, not a bug to hide",
+          "rationale": "Scarcity adds credibility. A visible 'currently full, waitlist open' positions the consultant as serious rather than unavailable, and the waitlist itself becomes acquisition infrastructure.",
+          "recommendation": "Keep the indicator on the homepage hero and let it read straight from real engagement counts so it is never stale."
+        },
+        {
+          "decision": "Current load is derived from engagement records, never hand-maintained",
+          "rationale": "A hand-edited capacity figure drifts the moment someone forgets to update it after an engagement ships. Counting active and triage engagements directly makes the figure self-correcting and removes a standing source of error.",
+          "recommendation": "Keep the cap thresholds as named constants next to the counting logic so raising them is a deliberate, reviewable code change."
+        }
+      ],
+      "successCriteria": "- The active-build cap (2) is enforced by the server atomically, not by policy or a soft warning\n- Promoting a third session to active is rejected with 409; two concurrent promotions into the last slot yield exactly one winner\n- Triage is uncapped: submitting an intake while both slots are full creates a real queued session and is never dropped\n- The homepage shows how many build slots are open, read from real engagement counts\n- The current load decrements on its own when a build ships — nobody maintains it by hand\n- There is no runtime override path anywhere that can raise the cap; moving it is a code change to ACTIVE_CAP\n- Reusable as a pattern for any solo-operator service that wants the same structural rule",
+      "knownLimitations": [
+        "The capacity figure reflects engagement records only — it does not model a richer queue with per-slot start dates",
+        "The homepage indicator is fetched on page load, so a visitor with a stale tab sees the state from when they opened it until the next load",
+        "The queue has no visible position number — a waitlisted visitor sees 'in the queue' but not 'you are 3rd', and with triage now uncapped that queue can grow without an operator-facing depth alert beyond the admin capacity panel's raw count"
+      ],
+      "statusHistory": [
+        {
+          "from": "draft",
+          "to": "active",
+          "date": "2026-05-07",
+          "reason": "Capacity gating live; homepage hero shows the slot state and the intake submit path respects the cap."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-05-07"
+        },
+        {
+          "from": "frozen",
+          "to": "frozen",
+          "date": "2026-05-21",
+          "reason": "Code-first verification — feature.json co-located at functions/api/capacity.feature.json. Capacity is now derived live from engagement records via the server; the earlier hand-edited JSON file is gone."
+        },
+        {
+          "from": "frozen",
+          "to": "active",
+          "date": "2026-06-01",
+          "reason": "Requirements change: Marc raised his core 'one active project' principle to two. Reopened to revise the load-bearing rule — ACTIVE_CAP 1→2 and the triage cap dropped — across server, client, copy, and tests."
+        },
+        {
+          "from": "active",
+          "to": "frozen",
+          "date": "2026-06-01",
+          "reason": "Cap raise shipped end-to-end: ACTIVE_CAP=2, triage uncapped (triageCap reported null), atomic active guard rewired off the constant, intake no longer capacity-rejected, FR/EN copy + hero slot count + admin panel + OG cards + e2e/unit tests all updated to match."
+        }
+      ],
+      "lastTransitionDate": "2026-06-01"
+    },
+    {
       "featureKey": "feat-2026-089",
       "title": "About — home-page block introducing Marc",
       "status": "frozen",
@@ -5064,67 +5141,7 @@
         }
       ],
       "lastTransitionDate": "2026-05-21"
-    },
-    {
-      "featureKey": "feat-2026-005",
-      "title": "Triage queue with a hard capacity cap",
-      "status": "frozen",
-      "domain": "primitive/capacity-control",
-      "tags": [
-        "capacity-cap",
-        "waitlist",
-        "load-bearing-rule",
-        "family-first",
-        "reusable-pattern"
-      ],
-      "componentFile": "functions/api/capacity.ts",
-      "liveUrl": "/",
-      "problem": "Without a hard limit on concurrent work, a side-practice consultant accepts every engagement that looks 'doable' and ends up with three clients at once eating evenings and weekends — and family-first, the value the whole practice is built to protect, quietly falsifies. This feature makes the load-bearing rule structural rather than aspirational: one active build plus one in triage, no more. The homepage shows the current state so a visitor knows immediately whether a slot is open, and the server refuses to create a new engagement past the cap. The public waitlist is not a flaw to hide — scarcity reads as seriousness. This is the single rule of the portal that does not bend.",
-      "analysis": "The cap is enforced where it cannot be wished away — in the server. The current load is not a number someone maintains by hand; it is counted directly from the engagement records, so it is always true and it decrements on its own when an engagement ships. A public endpoint reports whether the practice is at capacity, and the homepage hero turns that into a plain-language slot indicator. When a visitor submits an intake while at capacity, the server declines to create a new engagement and the visitor is routed to a waitlist acknowledgement instead. Crucially there is no override: no admin toggle raises the cap, because the rule that must not bend should not have a soft switch in the code.",
-      "decisions": [
-        {
-          "decision": "Hard cap of one active build plus one in triage, with no exception path",
-          "rationale": "This is the bedrock defence. If it breaks, family-first collapses — three concurrent clients against side-practice hours consumes weekends. The failure pattern it structurally prevents is the optimism of 'I can squeeze this one in'.",
-          "recommendation": "Enforce it server-side, not as a soft warning, and provide no override anywhere in the admin surface."
-        },
-        {
-          "decision": "The public capacity indicator is an asset, not a bug to hide",
-          "rationale": "Scarcity adds credibility. A visible 'currently full, waitlist open' positions the consultant as serious rather than unavailable, and the waitlist itself becomes acquisition infrastructure.",
-          "recommendation": "Keep the indicator on the homepage hero and let it read straight from real engagement counts so it is never stale."
-        },
-        {
-          "decision": "Current load is derived from engagement records, never hand-maintained",
-          "rationale": "A hand-edited capacity figure drifts the moment someone forgets to update it after an engagement ships. Counting active and triage engagements directly makes the figure self-correcting and removes a standing source of error.",
-          "recommendation": "Keep the cap thresholds as named constants next to the counting logic so raising them is a deliberate, reviewable code change."
-        }
-      ],
-      "successCriteria": "- The active-plus-triage cap is enforced by the server, not by policy or a soft warning\n- Submitting an intake at capacity is declined cleanly and routed to a waitlist acknowledgement\n- The homepage shows the current capacity state, read from real engagement counts\n- The current load decrements on its own when an engagement ships — nobody maintains it by hand\n- There is no override path anywhere that can raise the cap\n- Reusable as a pattern for any solo-operator service that wants the same structural rule",
-      "knownLimitations": [
-        "The capacity figure reflects engagement records only — it does not model a richer queue with per-slot start dates",
-        "The homepage indicator is fetched on page load, so a visitor with a stale tab sees the state from when they opened it until the next load",
-        "The waitlist is an acknowledgement state on a declined submission, not yet a managed list with visible queue positions"
-      ],
-      "statusHistory": [
-        {
-          "from": "draft",
-          "to": "active",
-          "date": "2026-05-07",
-          "reason": "Capacity gating live; homepage hero shows the slot state and the intake submit path respects the cap."
-        },
-        {
-          "from": "active",
-          "to": "frozen",
-          "date": "2026-05-07"
-        },
-        {
-          "from": "frozen",
-          "to": "frozen",
-          "date": "2026-05-21",
-          "reason": "Code-first verification — feature.json co-located at functions/api/capacity.feature.json. Capacity is now derived live from engagement records via the server; the earlier hand-edited JSON file is gone."
-        }
-      ],
-      "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-05-29T23:26:59.994Z"
+  "generatedAt": "2026-06-01T13:24:08.015Z"
 }

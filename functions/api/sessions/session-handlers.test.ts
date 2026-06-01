@@ -617,7 +617,7 @@ describe('DELETE /api/sessions/:id', () => {
   })
 })
 
-describe('POST /api/sessions — bedrock cap enforcement', () => {
+describe('POST /api/sessions — triage is uncapped, intake always accepted', () => {
   function seedTriage(env: ReturnType<typeof makeMockEnv>, id = 'existing') {
     env._db.sessions.set(id, {
       id,
@@ -631,7 +631,7 @@ describe('POST /api/sessions — bedrock cap enforcement', () => {
     })
   }
 
-  it('returns 409 when triage is full and visitor submits intake', async () => {
+  it('accepts a visitor intake even when a session is already in triage', async () => {
     const env = makeMockEnv()
     seedTriage(env)
     mockedCurrentEmail.mockResolvedValue('visitor@x.com')
@@ -645,30 +645,13 @@ describe('POST /api/sessions — bedrock cap enforcement', () => {
       params: {},
     }
     const res = await onRequestPostSession(ctx as never)
-    expect(res.status).toBe(409)
-    // No row was inserted.
-    expect(env._db.sessions.size).toBe(1)
-  })
-
-  it('admin is exempt — can seed a draft even when triage is full', async () => {
-    const env = makeMockEnv()
-    seedTriage(env)
-    mockedCurrentEmail.mockResolvedValue('marc@x.com')
-    const ctx = {
-      request: new Request('https://x.test/api/sessions', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ intakeJson: { lang: 'fr', formData: {} } }),
-      }),
-      env,
-      params: {},
-    }
-    const res = await onRequestPostSession(ctx as never)
+    // No capacity rejection — a real queued row is created behind the
+    // existing one. The only hard cap is on `active`, enforced at promotion.
     expect(res.status).toBe(200)
     expect(env._db.sessions.size).toBe(2)
   })
 
-  it('empty intakeJson (Marc creating placeholder draft) is not capped', async () => {
+  it('accepts an empty placeholder draft as well', async () => {
     const env = makeMockEnv()
     seedTriage(env)
     mockedCurrentEmail.mockResolvedValue('visitor@x.com')
@@ -686,8 +669,21 @@ describe('POST /api/sessions — bedrock cap enforcement', () => {
   })
 })
 
-describe('PATCH /api/sessions/:id — cap enforcement on status transitions', () => {
-  it('refuses Draft -> triage when triage is full', async () => {
+describe('PATCH /api/sessions/:id — active cap (2), triage uncapped', () => {
+  function seedActive(env: ReturnType<typeof makeMockEnv>, id: string) {
+    env._db.sessions.set(id, {
+      id,
+      email: `${id}@x.com`,
+      intake_json: null,
+      status: 'active',
+      created_at: 1,
+      updated_at: 1,
+      deleted_at: null,
+      status_history: null,
+    })
+  }
+
+  it('allows Draft -> triage even when another session is in triage (uncapped)', async () => {
     const ctx = makeCtx({
       method: 'PATCH',
       asEmail: 'marc@x.com',
@@ -705,8 +701,8 @@ describe('PATCH /api/sessions/:id — cap enforcement on status transitions', ()
       status_history: null,
     })
     const res = await onRequestPatch(ctx as never)
-    expect(res.status).toBe(409)
-    expect(ctx.env._db.sessions.get('s1')?.status).toBe('draft')
+    expect(res.status).toBe(200)
+    expect(ctx.env._db.sessions.get('s1')?.status).toBe('triage')
   })
 
   it('allows triage -> active when active slot is empty (and excludes self)', async () => {
@@ -721,25 +717,31 @@ describe('PATCH /api/sessions/:id — cap enforcement on status transitions', ()
     expect(ctx.env._db.sessions.get('s1')?.status).toBe('active')
   })
 
-  it('refuses Draft -> active when active is full', async () => {
+  it('allows a 2nd active build (cap is 2, not 1)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { status: 'active' },
+    })
+    seedSession(ctx.env._db, { status: 'triage' }) // s1
+    seedActive(ctx.env, 'blocker1')
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+    expect(ctx.env._db.sessions.get('s1')?.status).toBe('active')
+  })
+
+  it('refuses a 3rd active build when both slots are full', async () => {
     const ctx = makeCtx({
       method: 'PATCH',
       asEmail: 'marc@x.com',
       body: { status: 'active' },
     })
     seedSession(ctx.env._db) // s1: draft
-    ctx.env._db.sessions.set('blocker', {
-      id: 'blocker',
-      email: 'a@x.com',
-      intake_json: null,
-      status: 'active',
-      created_at: 1,
-      updated_at: 1,
-      deleted_at: null,
-      status_history: null,
-    })
+    seedActive(ctx.env, 'blocker1')
+    seedActive(ctx.env, 'blocker2')
     const res = await onRequestPatch(ctx as never)
     expect(res.status).toBe(409)
+    expect(ctx.env._db.sessions.get('s1')?.status).toBe('draft')
   })
 
   it('shipped/rejected transitions are not capped', async () => {

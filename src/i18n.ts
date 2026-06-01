@@ -79,7 +79,11 @@ const FR = {
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle proposition →',
     mySessionsLink: 'Voir mes sessions',
-    slotOpen: '1 place ouverte',
+    // Live count of open build slots (the cap is 2). Loading state shows the
+    // neutral label until /api/capacity answers, so the pill never flashes a
+    // wrong number.
+    slotOpen: (n: number) => (n > 1 ? `${n} places ouvertes` : '1 place ouverte'),
+    slotOpenLoading: 'Ouvert aux projets',
     slotFull: 'plein, liste d’attente ouverte',
   },
 
@@ -611,7 +615,7 @@ const FR = {
     },
     capacity: {
       atCap:
-        "Je suis plein en ce moment. Tu peux quand même soumettre : je te mets sur la liste d'attente et je te réponds quand un slot ouvre.",
+        'Mes deux projets actifs sont pleins en ce moment. Tu peux quand même soumettre, je garde ta place dans la file et je t’écris dès qu’un projet se libère.',
     },
     steps: {
       vibe: 'On se comprend',
@@ -675,7 +679,7 @@ const FR = {
       bodyAccepted:
         "Je lis chaque formulaire moi-même. Pas d'IA entre toi et moi. Tu auras une réponse honnête en 72 h, par courriel : oui, non, ou « raconte-moi plus ».",
       bodyWaitlist:
-        "Je suis plein en ce moment : 1 projet actif + 1 en triage, c'est mon plafond pour respecter ma famille. Je te réponds dès qu'un slot ouvre, en général quelques semaines. Le brouillon reste sauvegardé.",
+        'Mes deux projets actifs sont pleins en ce moment, c’est mon plafond pour protéger ma famille. Ta proposition est sauvegardée et garde sa place dans la file. Je t’écris dès qu’un projet se libère, en général quelques semaines.',
       sla: 'Réponse honnête en 72 h : oui, non, ou « raconte-moi plus ».',
       summaryTitle: "Ce que tu m'as envoyé",
       summaryEmail: 'Courriel',
@@ -1122,7 +1126,11 @@ const EN: Copy = {
     ctaWaitlist: 'Join the waitlist →',
     ctaLoggedIn: 'Start a new proposal →',
     mySessionsLink: 'View my sessions',
-    slotOpen: '1 slot open',
+    // Live count of open build slots (the cap is 2). Loading state shows the
+    // neutral label until /api/capacity answers, so the pill never flashes a
+    // wrong number.
+    slotOpen: (n: number) => (n > 1 ? `${n} slots open` : '1 slot open'),
+    slotOpenLoading: 'Open for projects',
     slotFull: 'currently full, waitlist open',
   },
 
@@ -1648,7 +1656,7 @@ const EN: Copy = {
     },
     capacity: {
       atCap:
-        "I'm full right now. You can still submit: I'll put you on the waitlist and reply when a slot opens.",
+        "Both build slots are full right now. You can still submit; I'll keep your place in the queue and reply as soon as a build wraps up.",
     },
     steps: {
       vibe: 'We agree',
@@ -1712,7 +1720,7 @@ const EN: Copy = {
       bodyAccepted:
         "I read every form myself. No AI between you and me. You'll get an honest reply in 72h, by email: yes, no, or 'tell me more.'",
       bodyWaitlist:
-        "I'm full right now: 1 active build + 1 in triage, which is my cap, to respect my family time. I'll reply as soon as a slot opens, usually a few weeks. Your draft stays saved.",
+        "Both my build slots are full right now, which is my cap, to protect my family time. Your proposal is saved and holds its place in the queue. I'll write as soon as a build wraps up, usually a few weeks.",
       sla: "Honest reply in 72h: yes, no, or 'tell me more.'",
       summaryTitle: 'What you sent me',
       summaryEmail: 'Email',

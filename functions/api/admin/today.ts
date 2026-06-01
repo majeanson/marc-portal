@@ -2,8 +2,9 @@
 //
 // Pulls just enough state across sessions / messages / payments / email
 // signals to answer "what do I need to do today as a solo operator?" in
-// one round-trip. The capacity cap (1 active + 1 triage) keeps the
-// session list tiny by construction, so the queries stay cheap.
+// one round-trip. The active-build cap (2) keeps the *active* set tiny;
+// triage is uncapped, so the live-sessions query is bounded by real inbound
+// volume rather than the cap, but at solo-practice scale it stays cheap.
 //
 // Each section corresponds to a panel on the client:
 //   - sessions       : the live (non-rejected) session rows + next-action
@@ -24,7 +25,12 @@ import type { Env } from '../../_lib/env'
 import { isAdmin } from '../../_lib/env'
 import { forbidden, ok, unauthorized } from '../../_lib/json'
 import { inferNextAction, type NextAction } from '../../_lib/nextAction'
-import { parseStatusHistory, SESSION_SELECT_COLUMNS, type SessionRow } from '../../_lib/sessions'
+import {
+  ACTIVE_CAP,
+  parseStatusHistory,
+  SESSION_SELECT_COLUMNS,
+  type SessionRow,
+} from '../../_lib/sessions'
 
 interface MessageStatRow {
   session_id: string
@@ -104,7 +110,8 @@ export interface SystemHealthEntry {
     active: number
     triage: number
     activeCap: number
-    triageCap: number
+    /** null = triage is uncapped (only the active-build slots are capped). */
+    triageCap: number | null
   }
   /** Unix seconds of the last successful digest-cron firing, or null when
    *  the heartbeat has never been written (pre-migration env, fresh deploy
@@ -415,7 +422,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     emailBouncesLast7d: bouncesLast7d,
     emailComplaintsLast7d: complaintsLast7d,
     openAdminAlerts,
-    capacity: { active: activeCount, triage: triageCount, activeCap: 1, triageCap: 1 },
+    capacity: { active: activeCount, triage: triageCount, activeCap: ACTIVE_CAP, triageCap: null },
     lastDigestAtS,
     digestStale,
   }
