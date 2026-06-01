@@ -19,29 +19,36 @@
 
 ## Tier 1 — Zero-risk hygiene & coverage (do first; verifiable by the test suite)
 
-- ⬜ **B1 · S · manual: none** — Remove the dead streaming `verifyMagicBytes`
-  helper from `functions/_lib/attachments.ts`. `AUDIT.md` P1.10 left it as a
-  "possible future tool" after the buffered code path took over; only
-  `verifyMagicBytesBuffer` is imported anywhere (verified 2026-05-29). Dead code
-  that reads as live is a 11pm trap. Delete it + its type, run the suite.
+- ✅ **B1 · already satisfied (verified 2026-06-01)** — The dead streaming
+  `verifyMagicBytes` helper no longer exists in `functions/_lib/attachments.ts`;
+  only `verifyMagicBytesBuffer` is defined and imported (index.ts, transcribe.ts,
+  attachments.test.ts). It was removed when P1.10's buffered path landed. The
+  one leftover was a stale *comment* in `e2e/backend/napkin-upload.spec.ts`
+  still naming the old function — fixed to `verifyMagicBytesBuffer`.
 
-- ⬜ **B2 · S · manual: none** — Refresh the historical "temporary fallback"
-  RESEND_FROM guidance flagged in `AUDIT.md` P1.1. The `marcportal.com` sender
-  domain has been verified + delivering since 2026-05-24; any comment still
-  framing `onboarding@resend.dev` as the live default is stale. Sweep
-  `functions/_lib/email.ts` and update the comment to current reality.
+- ✅ **B2 · already satisfied (verified 2026-06-01)** — `functions/_lib/email.ts`'s
+  header comment (lines 34-39) already documents the verified `marcportal.com`
+  sender on its own reputation; no `onboarding@resend.dev` / "temporary fallback"
+  framing remains. `RESEND_FROM` is `'Marc <noreply@marcportal.com>'`. Nothing
+  to change — the AUDIT P1.1 "remove on next touch" note was cleared by an
+  earlier pass.
 
-- ⬜ **B3 · M · manual: none** — Attachment **upload**-path unit tests
-  (`AUDIT.md` P3.11). Today's PR added the serve/Range tests; the upload side
-  (magic-byte reject → 415, per-session quota → 413, kind opt-in, R2.put with
-  the buffered path) is still only covered indirectly. Add handler-level tests
-  with the in-memory R2 stub already proven in `attachment-serve.test.ts`.
+- ✅ **B3 · already satisfied (verified 2026-06-01)** — `attachment-upload.test.ts`
+  already covers the full upload validation matrix with the in-memory R2 stub:
+  415 (magic-byte mismatch + disallowed type), 413 (per-kind cap + per-session
+  budget), the `?kind=napkin` opt-in + non-PNG reject + one-per-session 409 +
+  `?replace=true` atomic swap, sketch JSON shape-checking, and R2-rollback on a
+  DB insert failure. Exactly what P3.11 asked for.
 
-- ⬜ **B4 · M · manual: none** — Component-test coverage sweep. CLAUDE.md's rule
-  is "components with logic worth testing get a test." Inventory `src/components`
-  + `src/pages` for logic-bearing components with no `.test.tsx` and fill the
-  highest-value gaps (state machines, derived display, conditional rendering).
-  Pure-presentational components stay untested by design.
+- ✅ **B4 · done (2026-06-01)** — Coverage sweep. Most untested `src/lib` files
+  are thin `fetch` API wrappers (advancementsApi, paymentsApi, prefsApi,
+  todayApi, …) — unit-testing those means mocking `fetch` and asserting nothing
+  real (the anti-pattern CLAUDE.md calls out), so left untested by design.
+  `pricing.ts` is already pinned by `pricingParity.test.ts`; `map/filter.ts` by
+  `map.test.ts`. Filled the two genuinely logic-bearing gaps: `erasureFlag.ts`
+  (one-shot consume + SSR/storage-blocked guards → `erasureFlag.test.ts`) and
+  `export.ts` (`exportMyData` per-session error-resilience branch →
+  `export.test.ts`). 8 new tests.
 
 ---
 

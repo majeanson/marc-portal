@@ -27,9 +27,9 @@ import { forgeAuthHeaders } from './helpers/auth'
 const VISITOR_EMAIL = 'visitor@e2e.test'
 
 // Minimal valid PNG bytes. The first 8 are the PNG magic signature that
-// functions/_lib/attachments.ts:verifyMagicBytes checks on stream entry.
-// The trailing bytes are minimal IHDR padding so the file isn't suspiciously
-// short — workerd doesn't care, but a paranoid R2 client might.
+// functions/_lib/attachments.ts:verifyMagicBytesBuffer checks on the buffered
+// upload bytes. The trailing bytes are minimal IHDR padding so the file isn't
+// suspiciously short — workerd doesn't care, but a paranoid R2 client might.
 const PNG_BYTES = new Uint8Array([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
   0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00,

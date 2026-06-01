@@ -4,12 +4,9 @@
  * Focus:
  *   - HTMLRewriter OG/hreflang injection per URL pattern
  *   - CSRF gate on state-changing /api/* requests with exempt-list
- *   - Tenant resolution doesn't block /api/* HTML (already exercised
- *     elsewhere; here we just confirm the SPA path stays alive).
- *
- * We don't exercise tenant errors here — those have D1 mocking branches
- * already covered by handler tests; the middleware's tenant path is a
- * narrow passthrough.
+ *   - Locale redirect on the bare root
+ *   - Tenant resolution error handling: pre-migration fall-through vs. a real
+ *     D1 error surfacing (regression guard for the over-broad catch).
  */
 
 import { describe, expect, it, vi } from 'vitest'
@@ -47,6 +44,7 @@ vi.mock('./_lib/tenant', async () => {
 })
 
 import { onRequest } from './_middleware'
+import { resolveTenant } from './_lib/tenant'
 import { newCsrfToken } from './_lib/auth'
 import { makeMockEnv } from '../tests/d1-mock'
 
@@ -176,6 +174,36 @@ describe.skipIf(!HAS_HTML_REWRITER)('middleware HTMLRewriter (OG + hreflang)', (
     // Untouched — no hreflang appended, no og:image swap.
     expect(body).not.toContain('rel="alternate"')
     expect(body).toContain('content="/og-image.png"')
+  })
+})
+
+describe('middleware tenant resolution error handling', () => {
+  // `resolveTenant` is vi.mock'd at the top of this file; per-test we override
+  // its one-shot behaviour to drive the catch branch in _middleware.ts.
+  function plainTextCtx() {
+    return makeCtx({
+      url: 'https://x.test/projects',
+      next: async () => new Response('home', { headers: { 'content-type': 'text/plain' } }),
+    })
+  }
+
+  it('falls through to legacy mode when the tenants table is missing (pre-migration)', async () => {
+    vi.mocked(resolveTenant).mockRejectedValueOnce(new Error('D1_ERROR: no such table: tenants'))
+    const res = await onRequest(plainTextCtx())
+    // No tenant attached, but the request is served — the migration-window
+    // graceful-degrade that keeps the public site alive during a fresh deploy.
+    expect(res.status).toBe(200)
+  })
+
+  it('rethrows a real D1 error even when its message mentions "tenants"', async () => {
+    // Regression: the catch used to match /no such table|tenants/, so a genuine
+    // error that merely named the table was swallowed as "pre-migration" and
+    // the request served tenant-less — bypassing the unknown-host 404 and the
+    // frozen 503. A real error must surface, not silently degrade tenancy.
+    vi.mocked(resolveTenant).mockRejectedValueOnce(
+      new Error('D1_ERROR: UNIQUE constraint failed: tenants.slug'),
+    )
+    await expect(onRequest(plainTextCtx())).rejects.toThrow(/constraint failed/)
   })
 })
 
