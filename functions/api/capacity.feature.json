@@ -7,7 +7,13 @@
   "componentFile": "functions/api/capacity.ts",
   "liveUrl": "/",
   "problem": "Without a hard limit on concurrent work, a side-practice consultant accepts every engagement that looks 'doable' and ends up with too many clients at once eating evenings and weekends — and family-first, the value the whole practice is built to protect, quietly falsifies. This feature makes the load-bearing rule structural rather than aspirational: at most two active builds running at a time. The triage queue is intentionally uncapped — the scarce resource is a build slot, not a spot in line — so a submission made while both slots are full becomes a real queued proposal rather than a dropped one. The homepage shows the current state so a visitor knows immediately whether a build slot is open, and the server refuses to promote an engagement to active past the cap. The public waitlist is not a flaw to hide — scarcity reads as seriousness. The active cap is the single rule of the portal that does not bend at runtime; moving it is a reviewed code change, never a toggle.",
-  "tags": ["capacity-cap", "waitlist", "load-bearing-rule", "family-first", "reusable-pattern"],
+  "tags": [
+    "capacity-cap",
+    "waitlist",
+    "load-bearing-rule",
+    "family-first",
+    "reusable-pattern"
+  ],
   "analysis": "The cap is enforced where it cannot be wished away — in the server, folded into the UPDATE that promotes a session to active so two concurrent promotions can't both win. The current load is not a number someone maintains by hand; it is counted directly from the engagement records, so it is always true and it decrements on its own when a build ships. A public endpoint reports whether the practice is at the active cap, and the homepage hero turns that into a plain-language indicator of how many build slots are open. Triage is uncapped: a visitor submitting while both build slots are full still gets a real queued session, and the at-capacity state only changes the copy they see (you are in the queue, I start when a build frees up) — nothing is dropped. There is still no runtime override: no admin toggle raises the cap, because the rule that must not bend should not have a soft switch in the code. The number lives in a single named constant (ACTIVE_CAP) so raising it is a deliberate, reviewable change.",
   "decisions": [
     {
@@ -79,13 +85,24 @@
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": ["analysis", "decisions", "successCriteria"],
-      "reason": "Initial fill from the brainstorming session — the load-bearing capacity cap."
+      "fields_changed": [
+        "analysis",
+        "decisions",
+        "successCriteria"
+      ],
+      "reason": "Initial fill from the brainstorming session — the load-bearing capacity cap.",
+      "commit": "b003d3f",
+      "buildUrl": "https://03d0c231.marc-portal.pages.dev"
     },
     {
       "date": "2026-05-06",
       "author": "marc+claude",
-      "fields_changed": ["implementation", "componentFile", "userGuide", "knownLimitations"],
+      "fields_changed": [
+        "implementation",
+        "componentFile",
+        "userGuide",
+        "knownLimitations"
+      ],
       "reason": "Built as a hand-edited capacity file read at build time, with a homepage counter component.",
       "commit": "7882c6d",
       "buildUrl": "https://b59c7984.marc-portal.pages.dev"
