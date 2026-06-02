@@ -244,6 +244,9 @@ export interface PublicProject {
   showcasedAt: number
   title: string | null
   tagline: string | null
+  /** EN twins for the /en gallery; null falls back to the FR field. */
+  titleEn: string | null
+  taglineEn: string | null
   status: string
   tier: SessionTier | null
   currentBuild: {

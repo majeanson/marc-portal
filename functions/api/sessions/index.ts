@@ -113,6 +113,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     showcased_at: null,
     showcase_title: null,
     showcase_tagline: null,
+    showcase_title_en: null,
+    showcase_tagline_en: null,
     tier: null,
     tier4_amount_cents: null,
     tier3_split: null,

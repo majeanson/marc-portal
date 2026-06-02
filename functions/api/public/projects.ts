@@ -16,6 +16,8 @@ interface ShowcaseRow {
   showcased_at: number
   showcase_title: string | null
   showcase_tagline: string | null
+  showcase_title_en: string | null
+  showcase_tagline_en: string | null
   status: string
   tier: number | null
 }
@@ -33,7 +35,8 @@ interface AdvancementJoinRow {
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   // Sessions opted into showcase. Newest first by showcased_at.
   const sessRes = await env.DB.prepare(
-    `SELECT id, showcased_at, showcase_title, showcase_tagline, status, tier
+    `SELECT id, showcased_at, showcase_title, showcase_tagline,
+            showcase_title_en, showcase_tagline_en, status, tier
      FROM sessions
      WHERE showcased_at IS NOT NULL AND deleted_at IS NULL
      ORDER BY showcased_at DESC`,
@@ -74,6 +77,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       showcasedAt: s.showcased_at,
       title: s.showcase_title,
       tagline: s.showcase_tagline,
+      titleEn: s.showcase_title_en,
+      taglineEn: s.showcase_tagline_en,
       status: s.status,
       tier: s.tier,
       currentBuild: cur
