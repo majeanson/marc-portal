@@ -175,7 +175,9 @@ function FeaturedCard({
   const buildHref = project.currentBuild?.buildUrl
     ? `${project.currentBuild.buildUrl}${project.currentBuild.iframePath ?? ''}`
     : null
-  const title = project.title || t.untitled
+  // EN strip reads the _en twin; null falls back to FR (FR-only siblings).
+  const title = (lang === 'en' ? (project.titleEn ?? project.title) : project.title) || t.untitled
+  const tagline = lang === 'en' ? (project.taglineEn ?? project.tagline) : project.tagline
   const isTransitioning = useViewTransitionState(shareHref)
   const cardStyle = isTransitioning ? { viewTransitionName: 'project-detail' } : undefined
   return (
@@ -201,7 +203,7 @@ function FeaturedCard({
           </span>
         </div>
         <h3 className="project-card__title">{title}</h3>
-        {project.tagline && <p className="project-card__tagline">{project.tagline}</p>}
+        {tagline && <p className="project-card__tagline">{tagline}</p>}
         {project.currentBuild ? (
           <div className="project-card__build">
             <span className="mono project-card__build-eyebrow">{t.currentBuildLabel}</span>

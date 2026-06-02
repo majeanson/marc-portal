@@ -61,6 +61,7 @@ npm run db:migrate:prod
 | `0027_email_events.sql`             | AUDIT P1.2: bounce/complaint events from Resend                                                        |
 | `0028_operator_notes.sql`           | Per-session admin-only scratch pad for /admin/today                                                    |
 | `0029_system_kv.sql`                | System-level key/value store for cron heartbeats (first use: `last_digest_at` for digest-cron staleness on `/admin/today`) |
+| `0030_dungeondepths_showcase.sql`   | Adds `showcase_title_en`/`showcase_tagline_en` for the /en gallery + seeds the Dungeon Depths showcase (Expo game on CF Workers) |
 
 ## After applying 0002
 

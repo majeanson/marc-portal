@@ -320,7 +320,10 @@ function ProjectCard({
   const buildHref = project.currentBuild?.buildUrl
     ? `${project.currentBuild.buildUrl}${project.currentBuild.iframePath ?? ''}`
     : null
-  const title = project.title || t.untitled
+  // EN gallery reads the _en twin; null falls back to the FR string so the
+  // FR-only siblings (Jaffre/Retrodio) still render.
+  const title = (lang === 'en' ? (project.titleEn ?? project.title) : project.title) || t.untitled
+  const tagline = lang === 'en' ? (project.taglineEn ?? project.tagline) : project.tagline
   // Only the *clicked* card gets the shared view-transition name — otherwise
   // every card would morph into the destination and the browser would refuse
   // the transition (names must be unique within a snapshot).
@@ -349,7 +352,7 @@ function ProjectCard({
           </span>
         </div>
         <h2 className="project-card__title">{title}</h2>
-        {project.tagline && <p className="project-card__tagline">{project.tagline}</p>}
+        {tagline && <p className="project-card__tagline">{tagline}</p>}
         {project.currentBuild ? (
           <div className="project-card__build">
             <span className="mono project-card__build-eyebrow">{t.currentBuildLabel}</span>

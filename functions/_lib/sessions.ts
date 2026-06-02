@@ -47,6 +47,10 @@ export interface SessionRow {
   showcase_title: string | null
   /** Admin-set short blurb on the public card. NULL = no tagline. */
   showcase_tagline: string | null
+  /** EN twin of showcase_title for the /en gallery. NULL = fall back to FR. */
+  showcase_title_en: string | null
+  /** EN twin of showcase_tagline for the /en gallery. NULL = fall back to FR. */
+  showcase_tagline_en: string | null
   /** Tier classification (0/1/2/3/4) matching the public Pricing copy. NULL =
    * not yet classified by admin. Used to badge the public gallery card. */
   tier: number | null
@@ -200,7 +204,8 @@ export async function requireSessionAccess(
  *  correlated subquery rather than a stored column — see SessionRow's comment. */
 export const SESSION_SELECT_COLUMNS = `id, email, intake_json, status, created_at, updated_at,
         deleted_at, status_history,
-        showcased_at, showcase_title, showcase_tagline, tier,
+        showcased_at, showcase_title, showcase_tagline,
+        showcase_title_en, showcase_tagline_en, tier,
         tier4_amount_cents, tier3_split, custodian_status, custodian_plan,
         all_yours_acknowledged_at, decline_note, community_discount,
         (SELECT id FROM attachments

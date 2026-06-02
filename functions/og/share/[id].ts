@@ -24,14 +24,21 @@ interface OgFields {
   status: string
 }
 
-async function loadOgFields(env: Env, id: string): Promise<OgFields | null> {
+async function loadOgFields(env: Env, id: string, lang: 'fr' | 'en'): Promise<OgFields | null> {
   const session = await loadSession(env.DB, id)
   if (!session) return null
   if (session.deleted_at) return null
   if (!session.showcased_at) return null
+  // EN card reads the _en twin; null falls back to the FR string.
+  const title =
+    lang === 'en' ? (session.showcase_title_en ?? session.showcase_title) : session.showcase_title
+  const tagline =
+    lang === 'en'
+      ? (session.showcase_tagline_en ?? session.showcase_tagline)
+      : session.showcase_tagline
   return {
-    title: session.showcase_title || 'Projet en cours',
-    tagline: session.showcase_tagline || '',
+    title: title || 'Projet en cours',
+    tagline: tagline || '',
     tier: session.tier,
     status: session.status,
   }
@@ -66,6 +73,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   const id = String(params.id ?? '')
   const url = new URL(request.url)
   const debug = url.searchParams.get('debug') === '1'
+  const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'fr'
 
   if (!id) {
     if (debug) return debugResponse({ ok: false, reason: 'missing-id' })
@@ -75,7 +83,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   let fields: OgFields | null = null
   let loadErr: string | null = null
   try {
-    fields = await loadOgFields(env, id)
+    fields = await loadOgFields(env, id, lang)
   } catch (err) {
     loadErr = err instanceof Error ? err.message : String(err)
     console.warn('og: loadSession failed', err)
@@ -104,7 +112,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   const safeTitle = fields.title.length > 64 ? fields.title.slice(0, 61) + '…' : fields.title
   const safeTagline =
     fields.tagline.length > 120 ? fields.tagline.slice(0, 117) + '…' : fields.tagline
-  const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'fr'
   const footerLabel = lang === 'en' ? 'SHARED FROM MARC.PORTAL' : 'PARTAGÉ DEPUIS MARC.PORTAL'
 
   // satori is strict: every <div> must have explicit `display: flex` (or
