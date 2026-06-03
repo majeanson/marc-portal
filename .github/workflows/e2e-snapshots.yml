@@ -43,7 +43,12 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Regenerate visual baselines
         continue-on-error: true
-        run: npx playwright test screenshots.spec.ts error-states.spec.ts --update-snapshots
+        # All three screenshot-bearing specs the e2e gate diffs: the public
+        # gallery, the error/empty states, and the authenticated + multi-step
+        # app shots (session tabs, admin shell, intake steps). Leaving
+        # app-screenshots out here meant its baselines could only drift —
+        # there was no runner path to refresh them.
+        run: npx playwright test screenshots.spec.ts error-states.spec.ts app-screenshots.spec.ts --update-snapshots
       # The atelier gallery manifest's `fullH` is derived from each baseline
       # PNG's pixel height. Regenerate it here so it doesn't silently drift
       # from the screenshots this run just refreshed.
