@@ -38,6 +38,18 @@ const VIBE_FLAG = 'marc-portal:intake-vibe-accepted'
 
 const baseAccount = { email: USER_EMAIL, name: 'Geneviève Bouchard' }
 
+/** Open a session tab by its accessible name, then let it settle. The session
+ *  detail surface is a one-section-at-a-time tab switcher, so a scenario that
+ *  wants to screenshot the payment / intake / operator surface has to switch to
+ *  that tab first. Guarded: a tab that isn't present for this session+role is a
+ *  no-op rather than a hang. */
+const openTab =
+  (name: string) =>
+  async (page: Page): Promise<void> => {
+    const tab = page.getByRole('tab', { name })
+    if (await tab.count()) await tab.first().click()
+  }
+
 /** Build summary for an active tier-2 session with the first leg owed. */
 const activePayment = paymentSummary({
   build: {
@@ -192,6 +204,8 @@ export const APP_SCENARIOS: AppScenario[] = [
       }),
       payment: shippedPayment,
     },
+    // The all-yours skills checklist lives in PaymentActions, now the Paiement tab.
+    prepare: openTab('Paiement'),
   },
   {
     name: 'en-session-user-shipped',
@@ -207,6 +221,7 @@ export const APP_SCENARIOS: AppScenario[] = [
       }),
       payment: shippedPayment,
     },
+    prepare: openTab('Payment'),
   },
   {
     name: 'session-user-triage',
@@ -233,7 +248,9 @@ export const APP_SCENARIOS: AppScenario[] = [
     role: 'user',
     mocks: { session: makeSession({ status: 'active', tier: 2 }), payment: activePayment },
     prepare: async (page) => {
-      const edit = page.getByRole('button', { name: 'Edit' }).first()
+      // The intake summary moved to its own tab; open it, then flip to edit.
+      await openTab('Intake')(page)
+      const edit = page.getByRole('button', { name: 'Modifier' }).first()
       if (await edit.count()) await edit.click()
     },
   },
@@ -263,12 +280,15 @@ export const APP_SCENARIOS: AppScenario[] = [
         },
       }),
     },
+    // Tier/pricing knobs moved to the admin-only Opérateur tab.
+    prepare: openTab('Opérateur'),
   },
   {
     name: 'session-admin-tier4',
     path: '/admin/inbox/demo-session',
     role: 'admin',
     mocks: { session: makeSession({ status: 'active', tier: 4, tier4_amount_cents: 480000 }) },
+    prepare: openTab('Opérateur'),
   },
   {
     name: 'session-admin-shipped',
@@ -284,6 +304,8 @@ export const APP_SCENARIOS: AppScenario[] = [
       }),
       payment: shippedPayment,
     },
+    // The showcase publisher is an operator control — Opérateur tab.
+    prepare: openTab('Opérateur'),
   },
 
   // ── Admin shell pages ─────────────────────────────────────────────────────

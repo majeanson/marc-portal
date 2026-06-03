@@ -47,11 +47,17 @@
       "rationale": "Signed-cookie sessions and direct SQL keep the runtime small enough to read end to end. Adding a backend, authentication, and a database bends the boring-tech mandate, but each individual piece is kept to the smallest surface area that works.",
       "recommendation": "Resist adding an ORM, an auth library, or a state-management library until the runtime has been stable in production for a good while.",
       "date": "2026-05-07"
+    },
+    {
+      "decision": "The session detail page is a one-section-at-a-time tab switcher, not a long scroll",
+      "rationale": "A first-time visitor who had just submitted an intake landed on a wall: status, what's-next, payment, the original brief, the activity log, the thread, and (for the admin) tier and pricing controls, all expanded at once. The title even rendered below the payment block. Splitting the surface into tabs — Statut, Conversation, Paiement, Suivi, Intake, plus an admin-only Opérateur tab — keeps the title and live status as persistent chrome and shows one section at a time, so neither the visitor nor the operator view reads as a cockpit.",
+      "recommendation": "Keep the active tab in the URL hash so a tab is bookmarkable and survives a refresh; gate which tabs exist on status + role (sessionTabsFor) so a tab never points at an empty panel; keep the operator controls behind their own tab rather than re-mixing them into the visitor surface.",
+      "date": "2026-06-02"
     }
   ],
   "implementation": "The backend runs as Cloudflare Pages Functions over a Cloudflare D1 database, with one-time link emails sent through Resend. Authentication (functions/_lib/auth.ts, functions/api/auth/*) issues a hashed single-use token, emails it, and on verification sets a signed session cookie plus a CSRF cookie; link requests are rate-limited per email and per address. Engagements live in a sessions table with a messages table and a magic-link-token table alongside it; the intake-draft store, attachments, payments, and vouches are adjacent tables. The session endpoints (functions/api/sessions/*) list a visitor's own engagements or, for an admin, all of them; create one (subject to the capacity cap); transition its status; and carry its message thread. On the client, src/pages/SessionPage.tsx is the shared engagement surface — intake summary, status timeline, message thread, attachments — used by the visitor for their own engagement and by the admin for any; src/pages/AdminInbox.tsx is the admin's list of every engagement with its triage SLA; src/pages/Login.tsx requests a link; src/pages/MePortal.tsx is the signed-in visitor's dashboard, and includes account deletion and a data-access page for Quebec privacy-law compliance.",
   "successCriteria": "- A visitor can save an intake, leave, and return on any device via a one-time email link with their engagement intact\n- The session page shows the intake brief, the status, and a message thread, and both parties can post to it\n- The admin inbox lists every engagement in flight with its triage deadline\n- Admin-only routes refuse any signed-in address that is not on the allowlist\n- One-time links are single-use, short-lived, and rate-limited\n- The capacity cap is enforced from real engagement counts\n- Nothing in the runtime creates a real-time or always-available expectation",
-  "userGuide": "As a visitor: fill the intake form, then claim it by requesting a one-time sign-in link at /login. The link lands you on your dashboard at /me, where each engagement opens to its own page — the intake brief at the top, the status, and a message thread. Post a message whenever you like; the consultant replies on the same page, with no notifications by design. You can return from any device by requesting a fresh link with the same email, delete your account from the dashboard, and review your stored data at /me/data. As the consultant: sign in with the same link flow; if your address is on the admin allowlist, /admin/inbox lists every engagement, sorted by triage urgency. Open one to read the brief, reply, change status, or attach files.",
+  "userGuide": "As a visitor: fill the intake form, then claim it by requesting a one-time sign-in link at /login. The link lands you on your dashboard at /me, where each engagement opens to its own page. The page leads with the title and live status, then a row of tabs holds one section each — Statut (where you are and what's next), Conversation (the thread), Paiement when there's something to pay, Suivi (the builds and activity log), and Intake (your original brief). Post a message whenever you like; the consultant replies on the same page, with no notifications by design. You can return from any device by requesting a fresh link with the same email, delete your account from the dashboard, and review your stored data at /me/data. As the consultant: sign in with the same link flow; if your address is on the admin allowlist, /admin/inbox lists every engagement, sorted by triage urgency. Open one to read the brief, reply, change status, or attach files — the tier, pricing, showcase, and private notes controls live behind an admin-only Opérateur tab.",
   "knownLimitations": [
     "No real-time updates by design — a reply appears when the other party next opens or refocuses the page",
     "Multi-admin support is only the email allowlist — adding a co-admin means editing the allowlist",
@@ -106,6 +112,12 @@
       "reason": "Code-first overhaul: co-located next to SessionPage.tsx, anchored the feature on a real componentFile, added liveUrl, and rewrote from the shipped runtime — dropping the stale limitations for file uploads, account deletion, and data export, which now all exist.",
       "commit": "dcfea4b",
       "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
+    },
+    {
+      "date": "2026-06-02",
+      "author": "marc+claude",
+      "fields_changed": ["decisions", "userGuide"],
+      "reason": "Reworked the session detail surface from one long expanded scroll into a one-section-at-a-time tab switcher (Statut / Conversation / Paiement / Suivi / Intake, plus an admin-only Opérateur tab), with the title + live status lifted to persistent chrome. Cuts newcomer overwhelm and tucks the operator controls off the visitor view."
     }
   ],
   "annotations": []

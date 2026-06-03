@@ -65,8 +65,8 @@ const SESSION_TAB_IDS = [
   'session-conversation',
   'session-builds',
   'session-paiement',
-  'session-livraison',
   'session-intake',
+  'session-operateur',
 ] as const
 
 describe('HOME_SECTION_FEATURE map', () => {

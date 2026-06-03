@@ -35,6 +35,8 @@ import { SectionEyebrow } from '../components/SectionEyebrow'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDateTime, formatRelativeWindow } from '../lib/format'
 import { markSeen } from '../lib/unread'
+import { resolveActiveTab, sessionTabsFor, type SessionTabId } from '../lib/sessionTabs'
+import { SessionTabsContext, type SessionTabsState } from '../lib/sessionTabsContext'
 import {
   attachmentUrl,
   deleteAttachment,
@@ -193,6 +195,7 @@ const COPY = {
     statusLabel: 'Statut',
     changeStatus: 'Changer le statut',
     statusHint: 'Clique une étape pour changer le statut de la session.',
+    operatorPricingHeading: 'Tier et tarification',
     tierHint:
       'Tier de la session — détermine le bouton « Payer » côté visiteur. T0 = gratuit, pas de bouton.',
     tier4AmountLabel: 'Montant Tier 4 (CAD)',
@@ -299,6 +302,7 @@ const COPY = {
     statusLabel: 'Status',
     changeStatus: 'Change status',
     statusHint: 'Click a stage to change the session status.',
+    operatorPricingHeading: 'Tier & pricing',
     tierHint: 'Session tier — drives the visitor-side "Pay" button. T0 = free, no button.',
     tier4AmountLabel: 'Tier 4 amount (CAD)',
     tier4AmountHint:
@@ -396,6 +400,39 @@ export function SessionPage({ lang }: { lang: Lang }) {
   const [mediaBusy, setMediaBusy] = useState(false)
   const sketchApiRef = useRef<ExcalidrawAPI | null>(null)
   const langPrefix = lang === 'en' ? '/en' : ''
+
+  // Tab switcher. The session is now one-section-at-a-time: which section
+  // shows is driven by the URL hash so a tab is bookmarkable and survives a
+  // refresh. `requestedTab` is the raw id the URL asks for; the *effective*
+  // active tab (computed below, once the session is loaded) clamps it to a tab
+  // that actually exists for this session+viewer. Seeding from the hash in the
+  // useState initializer (not an effect) keeps it lint-clean.
+  const [requestedTab, setRequestedTab] = useState<string>(() =>
+    typeof window !== 'undefined' ? window.location.hash.replace(/^#/, '') : '',
+  )
+  // Catch hash changes that come from plain in-app anchors (e.g. PaymentActions'
+  // "Question before paying? ↓" link points at #session-conversation). Those
+  // don't go through onSelectTab, so we listen for the browser hashchange and
+  // mirror it into state. setState lives in the event callback, not the effect
+  // body — same shape as the visibility-refresh effect below.
+  useEffect(() => {
+    const onHash = () => setRequestedTab(window.location.hash.replace(/^#/, ''))
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+  const onSelectTab = useCallback((id: SessionTabId) => {
+    setRequestedTab(id)
+    // Mirror to the URL for deep-linking — replaceState, so no history spam and
+    // no native scroll-into-view (we're swapping a panel, not scrolling).
+    if (typeof window !== 'undefined') window.history.replaceState(null, '', `#${id}`)
+  }, [])
+  // Present tabs depend on status + role; guard the null window before the
+  // session lands so the hook order stays stable across the early returns.
+  const sessionStatus = session?.status
+  const tabs = useMemo<SessionTabId[]>(
+    () => (sessionStatus ? sessionTabsFor({ status: sessionStatus, isAdmin }) : []),
+    [sessionStatus, isAdmin],
+  )
 
   // Refresh callable from event handlers only (post-send, visibility).
   // NOT called from inside a useEffect body — that would trip the
@@ -942,594 +979,698 @@ export function SessionPage({ lang }: { lang: Lang }) {
     </span>
   ) : null
 
+  const activeTab = resolveActiveTab(`#${requestedTab}`, tabs)
+  const tabsValue: SessionTabsState = {
+    tabs,
+    activeTab,
+    onSelect: onSelectTab,
+    lang,
+  }
+
   return (
-    <div className="app" data-feature={PAGE_FEATURE['page.session-page']}>
-      <Header lang={lang} variant="session" />
-      <main id="main-content">
-        <article className="section intake session-frame">
-          <div className="section__inner">
-            <a className="showcase-page__back" href={backHref}>
-              {backLabel}
-            </a>
+    <SessionTabsContext.Provider value={tabsValue}>
+      <div className="app" data-feature={PAGE_FEATURE['page.session-page']}>
+        <Header lang={lang} variant="session" />
+        <main id="main-content">
+          <article className="section intake session-frame">
+            <div className="section__inner">
+              <a className="showcase-page__back" href={backHref}>
+                {backLabel}
+              </a>
 
-            <div id="session-statut">
-              <SessionStatusStrip
+              {/* Persistent chrome: the title + live status read first, on every
+                  tab. The tab bar itself lives in the sticky Header
+                  (SessionSubHeader), fed by SessionTabsContext. */}
+              <SessionHeader
                 lang={lang}
-                status={session.status}
-                onPick={isAdmin ? onStatusChange : undefined}
+                feature={PAGE_FEATURE['page.session-page']}
+                eyebrow={
+                  parsed
+                    ? `${localized(getSchemaForType(parsed.type).title, lang)} · ${session.status}`
+                    : `${t.eyebrow} · ${session.status}`
+                }
+                title={t.title}
+                idTag={session.id.slice(0, 8)}
+                meta={
+                  <>
+                    <span
+                      className={`session-frame__status-pill session-frame__status-pill--${session.status}`}
+                    >
+                      {session.status}
+                    </span>
+                    {slaPill}
+                    {currentBuild &&
+                      (currentBuild.build_url ? (
+                        <a
+                          className="session-frame__current-build mono"
+                          href={`${currentBuild.build_url}${currentBuild.iframe_path ?? ''}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {advT.currentLabel}: {currentBuild.label} ↗
+                        </a>
+                      ) : (
+                        <span className="session-frame__current-build session-frame__current-build--pending mono">
+                          {advT.currentLabel}: {currentBuild.label} ({advT.pillPendingStamp})
+                        </span>
+                      ))}
+                    <span
+                      className="mono session-frame__refresh"
+                      role="status"
+                      aria-live="polite"
+                      hidden={!refreshing}
+                    >
+                      {refreshing ? t.refreshing : ''}
+                    </span>
+                  </>
+                }
               />
-              {isAdmin && <p className="field__hint session-frame__strip-hint">{t.statusHint}</p>}
-              {isAdmin && (
-                <>
-                  <SessionTierStrip lang={lang} tier={session.tier} onPick={onTierChange} />
-                  <p className="field__hint session-frame__strip-hint">{t.tierHint}</p>
-                </>
-              )}
 
-              {isAdmin && session.tier === 4 && (
-                <Tier4AmountInput
-                  // key resets local draft when the persisted value changes
-                  // (post-save, post-409 reload). Avoids an effect+setState
-                  // pattern the lint rule rejects.
-                  key={String(session.tier4_amount_cents ?? '')}
-                  copy={t}
-                  cents={session.tier4_amount_cents}
-                  onSave={onTier4AmountChange}
-                />
-              )}
+              {/* Statut: the home tab. Status, what's next, and a quiet withdraw
+                  at the foot. The default landing for a newcomer. */}
+              {activeTab === 'session-statut' && (
+                <div
+                  role="tabpanel"
+                  id="session-statut-panel"
+                  aria-labelledby="session-statut-tab"
+                  tabIndex={0}
+                  className="session-frame__tabpanel"
+                >
+                  <SessionStatusStrip
+                    lang={lang}
+                    status={session.status}
+                    onPick={isAdmin ? onStatusChange : undefined}
+                  />
+                  {isAdmin && (
+                    <p className="field__hint session-frame__strip-hint">{t.statusHint}</p>
+                  )}
 
-              {isAdmin && session.tier === 3 && (
-                <Tier3SplitInput copy={t} split={session.tier3_split} onSave={onTier3SplitChange} />
-              )}
+                  <SessionWhatsNext
+                    session={session}
+                    summary={summary}
+                    isAdmin={isAdmin}
+                    lang={lang}
+                  />
 
-              {/* Community pricing — only meaningful once a build tier is set
-                  (no point discounting a Tier 0 / unclassified session). The
-                  `frozen` prop pre-locks the toggle when a build leg is paid
-                  so the admin sees the locked state on render, not after a
-                  failed click. The server's atomic guard is still the source
-                  of truth — this is the proactive UI mirror. */}
-              {isAdmin && session.tier != null && session.tier > 0 && (
-                <CommunityDiscountToggle
-                  copy={t}
-                  on={Boolean(session.community_discount)}
-                  frozen={(summary?.build?.paidCount ?? 0) > 0}
-                  onSave={onCommunityDiscountChange}
-                />
-              )}
+                  {/* The generous no — a rejected session is not a dead end. */}
+                  {session.status === 'rejected' && (
+                    <DeclinePanel
+                      session={session}
+                      lang={lang}
+                      copy={t}
+                      isAdmin={isAdmin}
+                      onSaved={setSession}
+                    />
+                  )}
 
-              <SessionWhatsNext session={session} summary={summary} isAdmin={isAdmin} lang={lang} />
-            </div>
-
-            {/* Render PaymentActions for active *and* shipped sessions: the
-                ownership-decision (All yours vs Custodian) sections live
-                inside the component and need the shipped state to surface.
-                The component internally emits id="session-paiement" and
-                id="session-livraison" anchors that the sub-header
-                navigates to. */}
-            {(session.status === 'active' || session.status === 'shipped') && (
-              <PaymentActions session={session} lang={lang} />
-            )}
-
-            <SessionHeader
-              lang={lang}
-              feature={PAGE_FEATURE['page.session-page']}
-              eyebrow={
-                parsed
-                  ? `${localized(getSchemaForType(parsed.type).title, lang)} · ${session.status}`
-                  : `${t.eyebrow} · ${session.status}`
-              }
-              title={t.title}
-              idTag={session.id.slice(0, 8)}
-              meta={
-                <>
-                  <span
-                    className={`session-frame__status-pill session-frame__status-pill--${session.status}`}
-                  >
-                    {session.status}
-                  </span>
-                  {slaPill}
-                  {currentBuild &&
-                    (currentBuild.build_url ? (
-                      <a
-                        className="session-frame__current-build mono"
-                        href={`${currentBuild.build_url}${currentBuild.iframe_path ?? ''}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {advT.currentLabel}: {currentBuild.label} ↗
-                      </a>
-                    ) : (
-                      <span className="session-frame__current-build session-frame__current-build--pending mono">
-                        {advT.currentLabel}: {currentBuild.label} ({advT.pillPendingStamp})
-                      </span>
-                    ))}
-                  <span
-                    className="mono session-frame__refresh"
-                    role="status"
-                    aria-live="polite"
-                    hidden={!refreshing}
-                  >
-                    {refreshing ? t.refreshing : ''}
-                  </span>
-                </>
-              }
-            />
-
-            {/* The generous no — a rejected session is not a dead end. */}
-            {session.status === 'rejected' && (
-              <DeclinePanel
-                session={session}
-                lang={lang}
-                copy={t}
-                isAdmin={isAdmin}
-                onSaved={setSession}
-              />
-            )}
-
-            {/* The napkin as the through-line — pinned high on the session,
+                  {/* The napkin as the through-line — pinned high on the session,
                 and at shipped it completes into a from-sketch-to-shipped
                 pairing. */}
-            {parsed?.napkin && (
-              <NapkinArc
-                lang={lang}
-                copy={t}
-                napkin={parsed.napkin}
-                session={session}
-                currentBuild={currentBuild}
-                onNapkinReplaced={async () => {
-                  // After a successful re-upload, re-fetch the session so the
-                  // new napkin_attachment_id surfaces and NapkinSection
-                  // renders the new R2 URL. Failure is non-fatal — the upload
-                  // succeeded; only the local view is stale.
-                  if (!id) return
-                  try {
-                    const r = await getSession(id)
-                    setSession(r.session)
-                  } catch {
-                    // Stale state; visitor can reload the page.
-                  }
-                }}
-              />
-            )}
-
-            {/* Handoff certificate — a downloadable keepsake, once shipped. */}
-            {session.status === 'shipped' && (
-              <section className="surface intake__step session-frame__panel session-certificate">
-                <h2>{t.certificateHeading}</h2>
-                <p className="session-certificate__body">{t.certificateBody}</p>
-                <a
-                  className="session-certificate__btn mono"
-                  href={`/og/certificate/${session.id}?lang=${lang}`}
-                  download="certificat-passation.png"
-                >
-                  {t.certificateDownload}
-                </a>
-              </section>
-            )}
-
-            <section id="session-intake" className="surface intake__step session-frame__panel">
-              <header className="session-page__intake-head">
-                <h2>{t.intakeHeading}</h2>
-                <div className="session-page__intake-actions">
-                  <span
-                    role="status"
-                    aria-live="polite"
-                    className="mono session-page__saving"
-                    hidden={!saving}
-                  >
-                    {saving ? t.saving : ''}
-                  </span>
-                  {saveError && !saving && (
-                    <span
-                      className="mono session-page__save-error"
-                      role="alert"
-                      aria-live="assertive"
-                    >
-                      {t.saveError}
-                    </span>
-                  )}
-                  {canEditIntake && (
-                    <button
-                      type="button"
-                      className="link-btn mono"
-                      onClick={() => {
-                        setEditing((v) => !v)
-                        setSaveError(false)
+                  {parsed?.napkin && (
+                    <NapkinArc
+                      lang={lang}
+                      copy={t}
+                      napkin={parsed.napkin}
+                      session={session}
+                      currentBuild={currentBuild}
+                      onNapkinReplaced={async () => {
+                        // After a successful re-upload, re-fetch the session so the
+                        // new napkin_attachment_id surfaces and NapkinSection
+                        // renders the new R2 URL. Failure is non-fatal — the upload
+                        // succeeded; only the local view is stale.
+                        if (!id) return
+                        try {
+                          const r = await getSession(id)
+                          setSession(r.session)
+                        } catch {
+                          // Stale state; visitor can reload the page.
+                        }
                       }}
-                      aria-pressed={editing}
-                    >
-                      {editing ? t.doneEditing : t.editIntake}
-                    </button>
+                    />
+                  )}
+
+                  {/* Handoff certificate — a downloadable keepsake, once shipped. */}
+                  {session.status === 'shipped' && (
+                    <section className="surface intake__step session-frame__panel session-certificate">
+                      <h2>{t.certificateHeading}</h2>
+                      <p className="session-certificate__body">{t.certificateBody}</p>
+                      <a
+                        className="session-certificate__btn mono"
+                        href={`/og/certificate/${session.id}?lang=${lang}`}
+                        download="certificat-passation.png"
+                      >
+                        {t.certificateDownload}
+                      </a>
+                    </section>
+                  )}
+
+                  {/* Withdraw sits at the foot of the home tab: a quiet danger
+                      affordance, not a CTA. Both the owner and the admin can
+                      pull a session; the server enforces it either way. */}
+                  {(isAdmin || session.email === email) && (
+                    <section className="session-page__danger">
+                      <button
+                        type="button"
+                        className="link-btn mono session-page__withdraw"
+                        onClick={onWithdraw}
+                        disabled={withdrawing}
+                      >
+                        {t.withdrawCta}
+                      </button>
+                    </section>
                   )}
                 </div>
-              </header>
-              {staleConflict && (
-                <p className="session-page__stale" role="alert" aria-live="assertive">
-                  {t.staleConflict}
-                </p>
               )}
-              {parsed ? (
-                <>
-                  {editing && <p className="field__hint">{t.editHint}</p>}
-                  <IntakeSummary
-                    lang={lang}
-                    account={parsed.account}
-                    type={parsed.type}
-                    values={parsed.formData}
-                    submittedAt={parsed.submittedAt}
-                    editable={editing}
-                    editableType={editing}
-                    typeChangeConfirm={t.typeChangeWarn}
-                    requiredEmptyConfirm={t.requiredEmptyConfirm}
-                    onChange={onIntakeChange}
-                  />
-                  {parsed.voiceNapkin && (
-                    <div className="surface session-voicenapkin">
-                      <span className="mono session-voicenapkin__label">
-                        🎙 {tMedia.thread.voiceLabel}
-                      </span>
-                      <p className="session-voicenapkin__text">{parsed.voiceNapkin.transcript}</p>
-                    </div>
-                  )}
-                </>
-              ) : intakePretty ? (
-                <pre className="mono session-page__intake">{intakePretty}</pre>
-              ) : (
-                <p>{t.noIntake}</p>
-              )}
-            </section>
 
-            <section className="surface intake__step session-frame__panel">
-              <h2>{t.timelineHeading}</h2>
-              <ul className="session-timeline">
-                {timelineEntries.map((entry, i) => {
-                  if (entry.kind === 'created') {
-                    return (
-                      <li key={`c-${entry.at}`} className="session-timeline__entry">
-                        <span className="session-timeline__dot" aria-hidden="true" />
-                        <div className="session-timeline__body">
-                          <div className="mono session-timeline__when">
-                            {formatDateTime(entry.at, lang)}
-                          </div>
-                          <div>{t.timelineCreated(formatDateTime(entry.at, lang))}</div>
-                        </div>
-                      </li>
-                    )
-                  }
-                  if (entry.kind === 'status') {
-                    return (
-                      <li key={`s-${entry.at}-${i}`} className="session-timeline__entry">
-                        <span className="session-timeline__dot" aria-hidden="true" />
-                        <div className="session-timeline__body">
-                          <div className="mono session-timeline__when">
-                            {formatDateTime(entry.at, lang)}
-                          </div>
-                          <div>
-                            {t.timelineStatus(
-                              entry.from,
-                              entry.to,
-                              entry.by,
-                              formatDateTime(entry.at, lang),
-                            )}
-                          </div>
-                        </div>
-                      </li>
-                    )
-                  }
-                  // advancement
-                  const row = entry.row
-                  const linkHref =
-                    row.build_url && row.build_url.length > 0
-                      ? `${row.build_url}${row.iframe_path ?? ''}`
-                      : null
-                  return (
-                    <li
-                      key={`a-${row.id}`}
-                      className="session-timeline__entry session-timeline__entry--advancement"
-                    >
-                      <span
-                        className="session-timeline__dot session-timeline__dot--advancement"
-                        aria-hidden="true"
-                      />
-                      <div className="session-timeline__body">
-                        <div className="mono session-timeline__when">
-                          {formatDateTime(entry.at, lang)}
-                        </div>
-                        <div>
-                          <strong>{advT.timelineLabel}:</strong> {row.label}
-                          {linkHref ? (
-                            <>
-                              {' · '}
-                              <a href={linkHref} target="_blank" rel="noreferrer" className="mono">
-                                {advT.openInNewTab}
-                              </a>
-                            </>
-                          ) : (
-                            <>
-                              {' · '}
-                              <span className="mono session-timeline__pending">
-                                {advT.pillPendingStamp}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            </section>
-
-            {isAdmin && (
-              <SessionShowcase
-                session={session}
-                lang={lang}
-                onPatched={(next) => setSession(next)}
-              />
-            )}
-
-            {isAdmin && <OperatorNotesPanel sessionId={session.id} lang={lang} />}
-
-            <div id="session-builds">
-              <SessionAdvancements
-                sessionId={session.id}
-                isAdmin={isAdmin}
-                lang={lang}
-                repoUrl="https://github.com/majeanson/marc-portal"
-                items={advancements}
-                loading={advancementsLoading}
-                onCreated={onAdvCreated}
-                onPatched={onAdvPatched}
-                onDeleted={onAdvDeleted}
-              />
-            </div>
-
-            <section
-              id="session-conversation"
-              className="surface intake__step session-frame__panel"
-            >
-              <h2>{t.threadHeading}</h2>
-              {threadItems.length === 0 ? (
-                <p className="thread__empty">{t.none}</p>
-              ) : (
-                <ul className="thread">
-                  {threadItems.map((item) => {
-                    if (item.kind === 'message') {
-                      const m = item.msg
-                      const isMe =
-                        (isAdmin && m.author === 'marc') || (!isAdmin && m.author === 'visitor')
-                      const authorLabel = isMe ? t.you : m.author === 'marc' ? t.marc : t.visitor
-                      return (
-                        <li
-                          key={`m-${m.id}`}
-                          className={`thread__msg thread__msg--${m.author}${isMe ? ' thread__msg--mine' : ''}`}
+              {/* Intake: the original submission, read-only reference (the
+                  visitor or admin can flip it to editable). */}
+              {activeTab === 'session-intake' && (
+                <div
+                  role="tabpanel"
+                  id="session-intake-panel"
+                  aria-labelledby="session-intake-tab"
+                  tabIndex={0}
+                  className="session-frame__tabpanel"
+                >
+                  <section
+                    id="session-intake"
+                    className="surface intake__step session-frame__panel"
+                  >
+                    <header className="session-page__intake-head">
+                      <h2>{t.intakeHeading}</h2>
+                      <div className="session-page__intake-actions">
+                        <span
+                          role="status"
+                          aria-live="polite"
+                          className="mono session-page__saving"
+                          hidden={!saving}
                         >
-                          <div className="thread__head mono">
-                            {authorLabel} · {formatDateTime(m.created_at, lang)}
-                          </div>
-                          {m.body && <div className="thread__body">{m.body}</div>}
-                          {m.attachments && m.attachments.length > 0 && (
-                            <ul className="thread__attach-list">
-                              {m.attachments.map((a) => (
-                                <AttachmentTile
-                                  key={a.id}
-                                  att={a}
-                                  sessionId={session.id}
-                                  lang={lang}
-                                  openLabel={t.attachOpen}
-                                />
-                              ))}
-                            </ul>
-                          )}
-                        </li>
-                      )
-                    }
-                    // advancement bubble — visually distinct from messages so
-                    // a build announcement reads as a *milestone*, not chat.
-                    const row = item.row
-                    const linkHref =
-                      row.build_url && row.build_url.length > 0
-                        ? `${row.build_url}${row.iframe_path ?? ''}`
-                        : null
-                    return (
-                      <li key={`a-${row.id}`} className="thread__msg thread__msg--build">
-                        <div className="thread__head mono">
-                          {advT.timelineLabel} · {formatDateTime(row.date, lang)}
-                        </div>
-                        <div className="thread__build-label">{row.label}</div>
-                        {row.body && <div className="thread__body">{row.body}</div>}
-                        {linkHref ? (
-                          <a
-                            className="thread__build-link mono"
-                            href={linkHref}
-                            target="_blank"
-                            rel="noreferrer"
+                          {saving ? t.saving : ''}
+                        </span>
+                        {saveError && !saving && (
+                          <span
+                            className="mono session-page__save-error"
+                            role="alert"
+                            aria-live="assertive"
                           >
-                            {advT.openInNewTab}
-                          </a>
-                        ) : (
-                          <span className="mono session-timeline__pending">
-                            {advT.pillPendingStamp}
+                            {t.saveError}
                           </span>
                         )}
-                      </li>
-                    )
-                  })}
-                </ul>
-              )}
-
-              <form onSubmit={onSend} className="thread__form">
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder={t.placeholder}
-                  rows={3}
-                  className="input field__input thread__input"
-                />
-                {pendingAttachments.length > 0 && (
-                  <ul className="thread__attach-pending" aria-label="pending attachments">
-                    {pendingAttachments.map((a) => {
-                      const chipLabel =
-                        a.kind === 'voice'
-                          ? tMedia.compose.voiceChip
-                          : a.kind === 'sketch'
-                            ? tMedia.compose.sketchChip
-                            : a.filename
-                      return (
-                        <li
-                          key={a.id}
-                          className={`thread__attach-chip thread__attach-chip--${a.kind}`}
-                        >
-                          <span className="mono thread__attach-name">{chipLabel}</span>
-                          {a.kind === 'file' && (
-                            <span className="mono thread__attach-size">
-                              {formatFileSize(a.size)}
-                            </span>
-                          )}
+                        {canEditIntake && (
                           <button
                             type="button"
-                            className="link-btn mono thread__attach-remove"
-                            onClick={() => onRemoveAttachment(a)}
-                            aria-label={`${t.attachRemove} ${chipLabel}`}
+                            className="link-btn mono"
+                            onClick={() => {
+                              setEditing((v) => !v)
+                              setSaveError(false)
+                            }}
+                            aria-pressed={editing}
                           >
-                            ×
+                            {editing ? t.doneEditing : t.editIntake}
                           </button>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                )}
+                        )}
+                      </div>
+                    </header>
+                    {staleConflict && (
+                      <p className="session-page__stale" role="alert" aria-live="assertive">
+                        {t.staleConflict}
+                      </p>
+                    )}
+                    {parsed ? (
+                      <>
+                        {editing && <p className="field__hint">{t.editHint}</p>}
+                        <IntakeSummary
+                          lang={lang}
+                          account={parsed.account}
+                          type={parsed.type}
+                          values={parsed.formData}
+                          submittedAt={parsed.submittedAt}
+                          editable={editing}
+                          editableType={editing}
+                          typeChangeConfirm={t.typeChangeWarn}
+                          requiredEmptyConfirm={t.requiredEmptyConfirm}
+                          onChange={onIntakeChange}
+                        />
+                        {parsed.voiceNapkin && (
+                          <div className="surface session-voicenapkin">
+                            <span className="mono session-voicenapkin__label">
+                              🎙 {tMedia.thread.voiceLabel}
+                            </span>
+                            <p className="session-voicenapkin__text">
+                              {parsed.voiceNapkin.transcript}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    ) : intakePretty ? (
+                      <pre className="mono session-page__intake">{intakePretty}</pre>
+                    ) : (
+                      <p>{t.noIntake}</p>
+                    )}
+                  </section>
+                </div>
+              )}
 
-                {composeMedia === 'voice' && (
-                  <div className="thread__media-panel">
-                    <VoiceRecorder
+              {/* Suivi: the build advancements and the activity log, one story
+                  (they used to be two tabs). */}
+              {activeTab === 'session-builds' && (
+                <div
+                  role="tabpanel"
+                  id="session-builds-panel"
+                  aria-labelledby="session-builds-tab"
+                  tabIndex={0}
+                  className="session-frame__tabpanel"
+                >
+                  <div id="session-builds">
+                    <SessionAdvancements
+                      sessionId={session.id}
+                      isAdmin={isAdmin}
                       lang={lang}
-                      consent={tMedia.compose.voiceConsent}
-                      confirmLabel={tMedia.compose.voiceAttach}
-                      busy={mediaBusy}
-                      onRecorded={onVoiceRecorded}
-                      onCancel={() => setComposeMedia('none')}
+                      repoUrl="https://github.com/majeanson/marc-portal"
+                      items={advancements}
+                      loading={advancementsLoading}
+                      onCreated={onAdvCreated}
+                      onPatched={onAdvPatched}
+                      onDeleted={onAdvDeleted}
                     />
                   </div>
-                )}
 
-                {composeMedia === 'sketch' && (
-                  <div className="thread__media-panel">
-                    <p className="field__hint">{tMedia.compose.sketchHint}</p>
-                    <Suspense
-                      fallback={
-                        <div className="napkin__canvas-wrap">
-                          <div className="napkin__loading mono">
-                            {DICT[lang].napkin.loadingCanvas}
+                  <section className="surface intake__step session-frame__panel">
+                    <h2>{t.timelineHeading}</h2>
+                    <ul className="session-timeline">
+                      {timelineEntries.map((entry, i) => {
+                        if (entry.kind === 'created') {
+                          return (
+                            <li key={`c-${entry.at}`} className="session-timeline__entry">
+                              <span className="session-timeline__dot" aria-hidden="true" />
+                              <div className="session-timeline__body">
+                                <div className="mono session-timeline__when">
+                                  {formatDateTime(entry.at, lang)}
+                                </div>
+                                <div>{t.timelineCreated(formatDateTime(entry.at, lang))}</div>
+                              </div>
+                            </li>
+                          )
+                        }
+                        if (entry.kind === 'status') {
+                          return (
+                            <li key={`s-${entry.at}-${i}`} className="session-timeline__entry">
+                              <span className="session-timeline__dot" aria-hidden="true" />
+                              <div className="session-timeline__body">
+                                <div className="mono session-timeline__when">
+                                  {formatDateTime(entry.at, lang)}
+                                </div>
+                                <div>
+                                  {t.timelineStatus(
+                                    entry.from,
+                                    entry.to,
+                                    entry.by,
+                                    formatDateTime(entry.at, lang),
+                                  )}
+                                </div>
+                              </div>
+                            </li>
+                          )
+                        }
+                        // advancement
+                        const row = entry.row
+                        const linkHref =
+                          row.build_url && row.build_url.length > 0
+                            ? `${row.build_url}${row.iframe_path ?? ''}`
+                            : null
+                        return (
+                          <li
+                            key={`a-${row.id}`}
+                            className="session-timeline__entry session-timeline__entry--advancement"
+                          >
+                            <span
+                              className="session-timeline__dot session-timeline__dot--advancement"
+                              aria-hidden="true"
+                            />
+                            <div className="session-timeline__body">
+                              <div className="mono session-timeline__when">
+                                {formatDateTime(entry.at, lang)}
+                              </div>
+                              <div>
+                                <strong>{advT.timelineLabel}:</strong> {row.label}
+                                {linkHref ? (
+                                  <>
+                                    {' · '}
+                                    <a
+                                      href={linkHref}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="mono"
+                                    >
+                                      {advT.openInNewTab}
+                                    </a>
+                                  </>
+                                ) : (
+                                  <>
+                                    {' · '}
+                                    <span className="mono session-timeline__pending">
+                                      {advT.pillPendingStamp}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </section>
+                </div>
+              )}
+
+              {/* Conversation: the async thread. Often the second tab a
+                  returning visitor reaches for. */}
+              {activeTab === 'session-conversation' && (
+                <div
+                  role="tabpanel"
+                  id="session-conversation-panel"
+                  aria-labelledby="session-conversation-tab"
+                  tabIndex={0}
+                  className="session-frame__tabpanel"
+                >
+                  <section
+                    id="session-conversation"
+                    className="surface intake__step session-frame__panel"
+                  >
+                    <h2>{t.threadHeading}</h2>
+                    {threadItems.length === 0 ? (
+                      <p className="thread__empty">{t.none}</p>
+                    ) : (
+                      <ul className="thread">
+                        {threadItems.map((item) => {
+                          if (item.kind === 'message') {
+                            const m = item.msg
+                            const isMe =
+                              (isAdmin && m.author === 'marc') ||
+                              (!isAdmin && m.author === 'visitor')
+                            const authorLabel = isMe
+                              ? t.you
+                              : m.author === 'marc'
+                                ? t.marc
+                                : t.visitor
+                            return (
+                              <li
+                                key={`m-${m.id}`}
+                                className={`thread__msg thread__msg--${m.author}${isMe ? ' thread__msg--mine' : ''}`}
+                              >
+                                <div className="thread__head mono">
+                                  {authorLabel} · {formatDateTime(m.created_at, lang)}
+                                </div>
+                                {m.body && <div className="thread__body">{m.body}</div>}
+                                {m.attachments && m.attachments.length > 0 && (
+                                  <ul className="thread__attach-list">
+                                    {m.attachments.map((a) => (
+                                      <AttachmentTile
+                                        key={a.id}
+                                        att={a}
+                                        sessionId={session.id}
+                                        lang={lang}
+                                        openLabel={t.attachOpen}
+                                      />
+                                    ))}
+                                  </ul>
+                                )}
+                              </li>
+                            )
+                          }
+                          // advancement bubble — visually distinct from messages so
+                          // a build announcement reads as a *milestone*, not chat.
+                          const row = item.row
+                          const linkHref =
+                            row.build_url && row.build_url.length > 0
+                              ? `${row.build_url}${row.iframe_path ?? ''}`
+                              : null
+                          return (
+                            <li key={`a-${row.id}`} className="thread__msg thread__msg--build">
+                              <div className="thread__head mono">
+                                {advT.timelineLabel} · {formatDateTime(row.date, lang)}
+                              </div>
+                              <div className="thread__build-label">{row.label}</div>
+                              {row.body && <div className="thread__body">{row.body}</div>}
+                              {linkHref ? (
+                                <a
+                                  className="thread__build-link mono"
+                                  href={linkHref}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  {advT.openInNewTab}
+                                </a>
+                              ) : (
+                                <span className="mono session-timeline__pending">
+                                  {advT.pillPendingStamp}
+                                </span>
+                              )}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+
+                    <form onSubmit={onSend} className="thread__form">
+                      <textarea
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        placeholder={t.placeholder}
+                        rows={3}
+                        className="input field__input thread__input"
+                      />
+                      {pendingAttachments.length > 0 && (
+                        <ul className="thread__attach-pending" aria-label="pending attachments">
+                          {pendingAttachments.map((a) => {
+                            const chipLabel =
+                              a.kind === 'voice'
+                                ? tMedia.compose.voiceChip
+                                : a.kind === 'sketch'
+                                  ? tMedia.compose.sketchChip
+                                  : a.filename
+                            return (
+                              <li
+                                key={a.id}
+                                className={`thread__attach-chip thread__attach-chip--${a.kind}`}
+                              >
+                                <span className="mono thread__attach-name">{chipLabel}</span>
+                                {a.kind === 'file' && (
+                                  <span className="mono thread__attach-size">
+                                    {formatFileSize(a.size)}
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  className="link-btn mono thread__attach-remove"
+                                  onClick={() => onRemoveAttachment(a)}
+                                  aria-label={`${t.attachRemove} ${chipLabel}`}
+                                >
+                                  ×
+                                </button>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      )}
+
+                      {composeMedia === 'voice' && (
+                        <div className="thread__media-panel">
+                          <VoiceRecorder
+                            lang={lang}
+                            consent={tMedia.compose.voiceConsent}
+                            confirmLabel={tMedia.compose.voiceAttach}
+                            busy={mediaBusy}
+                            onRecorded={onVoiceRecorded}
+                            onCancel={() => setComposeMedia('none')}
+                          />
+                        </div>
+                      )}
+
+                      {composeMedia === 'sketch' && (
+                        <div className="thread__media-panel">
+                          <p className="field__hint">{tMedia.compose.sketchHint}</p>
+                          <Suspense
+                            fallback={
+                              <div className="napkin__canvas-wrap">
+                                <div className="napkin__loading mono">
+                                  {DICT[lang].napkin.loadingCanvas}
+                                </div>
+                              </div>
+                            }
+                          >
+                            <SketchCanvas
+                              loadingLabel={DICT[lang].napkin.loadingCanvas}
+                              onApiReady={(api) => {
+                                sketchApiRef.current = api
+                              }}
+                            />
+                          </Suspense>
+                          <div className="thread__media-panel-actions">
+                            <button
+                              type="button"
+                              className="hero__cta"
+                              disabled={mediaBusy}
+                              onClick={onAttachSketch}
+                            >
+                              {mediaBusy ? tMedia.compose.processing : tMedia.compose.sketchAttach}
+                            </button>
+                            <button
+                              type="button"
+                              className="link-btn mono"
+                              disabled={mediaBusy}
+                              onClick={() => {
+                                sketchApiRef.current = null
+                                setComposeMedia('none')
+                              }}
+                            >
+                              {tMedia.compose.sketchCancel}
+                            </button>
                           </div>
                         </div>
-                      }
-                    >
-                      <SketchCanvas
-                        loadingLabel={DICT[lang].napkin.loadingCanvas}
-                        onApiReady={(api) => {
-                          sketchApiRef.current = api
-                        }}
-                      />
-                    </Suspense>
-                    <div className="thread__media-panel-actions">
-                      <button
-                        type="button"
-                        className="hero__cta"
-                        disabled={mediaBusy}
-                        onClick={onAttachSketch}
-                      >
-                        {mediaBusy ? tMedia.compose.processing : tMedia.compose.sketchAttach}
-                      </button>
-                      <button
-                        type="button"
-                        className="link-btn mono"
-                        disabled={mediaBusy}
-                        onClick={() => {
-                          sketchApiRef.current = null
-                          setComposeMedia('none')
-                        }}
-                      >
-                        {tMedia.compose.sketchCancel}
-                      </button>
-                    </div>
-                  </div>
-                )}
+                      )}
 
-                <div className="thread__form-actions">
-                  <label className="link-btn mono thread__attach-trigger">
-                    <input
-                      type="file"
-                      multiple
-                      className="thread__attach-input"
-                      disabled={
-                        uploading || composeMedia !== 'none' || pendingAttachments.length >= 5
-                      }
-                      onChange={(e) => {
-                        void onAttach(e.target.files)
-                        e.target.value = ''
-                      }}
-                    />
-                    {uploading ? t.attaching : `+ ${t.attachLabel}`}
-                  </label>
-                  <button
-                    type="button"
-                    className="link-btn mono thread__media-trigger"
-                    disabled={composeMedia !== 'none' || pendingAttachments.length >= 5}
-                    onClick={() => setComposeMedia('voice')}
-                  >
-                    {tMedia.compose.voiceTrigger}
-                  </button>
-                  <button
-                    type="button"
-                    className="link-btn mono thread__media-trigger"
-                    disabled={composeMedia !== 'none' || pendingAttachments.length >= 5}
-                    onClick={() => setComposeMedia('sketch')}
-                  >
-                    {tMedia.compose.sketchTrigger}
-                  </button>
-                  <span className="field__hint thread__attach-max">{t.attachMax}</span>
-                  {attachError && (
-                    <span
-                      role="alert"
-                      aria-live="assertive"
-                      className="mono session-page__save-error"
-                    >
-                      {attachError}
-                    </span>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={
-                      sending ||
-                      uploading ||
-                      mediaBusy ||
-                      (!draft.trim() && pendingAttachments.length === 0)
-                    }
-                    className="hero__cta"
-                  >
-                    {sending ? t.sending : t.send}
-                  </button>
+                      <div className="thread__form-actions">
+                        <label className="link-btn mono thread__attach-trigger">
+                          <input
+                            type="file"
+                            multiple
+                            className="thread__attach-input"
+                            disabled={
+                              uploading || composeMedia !== 'none' || pendingAttachments.length >= 5
+                            }
+                            onChange={(e) => {
+                              void onAttach(e.target.files)
+                              e.target.value = ''
+                            }}
+                          />
+                          {uploading ? t.attaching : `+ ${t.attachLabel}`}
+                        </label>
+                        <button
+                          type="button"
+                          className="link-btn mono thread__media-trigger"
+                          disabled={composeMedia !== 'none' || pendingAttachments.length >= 5}
+                          onClick={() => setComposeMedia('voice')}
+                        >
+                          {tMedia.compose.voiceTrigger}
+                        </button>
+                        <button
+                          type="button"
+                          className="link-btn mono thread__media-trigger"
+                          disabled={composeMedia !== 'none' || pendingAttachments.length >= 5}
+                          onClick={() => setComposeMedia('sketch')}
+                        >
+                          {tMedia.compose.sketchTrigger}
+                        </button>
+                        <span className="field__hint thread__attach-max">{t.attachMax}</span>
+                        {attachError && (
+                          <span
+                            role="alert"
+                            aria-live="assertive"
+                            className="mono session-page__save-error"
+                          >
+                            {attachError}
+                          </span>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={
+                            sending ||
+                            uploading ||
+                            mediaBusy ||
+                            (!draft.trim() && pendingAttachments.length === 0)
+                          }
+                          className="hero__cta"
+                        >
+                          {sending ? t.sending : t.send}
+                        </button>
+                      </div>
+                    </form>
+                  </section>
                 </div>
-              </form>
-            </section>
+              )}
 
-            {(isAdmin || session.email === email) && (
-              <section className="session-page__danger">
-                <button
-                  type="button"
-                  className="link-btn mono session-page__withdraw"
-                  onClick={onWithdraw}
-                  disabled={withdrawing}
+              {/* Paiement: project payment and the custodian / All-yours
+                  handoff decision. PaymentActions sections both internally
+                  (#session-paiement + #session-livraison) — two old tabs, now
+                  one money surface. Present only for active/shipped. */}
+              {activeTab === 'session-paiement' && (
+                <div
+                  role="tabpanel"
+                  id="session-paiement-panel"
+                  aria-labelledby="session-paiement-tab"
+                  tabIndex={0}
+                  className="session-frame__tabpanel"
                 >
-                  {t.withdrawCta}
-                </button>
-              </section>
-            )}
-          </div>
-        </article>
-      </main>
-      <Footer lang={lang} />
-    </div>
+                  <PaymentActions session={session} lang={lang} />
+                </div>
+              )}
+
+              {/* Opérateur: admin-only console. The tier/pricing knobs, the
+                  showcase publisher, and the private operator notes — kept off
+                  the visitor-facing tabs so neither view reads as a cockpit. */}
+              {activeTab === 'session-operateur' && isAdmin && (
+                <div
+                  role="tabpanel"
+                  id="session-operateur-panel"
+                  aria-labelledby="session-operateur-tab"
+                  tabIndex={0}
+                  className="session-frame__tabpanel"
+                >
+                  <section className="surface intake__step session-frame__panel">
+                    <h2>{t.operatorPricingHeading}</h2>
+                    <SessionTierStrip lang={lang} tier={session.tier} onPick={onTierChange} />
+                    <p className="field__hint session-frame__strip-hint">{t.tierHint}</p>
+
+                    {session.tier === 4 && (
+                      <Tier4AmountInput
+                        // key resets local draft when the persisted value changes
+                        // (post-save, post-409 reload). Avoids an effect+setState
+                        // pattern the lint rule rejects.
+                        key={String(session.tier4_amount_cents ?? '')}
+                        copy={t}
+                        cents={session.tier4_amount_cents}
+                        onSave={onTier4AmountChange}
+                      />
+                    )}
+
+                    {session.tier === 3 && (
+                      <Tier3SplitInput
+                        copy={t}
+                        split={session.tier3_split}
+                        onSave={onTier3SplitChange}
+                      />
+                    )}
+
+                    {/* Community pricing — only meaningful once a build tier is
+                        set. The `frozen` prop pre-locks the toggle when a build
+                        leg is paid so the admin sees the locked state on render,
+                        not after a failed click; the server's atomic guard stays
+                        the source of truth. */}
+                    {session.tier != null && session.tier > 0 && (
+                      <CommunityDiscountToggle
+                        copy={t}
+                        on={Boolean(session.community_discount)}
+                        frozen={(summary?.build?.paidCount ?? 0) > 0}
+                        onSave={onCommunityDiscountChange}
+                      />
+                    )}
+                  </section>
+
+                  <SessionShowcase
+                    session={session}
+                    lang={lang}
+                    onPatched={(next) => setSession(next)}
+                  />
+
+                  <OperatorNotesPanel sessionId={session.id} lang={lang} />
+                </div>
+              )}
+            </div>
+          </article>
+        </main>
+        <Footer lang={lang} />
+      </div>
+    </SessionTabsContext.Provider>
   )
 }

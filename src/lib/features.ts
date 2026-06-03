@@ -376,14 +376,22 @@ export const FEATURE_HOME_SECTION: Record<FeatureId, string> = {
  *  ...). Active tab borrows --ft-color from the matched feature so the
  *  user follows one colour from "Paiement" tab → /tier-0 → /carte. */
 export const SESSION_TAB_FEATURE: Record<string, FeatureId | undefined> = {
-  // Statut is the session's "where are we" pill row — it's the live state
-  // of the async thread, so it reads as conversation.
+  // Statut is the session's "where are we" landing — status pill, what's-next,
+  // the pinned starting sketch. It's the live state of the async thread, so it
+  // reads as conversation.
   'session-statut': 'conversation',
   'session-conversation': 'conversation',
+  // Suivi merges the build advancements with the activity timeline — the
+  // iterative, build-by-build cadence.
   'session-builds': 'iterative',
+  // Paiement now also carries the custodian / All-yours handoff decision (the
+  // old Livraison tab folded in), but the tab leads with the money, so plum.
   'session-paiement': 'pricing',
-  'session-livraison': 'keys',
   'session-intake': 'intake',
+  // Opérateur is admin-only and spans every feature (tier, pricing, showcase,
+  // notes). `undefined` is deliberate — a neutral hollow dot, the documented
+  // "real surface, but it crosses features" signal.
+  'session-operateur': undefined,
 }
 
 /** Session sub-header tab labels — keyed by the SESSION_TAB_FEATURE slug.
@@ -394,10 +402,10 @@ export const SESSION_TAB_FEATURE: Record<string, FeatureId | undefined> = {
 export const SESSION_TAB_LABEL: Record<string, Bi> = {
   'session-statut': { fr: 'Statut', en: 'Status' },
   'session-conversation': { fr: 'Conversation', en: 'Conversation' },
-  'session-builds': { fr: 'Builds', en: 'Builds' },
+  'session-builds': { fr: 'Suivi', en: 'Activity' },
   'session-paiement': { fr: 'Paiement', en: 'Payment' },
-  'session-livraison': { fr: 'Livraison', en: 'Delivery' },
   'session-intake': { fr: 'Intake', en: 'Intake' },
+  'session-operateur': { fr: 'Opérateur', en: 'Operator' },
 }
 
 /** FAQ items by stable slug. Each Q/A maps to the feature it most clearly
