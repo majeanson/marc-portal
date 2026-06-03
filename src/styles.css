@@ -3307,6 +3307,14 @@ button.intake__progress-step:focus-visible {
 }
 .summary__edit-input {
   margin-top: 2px;
+  /* A <select> sizes to its widest <option> by default, so the long
+     problem-type labels pushed the edit field past a 390px phone viewport
+     (the overflow guard in app-screenshots caught it). Pin every edit field
+     to its container width; the selected option truncates rather than
+     spilling. */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .session-page__intake-head {
