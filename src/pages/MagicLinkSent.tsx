@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -86,7 +86,7 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
           <p className="magic-link__reassure">{t.reassure}</p>
           <p className="magic-link__fallback">{t.fallback}</p>
           <p>
-            <a href={lang === 'en' ? '/en/login' : '/login'}>{t.again}</a>
+            <Link to={lang === 'en' ? '/en/login' : '/login'}>{t.again}</Link>
           </p>
         </Surface>
       </main>

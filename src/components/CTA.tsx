@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
@@ -26,9 +27,9 @@ export function CTA({ lang }: { lang: Lang }) {
             intake); the primary button below is the bypass path (no type
             chosen, go straight to /intake). One CTA section, two paths. */}
         {!email && <InlineIntakeTeaser lang={lang} />}
-        <a className="hero__cta cta__button" href={intakeHref}>
+        <Link className="hero__cta cta__button" to={intakeHref}>
           {email ? t.buttonLoggedIn : t.button}
-        </a>
+        </Link>
         <div className="cta__micro mono">{t.micro}</div>
       </div>
     </section>

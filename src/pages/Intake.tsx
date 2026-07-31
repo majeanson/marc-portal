@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
@@ -427,9 +428,9 @@ export function Intake({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section intake">
           <div className="section__inner">
-            <a className="showcase-page__back" href={lang === 'fr' ? '/' : '/en'}>
+            <Link className="showcase-page__back" to={lang === 'fr' ? '/' : '/en'}>
               {t.intake.backHome}
-            </a>
+            </Link>
 
             {/* The whole flow sits on a bordered "sheet" — a notepaper surface
                 that visually sets the intake apart from the editorial home

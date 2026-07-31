@@ -286,7 +286,7 @@ function TierPlaceholders({ lang, langPrefix }: { lang: Lang; langPrefix: string
       <ul className="projects__grid projects-placeholders__grid">
         {tiers.map((slot) => (
           <li key={slot.tier} className="surface project-card project-card--placeholder">
-            <a href={slot.href} className="project-card__link">
+            <Link to={slot.href} className="project-card__link">
               <div className="project-card__head">
                 <span
                   className={`project-card__tier mono project-card__tier--t${slot.tier}`}
@@ -297,7 +297,7 @@ function TierPlaceholders({ lang, langPrefix }: { lang: Lang; langPrefix: string
               </div>
               <h3 className="project-card__title">{slot.title}</h3>
               <div className="project-card__cta mono">{slot.cta}</div>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>

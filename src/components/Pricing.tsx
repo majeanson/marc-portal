@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
@@ -55,7 +56,7 @@ export function Pricing({ lang }: { lang: Lang }) {
               : `${langPrefix}/projects?tier=${tierDigit}`
             return (
               <li key={tier.name} className="tier__row">
-                <a className={`surface ${cardClass} tier--link`} href={href}>
+                <Link className={`surface ${cardClass} tier--link`} to={href}>
                   <div className="tier__head">
                     <span className="tier__name mono">{tier.name}</span>
                     <span className="tier__leader" aria-hidden="true" />
@@ -75,7 +76,7 @@ export function Pricing({ lang }: { lang: Lang }) {
                   <p className="tier__scope">{tier.scope}</p>
                   <p className="tier__example">{tier.example}</p>
                   <div className="tier__after mono">{tier.after}</div>
-                </a>
+                </Link>
                 {/* The "sweet spot" stamp is a row child rendered AFTER the
                     <a>, not inside it. The card carries overflow:hidden to
                     contain the anchor shimmer, which clipped this sticker

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
@@ -52,18 +53,18 @@ export function Hero({ lang }: { lang: Lang }) {
         </p>
 
         <div className="hero__actions">
-          <a className="hero__cta hero__cta--primary" href={intakeHref}>
+          <Link className="hero__cta hero__cta--primary" to={intakeHref}>
             {ctaLabel}
-          </a>
+          </Link>
           <span
             className={`hero__slot-pill mono${atCap ? ' hero__slot-pill--full' : ' hero__slot-pill--open'}`}
           >
             {slotLabel}
           </span>
           {email && (
-            <a className="hero__sessions-link mono" href={sessionsHref}>
+            <Link className="hero__sessions-link mono" to={sessionsHref}>
               {t.mySessionsLink}
-            </a>
+            </Link>
           )}
         </div>
       </div>

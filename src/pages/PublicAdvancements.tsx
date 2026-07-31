@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { SectionEyebrow } from '../components/SectionEyebrow'
@@ -249,9 +249,9 @@ function ShareTestimonials({
       <aside className="surface share-testimonials__cta">
         <h3 className="share-testimonials__cta-title">{t.ctaTitle}</h3>
         <p className="share-testimonials__cta-body">{t.ctaBody}</p>
-        <a className="share-testimonials__cta-link mono" href={vouchHref}>
+        <Link className="share-testimonials__cta-link mono" to={vouchHref}>
           {t.ctaButton}
-        </a>
+        </Link>
       </aside>
     </section>
   )

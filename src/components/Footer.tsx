@@ -1,4 +1,5 @@
 import { useState, type MouseEvent } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useLangSwitch } from '../lib/useLangSwitch'
@@ -90,9 +91,9 @@ export function Footer({ lang }: { lang: Lang }) {
             sentence so the reader can't miss where to go. */}
         <p className="site-footer__line">
           {t.contact.pre}
-          <a href={intakeHref} className="site-footer__contact-link">
+          <Link to={intakeHref} className="site-footer__contact-link">
             {t.contact.link}
-          </a>
+          </Link>
           {t.contact.post}
         </p>
         <p className="site-footer__line site-footer__share-line mono">
@@ -114,7 +115,7 @@ export function Footer({ lang }: { lang: Lang }) {
               meta, vouches, passage) is categorised inside the map. */}
           <span className="site-footer__page">
             <FeatureDot feature={PAGE_FEATURE['page.map-page']} lang={lang} />
-            <a href={mapHref}>{mapLabel}</a>
+            <Link to={mapHref}>{mapLabel}</Link>
           </span>
         </p>
         <p className="site-footer__line site-footer__line--meta">
