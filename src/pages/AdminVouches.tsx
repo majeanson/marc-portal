@@ -513,7 +513,9 @@ function VouchRow(props: RowProps) {
     <Surface as="li" className="admin-vouches__row">
       <header className="admin-vouches__row-head">
         <div className="admin-vouches__row-meta">
-          <span className={`status-pill status-pill--${v.status}`}>{t.statusLabels[v.status]}</span>
+          <span className={`session-frame__status-pill session-frame__status-pill--${v.status}`}>
+            {t.statusLabels[v.status]}
+          </span>
           <span className="admin-vouches__row-date mono">
             {section === 'trash' && v.deleted_at
               ? `${t.deletedOn} ${formatDateTime(v.deleted_at, lang)}`

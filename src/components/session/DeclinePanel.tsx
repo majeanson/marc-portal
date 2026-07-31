@@ -27,6 +27,7 @@ export interface DeclinePanelCopy {
   declineNoteEmpty: string
   declineNoteSave: string
   declineNoteSaving: string
+  declineNoteError: string
 }
 
 export function DeclinePanel({
@@ -45,10 +46,12 @@ export function DeclinePanel({
   const langPrefix = lang === 'en' ? '/en' : ''
   const [draft, setDraft] = useState(session.decline_note ?? '')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(false)
   const note = session.decline_note?.trim()
 
   const save = async () => {
     setSaving(true)
+    setError(false)
     try {
       const r = await patchSession(session.id, {
         declineNote: draft.trim() || null,
@@ -56,7 +59,10 @@ export function DeclinePanel({
       })
       onSaved(r.session)
     } catch {
-      // Leave the draft in place so the operator can retry.
+      // Leave the draft in place so the operator can retry, but say so —
+      // a silent catch here reads as "saved" when a network blip or a 5xx
+      // meant the note never reached the server.
+      setError(true)
     } finally {
       setSaving(false)
     }
@@ -112,6 +118,11 @@ export function DeclinePanel({
           >
             {saving ? copy.declineNoteSaving : copy.declineNoteSave}
           </button>
+          {error && (
+            <p className="mono session-page__save-error" role="alert" aria-live="assertive">
+              {copy.declineNoteError}
+            </p>
+          )}
         </div>
       )}
     </section>

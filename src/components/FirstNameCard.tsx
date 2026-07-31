@@ -20,6 +20,7 @@ const COPY = {
       'Ton prénom (ou l’équivalent). Je l’utilise dans les courriels. Optionnel — tu peux laisser vide.',
     label: 'Prénom',
     placeholder: 'ex. Marc',
+    loading: 'Chargement…',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
     saved: 'Enregistré.',
@@ -34,6 +35,7 @@ const COPY = {
       'Your first name (or whatever you go by). I use it in emails. Optional — leave it blank.',
     label: 'First name',
     placeholder: 'e.g. Marc',
+    loading: 'Loading…',
     save: 'Save',
     saving: 'Saving…',
     saved: 'Saved.',
@@ -127,6 +129,7 @@ export function FirstNameCard({ lang }: { lang: Lang }) {
         </Btn>
       </div>
       <p className="lang-pref__status mono" role="status" aria-live="polite">
+        {state === 'loading' && t.loading}
         {state === 'saved' && t.saved}
         {state === 'cleared' && t.cleared}
         {state === 'error' && t.error}

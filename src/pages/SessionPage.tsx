@@ -186,6 +186,7 @@ const COPY = {
       'Aucune note pour l’instant — le visiteur ne voit que les repères ci-dessous.',
     declineNoteSave: 'Enregistrer la note',
     declineNoteSaving: 'Enregistrement…',
+    declineNoteError: 'L’enregistrement de la note a pas passé. Réessaie.',
     none: 'Marc répond en moins de 72h. Laisse-lui un mot ici dès que tu en as un.',
     placeholder: 'Écris un message…',
     sending: 'Envoi…',
@@ -240,6 +241,8 @@ const COPY = {
     editHint: 'Clique un champ pour le modifier, puis clique ailleurs pour enregistrer.',
     staleConflict:
       'Cette session a été modifiée ailleurs. Elle a été rechargée — ré-applique ton changement.',
+    capacityBlocked:
+      'Déjà deux projets actifs — livre ou refuse l’un des deux avant d’en promouvoir un troisième.',
     requiredEmptyConfirm: 'Ce champ est requis. Le vider quand même ?',
     typeChangeWarn: 'Changer le type peut rendre tes autres réponses invalides. Continuer ?',
     withdrawCta: 'Retirer cette session',
@@ -295,6 +298,7 @@ const COPY = {
     declineNoteEmpty: 'No note yet — the visitor sees only the pointers below.',
     declineNoteSave: 'Save the note',
     declineNoteSaving: 'Saving…',
+    declineNoteError: "The note didn't save. Try again.",
     none: 'Marc replies within 72h. Drop him a note here whenever you have one.',
     placeholder: 'Write a message…',
     sending: 'Sending…',
@@ -348,6 +352,7 @@ const COPY = {
     editHint: 'Click any field to edit, then click outside to save.',
     staleConflict:
       'This session was changed somewhere else. It’s been reloaded — re-apply your change.',
+    capacityBlocked: 'Already two active builds — ship or reject one before promoting a third.',
     requiredEmptyConfirm: 'This field is required. Clear it anyway?',
     typeChangeWarn: 'Changing the type may invalidate your other answers. Continue?',
     withdrawCta: 'Withdraw this session',
@@ -398,6 +403,18 @@ export function SessionPage({ lang }: { lang: Lang }) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const [staleConflict, setStaleConflict] = useState(false)
+  // Distinct from staleConflict: the atomic ACTIVE_CAP guard in
+  // functions/api/sessions/[id].ts also 409s when promoting into `active`
+  // would push past the two-build cap. That's a capacity wall, not a stale
+  // row — "refresh and reapply" is the wrong advice since reloading won't
+  // free a slot. onStatusChange discriminates the two by message content.
+  const [capacityBlocked, setCapacityBlocked] = useState(false)
+  // In-flight guards for the status + tier pill strips. Without these a
+  // double-click fires two PATCHes back to back; for status changes the
+  // server emails the visitor on every transition, so two in flight can
+  // double-send. Mirrors the `sending` guard shape on the message form.
+  const [changingStatus, setChangingStatus] = useState(false)
+  const [changingTier, setChangingTier] = useState(false)
   const [withdrawing, setWithdrawing] = useState(false)
   const [withdrawError, setWithdrawError] = useState(false)
   // Pending attachments — uploaded but not yet linked to a message. Cleared
@@ -677,7 +694,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
   }
 
   const onStatusChange = async (next: SessionStatus) => {
-    if (!id || !session) return
+    if (!id || !session || changingStatus) return
     // Confirm destructive transitions: any move that touches a terminal state
     // (shipped/rejected) — either entering one, or reopening from one. The
     // visitor sees these transitions, so a stray click shouldn't drive them.
@@ -690,16 +707,34 @@ export function SessionPage({ lang }: { lang: Lang }) {
     else if (current === 'rejected') prompt = t.statusConfirmReopenRejected(idTag)
     if (prompt && !window.confirm(prompt)) return
 
+    setChangingStatus(true)
     try {
       const r = await patchSession(id, { status: next, ifUpdatedAt: session.updated_at })
       setSession(r.session)
       setStaleConflict(false)
+      setCapacityBlocked(false)
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setStaleConflict(true)
-        await refresh()
+        // Two distinct 409 causes need distinct UI. (a) the atomic
+        // ACTIVE_CAP guard: promoting into `active` would push past the
+        // two-build cap — the row itself didn't change, there's just no
+        // room, so refetching and "re-apply your change" is nonsense advice.
+        // (b) a genuine stale row: someone else edited the session since we
+        // loaded it — refresh and let the operator retry. Mirrors how
+        // CommunityDiscountToggle's caller discriminates its own 409s by
+        // message content.
+        if (/at capacity/i.test(err.message)) {
+          setCapacityBlocked(true)
+          setStaleConflict(false)
+        } else {
+          setStaleConflict(true)
+          setCapacityBlocked(false)
+          await refresh()
+        }
       }
       // Other errors: server-side check refuses non-admins anyway, ignore.
+    } finally {
+      setChangingStatus(false)
     }
   }
 
@@ -707,17 +742,26 @@ export function SessionPage({ lang }: { lang: Lang }) {
   // since tier changes are non-destructive (visitor sees a different Pay
   // button, not a state-of-the-work signal like status).
   const onTierChange = async (next: SessionTier | null) => {
-    if (!id || !session) return
+    if (!id || !session || changingTier) return
+    setChangingTier(true)
     try {
       const r = await patchSession(id, { tier: next, ifUpdatedAt: session.updated_at })
       setSession(r.session)
       setStaleConflict(false)
+      setSaveError(false)
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setStaleConflict(true)
         await refresh()
+      } else {
+        // Network blip or a 5xx: the click didn't silently succeed. Without
+        // this the pill just looks like it didn't animate, and the admin
+        // has no way to tell "not saved" from "saved" — surface it via the
+        // same saveError banner the intake editor uses.
+        setSaveError(true)
       }
-      // Other errors: server-side check refuses non-admins anyway, ignore.
+    } finally {
+      setChangingTier(false)
     }
   }
 
@@ -732,10 +776,16 @@ export function SessionPage({ lang }: { lang: Lang }) {
       })
       setSession(r.session)
       setStaleConflict(false)
+      setSaveError(false)
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setStaleConflict(true)
         await refresh()
+      } else {
+        // Non-409 failure: don't let it look like the save just went
+        // through silently (Tier4AmountInput clears its own `saving` flag
+        // either way).
+        setSaveError(true)
       }
     }
   }
@@ -750,10 +800,15 @@ export function SessionPage({ lang }: { lang: Lang }) {
       })
       setSession(r.session)
       setStaleConflict(false)
+      setSaveError(false)
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setStaleConflict(true)
         await refresh()
+      } else {
+        // Non-409 failure: surface it rather than leaving the split picker
+        // looking like it saved when it didn't.
+        setSaveError(true)
       }
     }
   }
@@ -1083,9 +1138,15 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     lang={lang}
                     status={session.status}
                     onPick={isAdmin ? onStatusChange : undefined}
+                    busy={changingStatus}
                   />
                   {isAdmin && (
                     <p className="field__hint session-frame__strip-hint">{t.statusHint}</p>
+                  )}
+                  {isAdmin && capacityBlocked && (
+                    <p className="mono session-page__save-error" role="alert" aria-live="assertive">
+                      {t.capacityBlocked}
+                    </p>
                   )}
 
                   <SessionWhatsNext
@@ -1661,7 +1722,21 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 >
                   <section className="surface intake__step session-frame__panel">
                     <h2>{t.operatorPricingHeading}</h2>
-                    <SessionTierStrip lang={lang} tier={session.tier} onPick={onTierChange} />
+                    {saveError && (
+                      <p
+                        className="mono session-page__save-error"
+                        role="alert"
+                        aria-live="assertive"
+                      >
+                        {t.saveError}
+                      </p>
+                    )}
+                    <SessionTierStrip
+                      lang={lang}
+                      tier={session.tier}
+                      onPick={onTierChange}
+                      busy={changingTier}
+                    />
                     <p className="field__hint session-frame__strip-hint">{t.tierHint}</p>
 
                     {session.tier === 4 && (

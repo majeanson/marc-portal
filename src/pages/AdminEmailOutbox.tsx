@@ -45,6 +45,7 @@ const COPY = {
     failed: 'Hmm, on n’a pas pu charger la liste.',
     empty: 'Outbox vide. Tous les envois durables sont passés.',
     refresh: 'Recharger',
+    refreshing: 'Mise à jour…',
     cols: {
       to: 'Destinataire',
       kind: 'Modèle',
@@ -70,6 +71,7 @@ const COPY = {
     failed: 'Hmm, couldn’t load the list.',
     empty: 'Outbox is clear. Every durable send made it through.',
     refresh: 'Reload',
+    refreshing: 'Refreshing…',
     cols: {
       to: 'Recipient',
       kind: 'Template',
@@ -102,6 +104,12 @@ export function AdminEmailOutbox({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const [entries, setEntries] = useState<OutboxEntry[] | null>(null)
   const [error, setError] = useState<'forbidden' | 'other' | null>(null)
+  // Separate from `entries === null` (first-load state): a reload — including
+  // the automatic one that follows a successful per-row retry — must not
+  // blank the table. This page exists for iterating on stuck rows one at a
+  // time; nulling the list on every reload threw away scroll position and
+  // made the whole table flash empty after every single retry.
+  const [refreshing, setRefreshing] = useState(false)
   const [busy, setBusy] = useState<Record<string, boolean>>({})
   const [lastResult, setLastResult] = useState<Record<string, RetryResult>>({})
 
@@ -128,13 +136,15 @@ export function AdminEmailOutbox({ lang }: { lang: Lang }) {
 
   async function reload() {
     setError(null)
-    setEntries(null)
+    setRefreshing(true)
     try {
       const r = await api<{ entries: OutboxEntry[] }>('/api/admin/email-outbox')
       setEntries(r.entries)
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) setError('forbidden')
       else setError('other')
+    } finally {
+      setRefreshing(false)
     }
   }
 
@@ -174,9 +184,17 @@ export function AdminEmailOutbox({ lang }: { lang: Lang }) {
         <h1>{t.title}</h1>
         <p>{t.sub}</p>
         <div className="admin-page__head-actions">
-          <button type="button" className="link-btn mono" onClick={() => void reload()}>
+          <button
+            type="button"
+            className="link-btn mono"
+            onClick={() => void reload()}
+            disabled={refreshing}
+          >
             ↺ {t.refresh}
           </button>
+          <span role="status" aria-live="polite" className="mono" hidden={!refreshing}>
+            {refreshing ? t.refreshing : ''}
+          </span>
         </div>
       </header>
 

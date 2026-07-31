@@ -33,11 +33,16 @@ export function SessionStatusStrip({
   lang,
   status,
   onPick,
+  busy = false,
 }: {
   lang: Lang
   status: SessionStatus
   /** Admin only — when provided, each step pill becomes a button. */
   onPick?: (next: SessionStatus) => void
+  /** True while a status PATCH is in flight — disables every pill so a
+   *  double-click can't fire two transitions. The server emails the visitor
+   *  on each status change, so two in-flight PATCHes can double-send. */
+  busy?: boolean
 }) {
   const t = COPY[lang]
   const currentIdx = FLOW.indexOf(status)
@@ -62,7 +67,7 @@ export function SessionStatusStrip({
                 type="button"
                 className={`${stepClass} mono`}
                 onClick={() => onPick(s)}
-                disabled={isCurrent}
+                disabled={isCurrent || busy}
                 aria-current={isCurrent ? 'step' : undefined}
               >
                 {label}
@@ -82,7 +87,7 @@ export function SessionStatusStrip({
               type="button"
               className={`intake__progress-step session-strip__rejected mono${status === 'rejected' ? ' session-strip__rejected--on' : ''}`}
               onClick={() => onPick('rejected')}
-              disabled={status === 'rejected'}
+              disabled={status === 'rejected' || busy}
               aria-current={status === 'rejected' ? 'step' : undefined}
             >
               ✕ {t.rejected}

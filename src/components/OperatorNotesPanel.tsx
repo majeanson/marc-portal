@@ -27,6 +27,7 @@ const COPY = {
     saved: 'Enregistré',
     clear: 'Vider',
     error: 'Échec de l’enregistrement. Réessayer.',
+    loadError: 'Impossible de charger la note. Réessaie plus tard.',
     charLeft: (n: number) => `${n} caractères restants`,
     lastEdited: (s: string) => `Mis à jour ${s}`,
     loading: 'Chargement…',
@@ -40,6 +41,7 @@ const COPY = {
     saved: 'Saved',
     clear: 'Clear',
     error: 'Save failed. Try again.',
+    loadError: 'Couldn’t load the note. Try again later.',
     charLeft: (n: number) => `${n} characters left`,
     lastEdited: (s: string) => `Updated ${s}`,
     loading: 'Loading…',
@@ -58,7 +60,10 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
   const [updatedAt, setUpdatedAt] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(false)
+  // 'load' vs 'save' get distinct copy: a load failure means we don't know
+  // whether a note exists, so it must never render as the empty-pad state
+  // (that invites typing over a note the admin can't currently see).
+  const [error, setError] = useState<'load' | 'save' | null>(null)
   const [justSaved, setJustSaved] = useState(false)
 
   useEffect(() => {
@@ -72,8 +77,12 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
         setSavedBody(text)
         setUpdatedAt(r.note?.updatedAt ?? null)
       } catch {
-        // Leave empty — the GET endpoint already returns null gracefully
-        // when the table is missing, so a true error here is rare.
+        // The GET endpoint already returns null gracefully pre-migration
+        // (missing table), so a thrown error here is a genuine failure
+        // (network, 500) — surface it rather than silently rendering the
+        // "no note yet" empty state, which would hide both the failure and
+        // any note that actually exists.
+        if (!cancelled) setError('load')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -89,7 +98,7 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
   async function onSave() {
     if (!dirty || saving) return
     setSaving(true)
-    setError(false)
+    setError(null)
     try {
       const r = await putOperatorNote(sessionId, body)
       setSavedBody(r.note?.body ?? '')
@@ -101,7 +110,7 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
       // 413 / 400 surface as a generic message — the textarea already
       // shows the character count so the cause is visible.
       if (!(err instanceof ApiError)) console.error(err)
-      setError(true)
+      setError('save')
     } finally {
       setSaving(false)
     }
@@ -110,7 +119,7 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
   async function onClear() {
     if (saving) return
     setSaving(true)
-    setError(false)
+    setError(null)
     try {
       await deleteOperatorNote(sessionId)
       setBody('')
@@ -118,7 +127,7 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
       setUpdatedAt(null)
     } catch (err) {
       if (!(err instanceof ApiError)) console.error(err)
-      setError(true)
+      setError('save')
     } finally {
       setSaving(false)
     }
@@ -132,6 +141,11 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
         <p className="mono operator-notes__loading">{t.loading}</p>
       ) : (
         <>
+          {error === 'load' && (
+            <p className="mono operator-notes__error" role="alert">
+              {t.loadError}
+            </p>
+          )}
           <textarea
             className="input operator-notes__textarea"
             value={body}
@@ -161,7 +175,7 @@ export function OperatorNotesPanel({ sessionId, lang }: { sessionId: string; lan
               </button>
             )}
             <span className="mono operator-notes__count">{t.charLeft(remaining)}</span>
-            {error && (
+            {error === 'save' && (
               <span className="mono operator-notes__error" role="alert">
                 {t.error}
               </span>
