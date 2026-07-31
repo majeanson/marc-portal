@@ -156,7 +156,8 @@
 ### Iframe sandbox
 - ⏭ **P1.9** — Drop `allow-same-origin` from iframe sandboxes. **Deferred with
   rationale.** Every iframe embed today is cross-origin (snd-demo.pages.dev,
-  jaffre.vercel.app, retrodio.vercel.app, etc.); the browser's same-origin
+  jaffre.marcportal.com (a subdomain is a distinct origin from
+  marcportal.com), retrodio.vercel.app, etc.); the browser's same-origin
   policy already prevents the embed from reading the marc-portal parent. The
   `allow-same-origin` flag is dangerous only when the iframe URL is on the
   SAME origin as the parent — not the case here. Revisit if showcases ever

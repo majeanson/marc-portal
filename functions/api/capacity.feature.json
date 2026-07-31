@@ -80,7 +80,9 @@
       "date": "2026-05-06",
       "author": "marc+claude",
       "fields_changed": ["analysis", "decisions", "successCriteria"],
-      "reason": "Initial fill from the brainstorming session — the load-bearing capacity cap."
+      "reason": "Initial fill from the brainstorming session — the load-bearing capacity cap.",
+      "commit": "b003d3f",
+      "buildUrl": "https://03d0c231.marc-portal.pages.dev"
     },
     {
       "date": "2026-05-06",
