@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -205,9 +206,9 @@ export function MyData({ lang }: { lang: Lang }) {
             <h1>{t.title}</h1>
             <p>{t.notLoggedIn}</p>
             <p>
-              <a href={`${langPrefix}/login`} className="hero__cta">
+              <Link to={`${langPrefix}/login`} className="hero__cta">
                 {t.signIn}
-              </a>
+              </Link>
             </p>
           </Surface>
         </main>
@@ -233,9 +234,9 @@ export function MyData({ lang }: { lang: Lang }) {
 
   return shell(
     <>
-      <a className="mydata__back mono" href={`${langPrefix}/me`}>
+      <Link className="mydata__back mono" to={`${langPrefix}/me`}>
         {t.backToMe}
-      </a>
+      </Link>
       <SectionEyebrow lang={lang} feature={undefined}>
         {t.eyebrow}
       </SectionEyebrow>
@@ -333,7 +334,7 @@ export function MyData({ lang }: { lang: Lang }) {
         <h2>{t.rightsHeading}</h2>
         <p>{t.rightsBody}</p>
         <p className="mydata__rights-links">
-          <a href={`${langPrefix}/me`}>{t.erasureLink}</a>
+          <Link to={`${langPrefix}/me`}>{t.erasureLink}</Link>
           <a
             href={lang === 'fr' ? '/confidentialite' : '/en/privacy'}
             target="_blank"

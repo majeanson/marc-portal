@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { FeatureGlyph } from '../lib/featureGlyphs'
@@ -73,18 +73,18 @@ export function NotFound() {
               </svg>
 
               {nodes.map((n) => (
-                <a
+                <Link
                   key={n.href}
                   className="not-found__node"
                   data-feature={n.feature}
-                  href={n.href}
+                  to={n.href}
                   style={{ left: `${n.x}%`, top: `${n.y}%` }}
                 >
                   <span className="not-found__node-disc">
                     {n.feature && <FeatureGlyph feature={n.feature} />}
                   </span>
                   <span className="not-found__node-label mono">{n.label}</span>
-                </a>
+                </Link>
               ))}
 
               <div className="not-found__here" style={{ left: '50%', top: '52%' }}>
@@ -98,12 +98,12 @@ export function NotFound() {
           </div>
 
           <div className="not-found__actions">
-            <a className="hero__cta" href={lang === 'en' ? '/en' : '/'}>
+            <Link className="hero__cta" to={lang === 'en' ? '/en' : '/'}>
               {t.homeCta}
-            </a>
-            <a className="not-found__intake-link mono" href={`${langPrefix}/intake`}>
+            </Link>
+            <Link className="not-found__intake-link mono" to={`${langPrefix}/intake`}>
               {t.intakeCta}
-            </a>
+            </Link>
           </div>
         </Surface>
       </main>

@@ -40,9 +40,9 @@ function authValue(overrides: Partial<AuthState> = {}): AuthState {
   }
 }
 
-function renderLogin(auth: AuthState) {
+function renderLogin(auth: AuthState, path = '/en/login') {
   return render(
-    <MemoryRouter initialEntries={['/en/login']}>
+    <MemoryRouter initialEntries={[path]}>
       <AuthContext.Provider value={auth}>
         <Login lang="en" />
       </AuthContext.Provider>
@@ -84,5 +84,17 @@ describe('Login onSubmit', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/en/login/sent?email=v%40example.com'),
     )
     expect(screen.queryByText(/didn't send/i)).not.toBeInTheDocument()
+  })
+})
+
+describe('Login email seeding from ?email=', () => {
+  it('pre-fills the email field from a valid ?email= param', () => {
+    renderLogin(authValue(), '/en/login?email=v%40example.com')
+    expect(screen.getByLabelText(/your email/i)).toHaveValue('v@example.com')
+  })
+
+  it('ignores a junk ?email= param and leaves the field blank', () => {
+    renderLogin(authValue(), '/en/login?email=not-an-email')
+    expect(screen.getByLabelText(/your email/i)).toHaveValue('')
   })
 })

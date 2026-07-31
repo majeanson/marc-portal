@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
@@ -83,9 +84,9 @@ export function BringAnything({ lang }: { lang: Lang }) {
         <p className="bring-anything__reassure">{t.reassure}</p>
 
         <div className="bring-anything__cta-row">
-          <a className="hero__cta" href={ctaHref}>
+          <Link className="hero__cta" to={ctaHref}>
             {t.cta}
-          </a>
+          </Link>
         </div>
       </div>
     </section>

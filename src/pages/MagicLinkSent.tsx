@@ -86,7 +86,13 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
           <p className="magic-link__reassure">{t.reassure}</p>
           <p className="magic-link__fallback">{t.fallback}</p>
           <p>
-            <Link to={lang === 'en' ? '/en/login' : '/login'}>{t.again}</Link>
+            {/* Carry the email forward so a visitor who mistyped doesn't have
+                to retype an address they already gave us two screens ago. */}
+            <Link
+              to={`${lang === 'en' ? '/en/login' : '/login'}${email ? `?email=${encodeURIComponent(email)}` : ''}`}
+            >
+              {t.again}
+            </Link>
           </p>
         </Surface>
       </main>
