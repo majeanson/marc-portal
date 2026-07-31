@@ -29,6 +29,7 @@ import { MapCanvas } from '../components/Map/MapCanvas'
 import { MapLegend } from '../components/Map/MapLegend'
 import { FeatureIndex } from '../components/Map/FeatureIndex'
 import { WalkthroughFilm } from '../components/Map/WalkthroughFilm'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -130,9 +131,7 @@ export function Map({ lang }: { lang: Lang }) {
   )
 
   const t = COPY[lang]
-  useEffect(() => {
-    document.title = `${t.crumb} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.crumb} — Marc`, lang })
 
   // Search hand-off: /carte?node=<id> (set by a site-search result's "on the
   // map" link) scrolls the atlas to that node's card and pulses it, so a

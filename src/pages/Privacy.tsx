@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -6,6 +5,7 @@ import { FeatureContinue } from '../components/FeatureContinue'
 import { FeatureFolioLink } from '../components/FeatureFolioLink'
 import { PAGE_FEATURE } from '../lib/features'
 import { PAGE_FOLIOS } from '../lib/folios'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Loi 25 (Quebec) / PIPEDA-aligned privacy policy. The footer claim "Hébergé
@@ -143,10 +143,7 @@ const COPY = {
 export function Privacy({ lang }: { lang: Lang }) {
   const t = COPY[lang]
 
-  useEffect(() => {
-    document.documentElement.lang = lang === 'fr' ? 'fr-CA' : 'en-CA'
-    document.title = t.pageTitle
-  }, [lang, t])
+  usePageMeta({ title: t.pageTitle, lang })
 
   return (
     <div className="app">

@@ -17,6 +17,7 @@ import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSche
 import { formatDate, formatCadCents } from '../lib/format'
 import { CUSTODIAN_CENTS } from '../lib/pricing'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -110,9 +111,7 @@ export function AdminCustodians({ lang }: { lang: Lang }) {
   const [loadError, setLoadError] = useState(false)
   const langPrefix = lang === 'en' ? '/en' : ''
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   const reload = useCallback(async () => {
     try {

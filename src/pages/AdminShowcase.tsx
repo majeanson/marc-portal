@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
+import { usePageMeta } from '../lib/usePageMeta'
 
 interface Warning {
   key: string
@@ -28,9 +29,7 @@ export function AdminShowcase({ lang }: { lang: Lang }) {
   const [projects, setProjects] = useState<PublicProject[] | null>(null)
   const [error, setError] = useState(false)
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   useEffect(() => {
     let cancelled = false

@@ -26,6 +26,7 @@ import {
 import { submitIntake } from '../lib/submitIntake'
 import { ApiError } from '../lib/api'
 import { captureException } from '../lib/sentry'
+import { usePageMeta } from '../lib/usePageMeta'
 
 type Step = 'vibe' | 'account' | 'type' | 'form' | 'confirmation'
 
@@ -152,13 +153,11 @@ export function Intake({ lang }: { lang: Lang }) {
     return () => clearTimeout(handle)
   }, [draft, auth.email, lang])
 
-  // Update meta
-  useEffect(() => {
-    document.documentElement.lang = t.langCode
-    document.title = `${t.intake.pageTitle} — Marc`
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.intake.metaDescription)
-  }, [t])
+  usePageMeta({
+    title: `${t.intake.pageTitle} — Marc`,
+    description: t.intake.metaDescription,
+    lang,
+  })
 
   // Cross-device resume: when signed-in and our local draft is empty (the
   // visitor may have arrived from a magic link on a different browser), pull

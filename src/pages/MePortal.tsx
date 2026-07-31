@@ -24,6 +24,7 @@ import { PaymentActions } from '../components/PaymentActions'
 import { LangPrefCard } from '../components/LangPrefCard'
 import { FirstNameCard } from '../components/FirstNameCard'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -324,9 +325,7 @@ export function MePortal({ lang }: { lang: Lang }) {
     }
   }
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   // Pending-intake handoff. After a magic-link sign-in, the visitor lands
   // here; if their pre-login intake is stashed in localStorage we persist it

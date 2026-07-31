@@ -34,6 +34,7 @@ import { FeatureGlyph } from '../lib/featureGlyphs'
 import { FEATURE_IDS, FEATURES, type FeatureId } from '../lib/features'
 import { PAGE_FOLIOS } from '../lib/folios'
 import galleryData from '../data/atelier-gallery.json'
+import { usePageMeta } from '../lib/usePageMeta'
 
 interface GalleryViewport {
   id: string
@@ -213,12 +214,7 @@ const COPY = {
 export function Atelier({ lang }: { lang: Lang }) {
   const t = COPY[lang]
 
-  useEffect(() => {
-    document.documentElement.lang = lang === 'fr' ? 'fr-CA' : 'en-CA'
-    document.title = t.pageTitle
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.metaDescription)
-  }, [lang, t])
+  usePageMeta({ title: t.pageTitle, description: t.metaDescription, lang })
 
   // Live token values — read from the cascade so the swatches show the
   // ACTIVE theme's honest hex, and re-read when the theme toggle flips

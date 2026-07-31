@@ -7,6 +7,7 @@ import { useAuth } from '../lib/authContext'
 import { listSessions, undeleteSession, type SessionRow } from '../lib/sessionsApi'
 import { formatDateTime } from '../lib/format'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -71,9 +72,7 @@ export function AdminTrash({ lang }: { lang: Lang }) {
     }
   }, [])
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   useEffect(() => {
     if (authLoading) return

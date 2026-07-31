@@ -11,6 +11,7 @@ import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicAdvancements, type PublicAdvancementRow } from '../lib/advancementsApi'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Unauthenticated share view. Renders only the advancements an admin has
@@ -31,9 +32,7 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
   // for most fresh projects).
   const [vouches, setVouches] = useState<PublicVouch[]>([])
 
-  useEffect(() => {
-    document.title = `${t.heading} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.heading} — Marc`, lang })
 
   useEffect(() => {
     if (!id) return

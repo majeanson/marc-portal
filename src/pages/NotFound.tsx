@@ -1,10 +1,10 @@
-import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { FeatureGlyph } from '../lib/featureGlyphs'
 import { DICT, type Lang } from '../i18n'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Catch-all 404 page. Replaces the previous silent <Navigate to="/"> which
@@ -25,9 +25,7 @@ export function NotFound() {
   const t = DICT[lang].notFound
   const langPrefix = lang === 'en' ? '/en' : ''
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   // The nearest real pages — they double as the way back. Positions are
   // percentages inside the map canvas; the connector lines below run to the

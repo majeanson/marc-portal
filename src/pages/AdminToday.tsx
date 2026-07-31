@@ -31,6 +31,7 @@ import {
   type UnansweredMessageEntry,
 } from '../lib/todayApi'
 import { formatCadCents, formatRelativeWindow } from '../lib/format'
+import { usePageMeta } from '../lib/usePageMeta'
 
 // Operator-only surface — inline COPY block per the i18n convention.
 // FR is Québécois register (not France), matching the rest of the admin
@@ -225,9 +226,7 @@ export function AdminToday({ lang }: { lang: Lang }) {
     }
   }
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   useEffect(() => {
     let cancelled = false

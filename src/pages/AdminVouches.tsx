@@ -38,6 +38,7 @@ import {
   type VouchRelationship,
   type VouchStatus,
 } from '../lib/vouchesApi'
+import { usePageMeta } from '../lib/usePageMeta'
 
 // Structural shape, defined explicitly so child components can take `t: Copy`
 // without the FR/EN literal types colliding. The FR object below is the
@@ -221,9 +222,7 @@ export function AdminVouches({ lang }: { lang: Lang }) {
     }
   }, [t])
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   useEffect(() => {
     if (authLoading) return

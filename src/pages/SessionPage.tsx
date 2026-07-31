@@ -59,6 +59,7 @@ import {
 } from '../components/session/CommunityDiscountToggle'
 import { Tier3SplitInput } from '../components/session/Tier3SplitInput'
 import { Tier4AmountInput } from '../components/session/Tier4AmountInput'
+import { usePageMeta } from '../lib/usePageMeta'
 
 // Excalidraw is ~600 KB — the compose-box sketch surface stays behind
 // React.lazy so a thread the visitor never sketches into doesn't pay for it.
@@ -456,9 +457,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
     }
   }, [id, navigate, langPrefix])
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   // Mark this session as seen (clears the /me NEW badge) any time we have a
   // fresh row in hand. Pure localStorage write — no React state mutation, so

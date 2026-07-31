@@ -1,10 +1,10 @@
-import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PAGE_FEATURE } from '../lib/features'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -37,9 +37,7 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
   const [search] = useSearchParams()
   const email = search.get('email') ?? ''
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   return (
     <>

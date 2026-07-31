@@ -13,6 +13,7 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { api, ApiError } from '../lib/api'
+import { usePageMeta } from '../lib/usePageMeta'
 
 interface OutboxEntry {
   id: string
@@ -104,9 +105,7 @@ export function AdminEmailOutbox({ lang }: { lang: Lang }) {
   const [busy, setBusy] = useState<Record<string, boolean>>({})
   const [lastResult, setLastResult] = useState<Record<string, RetryResult>>({})
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   // Initial load. Cancelled-flag pattern matches AdminToday — avoids
   // setState-after-unmount when the route is swapped mid-fetch.

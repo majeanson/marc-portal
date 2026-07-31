@@ -24,7 +24,6 @@
  * Both are linkable from each other.
  */
 
-import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -34,6 +33,7 @@ import { useAuth } from '../lib/authContext'
 import { PAGE_FEATURE } from '../lib/features'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Ledger row. `mine` = what the portal keeps; `theirs` = the comparator
@@ -231,11 +231,7 @@ export function Dossier({ lang }: { lang: Lang }) {
   const passageHref = `${langPrefix}/passage`
   const privacyHref = lang === 'fr' ? '/confidentialite' : '/en/privacy'
 
-  useEffect(() => {
-    document.title = t.pageTitle
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.metaDescription)
-  }, [t])
+  usePageMeta({ title: t.pageTitle, description: t.metaDescription, lang })
 
   if (loading) {
     return (

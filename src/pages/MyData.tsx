@@ -24,6 +24,7 @@ import type { ProblemType } from '../lib/intakeSchemas'
 import type { SessionStatus } from '../lib/sessionsApi'
 import { attachmentUrl } from '../lib/attachmentsApi'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 interface ParsedIntake {
   type: ProblemType
@@ -137,9 +138,7 @@ export function MyData({ lang }: { lang: Lang }) {
   const langPrefix = lang === 'en' ? '/en' : ''
   const [bundle, setBundle] = useState<ExportBundle | null>(null)
 
-  useEffect(() => {
-    document.title = t.pageTitle
-  }, [t])
+  usePageMeta({ title: t.pageTitle, lang })
 
   useEffect(() => {
     if (loading || !email) return

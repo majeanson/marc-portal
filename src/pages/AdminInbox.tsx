@@ -8,6 +8,7 @@ import { listSessions, type SessionRow, type SessionStatus } from '../lib/sessio
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
 import { computeSla, formatDate, formatRelativeWindow } from '../lib/format'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -232,9 +233,7 @@ export function AdminInbox({ lang }: { lang: Lang }) {
     }
   }, [])
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   // Initial load — inline async with cancelled flag.
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
@@ -7,6 +7,7 @@ import { useAuth } from '../lib/authContext'
 import { PAGE_FEATURE } from '../lib/features'
 import { Surface } from '../components/Surface'
 import { Field } from '../components/Field'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -53,9 +54,7 @@ export function Login({ lang }: { lang: Lang }) {
   const [email, setEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

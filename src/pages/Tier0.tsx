@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
@@ -9,6 +8,7 @@ import { SectionEyebrow } from '../components/SectionEyebrow'
 import { listPatterns, localizedPattern } from '../lib/patterns'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Tier 0 self-service redirect (feat-2026-008). Curated free patterns + no-code
@@ -19,12 +19,11 @@ export function Tier0({ lang }: { lang: Lang }) {
   const t = DICT[lang]
   const patterns = listPatterns()
 
-  useEffect(() => {
-    document.documentElement.lang = t.langCode
-    document.title = `${t.tier0.pageTitle} — Marc`
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.tier0.metaDescription)
-  }, [t])
+  usePageMeta({
+    title: `${t.tier0.pageTitle} — Marc`,
+    description: t.tier0.metaDescription,
+    lang,
+  })
 
   return (
     <div className="app" data-feature={PAGE_FEATURE['page.tier0']}>

@@ -12,7 +12,7 @@
  * map's Admin layer can render the same grouped tile structure.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { LangPrefCard } from '../components/LangPrefCard'
@@ -22,6 +22,7 @@ import { ProposalSheet } from '../components/intake/ProposalSheet'
 import type { Account } from '../components/intake/AccountStep'
 import type { FormData } from '../components/intake/TypeForm'
 import { getSchemaForType, type ProblemType } from '../lib/intakeSchemas'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -38,9 +39,7 @@ export function AdminHub({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const sections = buildAdminSections(lang)
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   return (
     <article className="admin-hub">

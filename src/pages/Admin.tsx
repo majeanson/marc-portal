@@ -7,12 +7,13 @@
  * and the signed-in user's role — handled by individual sub-routes.
  */
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { useAuth } from '../lib/authContext'
 import { useTenant } from '../lib/tenantContext'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -70,9 +71,7 @@ export function Admin({ lang }: { lang: Lang }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const closeMobileNav = () => setMobileNavOpen(false)
 
-  useEffect(() => {
-    document.title = `${t.titleSuffix} — ${tenant?.displayName ?? 'Marc'}`
-  }, [t, tenant])
+  usePageMeta({ title: `${t.titleSuffix} — ${tenant?.displayName ?? 'Marc'}`, lang })
 
   if (authLoading || tenantLoading) {
     return (

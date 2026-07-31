@@ -12,6 +12,7 @@ import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
+import { usePageMeta } from '../lib/usePageMeta'
 
 type TierFilter = '0' | '1' | '2' | '3' | '4'
 type StatusFilter = 'active' | 'shipped' | 'draft' | 'triage' | 'rejected'
@@ -46,9 +47,7 @@ export function Projects({ lang }: { lang: Lang }) {
     ? (searchParams.get('status') as StatusFilter)
     : null
 
-  useEffect(() => {
-    document.title = `${t.heading} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.heading} — Marc`, lang })
 
   useEffect(() => {
     let cancelled = false

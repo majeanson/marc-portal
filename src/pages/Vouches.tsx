@@ -16,6 +16,7 @@ import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 export function Vouches({ lang }: { lang: Lang }) {
   const t = DICT[lang].vouches
@@ -23,9 +24,7 @@ export function Vouches({ lang }: { lang: Lang }) {
   const [vouches, setVouches] = useState<PublicVouch[] | null>(null)
   const [error, setError] = useState(false)
 
-  useEffect(() => {
-    document.title = `${t.pageTitle} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.pageTitle} — Marc`, lang })
 
   useEffect(() => {
     let cancelled = false

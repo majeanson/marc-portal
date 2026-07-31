@@ -6,6 +6,7 @@ import { DICT, type Lang } from '../i18n'
 import { captureException } from '../lib/sentry'
 import { ErrorStamp } from './NotFound'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Root-level error boundary. Wired as `errorElement` on the layout route in
@@ -24,15 +25,15 @@ export function RouteError() {
   const isNotFound = isRouteErrorResponse(err) && err.status === 404
   const t = DICT[lang][isNotFound ? 'notFound' : 'errorBoundary']
 
+  usePageMeta({ title: `${t.title} — Marc`, lang })
+
   useEffect(() => {
-    document.title = `${t.title} — Marc`
-    if (!isNotFound) {
-      console.error('route error boundary caught:', err)
-      // Forward to Sentry. 404s aren't reported (expected user behavior); a
-      // genuine throw from a route or its lazy() loader is.
-      captureException(err, { path: loc.pathname })
-    }
-  }, [t, isNotFound, err, loc.pathname])
+    if (isNotFound) return
+    console.error('route error boundary caught:', err)
+    // Forward to Sentry. 404s aren't reported (expected user behavior); a
+    // genuine throw from a route or its lazy() loader is.
+    captureException(err, { path: loc.pathname })
+  }, [isNotFound, err, loc.pathname])
 
   return (
     <div className="app">

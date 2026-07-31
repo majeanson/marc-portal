@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
@@ -9,6 +8,7 @@ import { EngagementStatusBar } from '../components/engagement/EngagementStatusBa
 import { EngagementThread } from '../components/engagement/EngagementThread'
 import { EngagementPreview } from '../components/engagement/EngagementPreview'
 import { getEngagementBySlug } from '../lib/engagements'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Engagement canvas (feat-2026-003 async-status-canvas). Read-only sample for the
@@ -21,15 +21,10 @@ export function Engagement({ lang }: { lang: Lang }) {
   const { slug } = useParams<{ slug: string }>()
   const engagement = slug ? getEngagementBySlug(slug) : null
 
-  useEffect(() => {
-    document.documentElement.lang = t.langCode
-    if (engagement) {
-      const title = engagement.title[lang] ?? engagement.title.fr
-      document.title = `${title} — Marc`
-    } else {
-      document.title = `${t.engagement.notFound.title} — Marc`
-    }
-  }, [engagement, lang, t])
+  const pageTitle = engagement
+    ? (engagement.title[lang] ?? engagement.title.fr)
+    : t.engagement.notFound.title
+  usePageMeta({ title: `${pageTitle} — Marc`, lang })
 
   if (!engagement) {
     return (
