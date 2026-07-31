@@ -164,9 +164,9 @@ export function Vouch({ lang }: { lang: Lang }) {
 
   if (submitted) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
+        <main id="main-content" className="page" data-feature={PAGE_FEATURE['page.vouch']}>
           <Surface as="section" className="page__panel">
             <h1>{ts.successHeading}</h1>
             <p>{ts.successBody}</p>
@@ -192,14 +192,14 @@ export function Vouch({ lang }: { lang: Lang }) {
           </Surface>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div className="app">
       <Header lang={lang} />
-      <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
+      <main id="main-content" className="page" data-feature={PAGE_FEATURE['page.vouch']}>
         <Surface as="section" className="page__panel">
           <h1>{frPunct(ts.heading)}</h1>
           <p>{ts.lead}</p>
@@ -339,6 +339,6 @@ export function Vouch({ lang }: { lang: Lang }) {
         </Surface>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }

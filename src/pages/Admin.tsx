@@ -75,11 +75,13 @@ export function Admin({ lang }: { lang: Lang }) {
 
   if (authLoading || tenantLoading) {
     return (
-      <main className="page">
-        <Surface as="section" className="page__panel">
-          <p>{t.loading}</p>
-        </Surface>
-      </main>
+      <div className="app">
+        <main id="main-content" className="page">
+          <Surface as="section" className="page__panel">
+            <p>{t.loading}</p>
+          </Surface>
+        </main>
+      </div>
     )
   }
 

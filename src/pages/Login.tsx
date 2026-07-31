@@ -68,9 +68,9 @@ export function Login({ lang }: { lang: Lang }) {
 
   if (currentEmail) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page" data-feature={PAGE_FEATURE['page.login']}>
+        <main id="main-content" className="page" data-feature={PAGE_FEATURE['page.login']}>
           <Surface as="section" className="page__panel">
             <h1>{t.title}</h1>
             <p>
@@ -90,14 +90,14 @@ export function Login({ lang }: { lang: Lang }) {
           </Surface>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div className="app">
       <Header lang={lang} />
-      <main className="page" data-feature={PAGE_FEATURE['page.login']}>
+      <main id="main-content" className="page" data-feature={PAGE_FEATURE['page.login']}>
         <Surface as="section" className="page__panel">
           <h1>{t.title}</h1>
           <p>{t.intro}</p>
@@ -124,6 +124,6 @@ export function Login({ lang }: { lang: Lang }) {
         </Surface>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }

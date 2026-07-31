@@ -40,9 +40,9 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
   usePageMeta({ title: `${t.title} — Marc`, lang })
 
   return (
-    <>
+    <div className="app">
       <Header lang={lang} />
-      <main className="page" data-feature={PAGE_FEATURE['page.magic-link-sent']}>
+      <main id="main-content" className="page" data-feature={PAGE_FEATURE['page.magic-link-sent']}>
         <Surface as="section" className="page__panel magic-link">
           {/* Hand-drawn envelope mark that "lands" once on mount — celebrates
               the moment the link is in flight without being corny. Decorative,
@@ -91,6 +91,6 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
         </Surface>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }

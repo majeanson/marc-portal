@@ -421,9 +421,9 @@ export function MePortal({ lang }: { lang: Lang }) {
     // /login page it sends you to — so "Se connecter" lands somewhere that
     // looks like where you just were, not a different site.
     return (
-      <>
+      <div className="app" data-feature={PAGE_FEATURE['page.me-portal']}>
         <Header lang={lang} />
-        <main className="page" data-feature={PAGE_FEATURE['page.me-portal']}>
+        <main id="main-content" className="page">
           <Surface as="section" className="page__panel">
             <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.me-portal']}>
               {t.eyebrow}
@@ -438,7 +438,7 @@ export function MePortal({ lang }: { lang: Lang }) {
           </Surface>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
@@ -449,9 +449,9 @@ export function MePortal({ lang }: { lang: Lang }) {
   const privacyHref = lang === 'fr' ? '/confidentialite' : '/en/privacy'
 
   return (
-    <>
+    <div className="app" data-feature={PAGE_FEATURE['page.me-portal']}>
       <Header lang={lang} variant="session" />
-      <main className="me-portal me-portal--console">
+      <main id="main-content" className="me-portal me-portal--console">
         {paymentToast !== null && (
           <div
             className={`me-portal__toast me-portal__toast--${paymentToast}`}
@@ -678,7 +678,7 @@ export function MePortal({ lang }: { lang: Lang }) {
         </section>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }
 

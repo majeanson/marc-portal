@@ -3,16 +3,18 @@
 // the standard react-router setup pattern, and HMR isn't useful for the
 // router config anyway (it'd recreate the router and lose route state).
 /* eslint-disable react-refresh/only-export-components */
-import { Suspense, lazy, useEffect, type ReactNode } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   Navigate,
   Outlet,
   Route,
+  ScrollRestoration,
   createBrowserRouter,
   createRoutesFromElements,
   useLocation,
 } from 'react-router-dom'
 import { trackVisit } from './lib/visitTracker'
+import { shouldFocusMainOnRouteChange } from './lib/routeFocus'
 
 // Hot-path pages — keep eager so the home/intake/login critical path stays
 // fast and FCP-friendly.
@@ -81,9 +83,13 @@ const AuRevoir = lazy(() => import('./pages/AuRevoir').then((m) => ({ default: m
 // not rendered (it depends on auth context that's mid-load on first paint);
 // the rail + a couple of soft bars give the page enough shape to read as
 // "loading" instead of "broken."
+// aria-label deliberately omitted: this component renders before any page
+// has resolved a `lang`, so there's no language in scope to pick FR vs EN
+// text for it. `aria-busy="true"` already tells assistive tech the region
+// is loading without needing a label at all.
 function RouteFallback() {
   return (
-    <main className="page route-fallback" aria-busy="true" aria-label="Loading">
+    <main id="main-content" className="page route-fallback" aria-busy="true">
       <div className="route-fallback__bar" />
       <div className="route-fallback__bar route-fallback__bar--narrow" />
       <div className="route-fallback__bar route-fallback__bar--wide" />
@@ -109,8 +115,55 @@ function RootLayout() {
   useEffect(() => {
     trackVisit(loc.pathname)
   }, [loc.pathname])
+
+  // Skip the very first render — nothing has "navigated" yet, and stealing
+  // focus off whatever the visitor already had (an address bar, a bookmark
+  // click) on initial load would be actively hostile.
+  const isFirstRender = useRef(true)
+
+  // SPA navigations never trigger the browser's native focus reset. A full
+  // page load moves focus to <body> and the screen reader announces the new
+  // document title; a client-side route swap under react-router leaves
+  // focus sitting on whatever link/button was just clicked, and a screen-
+  // reader user hears nothing at all — the page changed underneath them
+  // silently. Moving focus onto <main id="main-content"> on every route
+  // change restores that signal.
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    if (!shouldFocusMainOnRouteChange(loc.hash)) return
+    const main = document.getElementById('main-content')
+    if (!main) return
+    // <main> isn't a native tab stop (only interactive elements should be),
+    // so .focus() is a no-op unless it's programmatically focusable first.
+    // tabindex="-1" makes it focusable via script while keeping it out of
+    // the Tab order — safe to leave set permanently, rather than touching
+    // every page's markup (see PR2 inventory: compliant pages don't carry
+    // the attribute either).
+    main.setAttribute('tabindex', '-1')
+    main.focus({ preventScroll: true })
+  }, [loc.pathname, loc.hash])
+
+  // Route announcer: usePageMeta sets document.title in the *child* route's
+  // effect, which runs after this one on the same navigation — so reading
+  // document.title synchronously here would announce the outgoing page's
+  // title. The short timeout lets that effect land first; the cleanup
+  // cancels a stale announcement if the visitor navigates again before it
+  // fires (fast back-to-back nav shouldn't queue up two announcements).
+  const [announcement, setAnnouncement] = useState('')
+  useEffect(() => {
+    const timer = setTimeout(() => setAnnouncement(document.title), 50)
+    return () => clearTimeout(timer)
+  }, [loc.pathname])
+
   return (
     <Suspense fallback={<RouteFallback />}>
+      <ScrollRestoration />
+      <div aria-live="polite" className="sr-only">
+        {announcement}
+      </div>
       <Outlet />
     </Suspense>
   )
@@ -293,8 +346,22 @@ export const router = createBrowserRouter(
       <Route path="/en/login" element={<Login lang="en" />} />
       <Route path="/login/sent" element={<MagicLinkSent lang="fr" />} />
       <Route path="/en/login/sent" element={<MagicLinkSent lang="en" />} />
-      <Route path="/me" element={<MePortal lang="fr" />} />
-      <Route path="/en/me" element={<MePortal lang="en" />} />
+      <Route
+        path="/me"
+        element={
+          <L>
+            <MePortal lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/me"
+        element={
+          <L>
+            <MePortal lang="en" />
+          </L>
+        }
+      />
       <Route
         path="/me/data"
         element={
@@ -359,8 +426,22 @@ export const router = createBrowserRouter(
           </L>
         }
       />
-      <Route path="/session/:id" element={<SessionPage lang="fr" />} />
-      <Route path="/en/session/:id" element={<SessionPage lang="en" />} />
+      <Route
+        path="/session/:id"
+        element={
+          <L>
+            <SessionPage lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/session/:id"
+        element={
+          <L>
+            <SessionPage lang="en" />
+          </L>
+        }
+      />
       <Route
         path="/share/:id"
         element={
@@ -489,8 +570,22 @@ export const router = createBrowserRouter(
           </L>
         }
       />
-      <Route path="/admin/inbox/:id" element={<SessionPage lang="fr" />} />
-      <Route path="/en/admin/inbox/:id" element={<SessionPage lang="en" />} />
+      <Route
+        path="/admin/inbox/:id"
+        element={
+          <L>
+            <SessionPage lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/admin/inbox/:id"
+        element={
+          <L>
+            <SessionPage lang="en" />
+          </L>
+        }
+      />
 
       {/* Admin shell.
           Deliberate duplication: the FR + EN subtrees are mirrored explicitly
