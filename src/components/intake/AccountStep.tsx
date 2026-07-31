@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
 import { SectionEyebrow } from '../SectionEyebrow'
@@ -83,9 +84,9 @@ export function AccountStep({
 
       <p className="surface intake__signin">
         <span>{t.alreadyHaveAccount}</span>{' '}
-        <a href={loginHref} className="intake__signin-link">
+        <Link to={loginHref} className="intake__signin-link">
           {t.signIn}
-        </a>
+        </Link>
       </p>
 
       {/* Privacy hint moved above the inputs — non-tech visitors read the

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import type { ProblemType } from '../lib/intakeSchemas'
@@ -90,9 +90,9 @@ export function InlineIntakeTeaser({ lang }: { lang: Lang }) {
           {t.moreTypes}
         </button>
       )}
-      <a className="inline-teaser__napkin-link mono" href={`${langPrefix}/intake`}>
+      <Link className="inline-teaser__napkin-link mono" to={`${langPrefix}/intake`}>
         {DICT[lang].napkin.homeTeaser}
-      </a>
+      </Link>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -53,7 +53,12 @@ export function Login({ lang }: { lang: Lang }) {
   const [search] = useSearchParams()
   const reason = search.get('reason') ?? ''
   const { email: currentEmail, isAdmin, requestLink } = useAuth()
-  const [email, setEmail] = useState('')
+  // MagicLinkSent's "resend" link round-trips the address here via ?email=
+  // so a visitor who mistyped doesn't have to retype it from memory. Validate
+  // before seeding — URLSearchParams.get already url-decodes, so a junk or
+  // absent param just leaves the field blank rather than pre-filling garbage.
+  const emailParam = search.get('email') ?? ''
+  const [email, setEmail] = useState(/\S+@\S+\.\S+/.test(emailParam) ? emailParam : '')
   const [submitting, setSubmitting] = useState(false)
   const [transportError, setTransportError] = useState(false)
 
@@ -92,15 +97,15 @@ export function Login({ lang }: { lang: Lang }) {
               {t.alreadyLoggedIn} <strong>{currentEmail}</strong>.
             </p>
             <p>
-              <a
-                href={
+              <Link
+                to={
                   isAdmin
                     ? `${lang === 'en' ? '/en' : ''}/admin/inbox`
                     : `${lang === 'en' ? '/en' : ''}/me`
                 }
               >
                 {t.goToMe}
-              </a>
+              </Link>
             </p>
           </Surface>
         </main>

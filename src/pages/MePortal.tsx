@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { SectionEyebrow } from '../components/SectionEyebrow'
@@ -431,9 +431,9 @@ export function MePortal({ lang }: { lang: Lang }) {
             <h1>{t.title}</h1>
             <p>{t.notLoggedIn}</p>
             <p>
-              <a href={`${langPrefix}/login`} className="hero__cta">
+              <Link to={`${langPrefix}/login`} className="hero__cta">
                 {t.signIn}
-              </a>
+              </Link>
             </p>
           </Surface>
         </main>
@@ -500,23 +500,23 @@ export function MePortal({ lang }: { lang: Lang }) {
           </Surface>
 
           <Surface as="li" className="me-portal__tile me-portal__tile--accent">
-            <a href={`${langPrefix}/intake`} className="me-portal__tile-link">
+            <Link to={`${langPrefix}/intake`} className="me-portal__tile-link">
               <div className="me-portal__tile-head">
                 <h2 className="me-portal__tile-title">{t.tileNewTitle}</h2>
               </div>
               <p className="me-portal__tile-body">{t.tileNewBody}</p>
               <span className="mono me-portal__tile-action">{t.tileNewAction}</span>
-            </a>
+            </Link>
           </Surface>
 
           <Surface as="li" className="me-portal__tile">
-            <a href={`${langPrefix}/me/data`} className="me-portal__tile-link">
+            <Link to={`${langPrefix}/me/data`} className="me-portal__tile-link">
               <div className="me-portal__tile-head">
                 <h2 className="me-portal__tile-title">{t.tileDataTitle}</h2>
               </div>
               <p className="me-portal__tile-body">{t.tileDataBody}</p>
               <span className="mono me-portal__tile-action">{t.tileDataAction}</span>
-            </a>
+            </Link>
           </Surface>
 
           <Surface as="li" className="me-portal__tile">
@@ -568,9 +568,9 @@ export function MePortal({ lang }: { lang: Lang }) {
               </div>
               <p className="me-portal__empty-title">{t.none}</p>
               <p className="me-portal__empty-body">{t.noneCta}</p>
-              <a href={`${langPrefix}/intake`} className="hero__cta">
+              <Link to={`${langPrefix}/intake`} className="hero__cta">
                 {t.newBtn}
-              </a>
+              </Link>
             </div>
           ) : (
             <>
@@ -759,7 +759,7 @@ function SessionCard({
   const unread = isUnread(session)
   return (
     <Surface as="li" className={`me-portal__card${unread ? ' me-portal__card--unread' : ''}`}>
-      <a href={href} className="me-portal__card-link" aria-label={title}>
+      <Link to={href} className="me-portal__card-link" aria-label={title}>
         <div className="me-portal__card-main">
           <div className="me-portal__card-meta">
             <span className="me-portal__id mono">{session.id.slice(0, 8)}</span>
@@ -788,7 +788,7 @@ function SessionCard({
           </span>
           <span className="me-portal__open mono">{copy.openBtn}</span>
         </div>
-      </a>
+      </Link>
       {session.status === 'active' && (
         <PaymentActions session={session} lang={lang} variant="compact" />
       )}

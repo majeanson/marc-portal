@@ -10,6 +10,7 @@
  * --no-stats modifier that collapses it to a single column.
  */
 
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import type { FeatureId } from '../lib/features'
 import { FeatureDot } from './FeatureDot'
@@ -35,7 +36,7 @@ interface Props {
 export function HomeDrillCard({ lang, feature, href, eyebrow, title, body, cta, stats }: Props) {
   return (
     <div className="home-drill-card-wrap" data-feature={feature}>
-      <a className={`home-drill-card${stats ? '' : ' home-drill-card--no-stats'}`} href={href}>
+      <Link className={`home-drill-card${stats ? '' : ' home-drill-card--no-stats'}`} to={href}>
         <div className="home-drill-card-text">
           <span className="home-drill-card-feature">
             <FeatureDot feature={feature} lang={lang} size="sm" decorative />
@@ -55,7 +56,7 @@ export function HomeDrillCard({ lang, feature, href, eyebrow, title, body, cta, 
           </ul>
         )}
         <span className="home-drill-card-cta mono">{cta}</span>
-      </a>
+      </Link>
     </div>
   )
 }

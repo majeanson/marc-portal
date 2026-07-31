@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { DICT, type Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -1072,9 +1072,9 @@ export function SessionPage({ lang }: { lang: Lang }) {
         <main id="main-content">
           <article className="section intake session-frame">
             <div className="section__inner">
-              <a className="showcase-page__back" href={backHref}>
+              <Link className="showcase-page__back" to={backHref}>
                 {backLabel}
-              </a>
+              </Link>
 
               {/* Persistent chrome: the title + live status read first, on every
                   tab. The tab bar itself lives in the sticky Header

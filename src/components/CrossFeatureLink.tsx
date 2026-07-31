@@ -11,6 +11,7 @@
  */
 
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import type { FeatureId } from '../lib/features'
 import { FeatureDot } from './FeatureDot'
@@ -35,9 +36,9 @@ export function CrossFeatureLink({ lang, feature, href, mono, children }: Props)
         decorative
         className="cross-feature-link__dot"
       />
-      <a href={href} className={`cross-feature-link__anchor${mono ? ' mono' : ''}`}>
+      <Link to={href} className={`cross-feature-link__anchor${mono ? ' mono' : ''}`}>
         {children}
-      </a>
+      </Link>
     </span>
   )
 }
