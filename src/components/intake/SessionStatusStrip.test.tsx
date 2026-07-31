@@ -56,3 +56,26 @@ describe('SessionStatusStrip admin onPick', () => {
     expect(screen.getByRole('button', { name: /Rejected/i })).toBeInTheDocument()
   })
 })
+
+describe('SessionStatusStrip busy guard', () => {
+  it('disables every pill (including the non-current ones) while busy', () => {
+    render(<SessionStatusStrip lang="en" status="triage" onPick={() => {}} busy={true} />)
+    for (const btn of screen.getAllByRole('button')) {
+      expect(btn).toBeDisabled()
+    }
+  })
+
+  it('clicking a pill while busy does not fire onPick', () => {
+    const onPick = vi.fn()
+    render(<SessionStatusStrip lang="en" status="triage" onPick={onPick} busy={true} />)
+    fireEvent.click(screen.getByRole('button', { name: /In progress/i }))
+    expect(onPick).not.toHaveBeenCalled()
+  })
+
+  it('is not busy by default — pills stay clickable', () => {
+    const onPick = vi.fn()
+    render(<SessionStatusStrip lang="en" status="triage" onPick={onPick} />)
+    fireEvent.click(screen.getByRole('button', { name: /In progress/i }))
+    expect(onPick).toHaveBeenCalledWith('active')
+  })
+})

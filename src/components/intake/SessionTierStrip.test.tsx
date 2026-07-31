@@ -38,3 +38,19 @@ describe('SessionTierStrip', () => {
     expect(onPick).toHaveBeenCalledWith(null)
   })
 })
+
+describe('SessionTierStrip busy guard', () => {
+  it('disables every pill (including non-current ones) while a PATCH is in flight', () => {
+    render(<SessionTierStrip lang="en" tier={1} onPick={() => {}} busy={true} />)
+    for (const btn of screen.getAllByRole('button')) {
+      expect(btn).toBeDisabled()
+    }
+  })
+
+  it('clicking a pill while busy does not fire onPick', () => {
+    const onPick = vi.fn()
+    render(<SessionTierStrip lang="en" tier={1} onPick={onPick} busy={true} />)
+    fireEvent.click(screen.getByRole('button', { name: /T2/ }))
+    expect(onPick).not.toHaveBeenCalled()
+  })
+})

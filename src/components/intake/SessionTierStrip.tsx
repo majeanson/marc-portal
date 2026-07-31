@@ -31,11 +31,18 @@ export function SessionTierStrip({
   lang,
   tier,
   onPick,
+  busy = false,
 }: {
   lang: Lang
   tier: SessionTier | null
   /** Admin only — required (component is hidden entirely for visitors). */
   onPick: (next: SessionTier | null) => void
+  /** True while a tier PATCH is in flight — disables every pill. Unlike the
+   *  tier-4 amount / tier-3 split / community-discount inputs (which each
+   *  track their own `saving` state locally), this strip fires directly
+   *  from onPick with nothing to stop a double-click from sending two
+   *  PATCHes back to back. */
+  busy?: boolean
 }) {
   const t = COPY[lang]
   return (
@@ -50,7 +57,7 @@ export function SessionTierStrip({
               type="button"
               className={`${stepClass} mono`}
               onClick={() => onPick(n)}
-              disabled={isCurrent}
+              disabled={isCurrent || busy}
               aria-current={isCurrent ? 'step' : undefined}
             >
               {label}
@@ -63,7 +70,7 @@ export function SessionTierStrip({
           type="button"
           className={`intake__progress-step session-strip__rejected mono${tier === null ? ' session-strip__rejected--on' : ''}`}
           onClick={() => onPick(null)}
-          disabled={tier === null}
+          disabled={tier === null || busy}
           aria-current={tier === null ? 'step' : undefined}
         >
           ✕ {t.clear}

@@ -27,6 +27,10 @@ const COPY = {
     runbook: 'Runbook',
     today: 'Aujourd’hui',
     hub: 'Console',
+    inbox: 'Boîte de réception',
+    vouches: 'Témoignages',
+    custodians: 'Dépositaires',
+    trash: 'Corbeille',
     backToApp: '← Retour à l’app',
     operator: 'Opérateur',
     owner: 'Propriétaire',
@@ -46,6 +50,10 @@ const COPY = {
     runbook: 'Runbook',
     today: 'Today',
     hub: 'Console',
+    inbox: 'Inbox',
+    vouches: 'Vouches',
+    custodians: 'Custodians',
+    trash: 'Trash',
     backToApp: '← Back to app',
     operator: 'Operator',
     owner: 'Owner',
@@ -120,7 +128,11 @@ export function Admin({ lang }: { lang: Lang }) {
           {/* Marketplace-shaped surfaces (Apparence, Équipe, Facturation, Flotte)
             are no longer in the sidebar — vision is solo practice, not SaaS.
             They still exist as routes for direct-URL access if Marc ever needs
-            them. The audit log is the only operator-only surface kept visible.
+            them. Inbox / Vouches / Custodians / Trash are NOT marketplace
+            surfaces — they're the daily working set (see hubSections.ts's
+            "working surfaces" grouping) and belong in the persistent nav
+            rather than one click deeper behind the Console tile grid. Audit
+            and Runbook round out the operator-only set kept visible.
             See feature.json analysis: "Fleet/tenant primitives exist as
             architecture for per-engagement isolation; this is not a marketplace." */}
           <nav className="admin__links">
@@ -140,6 +152,34 @@ export function Admin({ lang }: { lang: Lang }) {
                   onClick={closeMobileNav}
                 >
                   <span className="admin__link-dot admin__link-dot--operator" /> {t.today}
+                </NavLink>
+                <NavLink
+                  to={`${langPrefix}/admin/inbox`}
+                  className="admin__link"
+                  onClick={closeMobileNav}
+                >
+                  <span className="admin__link-dot admin__link-dot--operator" /> {t.inbox}
+                </NavLink>
+                <NavLink
+                  to={`${langPrefix}/admin/vouches`}
+                  className="admin__link"
+                  onClick={closeMobileNav}
+                >
+                  <span className="admin__link-dot admin__link-dot--operator" /> {t.vouches}
+                </NavLink>
+                <NavLink
+                  to={`${langPrefix}/admin/custodians`}
+                  className="admin__link"
+                  onClick={closeMobileNav}
+                >
+                  <span className="admin__link-dot admin__link-dot--operator" /> {t.custodians}
+                </NavLink>
+                <NavLink
+                  to={`${langPrefix}/admin/trash`}
+                  className="admin__link"
+                  onClick={closeMobileNav}
+                >
+                  <span className="admin__link-dot admin__link-dot--operator" /> {t.trash}
                 </NavLink>
                 <NavLink
                   to={`${langPrefix}/admin/showcase`}

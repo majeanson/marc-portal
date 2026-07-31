@@ -12,7 +12,8 @@ import { usePageMeta } from '../lib/usePageMeta'
 const COPY = {
   fr: {
     title: 'Corbeille',
-    intro: 'Sessions retirées (par le visiteur ou par l’admin). Restaurer les remet en triage.',
+    intro:
+      'Sessions retirées (par le visiteur ou par l’admin). Restaurer les remet avec le statut qu’elles avaient avant le retrait.',
     forbidden: 'Réservé à l’admin.',
     loading: 'Chargement…',
     loadError: 'Impossible de charger la corbeille. Réessaie.',
@@ -24,12 +25,21 @@ const COPY = {
     headerActions: '',
     restore: 'Restaurer',
     restoring: 'Restauration…',
+    restoreError: 'La restauration a pas passé. Réessaie.',
     backToInbox: '← Inbox',
     refreshing: 'Mise à jour…',
+    statusLabels: {
+      draft: 'Brouillon',
+      triage: 'Triage',
+      active: 'En cours',
+      shipped: 'Livré',
+      rejected: 'Refusé',
+    },
   },
   en: {
     title: 'Trash',
-    intro: 'Withdrawn sessions (by visitor or by admin). Restoring brings them back to triage.',
+    intro:
+      'Withdrawn sessions (by visitor or by admin). Restoring brings them back with the status they had before withdrawal.',
     forbidden: 'Admin only.',
     loading: 'Loading…',
     loadError: 'Could not load the trash. Try again.',
@@ -41,8 +51,16 @@ const COPY = {
     headerActions: '',
     restore: 'Restore',
     restoring: 'Restoring…',
+    restoreError: "The restore didn't go through. Try again.",
     backToInbox: '← Inbox',
     refreshing: 'Refreshing…',
+    statusLabels: {
+      draft: 'Draft',
+      triage: 'Triage',
+      active: 'In progress',
+      shipped: 'Shipped',
+      rejected: 'Rejected',
+    },
   },
 } as const
 
@@ -57,6 +75,11 @@ export function AdminTrash({ lang }: { lang: Lang }) {
   const [loadError, setLoadError] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [pending, setPending] = useState<Set<string>>(new Set())
+  // Distinct from loadError: a restore that fails leaves the row sitting in
+  // the trash exactly where it was, but silently — without this, a 500 or
+  // network blip looks identical to a successful restore that just hasn't
+  // refreshed the list yet.
+  const [restoreError, setRestoreError] = useState(false)
   const langPrefix = lang === 'en' ? '/en' : ''
 
   const refresh = useCallback(async () => {
@@ -99,10 +122,13 @@ export function AdminTrash({ lang }: { lang: Lang }) {
 
   const onRestore = async (id: string) => {
     setPending((s) => new Set(s).add(id))
+    setRestoreError(false)
     try {
       await undeleteSession(id)
       // Optimistically drop from list.
       setSessions((prev) => (prev ? prev.filter((s) => s.id !== id) : prev))
+    } catch {
+      setRestoreError(true)
     } finally {
       setPending((s) => {
         const next = new Set(s)
@@ -152,6 +178,12 @@ export function AdminTrash({ lang }: { lang: Lang }) {
             {refreshing ? t.refreshing : ''}
           </div>
 
+          {restoreError && (
+            <p role="alert" className="form__error">
+              {t.restoreError}
+            </p>
+          )}
+
           {loadError ? (
             <p role="alert" className="form__error">
               {t.loadError}{' '}
@@ -179,7 +211,11 @@ export function AdminTrash({ lang }: { lang: Lang }) {
                     <tr key={s.id}>
                       <td>{s.email}</td>
                       <td>
-                        <span className={`status-pill status-pill--${s.status}`}>{s.status}</span>
+                        <span
+                          className={`session-frame__status-pill session-frame__status-pill--${s.status}`}
+                        >
+                          {t.statusLabels[s.status]}
+                        </span>
                       </td>
                       <td className="mono">
                         {s.deleted_at ? formatDateTime(s.deleted_at, lang) : '—'}
