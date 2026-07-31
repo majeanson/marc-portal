@@ -385,6 +385,11 @@ export function SessionPage({ lang }: { lang: Lang }) {
   const [messages, setMessages] = useState<MessageRow[]>([])
   const [advancements, setAdvancements] = useState<AdvancementRow[] | null>(null)
   const [advancementsLoading, setAdvancementsLoading] = useState<boolean>(true)
+  // Distinct from "no advancements yet" — a fetch failure used to fall back
+  // to an empty array, which the timeline renders identically to a session
+  // with genuinely zero advancements. Surfaced separately so the visitor
+  // sees "couldn't load" instead of a silently wrong "nothing here yet".
+  const [advancementsError, setAdvancementsError] = useState(false)
   // Payment summary mirrors what PaymentActions fetches internally. Lifted
   // here so SessionWhatsNext can render precise next-step copy (e.g. "you
   // paid the deposit, balance is at delivery") without an additional round-
@@ -536,11 +541,13 @@ export function SessionPage({ lang }: { lang: Lang }) {
       .then((r) => {
         if (cancelled) return
         setAdvancements(r.advancements)
+        setAdvancementsError(false)
         setAdvancementsLoading(false)
       })
       .catch(() => {
         if (cancelled) return
         setAdvancements([])
+        setAdvancementsError(true)
         setAdvancementsLoading(false)
       })
     return () => {
@@ -1342,6 +1349,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                       repoUrl="https://github.com/majeanson/marc-portal"
                       items={advancements}
                       loading={advancementsLoading}
+                      loadError={advancementsError}
                       onCreated={onAdvCreated}
                       onPatched={onAdvPatched}
                       onDeleted={onAdvDeleted}

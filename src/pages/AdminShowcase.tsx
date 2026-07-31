@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
@@ -31,19 +31,20 @@ export function AdminShowcase({ lang }: { lang: Lang }) {
 
   usePageMeta({ title: `${t.title} — Marc`, lang })
 
-  useEffect(() => {
-    let cancelled = false
-    listPublicProjects()
+  // Hoisted so the error state's retry button re-runs the same fetch rather
+  // than duplicating it.
+  const load = useCallback(() => {
+    return listPublicProjects()
       .then((r) => {
-        if (!cancelled) setProjects(r.projects)
+        setProjects(r.projects)
+        setError(false)
       })
-      .catch(() => {
-        if (!cancelled) setError(true)
-      })
-    return () => {
-      cancelled = true
-    }
+      .catch(() => setError(true))
   }, [])
+
+  useEffect(() => {
+    void load()
+  }, [load])
 
   const summary = useMemo(() => {
     if (!projects) return null
@@ -70,7 +71,10 @@ export function AdminShowcase({ lang }: { lang: Lang }) {
 
       {error && (
         <p className="mono admin-showcase__error" role="alert">
-          {t.error}
+          {t.error}{' '}
+          <button type="button" className="link-btn mono" onClick={() => void load()}>
+            {t.retry}
+          </button>
         </p>
       )}
 

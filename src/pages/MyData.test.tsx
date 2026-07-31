@@ -24,7 +24,7 @@ function authValue(overrides: Partial<AuthState> = {}): AuthState {
     previewAsUser: false,
     setPreviewAsUser: vi.fn(),
     loading: false,
-    requestLink: vi.fn().mockResolvedValue(true),
+    requestLink: vi.fn().mockResolvedValue({ sent: true }),
     logout: vi.fn().mockResolvedValue(undefined),
     refresh: vi.fn().mockResolvedValue(undefined),
     ...overrides,

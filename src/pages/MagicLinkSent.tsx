@@ -5,6 +5,16 @@ import { Footer } from '../components/Footer'
 import { PAGE_FEATURE } from '../lib/features'
 import { Surface } from '../components/Surface'
 import { usePageMeta } from '../lib/usePageMeta'
+import type { MagicLinkSuppressionReason } from '../lib/authContext'
+
+const SUPPRESSION_REASONS: readonly MagicLinkSuppressionReason[] = [
+  'complaint',
+  'unsubscribed',
+  'hard-bounce',
+]
+function isSuppressionReason(v: string | null): v is MagicLinkSuppressionReason {
+  return v !== null && (SUPPRESSION_REASONS as readonly string[]).includes(v)
+}
 
 const COPY = {
   fr: {
@@ -19,6 +29,19 @@ const COPY = {
     reassure: 'Tu peux en redemander un à tout moment, c’est gratuit et instantané.',
     fallback: 'Pas reçu ? Vérifie tes pourriels, ou recommence avec un autre courriel.',
     again: 'Renvoyer un lien',
+    // Reason-specific: telling someone to "check your spam" is actively
+    // wrong when the server already knows the address won't receive mail.
+    // These replace `fallback` (not add to it) when `suppressed` is set.
+    // Deliverability info only — this never confirms or denies an account
+    // exists, and it only ever reaches whoever typed this exact address.
+    suppressedReasons: {
+      'hard-bounce':
+        'Cette adresse a déjà rejeté nos courriels (échec permanent d’acheminement). Vérifie que tu l’as bien écrite, essaie une autre adresse, ou écris-moi directement à marc@marcportal.com.',
+      unsubscribed:
+        'Tu t’es désabonné de nos courriels sur cette adresse. Utilise une autre adresse, ou écris-moi directement si tu veux qu’on remette l’envoi en marche.',
+      complaint:
+        'Cette adresse a signalé nos courriels comme indésirables, on a arrêté d’y écrire par précaution. Utilise une autre adresse, ou écris-moi directement à marc@marcportal.com.',
+    } as Record<MagicLinkSuppressionReason, string>,
   },
   en: {
     title: 'Check your email',
@@ -29,6 +52,14 @@ const COPY = {
     reassure: 'You can request a new one anytime, free and instant.',
     fallback: "Didn't get it? Check your spam folder, or try again with a different email.",
     again: 'Send another link',
+    suppressedReasons: {
+      'hard-bounce':
+        'This address has bounced our mail before (permanent delivery failure). Double-check the spelling, try a different address, or email me directly at marc@marcportal.com.',
+      unsubscribed:
+        "You unsubscribed from our emails on this address. Use a different one, or email me directly if you'd like sending turned back on.",
+      complaint:
+        'This address flagged our emails as spam before, so we stopped sending to it as a precaution. Use a different address, or email me directly at marc@marcportal.com.',
+    } as Record<MagicLinkSuppressionReason, string>,
   },
 } as const
 
@@ -36,6 +67,8 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const [search] = useSearchParams()
   const email = search.get('email') ?? ''
+  const suppressedParam = search.get('suppressed')
+  const suppressed = isSuppressionReason(suppressedParam) ? suppressedParam : null
 
   usePageMeta({ title: `${t.title} — Marc`, lang })
 
@@ -84,7 +117,13 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
           <h1>{t.title}</h1>
           <p>{t.intro(email)}</p>
           <p className="magic-link__reassure">{t.reassure}</p>
-          <p className="magic-link__fallback">{t.fallback}</p>
+          {suppressed ? (
+            <p className="magic-link__fallback" role="alert">
+              {t.suppressedReasons[suppressed]}
+            </p>
+          ) : (
+            <p className="magic-link__fallback">{t.fallback}</p>
+          )}
           <p>
             {/* Carry the email forward so a visitor who mistyped doesn't have
                 to retype an address they already gave us two screens ago. */}

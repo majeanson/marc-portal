@@ -33,7 +33,7 @@ function authValue(overrides: Partial<AuthState> = {}): AuthState {
     previewAsUser: false,
     setPreviewAsUser: vi.fn(),
     loading: false,
-    requestLink: vi.fn().mockResolvedValue(true),
+    requestLink: vi.fn().mockResolvedValue({ sent: true }),
     logout: vi.fn().mockResolvedValue(undefined),
     refresh: vi.fn().mockResolvedValue(undefined),
     ...overrides,
@@ -55,8 +55,8 @@ afterEach(() => {
 })
 
 describe('Login onSubmit', () => {
-  it('stays on the form and shows a transport error when requestLink resolves false', async () => {
-    const requestLink = vi.fn().mockResolvedValue(false)
+  it('stays on the form and shows a transport error when requestLink resolves sent:false', async () => {
+    const requestLink = vi.fn().mockResolvedValue({ sent: false })
     renderLogin(authValue({ requestLink }))
     fireEvent.change(screen.getByLabelText(/your email/i), {
       target: { value: 'v@example.com' },
@@ -72,8 +72,8 @@ describe('Login onSubmit', () => {
     expect(screen.getByRole('button', { name: /send the link/i })).not.toBeDisabled()
   })
 
-  it('navigates to the sent page when requestLink resolves true', async () => {
-    const requestLink = vi.fn().mockResolvedValue(true)
+  it('navigates to the sent page when requestLink resolves sent:true', async () => {
+    const requestLink = vi.fn().mockResolvedValue({ sent: true })
     renderLogin(authValue({ requestLink }))
     fireEvent.change(screen.getByLabelText(/your email/i), {
       target: { value: 'v@example.com' },
@@ -84,6 +84,23 @@ describe('Login onSubmit', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/en/login/sent?email=v%40example.com'),
     )
     expect(screen.queryByText(/didn't send/i)).not.toBeInTheDocument()
+  })
+
+  it('threads a suppressed reason through to the sent-page URL', async () => {
+    // Doesn't leak enumeration: this only ever reaches the visitor who just
+    // typed this exact address, and only says whether mail delivers to it.
+    const requestLink = vi.fn().mockResolvedValue({ sent: true, suppressed: 'hard-bounce' })
+    renderLogin(authValue({ requestLink }))
+    fireEvent.change(screen.getByLabelText(/your email/i), {
+      target: { value: 'v@example.com' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /send the link/i }))
+
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/en/login/sent?email=v%40example.com&suppressed=hard-bounce',
+      ),
+    )
   })
 })
 

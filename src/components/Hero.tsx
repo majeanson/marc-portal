@@ -19,6 +19,13 @@ export function Hero({ lang }: { lang: Lang }) {
   // land, the pill shows the actual count of open build slots (cap is 2).
   const [open, setOpen] = useState<number | null>(null)
   const [atCap, setAtCap] = useState<boolean>(false)
+  // A genuine fetch failure (not just "still loading") used to be swallowed
+  // silently, which left the pill showing t.slotOpenLoading forever — a
+  // "loading" label is a fine placeholder for a request in flight, but it
+  // reads as a claim ("open for projects") once it's clear the request
+  // will never resolve. Track the failure explicitly so the render below
+  // can stop showing it.
+  const [capacityErrored, setCapacityErrored] = useState(false)
   useEffect(() => {
     let cancelled = false
     getCapacityLive()
@@ -27,14 +34,26 @@ export function Hero({ lang }: { lang: Lang }) {
         setAtCap(c.atCap)
         setOpen(Math.max(0, c.activeCap - c.active))
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setCapacityErrored(true)
+      })
     return () => {
       cancelled = true
     }
   }, [])
 
   const ctaLabel = email ? t.ctaLoggedIn : atCap ? t.ctaWaitlist : t.cta
-  const slotLabel = atCap ? t.slotFull : open === null ? t.slotOpenLoading : t.slotOpen(open)
+  // On error, hide the pill rather than guess. There's no accurate neutral
+  // claim available (we don't know the real count or cap state), and
+  // inventing an error message on the homepage hero would be a worse look
+  // than silence — the primary CTA still works either way.
+  const slotLabel = capacityErrored
+    ? null
+    : atCap
+      ? t.slotFull
+      : open === null
+        ? t.slotOpenLoading
+        : t.slotOpen(open)
 
   return (
     <section className="section hero" id="hero" aria-labelledby="hero-title">
@@ -56,11 +75,13 @@ export function Hero({ lang }: { lang: Lang }) {
           <Link className="hero__cta hero__cta--primary" to={intakeHref}>
             {ctaLabel}
           </Link>
-          <span
-            className={`hero__slot-pill mono${atCap ? ' hero__slot-pill--full' : ' hero__slot-pill--open'}`}
-          >
-            {slotLabel}
-          </span>
+          {slotLabel && (
+            <span
+              className={`hero__slot-pill mono${atCap ? ' hero__slot-pill--full' : ' hero__slot-pill--open'}`}
+            >
+              {slotLabel}
+            </span>
+          )}
           {email && (
             <Link className="hero__sessions-link mono" to={sessionsHref}>
               {t.mySessionsLink}

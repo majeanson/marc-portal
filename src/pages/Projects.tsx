@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams, useViewTransitionState } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -49,20 +49,19 @@ export function Projects({ lang }: { lang: Lang }) {
 
   usePageMeta({ title: `${t.heading} — Marc`, lang })
 
-  useEffect(() => {
-    let cancelled = false
-    listPublicProjects()
+  // Hoisted so the error state's retry button re-runs the same fetch.
+  const load = useCallback(() => {
+    return listPublicProjects()
       .then((r) => {
-        if (cancelled) return
         setProjects(r.projects)
+        setError(false)
       })
-      .catch(() => {
-        if (!cancelled) setError(true)
-      })
-    return () => {
-      cancelled = true
-    }
+      .catch(() => setError(true))
   }, [])
+
+  useEffect(() => {
+    void load()
+  }, [load])
 
   // Filtered view — recomputed only when filters or data change. The
   // gallery's underlying sort order (showcasedAt desc, from the server) is
@@ -129,7 +128,10 @@ export function Projects({ lang }: { lang: Lang }) {
 
             {error && (
               <p className="thread__empty mono" role="alert">
-                {t.error}
+                {t.error}{' '}
+                <button type="button" className="link-btn mono" onClick={() => void load()}>
+                  {t.retry}
+                </button>
               </p>
             )}
 
