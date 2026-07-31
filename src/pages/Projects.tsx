@@ -321,7 +321,7 @@ function ProjectCard({
     ? `${project.currentBuild.buildUrl}${project.currentBuild.iframePath ?? ''}`
     : null
   // EN gallery reads the _en twin; null falls back to the FR string so the
-  // FR-only siblings (Jaffre/Retrodio) still render.
+  // FR-only sibling (Retrodio) still renders.
   const title = (lang === 'en' ? (project.titleEn ?? project.title) : project.title) || t.untitled
   const tagline = lang === 'en' ? (project.taglineEn ?? project.tagline) : project.tagline
   // Only the *clicked* card gets the shared view-transition name — otherwise
