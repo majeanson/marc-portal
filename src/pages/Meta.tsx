@@ -16,7 +16,7 @@
  * No runtime API call — the manifest is static at deploy time.
  */
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -26,6 +26,7 @@ import { Scorecard } from '../components/Scorecard'
 import manifest from '../data/lac-features.json'
 import { formatDate } from '../lib/format'
 import { PAGE_FOLIOS } from '../lib/folios'
+import { usePageMeta } from '../lib/usePageMeta'
 
 interface Decision {
   decision: string
@@ -174,12 +175,7 @@ export function Meta({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const m = manifest as Manifest
 
-  useEffect(() => {
-    document.documentElement.lang = lang === 'fr' ? 'fr-CA' : 'en-CA'
-    document.title = t.pageTitle
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.metaDescription)
-  }, [lang, t])
+  usePageMeta({ title: t.pageTitle, description: t.metaDescription, lang })
 
   // Captured at mount — coarse-grained, used only for the freshness pill.
   // Lazy init keeps render pure (react-hooks/purity).

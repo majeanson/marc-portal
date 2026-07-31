@@ -124,9 +124,9 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
           <div className="featured-projects__empty">
             <p className="featured-projects__empty-title">{t.emptyTitle}</p>
             <p className="featured-projects__empty-body">{t.emptyBody}</p>
-            <a className="featured-projects__empty-cta" href={intakeHref}>
+            <Link className="featured-projects__empty-cta" to={intakeHref}>
               {t.emptyCta}
-            </a>
+            </Link>
           </div>
         )}
 
@@ -134,9 +134,9 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
           <div className="featured-projects__empty">
             <p className="featured-projects__empty-title">{t.errorTitle}</p>
             <p className="featured-projects__empty-body">{t.errorBody}</p>
-            <a className="featured-projects__empty-cta" href={galleryHref}>
+            <Link className="featured-projects__empty-cta" to={galleryHref}>
               {t.seeAll}
-            </a>
+            </Link>
           </div>
         )}
       </div>
@@ -148,7 +148,7 @@ function InviteCard({ lang, href }: { lang: Lang; href: string }) {
   const t = DICT[lang].featured.inviteCard
   return (
     <li className="featured-projects__invite">
-      <a className="featured-projects__invite-link" href={href}>
+      <Link className="featured-projects__invite-link" to={href}>
         <span className="featured-projects__invite-mark mono" aria-hidden="true">
           +
         </span>
@@ -156,7 +156,7 @@ function InviteCard({ lang, href }: { lang: Lang; href: string }) {
         <h3 className="featured-projects__invite-title">{t.title}</h3>
         <p className="featured-projects__invite-body">{t.body}</p>
         <span className="featured-projects__invite-cta mono">{t.cta}</span>
-      </a>
+      </Link>
     </li>
   )
 }

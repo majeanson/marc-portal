@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useTabTitleWink } from '../lib/tabTitleWink'
 import { useHashScroll } from '../lib/hashScroll'
+import { usePageMeta } from '../lib/usePageMeta'
 import { Header } from '../components/Header'
 import { Hero } from '../components/Hero'
 import { HowItWorks } from '../components/HowItWorks'
@@ -28,12 +30,9 @@ export function Home({ lang }: { lang: Lang }) {
   // Swap the tab title to a "come back" wave when the visitor switches away.
   useTabTitleWink(t.tabAway)
 
-  useEffect(() => {
-    document.documentElement.lang = t.langCode
-    document.title = t.brandTitle
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.metaDescription)
+  usePageMeta({ title: t.brandTitle, description: t.metaDescription, lang })
 
+  useEffect(() => {
     // Per-language OG image. Static index.html ships the FR variant for
     // crawlers that don't run JS; for clients that re-resolve OG on copy-
     // link (some chat apps do, Slack notably does not), the swap below
@@ -46,13 +45,15 @@ export function Home({ lang }: { lang: Lang }) {
     // og:locale follows the language too.
     const ogLocale = document.querySelector('meta[property="og:locale"]')
     if (ogLocale) ogLocale.setAttribute('content', lang === 'en' ? 'en_CA' : 'fr_CA')
-  }, [lang, t])
+  }, [lang])
 
-  // Scroll-to-hash on cold load — see lib/hashScroll.ts for the full story.
-  // Header section links point at /#featured, /#how, /#pricing, /#vibe,
-  // /#about. The hook handles the layout-shift problem that was leaving
-  // visitors above their target when FeaturedProjects' API call landed.
-  useHashScroll()
+  // Scroll-to-hash on cold load AND on same-document nav — see
+  // lib/hashScroll.ts for the full story. Header section links point at
+  // /#featured, /#how, /#pricing, /#vibe, /#about and are react-router
+  // <Link>s now, so we pass the router's own hash (not window.location.hash)
+  // — the hook reruns its find-and-scroll routine whenever this changes.
+  const { hash } = useLocation()
+  useHashScroll(hash)
 
   return (
     <div className="app">

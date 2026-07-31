@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { PAGE_FEATURE } from '../lib/features'
@@ -108,9 +109,9 @@ export function MobileStickyCta({
 
   if (dismissed) {
     return (
-      <a
+      <Link
         className={`mobile-sticky-pebble${show ? ' is-visible' : ''}`}
-        href={intakeHref}
+        to={intakeHref}
         data-feature={feature}
         aria-label={t.pebbleAriaLabel}
         aria-hidden={!show}
@@ -119,7 +120,7 @@ export function MobileStickyCta({
         <span className="mobile-sticky-pebble__arrow" aria-hidden="true">
           →
         </span>
-      </a>
+      </Link>
     )
   }
 
@@ -131,14 +132,14 @@ export function MobileStickyCta({
       role="group"
       aria-label={t.ariaLabel}
     >
-      <a
+      <Link
         className="mobile-sticky-cta__link"
-        href={intakeHref}
+        to={intakeHref}
         aria-label={t.ariaLabel}
         tabIndex={show ? 0 : -1}
       >
         <span className="mobile-sticky-cta__label">{label}</span>
-      </a>
+      </Link>
       <button
         type="button"
         className="mobile-sticky-cta__dismiss"

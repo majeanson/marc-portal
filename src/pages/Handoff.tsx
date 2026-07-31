@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -7,6 +6,7 @@ import { PageMast } from '../components/PageMast'
 import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Bilingual page explaining the two ownership modes offered at engagement close
@@ -336,12 +336,7 @@ export function Handoff({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const langPrefix = lang === 'fr' ? '' : '/en'
 
-  useEffect(() => {
-    document.documentElement.lang = lang === 'fr' ? 'fr-CA' : 'en-CA'
-    document.title = t.pageTitle
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.metaDescription)
-  }, [lang, t])
+  usePageMeta({ title: t.pageTitle, description: t.metaDescription, lang })
 
   return (
     <div className="app" data-feature={PAGE_FEATURE['page.handoff']}>

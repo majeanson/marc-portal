@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -7,6 +6,7 @@ import { FeatureFolioLink } from '../components/FeatureFolioLink'
 import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Public operational checklist. Companion to /handoff.
@@ -307,12 +307,7 @@ export function HandoffChecklist({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const langPrefix = lang === 'fr' ? '' : '/en'
 
-  useEffect(() => {
-    document.documentElement.lang = lang === 'fr' ? 'fr-CA' : 'en-CA'
-    document.title = t.pageTitle
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.metaDescription)
-  }, [lang, t])
+  usePageMeta({ title: t.pageTitle, description: t.metaDescription, lang })
 
   return (
     <div className="app" data-feature={PAGE_FEATURE['page.handoff-checklist']}>

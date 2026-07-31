@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { getCapacityLive } from '../lib/sessionsApi'
 
@@ -105,18 +106,26 @@ export function StudioSign({ lang }: { lang: Lang }) {
 
   const line = status === 'open' ? t.open : status === 'waitlist' ? t.waitlist : t.resting
 
-  // The stamp doubles as a "back to home" link, like the header brand: a plain
-  // anchor (not a router <Link>), so the native navigation lands at the top of
-  // the page — including when you're already on the home page.
+  // The stamp doubles as a "back to top of home" link, like the header brand.
+  // Now a router <Link> (was a plain anchor pre-SPA-nav): RootLayout's
+  // <ScrollRestoration> scrolls to (0, 0) on every navigation it sees,
+  // including a same-path one — react-router mints a fresh location `key`
+  // per navigate() call even when the URL string is unchanged, so clicking
+  // this from the bottom of the home page still lands you at the top.
+  // Verified with Playwright (see hot-path Link conversion notes).
   const homeHref = lang === 'fr' ? '/' : '/en'
 
   return (
-    <a className={`surface studio-sign studio-sign--${status}`} href={homeHref} aria-label={t.home}>
+    <Link
+      className={`surface studio-sign studio-sign--${status}`}
+      to={homeHref}
+      aria-label={t.home}
+    >
       <CoffeeCup steaming={status !== 'waitlist'} />
       <span className="studio-sign__text">
         <span className="studio-sign__eyebrow mono">{t.eyebrow}</span>
         <span className="studio-sign__status">{line}</span>
       </span>
-    </a>
+    </Link>
   )
 }

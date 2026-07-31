@@ -38,6 +38,7 @@ import {
   type VouchRelationship,
   type VouchStatus,
 } from '../lib/vouchesApi'
+import { usePageMeta } from '../lib/usePageMeta'
 
 // Structural shape, defined explicitly so child components can take `t: Copy`
 // without the FR/EN literal types colliding. The FR object below is the
@@ -221,9 +222,7 @@ export function AdminVouches({ lang }: { lang: Lang }) {
     }
   }, [t])
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   useEffect(() => {
     if (authLoading) return
@@ -306,27 +305,27 @@ export function AdminVouches({ lang }: { lang: Lang }) {
 
   if (authLoading) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
+        <main id="main-content" className="page">
           <p>{t.loading}</p>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   if (!email || !isAdmin) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
+        <main id="main-content" className="page">
           <Surface as="section" className="page__panel">
             <p>{t.forbidden}</p>
           </Surface>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
@@ -336,9 +335,9 @@ export function AdminVouches({ lang }: { lang: Lang }) {
   const grouped = partitionAdminVouches(vouches ?? [])
 
   return (
-    <>
+    <div className="app">
       <Header lang={lang} />
-      <main className="page">
+      <main id="main-content" className="page">
         <Surface as="section" className="page__panel">
           <p>
             <Link to={`${langPrefix}/admin`}>{t.backToHub}</Link>
@@ -443,7 +442,7 @@ export function AdminVouches({ lang }: { lang: Lang }) {
         </Surface>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }
 

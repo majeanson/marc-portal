@@ -21,7 +21,7 @@
  * browser's print dialog.
  */
 
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -30,6 +30,7 @@ import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FEATURE } from '../lib/features'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { readVisits, type VisitEntry } from '../lib/visitTracker'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -222,11 +223,7 @@ export function Passage({ lang }: { lang: Lang }) {
   const receiptDate = useMemo(() => new Date(), [])
   const formattedDate = useMemo(() => formatReceiptDate(lang, receiptDate), [lang, receiptDate])
 
-  useEffect(() => {
-    document.title = t.pageTitle
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.metaDescription)
-  }, [t])
+  usePageMeta({ title: t.pageTitle, description: t.metaDescription, lang })
 
   const onPrint = () => {
     window.print()

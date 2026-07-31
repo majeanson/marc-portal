@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { api, ApiError } from '../lib/api'
+import { usePageMeta } from '../lib/usePageMeta'
 
 interface AuditEntry {
   id: string
@@ -79,6 +80,8 @@ export function AdminAudit({ lang }: { lang: Lang }) {
   // pagination or query params yet.
   const [actorFilter, setActorFilter] = useState('')
   const [actionFilter, setActionFilter] = useState('')
+
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   useEffect(() => {
     let cancelled = false

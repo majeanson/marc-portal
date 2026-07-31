@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { useAuth } from '../lib/authContext'
@@ -54,13 +55,13 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
       </a>
       <header className="site-header">
         <div className="site-header__inner">
-          <a
-            href={lang === 'fr' ? '/' : '/en'}
+          <Link
+            to={lang === 'fr' ? '/' : '/en'}
             className="brand"
             aria-label="Marc Portal — accueil"
           >
             marc<span className="dot">.</span>portal
-          </a>
+          </Link>
           {/* Header nav: in 'full' mode it's anchor-only, every link points
               at a home section. In 'session' mode it collapses to a single
               "← back to sessions" link so the header stays out of the way
@@ -70,12 +71,12 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
               className="site-header__sections site-header__sections--session"
               aria-label={t.nav.mySessions}
             >
-              <a
-                href={sessionsHref}
+              <Link
+                to={sessionsHref}
                 className="site-header__section-link site-header__section-link--back"
               >
                 ← {t.nav.mySessions}
-              </a>
+              </Link>
             </nav>
           ) : (
             <nav className="site-header__sections" aria-label={t.nav.sections.projects}>
@@ -94,9 +95,9 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
                       size="sm"
                       className="site-header__section-dot"
                     />
-                    <a href={`${langPrefix}/#${id}`} className="site-header__section-link">
+                    <Link to={`${langPrefix}/#${id}`} className="site-header__section-link">
                       {label}
-                    </a>
+                    </Link>
                   </span>
                 )
               })}
@@ -112,14 +113,14 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
                       // Admin: Console link replaces "Mes sessions". The hub
                       // surfaces Inbox as its first tile, so the shortcut
                       // isn't lost.
-                      <a href={adminHref} className="site-header__auth-link">
+                      <Link to={adminHref} className="site-header__auth-link">
                         {t.nav.adminConsole}
-                      </a>
+                      </Link>
                     ) : (
                       // Regular visitor: keep the entry to their /me page.
-                      <a href={sessionsHref} className="site-header__auth-link">
+                      <Link to={sessionsHref} className="site-header__auth-link">
                         {t.nav.mySessions}
-                      </a>
+                      </Link>
                     )}
                     <button
                       type="button"
@@ -132,9 +133,9 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
                     </button>
                   </>
                 ) : (
-                  <a href={loginHref} className="site-header__auth-link">
+                  <Link to={loginHref} className="site-header__auth-link">
                     {t.nav.signIn}
-                  </a>
+                  </Link>
                 )}
                 {realIsAdmin && (
                   <button

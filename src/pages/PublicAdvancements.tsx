@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { SectionEyebrow } from '../components/SectionEyebrow'
@@ -11,6 +11,7 @@ import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicAdvancements, type PublicAdvancementRow } from '../lib/advancementsApi'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Unauthenticated share view. Renders only the advancements an admin has
@@ -31,9 +32,7 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
   // for most fresh projects).
   const [vouches, setVouches] = useState<PublicVouch[]>([])
 
-  useEffect(() => {
-    document.title = `${t.heading} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.heading} — Marc`, lang })
 
   useEffect(() => {
     if (!id) return
@@ -250,9 +249,9 @@ function ShareTestimonials({
       <aside className="surface share-testimonials__cta">
         <h3 className="share-testimonials__cta-title">{t.ctaTitle}</h3>
         <p className="share-testimonials__cta-body">{t.ctaBody}</p>
-        <a className="share-testimonials__cta-link mono" href={vouchHref}>
+        <Link className="share-testimonials__cta-link mono" to={vouchHref}>
           {t.ctaButton}
-        </a>
+        </Link>
       </aside>
     </section>
   )

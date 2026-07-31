@@ -1,10 +1,10 @@
-import { useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { PAGE_FEATURE } from '../lib/features'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -37,14 +37,12 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
   const [search] = useSearchParams()
   const email = search.get('email') ?? ''
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   return (
-    <>
+    <div className="app">
       <Header lang={lang} />
-      <main className="page" data-feature={PAGE_FEATURE['page.magic-link-sent']}>
+      <main id="main-content" className="page" data-feature={PAGE_FEATURE['page.magic-link-sent']}>
         <Surface as="section" className="page__panel magic-link">
           {/* Hand-drawn envelope mark that "lands" once on mount — celebrates
               the moment the link is in flight without being corny. Decorative,
@@ -88,11 +86,11 @@ export function MagicLinkSent({ lang }: { lang: Lang }) {
           <p className="magic-link__reassure">{t.reassure}</p>
           <p className="magic-link__fallback">{t.fallback}</p>
           <p>
-            <a href={lang === 'en' ? '/en/login' : '/login'}>{t.again}</a>
+            <Link to={lang === 'en' ? '/en/login' : '/login'}>{t.again}</Link>
           </p>
         </Surface>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }

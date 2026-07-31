@@ -32,6 +32,7 @@ import { Footer } from '../components/Footer'
 import { PAGE_FEATURE } from '../lib/features'
 import { consumeJustErasedFlag } from '../lib/erasureFlag'
 import { clearVisits } from '../lib/visitTracker'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * Resolve the just-erased branch once per mount.
@@ -113,11 +114,7 @@ export function AuRevoir({ lang }: { lang: Lang }) {
   const [justErased] = useState<boolean>(claimErasureFlag)
   useEffect(() => releaseClaimSlot, [])
 
-  useEffect(() => {
-    document.title = t.pageTitle
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.metaDescription)
-  }, [t])
+  usePageMeta({ title: t.pageTitle, description: t.metaDescription, lang })
 
   useEffect(() => {
     if (justErased) {

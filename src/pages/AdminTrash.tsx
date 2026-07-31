@@ -7,6 +7,7 @@ import { useAuth } from '../lib/authContext'
 import { listSessions, undeleteSession, type SessionRow } from '../lib/sessionsApi'
 import { formatDateTime } from '../lib/format'
 import { Surface } from '../components/Surface'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -71,9 +72,7 @@ export function AdminTrash({ lang }: { lang: Lang }) {
     }
   }, [])
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   useEffect(() => {
     if (authLoading) return
@@ -115,34 +114,34 @@ export function AdminTrash({ lang }: { lang: Lang }) {
 
   if (authLoading) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
+        <main id="main-content" className="page">
           <p>{t.loading}</p>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   if (!email || !isAdmin) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page">
+        <main id="main-content" className="page">
           <Surface as="section" className="page__panel">
             <p>{t.forbidden}</p>
           </Surface>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div className="app">
       <Header lang={lang} />
-      <main className="page">
+      <main id="main-content" className="page">
         <Surface as="section" className="page__panel">
           <p>
             <a href={`${langPrefix}/admin/inbox`}>{t.backToInbox}</a>
@@ -215,6 +214,6 @@ export function AdminTrash({ lang }: { lang: Lang }) {
         </Surface>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }

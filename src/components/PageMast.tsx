@@ -95,9 +95,9 @@ export function PageMast({
   return (
     <header className="page-mast">
       {back && (
-        <a className="page-mast__back mono" href={back.href}>
+        <Link className="page-mast__back mono" to={back.href}>
           {back.label}
-        </a>
+        </Link>
       )}
       {folioContent}
       <svg className="page-mast__stamp" viewBox="0 0 260 100" aria-hidden="true" focusable="false">

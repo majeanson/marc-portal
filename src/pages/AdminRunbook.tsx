@@ -10,10 +10,10 @@
  * wipes every check in one shot.
  */
 
-import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { RunbookParallel } from '../components/RunbookParallel'
 import { clearAllProgress } from '../lib/runbook/useProgress'
+import { usePageMeta } from '../lib/usePageMeta'
 
 const COPY = {
   fr: {
@@ -35,9 +35,7 @@ const COPY = {
 export function AdminRunbook({ lang }: { lang: Lang }) {
   const t = COPY[lang]
 
-  useEffect(() => {
-    document.title = `${t.title} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.title} — Marc`, lang })
 
   function onReset() {
     if (!window.confirm(t.resetConfirm)) return

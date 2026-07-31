@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
@@ -9,6 +8,7 @@ import { SectionEyebrow } from '../components/SectionEyebrow'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
 import { frPunct } from '../lib/frPunct'
+import { usePageMeta } from '../lib/usePageMeta'
 
 /**
  * The full journey — a visual, phased walkthrough from "stranger lands on the
@@ -24,12 +24,7 @@ export function Journey({ lang }: { lang: Lang }) {
   const intakeHref = lang === 'fr' ? '/intake' : '/en/intake'
   const homeHref = lang === 'fr' ? '/' : '/en'
 
-  useEffect(() => {
-    document.documentElement.lang = t.langCode
-    document.title = `${j.pageTitle} — Marc`
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', j.metaDescription)
-  }, [t, j])
+  usePageMeta({ title: `${j.pageTitle} — Marc`, description: j.metaDescription, lang })
 
   // Build a Map from step number → which side of the spine the card lands
   // on. Indices accumulate across phases so the snake alternation is

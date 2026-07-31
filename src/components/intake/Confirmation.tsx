@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
 import type { Account } from './AccountStep'
@@ -136,9 +137,9 @@ export function Confirmation({
 
       {sessionHref && (
         <div className="confirmation__cta">
-          <a className="hero__cta" href={sessionHref}>
+          <Link className="hero__cta" to={sessionHref}>
             {t.sessionLinkLabel}
-          </a>
+          </Link>
           <p className="field__hint" style={{ marginTop: 8 }}>
             {t.sessionLinkHint}
           </p>

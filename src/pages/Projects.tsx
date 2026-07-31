@@ -12,6 +12,7 @@ import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
+import { usePageMeta } from '../lib/usePageMeta'
 
 type TierFilter = '0' | '1' | '2' | '3' | '4'
 type StatusFilter = 'active' | 'shipped' | 'draft' | 'triage' | 'rejected'
@@ -46,9 +47,7 @@ export function Projects({ lang }: { lang: Lang }) {
     ? (searchParams.get('status') as StatusFilter)
     : null
 
-  useEffect(() => {
-    document.title = `${t.heading} — Marc`
-  }, [t])
+  usePageMeta({ title: `${t.heading} — Marc`, lang })
 
   useEffect(() => {
     let cancelled = false
@@ -287,7 +286,7 @@ function TierPlaceholders({ lang, langPrefix }: { lang: Lang; langPrefix: string
       <ul className="projects__grid projects-placeholders__grid">
         {tiers.map((slot) => (
           <li key={slot.tier} className="surface project-card project-card--placeholder">
-            <a href={slot.href} className="project-card__link">
+            <Link to={slot.href} className="project-card__link">
               <div className="project-card__head">
                 <span
                   className={`project-card__tier mono project-card__tier--t${slot.tier}`}
@@ -298,7 +297,7 @@ function TierPlaceholders({ lang, langPrefix }: { lang: Lang; langPrefix: string
               </div>
               <h3 className="project-card__title">{slot.title}</h3>
               <div className="project-card__cta mono">{slot.cta}</div>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>

@@ -7,7 +7,7 @@
 // `error` string to a friendly localized message; on 429 show the
 // rate-limit copy; on anything else fall back to the generic error.
 
-import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
@@ -22,6 +22,7 @@ import {
   submitVouch,
   type VouchRelationship,
 } from '../lib/vouchesApi'
+import { usePageMeta } from '../lib/usePageMeta'
 
 interface FieldErrors {
   name?: string
@@ -55,9 +56,7 @@ export function Vouch({ lang }: { lang: Lang }) {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [submitted, setSubmitted] = useState(false)
 
-  useEffect(() => {
-    document.title = `${ts.pageTitle} — Marc`
-  }, [ts])
+  usePageMeta({ title: `${ts.pageTitle} — Marc`, lang })
 
   // Mirror server-side validation so visitors see errors inline. Returns
   // `null` if everything is clean, otherwise the populated error map.
@@ -165,9 +164,9 @@ export function Vouch({ lang }: { lang: Lang }) {
 
   if (submitted) {
     return (
-      <>
+      <div className="app">
         <Header lang={lang} />
-        <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
+        <main id="main-content" className="page" data-feature={PAGE_FEATURE['page.vouch']}>
           <Surface as="section" className="page__panel">
             <h1>{ts.successHeading}</h1>
             <p>{ts.successBody}</p>
@@ -193,14 +192,14 @@ export function Vouch({ lang }: { lang: Lang }) {
           </Surface>
         </main>
         <Footer lang={lang} />
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div className="app">
       <Header lang={lang} />
-      <main className="page" data-feature={PAGE_FEATURE['page.vouch']}>
+      <main id="main-content" className="page" data-feature={PAGE_FEATURE['page.vouch']}>
         <Surface as="section" className="page__panel">
           <h1>{frPunct(ts.heading)}</h1>
           <p>{ts.lead}</p>
@@ -340,6 +339,6 @@ export function Vouch({ lang }: { lang: Lang }) {
         </Surface>
       </main>
       <Footer lang={lang} />
-    </>
+    </div>
   )
 }

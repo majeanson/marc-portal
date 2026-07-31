@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 import { Header } from '../components/Header'
@@ -26,6 +27,7 @@ import {
 import { submitIntake } from '../lib/submitIntake'
 import { ApiError } from '../lib/api'
 import { captureException } from '../lib/sentry'
+import { usePageMeta } from '../lib/usePageMeta'
 
 type Step = 'vibe' | 'account' | 'type' | 'form' | 'confirmation'
 
@@ -152,13 +154,11 @@ export function Intake({ lang }: { lang: Lang }) {
     return () => clearTimeout(handle)
   }, [draft, auth.email, lang])
 
-  // Update meta
-  useEffect(() => {
-    document.documentElement.lang = t.langCode
-    document.title = `${t.intake.pageTitle} — Marc`
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', t.intake.metaDescription)
-  }, [t])
+  usePageMeta({
+    title: `${t.intake.pageTitle} — Marc`,
+    description: t.intake.metaDescription,
+    lang,
+  })
 
   // Cross-device resume: when signed-in and our local draft is empty (the
   // visitor may have arrived from a magic link on a different browser), pull
@@ -428,9 +428,9 @@ export function Intake({ lang }: { lang: Lang }) {
       <main id="main-content">
         <article className="section intake">
           <div className="section__inner">
-            <a className="showcase-page__back" href={lang === 'fr' ? '/' : '/en'}>
+            <Link className="showcase-page__back" to={lang === 'fr' ? '/' : '/en'}>
               {t.intake.backHome}
-            </a>
+            </Link>
 
             {/* The whole flow sits on a bordered "sheet" — a notepaper surface
                 that visually sets the intake apart from the editorial home
