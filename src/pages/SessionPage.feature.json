@@ -94,7 +94,9 @@
         "knownLimitations",
         "userGuide"
       ],
-      "reason": "Initial fill ahead of build — the dynamic surface that makes intake, the status canvas, and the capacity cap render against real visitor engagements."
+      "reason": "Initial fill ahead of build — the dynamic surface that makes intake, the status canvas, and the capacity cap render against real visitor engagements.",
+      "commit": "2283e3f",
+      "buildUrl": "https://794aeb26.marc-portal.pages.dev"
     },
     {
       "date": "2026-05-21",
@@ -116,7 +118,10 @@
     {
       "date": "2026-06-02",
       "author": "marc+claude",
-      "fields_changed": ["decisions", "userGuide"],
+      "fields_changed": [
+        "decisions",
+        "userGuide"
+      ],
       "reason": "Reworked the session detail surface from one long expanded scroll into a one-section-at-a-time tab switcher (Statut / Conversation / Paiement / Suivi / Intake, plus an admin-only Opérateur tab), with the title + live status lifted to persistent chrome. Cuts newcomer overwhelm and tucks the operator controls off the visitor view.",
       "commit": "86a6625",
       "buildUrl": "https://0df3d497.marc-portal.pages.dev"
