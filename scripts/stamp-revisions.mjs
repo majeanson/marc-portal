@@ -63,6 +63,7 @@ if (candidates.length === 0) {
 }
 
 let stamped = 0
+const stampedFiles = []
 
 for (const file of candidates) {
   let json
@@ -98,8 +99,21 @@ for (const file of candidates) {
   target.commit = shortSha
   target.buildUrl = buildUrl
   writeFileSync(file, JSON.stringify(json, null, 2) + '\n', 'utf8')
+  stampedFiles.push(file)
   stamped++
   console.log(`${file}: stamped revision dated ${target.date} → ${shortSha} + ${buildUrl}`)
+}
+
+// Prettier disagrees with JSON.stringify(null, 2) on short arrays (it keeps
+// them on one line). The stamp commit ships with a skip-ci marker, so main
+// never gets format-checked on it — every later PR then inherits the
+// unformatted file in its merge ref and fails format:check on code it never
+// touched (bit PR #25 and PR #26). Formatting here closes the loop at the
+// source.
+if (stampedFiles.length > 0) {
+  execSync(`npx prettier --write ${stampedFiles.map((f) => `"${f}"`).join(' ')}`, {
+    stdio: 'inherit',
+  })
 }
 
 console.log(`Stamped ${stamped} feature.json file(s).`)
