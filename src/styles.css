@@ -24,6 +24,33 @@
   --cool-soft: #d8e1ea;
   --status-active: #3d6e4e; /* sage doubles as ok/done */
 
+  /* Status/attention pill families — ok (sage), warn (amber), info (blue-
+     gray), danger (red). Own the {bg, fg, border} triples consumed by
+     AdminInbox's attention filter pills, /me's payment section tags +
+     toasts, /meta feature status + freshness dots, the roadmap scorecard
+     tiles, and the hero slot-availability pill. Before this these were
+     hand-copied per component with a matching night override kept in sync
+     by hand at ~15 sites — one missed copy and a pill goes unreadable in
+     one theme. One family, one place to update. */
+  --status-ok-bg: #eaf5ec;
+  --status-ok-fg: #2a6d3a;
+  --status-ok-border: #cfe6d4;
+  --status-warn-bg: #fff4e0;
+  --status-warn-fg: #8a5a00;
+  --status-warn-border: #f1d8a0;
+  --status-info-bg: #eef2f5;
+  --status-info-fg: #3a5160;
+  --status-info-border: #d8e0e7;
+  --status-danger-bg: #fdecec;
+  --status-danger-fg: #8a2222;
+  --status-danger-border: #f1c0c0;
+  /* Referenced (via var(--status-rejected, #b03333)) at .session-page__save-error
+     but never declared, so it always silently fell through to the
+     fallback. Day value matches that fallback exactly; the one live
+     consumer had no night override of its own, so night borrows
+     --status-danger-fg's night tone to stay legible on the dark surface. */
+  --status-rejected: #b03333;
+
   --mono: 'JetBrains Mono', 'Special Elite', 'Cascadia Code', 'Fira Code', Consolas, monospace;
   --sans: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --display: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -47,11 +74,42 @@
   --edge-shadow: 0 1px 0 var(--edge);
   --btn-h: 34px;
   --btn-radius: 6px;
+  /* Focus-visible recipes — three shapes reused across the ~27 rings that
+     used to each hand-roll their own outline: none + box-shadow. All three
+     compose from already-theme-aware tokens (--accent, --accent-warm,
+     --bg, --edge-shadow), so they need no separate night declaration.
+     - outline: the page-wide default ring, consumed by the bare
+       :focus-visible rule below. Most single-ring overrides that matched
+       this exactly were deleted so the default applies; the ones that
+       used a different ring colour (var(--accent) instead of
+       var(--accent-warm)) are a deliberate, widely-repeated form-control
+       variant and were left bespoke rather than folded in here.
+     - halo: the .btn / .hero__cta triple ring (edge + bg-coloured gap +
+       accent) that reads as a halo above a filled keycap rather than a
+       second border.
+     - inset: the repeated "inset 0 0 0 2px" ring geometry for tiles/cards
+       (atelier glyphs, map nodes/cards) where an outset ring would be
+       clipped by the element's own overflow. The trailing colour still
+       varies per component (feature hue on dots/cards, plain accent
+       elsewhere), so only the shared geometry is a token. */
+  --focus-outline: 2px solid var(--accent-warm);
+  --focus-halo: var(--edge-shadow), 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+  --focus-inset: 0 0 0 2px;
   /* Text colour ON a filled accent surface. White reads on the deep day
      accents; at night the accent flips light (light sage / bright violet) so
      white falls below AA — night overrides this to a dark ink. One token
      keeps every primary button + CTA legible across both axes. */
   --on-accent: #fff;
+  /* Warm-tinted on-accent variants — same "text on a filled accent/warm
+     surface" role as --on-accent, but the consuming component (sticky
+     mobile CTA pebble, share-modal copy button, active language-flag chip)
+     was hand-tuned to a slightly warmer off-white than pure #fff to match
+     the paper palette. Kept as separate tokens rather than folded into
+     --on-accent so this pass doesn't shift those components' day pixels.
+     Night falls back to the same dark ink as --on-accent: the night accent
+     fill is light regardless of hue, so dark text is what stays legible. */
+  --on-accent-paper: #fffaf0;
+  --on-warm-paper: #fffaf2;
 
   --max-w: 880px;
   --gutter: 24px;
@@ -129,6 +187,26 @@
   --cool-soft: #2c3a48;
   --status-active: #6a9b78;
 
+  /* Status/attention pill families — night pairing for the day triples
+     above. Deeper backgrounds + brighter foregrounds keep each tone
+     (sage / amber / blue / red) semantically distinct and readable on
+     ink, mirroring the day hue rather than picking arbitrary dark tones. */
+  --status-ok-bg: #1a3322;
+  --status-ok-fg: #98c4a5;
+  --status-ok-border: #2a553a;
+  --status-warn-bg: #2e2515;
+  --status-warn-fg: #e8b96b;
+  --status-warn-border: #5e4623;
+  --status-info-bg: #1b262e;
+  --status-info-fg: #92a7b8;
+  --status-info-border: #2a3a48;
+  --status-danger-bg: #2e1717;
+  --status-danger-fg: #e89898;
+  --status-danger-border: #5e2828;
+  /* No night override existed for the one live consumer (.session-page__save-error);
+     borrows --status-danger-fg's night value so it stays legible on ink. */
+  --status-rejected: #e89898;
+
   /* Feature accents — dark-mode pair for each. The "color" values are pushed
      bright so they read against the dark paper AND so the ink-coloured glyph
      inside a FeatureDot stays legible on them; "soft" values are deep,
@@ -161,6 +239,8 @@
   /* Dark ink for text on the light night accents (light sage / bright
      violet) — white would fail AA there. */
   --on-accent: #14110c;
+  --on-accent-paper: #14110c;
+  --on-warm-paper: #14110c;
   color-scheme: dark;
 }
 
@@ -845,13 +925,13 @@ html:not([data-lang-nudge='en']) .en-nudge {
   outline: none;
 }
 .site-header__preview-toggle--on {
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--accent-warm);
   background: var(--accent-warm);
 }
 .site-header__preview-toggle--on:hover,
 .site-header__preview-toggle--on:focus-visible {
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--accent-warm);
   filter: brightness(1.05);
 }
@@ -947,10 +1027,7 @@ html:not([data-lang-nudge='en']) .en-nudge {
 }
 .accent-toggle__swatch:focus-visible {
   outline: none;
-  box-shadow:
-    var(--edge-shadow),
-    0 0 0 2px var(--bg),
-    0 0 0 4px var(--accent);
+  box-shadow: var(--focus-halo);
 }
 @media (prefers-reduced-motion: reduce) {
   .accent-toggle__swatch {
@@ -1036,12 +1113,10 @@ html:not([data-lang-nudge='en']) .en-nudge {
 }
 .hero__cta:focus-visible {
   outline: none;
-  /* keep the hard bottom edge, then float a 2px accent ring above the border,
-     offset by a bg-coloured ring so it reads as a halo, not a second border. */
-  box-shadow:
-    var(--edge-shadow),
-    0 0 0 2px var(--bg),
-    0 0 0 4px var(--accent);
+  /* --focus-halo: a 2px accent ring floated above the hard bottom edge,
+     offset by a bg-coloured ring so it reads as a halo, not a second
+     border. Shared with .btn / .accent-toggle__swatch / .me-portal__pay-btn. */
+  box-shadow: var(--focus-halo);
   text-decoration: none;
 }
 
@@ -1095,10 +1170,7 @@ html:not([data-lang-nudge='en']) .en-nudge {
 }
 .btn:focus-visible {
   outline: none;
-  box-shadow:
-    var(--edge-shadow),
-    0 0 0 2px var(--bg),
-    0 0 0 4px var(--accent);
+  box-shadow: var(--focus-halo);
 }
 .btn:disabled,
 .btn[aria-disabled='true'] {
@@ -1121,12 +1193,11 @@ html:not([data-lang-nudge='en']) .en-nudge {
 .btn--ghost:active {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
-.btn--ghost:focus-visible {
-  box-shadow:
-    var(--edge-shadow),
-    0 0 0 2px var(--bg),
-    0 0 0 4px var(--accent);
-}
+/* No .btn--ghost:focus-visible override — .btn--ghost is always applied
+   alongside .btn (the shared base), so .btn:focus-visible's --focus-halo
+   ring already applies here; the ghost variant only changes the resting
+   fill, not the ring. A dedicated copy of the same box-shadow used to
+   live here — deleted as a byte-for-byte duplicate. */
 /* Stroke-only icon sizing for the verbs that sit in buttons. */
 .btn svg {
   width: 14px;
@@ -1160,10 +1231,7 @@ html:not([data-lang-nudge='en']) .en-nudge {
   transition: box-shadow 0.12s;
 }
 .input:focus {
-  box-shadow:
-    var(--edge-shadow),
-    0 0 0 2px var(--bg),
-    0 0 0 4px var(--accent);
+  box-shadow: var(--focus-halo);
 }
 
 /* Steps */
@@ -1944,7 +2012,7 @@ button.intake__progress-step:focus-visible {
   height: 36px;
   border-radius: 50%;
   background: var(--accent-warm, var(--text));
-  color: #fff;
+  color: var(--on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2911,7 +2979,7 @@ button.intake__progress-step:focus-visible {
 }
 .session-page__save-error {
   font-size: 12px;
-  color: var(--status-rejected, #b03333);
+  color: var(--status-rejected);
 }
 .session-page__stale {
   margin: 8px 0 16px;
@@ -3371,7 +3439,7 @@ button.intake__progress-step:focus-visible {
   height: 18px;
   border-radius: 50%;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 11px;
   font-weight: 700;
 }
@@ -3545,9 +3613,9 @@ button.intake__progress-step:focus-visible {
   border: 1px solid var(--accent);
 }
 .me-portal__toast--canceled {
-  background: #fff4e0;
-  color: #8a5a00;
-  border: 1px solid #f1d8a0;
+  background: var(--status-warn-bg);
+  color: var(--status-warn-fg);
+  border: 1px solid var(--status-warn-border);
 }
 .me-portal__toast-body {
   flex: 1 1 auto;
@@ -3603,14 +3671,14 @@ button.intake__progress-step:focus-visible {
   color: var(--text-soft);
 }
 .me-portal__pay-cust-pill--active {
-  background: #eaf5ec;
-  color: #2a6d3a;
-  border-color: #cfe6d4;
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+  border-color: var(--status-ok-border);
 }
 .me-portal__pay-cust-pill--past_due {
-  background: #fff4e0;
-  color: #8a5a00;
-  border-color: #f1d8a0;
+  background: var(--status-warn-bg);
+  color: var(--status-warn-fg);
+  border-color: var(--status-warn-border);
 }
 
 /* Payment block — appears below the /me card link on active sessions and
@@ -3718,18 +3786,18 @@ button.intake__progress-step:focus-visible {
   line-height: 1.5;
 }
 
-/* Custodian state coloring — section tag picks up the state vibe.
-   Day-mode pastels are hardcoded; night-mode equivalents follow below
-   so the pills don't read as bright clashes on the dark surface. */
+/* Custodian state coloring — section tag picks up the state vibe. Colors
+   come from the --status-* tokens, so the night pairing lives with the
+   token declarations instead of being re-hardcoded per selector here. */
 .me-portal__pay-custodian--active .me-portal__pay-section-tag {
-  background: #eaf5ec;
-  color: #2a6d3a;
-  border-color: #cfe6d4;
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+  border-color: var(--status-ok-border);
 }
 .me-portal__pay-custodian--past_due .me-portal__pay-section-tag {
-  background: #fff4e0;
-  color: #8a5a00;
-  border-color: #f1d8a0;
+  background: var(--status-warn-bg);
+  color: var(--status-warn-fg);
+  border-color: var(--status-warn-border);
 }
 .me-portal__pay-custodian--ended .me-portal__pay-section-tag {
   background: var(--bg-app);
@@ -3739,39 +3807,20 @@ button.intake__progress-step:focus-visible {
 /* "Tout à toi" — opt-out from Custodian. Gentler chrome than Custodian
    since it's the secondary path. */
 .me-portal__pay-tout-a-toi .me-portal__pay-section-tag {
-  background: #eef2f5;
-  color: #3a5160;
-  border-color: #d8e0e7;
+  background: var(--status-info-bg);
+  color: var(--status-info-fg);
+  border-color: var(--status-info-border);
 }
 .me-portal__pay-cust-pill--tout {
-  background: #eef2f5;
-  color: #3a5160;
-  border-color: #d8e0e7;
+  background: var(--status-info-bg);
+  color: var(--status-info-fg);
+  border-color: var(--status-info-border);
 }
 
-/* Night-mode tag colors — deeper backgrounds + brighter foregrounds keep
-   each state's semantic hue (sage / amber / blue) readable on ink. Mirror
-   pattern of the admin attention-pill night overrides above. */
-:root[data-theme='night'] .me-portal__pay-custodian--active .me-portal__pay-section-tag {
-  background: #1a3322;
-  color: #98c4a5;
-  border-color: #2a553a;
-}
-:root[data-theme='night'] .me-portal__pay-custodian--past_due .me-portal__pay-section-tag {
-  background: #2e2515;
-  color: #e8b96b;
-  border-color: #5e4623;
-}
 :root[data-theme='night'] .me-portal__pay-custodian--ended .me-portal__pay-section-tag {
   background: var(--bg-section);
   color: var(--text-mid);
   border-color: var(--border);
-}
-:root[data-theme='night'] .me-portal__pay-tout-a-toi .me-portal__pay-section-tag,
-:root[data-theme='night'] .me-portal__pay-cust-pill--tout {
-  background: #1b262e;
-  color: #92a7b8;
-  border-color: #2a3a48;
 }
 
 /* Recommended/decision-pending styling — Custodian gets accent-tinted
@@ -3789,7 +3838,7 @@ button.intake__progress-step:focus-visible {
 }
 .me-portal__pay-custodian--recommended .me-portal__pay-section-tag {
   background: var(--accent-warm);
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--accent-warm);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -3862,7 +3911,7 @@ button.intake__progress-step:focus-visible {
 .me-portal__pay-ack-error {
   margin: 6px 0 0;
   font-size: 12.5px;
-  color: #8a2222;
+  color: var(--status-danger-fg);
 }
 
 /* Inline hint shown under the T2 final-balance button — slimmer than
@@ -3898,9 +3947,9 @@ button.intake__progress-step:focus-visible {
   color: #6b4a00;
 }
 .session-whats-next--ok {
-  background: #eaf5ec;
-  border-color: #cfe6d4;
-  color: #2a6d3a;
+  background: var(--status-ok-bg);
+  border-color: var(--status-ok-border);
+  color: var(--status-ok-fg);
 }
 .session-whats-next--muted {
   background: var(--bg-app);
@@ -3956,15 +4005,20 @@ button.intake__progress-step:focus-visible {
   opacity: 0.75;
 }
 .admin-inbox__attention-pill--warn:not(.admin-inbox__attention-pill--active) {
-  border-color: #f1d8a0;
-  background: #fff4e0;
-  color: #8a5a00;
+  border-color: var(--status-warn-border);
+  background: var(--status-warn-bg);
+  color: var(--status-warn-fg);
 }
 .admin-inbox__attention-pill--urgent:not(.admin-inbox__attention-pill--active) {
-  border-color: #f1c0c0;
-  background: #fdecec;
-  color: #8a2222;
+  border-color: var(--status-danger-border);
+  background: var(--status-danger-bg);
+  color: var(--status-danger-fg);
 }
+/* Info pill keeps its own hand-tuned blue rather than --status-info: it's a
+   slightly different tint (#eef4f9 vs the #eef2f5 family used by the /me
+   pay tags) and folding it into the shared token would shift its exact
+   color. Left as a distinct, still-hardcoded sibling — see styles.css
+   audit notes for a future consolidation candidate. */
 .admin-inbox__attention-pill--info:not(.admin-inbox__attention-pill--active) {
   border-color: #cfdce6;
   background: #eef4f9;
@@ -3973,22 +4027,10 @@ button.intake__progress-step:focus-visible {
 .admin-inbox__attention-pill--empty:not(.admin-inbox__attention-pill--active) {
   opacity: 0.55;
 }
-/* Night-mode tone overrides — the day pastels (#fff4e0 / #fdecec / #eef4f9)
-   read as bright clashes against the dark surface. Deeper backgrounds with
-   higher-contrast foregrounds keep each tone semantically distinct
-   (amber / red / blue) while staying readable on ink. */
-:root[data-theme='night']
-  .admin-inbox__attention-pill--warn:not(.admin-inbox__attention-pill--active) {
-  border-color: #5e4623;
-  background: #2e2515;
-  color: #e8b96b;
-}
-:root[data-theme='night']
-  .admin-inbox__attention-pill--urgent:not(.admin-inbox__attention-pill--active) {
-  border-color: #5e2828;
-  background: #2e1717;
-  color: #e89898;
-}
+/* Night-mode tone override for the still-hardcoded info pill (see comment
+   above) — the day pastel #eef4f9 reads as a bright clash against the dark
+   surface. warn/urgent no longer need an override here: their night pairing
+   now lives with the --status-* token declarations. */
 :root[data-theme='night']
   .admin-inbox__attention-pill--info:not(.admin-inbox__attention-pill--active) {
   border-color: #2d4a5e;
@@ -4100,10 +4142,10 @@ button.intake__progress-step:focus-visible {
   letter-spacing: 0.01em;
 }
 .scorecard__tile--ok .scorecard__value {
-  color: #2a6d3a;
+  color: var(--status-ok-fg);
 }
 .scorecard__tile--warn .scorecard__value {
-  color: #8a5a00;
+  color: var(--status-warn-fg);
 }
 .scorecard__label {
   font-size: 12px;
@@ -4191,9 +4233,9 @@ button.intake__progress-step:focus-visible {
   white-space: nowrap;
 }
 .meta-feature--active .meta-feature__status {
-  background: #eaf5ec;
-  color: #2a6d3a;
-  border-color: #cfe6d4;
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+  border-color: var(--status-ok-border);
 }
 .meta-feature--frozen .meta-feature__status {
   background: #faf3df;
@@ -4241,7 +4283,7 @@ button.intake__progress-step:focus-visible {
   color: var(--text-soft);
 }
 .meta-feature__fresh--fresh {
-  color: #2a6d3a;
+  color: var(--status-ok-fg);
   position: relative;
   padding-left: 16px;
 }
@@ -4278,10 +4320,10 @@ button.intake__progress-step:focus-visible {
   }
 }
 .meta-feature__fresh--warm {
-  color: #8a5a00;
+  color: var(--status-warn-fg);
 }
 .meta-feature__fresh--stale {
-  color: #8a2222;
+  color: var(--status-danger-fg);
 }
 .meta-feature__toggle {
   margin-left: auto;
@@ -4509,7 +4551,7 @@ button.intake__progress-step:focus-visible {
 .atelier-glyph__link:focus-visible {
   box-shadow:
     var(--edge-shadow),
-    inset 0 0 0 2px var(--gl);
+    inset var(--focus-inset) var(--gl);
   outline: none;
 }
 /* Per-feature accent pair — the tile paints the glyph in the feature hue
@@ -4678,7 +4720,7 @@ button.intake__progress-step:focus-visible {
 .atelier-filter[aria-pressed='true'] {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .atelier-filter__dim {
   font-size: 10px;
@@ -4773,7 +4815,7 @@ button.intake__progress-step:focus-visible {
 .atelier-shot__btn:focus-visible {
   box-shadow:
     var(--edge-shadow),
-    inset 0 0 0 2px var(--accent);
+    inset var(--focus-inset) var(--accent);
   outline: none;
 }
 .atelier-shot__img {
@@ -4954,7 +4996,7 @@ button.intake__progress-step:focus-visible {
 .atelier-lightbox__vp[aria-pressed='true'] {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .atelier-lightbox__open {
   margin-left: auto;
@@ -5023,10 +5065,7 @@ button.intake__progress-step:focus-visible {
 }
 .me-portal__pay-btn:focus-visible:not(:disabled) {
   outline: none;
-  box-shadow:
-    var(--edge-shadow),
-    0 0 0 2px var(--bg),
-    0 0 0 4px var(--accent);
+  box-shadow: var(--focus-halo);
 }
 .me-portal__pay-btn:active:not(:disabled) {
   transform: translateY(1px);
@@ -5200,7 +5239,7 @@ button.intake__progress-step:focus-visible {
   padding: 2px 8px;
   border-radius: 4px;
   background: var(--warm);
-  color: #fff;
+  color: var(--on-accent);
 }
 .me-portal__card--unread {
   box-shadow:
@@ -5270,13 +5309,29 @@ button.intake__progress-step:focus-visible {
 }
 
 /* Accessibility */
+/* Visually-hidden-but-announced utility — the standard clip-rect recipe
+   (1x1px, clipped, no white-space wrap) rather than display:none, so
+   screen readers still read the content. Consumed by the route-change
+   announcer and inline form hints that need to reach AT without taking
+   up visual layout. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .skip-link {
   position: absolute;
   left: 8px;
   top: 8px;
   padding: 10px 16px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-radius: var(--btn-radius);
   box-shadow: var(--edge-shadow);
   font-family: var(--display);
@@ -5292,7 +5347,7 @@ button.intake__progress-step:focus-visible {
   outline-offset: 2px;
 }
 :focus-visible {
-  outline: 2px solid var(--accent-warm);
+  outline: var(--focus-outline);
   outline-offset: 2px;
   border-radius: 3px;
 }
@@ -5990,7 +6045,7 @@ button:focus-visible,
 }
 .session-frame__current-build:hover {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   text-decoration: none;
 }
 .session-frame__current-build--pending {
@@ -6237,7 +6292,7 @@ button:focus-visible,
 .project-card__tier--t4 {
   border-color: var(--accent-warm);
   background: var(--accent-warm);
-  color: var(--bg-card);
+  color: var(--on-accent);
   font-weight: 700;
 }
 .project-card__title {
@@ -7403,10 +7458,10 @@ button.intake__progress-step:disabled {
   white-space: nowrap;
 }
 .hero__slot-pill--open {
-  color: #2a6d3a;
+  color: var(--status-ok-fg);
 }
 .hero__slot-pill--full {
-  color: #8a5a00;
+  color: var(--status-warn-fg);
 }
 .hero__slot-pill::before {
   content: '';
@@ -7924,7 +7979,7 @@ button.intake__progress-step:disabled {
   color: var(--accent-warm);
 }
 .vibe--ledger .vibe__col--dont h3 {
-  color: #8a2222;
+  color: var(--status-danger-fg);
 }
 .vibe--ledger .vibe__col ul {
   list-style: none;
@@ -8867,12 +8922,12 @@ button.intake__progress-step:disabled {
 .projects-filter__chip--tier-3.is-active {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--bg-card);
+  color: var(--on-accent);
 }
 .projects-filter__chip--status-shipped.is-active {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--bg-card);
+  color: var(--on-accent);
 }
 .projects-filter__chip--status-rejected.is-active {
   background: var(--warm-soft);
@@ -9151,7 +9206,7 @@ button.intake__progress-step:disabled {
 .inline-teaser__card:focus-visible {
   box-shadow:
     var(--edge-shadow),
-    inset 0 0 0 2px var(--accent);
+    inset var(--focus-inset) var(--accent);
   outline: none;
 }
 .inline-teaser__card:active {
@@ -9310,7 +9365,7 @@ button.intake__progress-step:disabled {
     height: 44px;
     border-radius: 999px;
     background: var(--accent);
-    color: #fffaf0;
+    color: var(--on-accent-paper);
     text-decoration: none;
     z-index: 40;
     box-shadow:
@@ -9434,7 +9489,7 @@ button.intake__progress-step:disabled {
 .share-cta:hover,
 .share-cta:focus-visible {
   background: var(--accent-warm);
-  color: var(--bg-card);
+  color: var(--on-accent);
   outline: none;
 }
 .share-modal__backdrop {
@@ -9545,7 +9600,7 @@ button.intake__progress-step:disabled {
 .share-modal__copy {
   appearance: none;
   background: var(--accent-warm);
-  color: #fffaf0;
+  color: var(--on-accent-paper);
   border: 0;
   border-radius: var(--btn-radius);
   box-shadow: var(--edge-shadow);
@@ -9996,7 +10051,7 @@ button.intake__progress-step:disabled {
   appearance: none;
   border: 1px solid var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-radius: 999px;
   padding: 9px 18px;
   font-size: 12.5px;
@@ -10203,7 +10258,7 @@ button.intake__progress-step:disabled {
   overflow-wrap: break-word;
 }
 .session-napkin__frame {
-  background: #fbf7ec;
+  background: var(--bg-section);
   border: 1px solid var(--border-soft);
   border-radius: 4px;
   overflow: hidden;
@@ -10277,7 +10332,7 @@ button.intake__progress-step:disabled {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  background: #fbf7ec;
+  background: var(--bg-section);
   margin-bottom: 16px;
 }
 .napkin__loading {
@@ -10542,7 +10597,7 @@ button.intake__progress-step:disabled {
 .time-travel__btn--play.is-playing {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--bg-card);
+  color: var(--on-accent);
 }
 .time-travel__track {
   display: flex;
@@ -12214,7 +12269,7 @@ button.intake__progress-step:disabled {
   width: 36px;
   height: 36px;
   border-radius: var(--btn-radius);
-  background: linear-gradient(135deg, #fbf7ec 0%, #fadfb8 100%);
+  background: linear-gradient(135deg, var(--bg-section) 0%, #fadfb8 100%);
   color: #5a554b;
   font-size: 12px;
   letter-spacing: 0.06em;
@@ -12222,7 +12277,7 @@ button.intake__progress-step:disabled {
 }
 .lang-pref__choice--active .lang-pref__choice-flag {
   background: linear-gradient(135deg, #fadfb8 0%, #d97706 120%);
-  color: #fffaf2;
+  color: var(--on-warm-paper);
 }
 .lang-pref__choice-body {
   display: flex;
@@ -13489,7 +13544,7 @@ a.map-node:hover,
 a.map-node:focus-visible {
   box-shadow:
     var(--edge-shadow),
-    inset 0 0 0 2px var(--accent);
+    inset var(--focus-inset) var(--accent);
   outline: none;
 }
 .map-node__folio {
@@ -13861,7 +13916,7 @@ a.map-card:focus-visible {
   outline: none;
   box-shadow:
     var(--edge-shadow),
-    inset 0 0 0 2px var(--ft-color, var(--accent-warm));
+    inset var(--focus-inset) var(--ft-color, var(--accent-warm));
   background: var(--bg-hover);
 }
 .map-card--dim {
@@ -14641,7 +14696,7 @@ a.feature-dot:focus-visible {
   cursor: pointer;
   border: 1px solid var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-radius: 999px;
   padding: 8px 18px;
   font: 600 12.5px/1 var(--mono);
@@ -14816,7 +14871,7 @@ a.feature-dot:focus-visible {
   border-radius: 999px;
   border: 1px solid var(--accent);
   background: var(--accent);
-  color: var(--bg-card);
+  color: var(--on-accent);
   font-family: var(--mono);
   font-size: 13px;
   cursor: pointer;
