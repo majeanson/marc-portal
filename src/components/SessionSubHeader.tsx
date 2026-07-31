@@ -1,134 +1,85 @@
-import { useEffect, useState } from 'react'
-import type { Lang } from '../i18n'
-import { SESSION_TAB_FEATURE } from '../lib/features'
+import { useRef } from 'react'
+import { SESSION_TAB_FEATURE, SESSION_TAB_LABEL } from '../lib/features'
+import type { SessionTabId } from '../lib/sessionTabs'
+import { useSessionTabs } from '../lib/sessionTabsContext'
 import { FeatureDot } from './FeatureDot'
 
 /**
- * Sticky sub-header rendered below the slim session Header on /session/:id.
- * Six tabs scroll-to-section through the major surfaces inside a single
- * session: Statut (status pills + tier + what's-next), Conversation (the
- * thread), Builds (advancements timeline), Paiement (Stripe actions),
- * Livraison (custodian / Tout à toi), Intake (original submission +
- * napkin sketch).
+ * Sticky tab bar rendered below the slim session Header on /session/:id. It's
+ * a real one-section-at-a-time switcher: clicking a tab swaps the panel that
+ * <SessionPage> renders in <main>, it does NOT scroll a long page (the old
+ * scroll-spy behaviour is gone). State lives in <SessionPage> and reaches this
+ * component through SessionTabsContext — the present-tab list depends on the
+ * session's status and the viewer's role, which only the page knows.
  *
- * Active tab is computed via IntersectionObserver — same pattern as the
- * home SectionRail — so scrolling the page lights up the relevant tab
- * even when the visitor scrolls past sections directly. Tabs whose target
- * section isn't on the page (e.g. Livraison renders only for shipped
- * sessions, Builds only when advancements exist) are dropped from the
- * rendered list so a click never points at a missing anchor.
+ * Which tabs exist is decided by sessionTabsFor() (e.g. Paiement only for
+ * active/shipped, Opérateur only for the admin), so a tab is never rendered
+ * pointing at a panel that wouldn't show.
+ *
+ * ARIA tabs pattern: role="tablist" with role="tab" children, roving tabindex,
+ * and Left/Right/Home/End to move between tabs (selection follows focus). The
+ * matching role="tabpanel" elements live in SessionPage.
  */
+export function SessionSubHeader() {
+  // Everything (including lang) rides on the context so the bar and the panels
+  // can never disagree about which tab is live.
+  const ctx = useSessionTabs()
+  const tabRefs = useRef<Partial<Record<SessionTabId, HTMLButtonElement | null>>>({})
 
-interface SubHeaderTab {
-  id: string
-  label: { fr: string; en: string }
-}
+  // No provider (non-session render) or no tabs yet → render nothing.
+  if (!ctx || ctx.tabs.length === 0) return null
+  const { tabs, activeTab, onSelect, lang } = ctx
 
-const TABS: SubHeaderTab[] = [
-  { id: 'session-statut', label: { fr: 'Statut', en: 'Status' } },
-  { id: 'session-conversation', label: { fr: 'Conversation', en: 'Conversation' } },
-  { id: 'session-builds', label: { fr: 'Builds', en: 'Builds' } },
-  { id: 'session-paiement', label: { fr: 'Paiement', en: 'Payment' } },
-  { id: 'session-livraison', label: { fr: 'Livraison', en: 'Handoff' } },
-  { id: 'session-intake', label: { fr: 'Intake', en: 'Intake' } },
-]
+  const focusTab = (id: SessionTabId) => {
+    onSelect(id)
+    // Move focus to the newly selected tab so keyboard users land where they
+    // expect; the ref may be null for a frame, hence the optional chain.
+    tabRefs.current[id]?.focus()
+  }
 
-function sameIds(a: Set<string>, b: Set<string>): boolean {
-  if (a.size !== b.size) return false
-  for (const v of a) if (!b.has(v)) return false
-  return true
-}
-
-export function SessionSubHeader({ lang }: { lang: Lang }) {
-  const [presentIds, setPresentIds] = useState<Set<string>>(new Set())
-  const [activeId, setActiveId] = useState<string>('')
-
-  useEffect(() => {
-    // Recompute which target sections actually mounted. Same approach as
-    // SectionRail — start empty, populate post-mount once the DOM is queryable.
-    const recompute = () => {
-      const next = new Set<string>()
-      for (const t of TABS) {
-        if (document.getElementById(t.id)) next.add(t.id)
-      }
-      setPresentIds((prev) => (sameIds(prev, next) ? prev : next))
-      // Default active to the first present tab so the bar never shows empty.
-      if (activeId === '' && next.size > 0) {
-        const firstPresent = TABS.find((t) => next.has(t.id))
-        if (firstPresent) setActiveId(firstPresent.id)
-      }
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const i = tabs.indexOf(activeTab)
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault()
+      const delta = e.key === 'ArrowRight' ? 1 : -1
+      // Wrap around the ends — the canonical tablist behaviour.
+      focusTab(tabs[(i + delta + tabs.length) % tabs.length])
+    } else if (e.key === 'Home') {
+      e.preventDefault()
+      focusTab(tabs[0])
+    } else if (e.key === 'End') {
+      e.preventDefault()
+      focusTab(tabs[tabs.length - 1])
     }
-    recompute()
-    // Recompute when the document mutates significantly (PaymentActions /
-    // SessionAdvancements mount their wrapper after their async data lands).
-    const obs = new MutationObserver(recompute)
-    obs.observe(document.body, { childList: true, subtree: true })
-    return () => obs.disconnect()
-    // activeId intentionally excluded — we only seed it on first detection.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    if (presentIds.size === 0) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => (a.boundingClientRect.top ?? 0) - (b.boundingClientRect.top ?? 0))
-        if (visible[0]) {
-          setActiveId(visible[0].target.id)
-        }
-      },
-      {
-        // Sticky header (~56px) + this sub-header (~44px) ≈ 100px;
-        // bottom margin keeps "the section that's currently in the
-        // viewport's upper third" as the highlighted one.
-        rootMargin: '-104px 0px -55% 0px',
-        threshold: 0,
-      },
-    )
-    const targets: HTMLElement[] = []
-    for (const t of TABS) {
-      if (!presentIds.has(t.id)) continue
-      const el = document.getElementById(t.id)
-      if (el) {
-        observer.observe(el)
-        targets.push(el)
-      }
-    }
-    return () => observer.disconnect()
-  }, [presentIds])
-
-  const tabs = TABS.filter((t) => presentIds.has(t.id))
-  if (tabs.length === 0) return null
+  }
 
   return (
     <nav className="session-subheader" aria-label="Session sections">
-      <div className="session-subheader__inner">
-        {tabs.map((tab) => {
-          const isActive = tab.id === activeId
-          // Tab borrows --ft-color from the central SESSION_TAB_FEATURE
-          // map so the active underline / hover colour matches the
-          // section the tab leads to. Same colour story the page-mast
-          // folio + /carte cluster carry — one feature, one hue.
-          const feature = SESSION_TAB_FEATURE[tab.id]
+      <div className="session-subheader__inner" role="tablist">
+        {tabs.map((id) => {
+          const isActive = id === activeTab
+          // Tab borrows --ft-color from SESSION_TAB_FEATURE so the active
+          // underline / hover colour matches the section it leads to — same
+          // one-feature-one-hue story the page-mast folio + /carte cluster
+          // carry. session-operateur is undefined (it crosses features) and
+          // renders a neutral hollow dot.
+          const feature = SESSION_TAB_FEATURE[id]
           return (
-            <a
-              key={tab.id}
-              href={`#${tab.id}`}
+            <button
+              key={id}
+              ref={(el) => {
+                tabRefs.current[id] = el
+              }}
+              type="button"
+              role="tab"
+              id={`${id}-tab`}
+              aria-controls={`${id}-panel`}
+              aria-selected={isActive}
+              tabIndex={isActive ? 0 : -1}
               data-feature={feature}
               className={`session-subheader__tab mono${isActive ? ' session-subheader__tab--active' : ''}`}
-              aria-current={isActive ? 'true' : undefined}
-              onClick={(e) => {
-                e.preventDefault()
-                const el = document.getElementById(tab.id)
-                if (el) {
-                  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                  // Push the hash without triggering a re-scroll (history
-                  // API only — no navigation).
-                  history.replaceState(null, '', `#${tab.id}`)
-                }
-              }}
+              onClick={() => onSelect(id)}
+              onKeyDown={onKeyDown}
             >
               <FeatureDot
                 feature={feature}
@@ -137,8 +88,8 @@ export function SessionSubHeader({ lang }: { lang: Lang }) {
                 decorative
                 className="session-subheader__tab-dot"
               />
-              {tab.label[lang]}
-            </a>
+              {SESSION_TAB_LABEL[id][lang]}
+            </button>
           )
         })}
       </div>

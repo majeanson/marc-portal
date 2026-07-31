@@ -418,39 +418,45 @@ p {
 
 /* Session sub-header — tab bar rendered INSIDE the main <header> on
    /session/:id, so both rows share a single sticky element and hide/show
-   together on scroll. Tabs anchor to the six major session surfaces
-   (Statut, Conversation, Builds, Paiement, Livraison, Intake); active
-   tab is computed via IntersectionObserver in SessionSubHeader.tsx. Tabs
-   for sections that aren't on the page (Builds before any advancement
-   exists, Livraison until shipped, etc.) are filtered out automatically.
-   No own sticky positioning here — the parent .site-header carries it. */
+   together on scroll. It's a real one-section-at-a-time switcher (ARIA
+   tablist): clicking a tab swaps the panel SessionPage renders, it does not
+   scroll a long page. Which tabs exist is decided by sessionTabsFor()
+   (Paiement only for active/shipped, Opérateur only for the admin), and the
+   active tab travels through SessionTabsContext. No own sticky positioning
+   here — the parent .site-header carries it. */
 .session-subheader {
   border-top: 1px solid var(--border-soft);
   background: transparent;
 }
 
-/* Scroll offset for sub-header tab anchors. scrollIntoView({block:'start'})
-   parks the target at viewport top, but the combined sticky header
-   (brand row + tab row, ~100 px desktop / ~92 px mobile) covers that
-   area — so the section title was landing behind the chrome. scroll-margin
-   tells the browser to leave that much room above when scrolling. */
-#session-statut,
+/* Scroll offset for the few in-app anchor jumps that survive into the tab
+   model — PaymentActions' "Question before paying?" points at
+   #session-conversation, which flips to that tab and then the browser scrolls
+   the section into view. The combined sticky header (~100 px desktop /
+   ~92 px mobile) would otherwise park the title behind the chrome. */
 #session-conversation,
 #session-builds,
-#session-paiement,
-#session-livraison,
 #session-intake {
   scroll-margin-top: 116px;
 }
 @media (max-width: 640px) {
-  #session-statut,
   #session-conversation,
   #session-builds,
-  #session-paiement,
-  #session-livraison,
   #session-intake {
     scroll-margin-top: 104px;
   }
+}
+
+/* Tab panel — the body of the active session tab. Reuses the surface rhythm
+   of the panels inside it; this wrapper just owns the top gap below the tab
+   bar and a quiet focus ring for keyboard users who land on it after Tab. */
+.session-frame__tabpanel {
+  margin-top: 24px;
+}
+.session-frame__tabpanel:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 .session-subheader__inner {
   max-width: 1280px;
@@ -3301,6 +3307,14 @@ button.intake__progress-step:focus-visible {
 }
 .summary__edit-input {
   margin-top: 2px;
+  /* A <select> sizes to its widest <option> by default, so the long
+     problem-type labels pushed the edit field past a 390px phone viewport
+     (the overflow guard in app-screenshots caught it). Pin every edit field
+     to its container width; the selected option truncates rather than
+     spilling. */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .session-page__intake-head {

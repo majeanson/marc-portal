@@ -178,7 +178,7 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
             block at top:56px; on scroll-up the two bars sometimes came
             back at different rates and the visitor would see only the
             back-link row without the section tabs. */}
-        {variant === 'session' && <SessionSubHeader lang={lang} />}
+        {variant === 'session' && <SessionSubHeader />}
       </header>
     </>
   )

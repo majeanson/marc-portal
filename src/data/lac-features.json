@@ -984,6 +984,11 @@
           "decision": "A small, hand-rolled backend — no auth library, no ORM",
           "rationale": "Signed-cookie sessions and direct SQL keep the runtime small enough to read end to end. Adding a backend, authentication, and a database bends the boring-tech mandate, but each individual piece is kept to the smallest surface area that works.",
           "recommendation": "Resist adding an ORM, an auth library, or a state-management library until the runtime has been stable in production for a good while."
+        },
+        {
+          "decision": "The session detail page is a one-section-at-a-time tab switcher, not a long scroll",
+          "rationale": "A first-time visitor who had just submitted an intake landed on a wall: status, what's-next, payment, the original brief, the activity log, the thread, and (for the admin) tier and pricing controls, all expanded at once. The title even rendered below the payment block. Splitting the surface into tabs — Statut, Conversation, Paiement, Suivi, Intake, plus an admin-only Opérateur tab — keeps the title and live status as persistent chrome and shows one section at a time, so neither the visitor nor the operator view reads as a cockpit.",
+          "recommendation": "Keep the active tab in the URL hash so a tab is bookmarkable and survives a refresh; gate which tabs exist on status + role (sessionTabsFor) so a tab never points at an empty panel; keep the operator controls behind their own tab rather than re-mixing them into the visitor surface."
         }
       ],
       "successCriteria": "- A visitor can save an intake, leave, and return on any device via a one-time email link with their engagement intact\n- The session page shows the intake brief, the status, and a message thread, and both parties can post to it\n- The admin inbox lists every engagement in flight with its triage deadline\n- Admin-only routes refuse any signed-in address that is not on the allowlist\n- One-time links are single-use, short-lived, and rate-limited\n- The capacity cap is enforced from real engagement counts\n- Nothing in the runtime creates a real-time or always-available expectation",
@@ -5143,5 +5148,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-06-01T13:24:08.015Z"
+  "generatedAt": "2026-06-03T01:36:21.100Z"
 }
