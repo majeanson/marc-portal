@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { patchSession, type SessionRow } from '../lib/sessionsApi'
 import {
@@ -9,6 +9,7 @@ import {
   type PaymentKind,
   type PaymentSummary,
 } from '../lib/paymentsApi'
+import { ApiError } from '../lib/api'
 import { formatDate, formatCadCents } from '../lib/format'
 import { TIER_TOTAL_CENTS } from '../lib/pricing'
 
@@ -106,6 +107,14 @@ const COPY = {
     testModeBadge: 'MODE TEST',
     testModeBody:
       'Aucun vrai débit. Pour tester un paiement : carte 4242 4242 4242 4242, n’importe quelle date future (ex. 12/30), n’importe quel CVC (ex. 123), n’importe quel code postal (ex. H1A 1A1).',
+
+    // Fetch/checkout failures. 503 (Stripe pas configuré) et 404 (rien à
+    // payer sur cette session) restent silencieux — c'est un état "rien à
+    // montrer" légitime, pas une panne. Ceci ne couvre que les vraies pannes
+    // transitoires (réseau, 5xx).
+    summaryError: 'Le résumé de paiement a pas pu charger.',
+    summaryRetry: 'Réessayer',
+    checkoutErrorGeneric: 'Le paiement a pas pu s’ouvrir. Réessaie.',
   },
   en: {
     projectHeading: 'Project payment',
@@ -183,6 +192,14 @@ const COPY = {
     testModeBadge: 'TEST MODE',
     testModeBody:
       'No real charge. To test a payment: card 4242 4242 4242 4242, any future date (e.g. 12/30), any CVC (e.g. 123), any postal/ZIP (e.g. H1A 1A1).',
+
+    // Fetch/checkout failures. 503 (Stripe unconfigured) and 404 (nothing to
+    // pay on this session) stay silent — that's a legitimate "nothing to
+    // show" state, not an outage. This only covers genuine transient
+    // failures (network, 5xx).
+    summaryError: "The payment summary couldn't load.",
+    summaryRetry: 'Retry',
+    checkoutErrorGeneric: "Payment couldn't open. Try again.",
   },
 } as const
 
@@ -198,7 +215,11 @@ const COPY = {
  *   3. "Custodian mode" — the post-handoff ownership decision: two annual
  *      plans (Watch / Care), or the All-yours opt-out.
  *
- * Returns null when there's nothing to show. The custodian decision is a
+ * Returns null when there's genuinely nothing to show yet (still loading, or
+ * a 503/404 — Stripe unconfigured / no payment row for this session, both
+ * graceful-degrade states). A real fetch failure (network, 5xx) instead
+ * renders a one-line error with a retry button, so an outage doesn't read as
+ * "this session has no payment section." The custodian decision is a
  * top-level section — it's the only ongoing financial commitment, so it's
  * presented clearly, not buried. See /handoff for the narrative it mirrors.
  */
@@ -218,9 +239,19 @@ export function PaymentActions({
   const copy = COPY[lang]
   const langPrefix = lang === 'en' ? '/en' : ''
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
+  // Distinct from `summary === null` (still loading, or nothing to show —
+  // both render as null, matching the pre-existing "guess nothing" behaviour
+  // during a normal fetch). This flags a genuine transient failure so the
+  // block shows a retry instead of silently vanishing.
+  const [summaryError, setSummaryError] = useState(false)
   const [pending, setPending] = useState<'idle' | 'checkout' | 'portal' | 'acking'>('idle')
   const [ackChecked, setAckChecked] = useState(false)
   const [ackError, setAckError] = useState(false)
+  // Checkout/portal-open failure. Server messages here are already meaningful
+  // ("already fully paid", "tier 4 not quoted") so we surface err.message
+  // directly when it's an ApiError; only a non-API failure (network) falls
+  // back to a generic line.
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   // Override for the ack timestamp so a successful PATCH updates the UI
   // without forcing the parent to refetch.
   const [ackedAtOverride, setAckedAtOverride] = useState<number | null>(null)
@@ -231,37 +262,67 @@ export function PaymentActions({
     all_yours_acknowledged_at: effectiveAckedAt,
   }
 
-  useEffect(() => {
+  // Extracted so the retry button can re-run the exact same fetch. Returns a
+  // cleanup closure (same cancelled-flag shape as the rest of the codebase's
+  // fetch effects) — the mount effect uses it; the retry button ignores it,
+  // which is safe since the button only exists while the component is mounted.
+  const loadSummary = useCallback(() => {
     let cancelled = false
     getPaymentSummary(session.id)
       .then((s) => {
-        if (!cancelled) setSummary(s)
+        if (cancelled) return
+        setSummary(s)
+        setSummaryError(false)
       })
-      .catch(() => {
-        // 503 (Stripe unconfigured) / 404 / network — render nothing.
+      .catch((err) => {
+        if (cancelled) return
+        // 503 (Stripe unconfigured) and 404 (nothing to pay on this session,
+        // e.g. Tier 0) are legitimate "nothing to show" states — the
+        // graceful-degrade pattern this codebase uses everywhere for
+        // optional bindings. Only a genuine transient failure (network,
+        // unexpected 5xx) earns the retry UI; otherwise every Tier-0 session
+        // would flash an error on load.
+        if (err instanceof ApiError && (err.status === 503 || err.status === 404)) return
+        setSummaryError(true)
       })
     return () => {
       cancelled = true
     }
   }, [session.id])
 
-  if (!summary) return null
+  useEffect(() => loadSummary(), [loadSummary])
+
+  if (!summary) {
+    if (!summaryError) return null
+    return (
+      <p role="alert" className="mono me-portal__pay-ack-error">
+        {copy.summaryError}{' '}
+        <button type="button" className="link-btn mono" onClick={() => loadSummary()}>
+          {copy.summaryRetry}
+        </button>
+      </p>
+    )
+  }
 
   const onPay = async (kind: PaymentKind, custodianPlan?: CustodianPlan) => {
     setPending('checkout')
+    setCheckoutError(null)
     try {
       const r = await startCheckout({ sessionId: session.id, kind, custodianPlan, lang })
       window.location.assign(r.url)
-    } catch {
+    } catch (err) {
+      setCheckoutError(err instanceof ApiError ? err.message : copy.checkoutErrorGeneric)
       setPending('idle')
     }
   }
   const onPortal = async () => {
     setPending('portal')
+    setCheckoutError(null)
     try {
       const r = await openCustomerPortal({ sessionId: session.id, lang })
       window.location.assign(r.url)
-    } catch {
+    } catch (err) {
+      setCheckoutError(err instanceof ApiError ? err.message : copy.checkoutErrorGeneric)
       setPending('idle')
     }
   }
@@ -399,6 +460,11 @@ export function PaymentActions({
   if (variant === 'compact') {
     return (
       <div className="me-portal__card-payments me-portal__card-payments--compact">
+        {checkoutError && (
+          <p className="mono me-portal__pay-ack-error" role="alert" aria-live="assertive">
+            {checkoutError}
+          </p>
+        )}
         {summary.stripeMode === 'test' && (
           <span
             className="me-portal__pay-test-chip mono"
@@ -466,6 +532,11 @@ export function PaymentActions({
 
   return (
     <div className="me-portal__card-payments">
+      {checkoutError && (
+        <p className="mono me-portal__pay-ack-error" role="alert" aria-live="assertive">
+          {checkoutError}
+        </p>
+      )}
       {summary.stripeMode === 'test' && (
         <div className="me-portal__pay-test-banner" role="status">
           <span className="me-portal__pay-test-badge mono">{copy.testModeBadge}</span>

@@ -58,6 +58,8 @@ const COPY = {
     downloadJson: 'Télécharger en JSON',
     print: 'Imprimer',
     loading: 'Je rassemble tes données…',
+    loadError: 'Impossible de charger tes données pour l’instant.',
+    retry: 'Réessayer',
     empty:
       'Je ne détiens aucune session à ton nom. Le seul renseignement que je garde est ton courriel, pour te reconnaître quand tu reviens.',
     notLoggedIn: 'Connecte-toi pour voir les données que je garde sur toi.',
@@ -101,6 +103,8 @@ const COPY = {
     downloadJson: 'Download as JSON',
     print: 'Print',
     loading: 'Gathering your data…',
+    loadError: "Couldn't load your data right now.",
+    retry: 'Retry',
     empty:
       'I hold no sessions in your name. The only thing I keep is your email, to recognise you when you return.',
     notLoggedIn: 'Sign in to see the data I keep about you.',
@@ -137,6 +141,12 @@ export function MyData({ lang }: { lang: Lang }) {
   const { email, loading } = useAuth()
   const langPrefix = lang === 'en' ? '/en' : ''
   const [bundle, setBundle] = useState<ExportBundle | null>(null)
+  // A failed export must never fall through to "I hold no sessions" — this is
+  // the Loi 25 right-of-access page, and a fabricated empty bundle on a
+  // caught exception told a visitor with real sessions that their data was
+  // gone. Surface a retryable error instead, same shape as MePortal's
+  // sessionsError.
+  const [loadError, setLoadError] = useState(false)
 
   usePageMeta({ title: t.pageTitle, lang })
 
@@ -145,22 +155,27 @@ export function MyData({ lang }: { lang: Lang }) {
     let cancelled = false
     exportMyData(email)
       .then((b) => {
-        if (!cancelled) setBundle(b)
+        if (cancelled) return
+        setBundle(b)
+        setLoadError(false)
       })
       .catch(() => {
-        // An empty bundle still renders the page honestly.
-        if (!cancelled)
-          setBundle({
-            exportFormat: 'marc-portal-export-v1',
-            exportedAt: new Date().toISOString(),
-            exportedBy: email,
-            sessions: [],
-          })
+        if (!cancelled) setLoadError(true)
       })
     return () => {
       cancelled = true
     }
   }, [email, loading])
+
+  // Retry handler for the error state — re-runs the same fetch on demand.
+  const reload = () => {
+    if (!email) return
+    setLoadError(false)
+    setBundle(null)
+    exportMyData(email)
+      .then((b) => setBundle(b))
+      .catch(() => setLoadError(true))
+  }
 
   const shell = (children: ReactNode) => (
     <div className="app">
@@ -198,6 +213,19 @@ export function MyData({ lang }: { lang: Lang }) {
         </main>
         <Footer lang={lang} />
       </>
+    )
+  }
+
+  if (loadError) {
+    return shell(
+      <div className="mydata__empty">
+        <p role="alert" className="form__error">
+          {t.loadError}
+        </p>
+        <button type="button" className="hero__cta" onClick={reload}>
+          {t.retry}
+        </button>
+      </div>,
     )
   }
 

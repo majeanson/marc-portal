@@ -190,6 +190,7 @@ const COPY = {
     placeholder: 'Écris un message…',
     sending: 'Envoi…',
     send: 'Envoyer',
+    sendError: 'L’envoi a pas passé. Ton message est encore là, réessaie.',
     you: 'Toi',
     marc: 'Marc',
     visitor: 'Visiteur',
@@ -244,6 +245,7 @@ const COPY = {
     withdrawCta: 'Retirer cette session',
     withdrawConfirm:
       'Retirer cette session du portail ? Cette action ne peut pas être annulée par toi-même.',
+    withdrawError: 'Le retrait a pas passé. Réessaie.',
     withdrawn: 'Session retirée.',
     timelineHeading: 'Activité',
     timelineCreated: (d: string) => `Créée le ${d}`,
@@ -297,6 +299,7 @@ const COPY = {
     placeholder: 'Write a message…',
     sending: 'Sending…',
     send: 'Send',
+    sendError: "The send didn't go through. Your message is still here, try again.",
     you: 'You',
     marc: 'Marc',
     visitor: 'Visitor',
@@ -349,6 +352,7 @@ const COPY = {
     typeChangeWarn: 'Changing the type may invalidate your other answers. Continue?',
     withdrawCta: 'Withdraw this session',
     withdrawConfirm: "Withdraw this session from the portal? You can't undo this yourself.",
+    withdrawError: "The withdraw didn't go through. Try again.",
     withdrawn: 'Session withdrawn.',
     timelineHeading: 'Activity',
     timelineCreated: (d: string) => `Created on ${d}`,
@@ -384,12 +388,18 @@ export function SessionPage({ lang }: { lang: Lang }) {
   const [error, setError] = useState<'forbidden' | 'notfound' | null>(null)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
+  // Send failure (network, 429, expired cookie) — the draft + attachments
+  // stay in place so the visitor can retry without retyping. A 401 skips
+  // this entirely and redirects instead (see the catch below), matching
+  // how refresh() treats an expired session.
+  const [sendError, setSendError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const [staleConflict, setStaleConflict] = useState(false)
   const [withdrawing, setWithdrawing] = useState(false)
+  const [withdrawError, setWithdrawError] = useState(false)
   // Pending attachments — uploaded but not yet linked to a message. Cleared
   // on successful send (server links them) or on explicit remove.
   const [pendingAttachments, setPendingAttachments] = useState<AttachmentRow[]>([])
@@ -566,6 +576,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
     const trimmed = draft.trim()
     if (!trimmed && pendingAttachments.length === 0) return
     setSending(true)
+    setSendError(null)
     try {
       await postMessage(
         id,
@@ -575,6 +586,17 @@ export function SessionPage({ lang }: { lang: Lang }) {
       setDraft('')
       setPendingAttachments([])
       await refresh()
+    } catch (err) {
+      // Expired/forged cookie: same redirect refresh() uses on 401, since a
+      // stale session here means every other action on the page is dead too.
+      if (err instanceof ApiError && err.status === 401) {
+        navigate(`${langPrefix}/login`)
+        return
+      }
+      // Network blip, 429, or a 5xx — the draft and pending attachments are
+      // untouched above (we only clear them on success), so the visitor can
+      // just hit Send again.
+      setSendError(t.sendError)
     } finally {
       setSending(false)
     }
@@ -821,11 +843,13 @@ export function SessionPage({ lang }: { lang: Lang }) {
     if (!id || withdrawing) return
     if (!window.confirm(t.withdrawConfirm)) return
     setWithdrawing(true)
+    setWithdrawError(false)
     try {
       await deleteSession(id)
       navigate(`${langPrefix}/me`, { replace: true })
     } catch {
       setWithdrawing(false)
+      setWithdrawError(true)
     }
   }
 
@@ -1136,6 +1160,15 @@ export function SessionPage({ lang }: { lang: Lang }) {
                       >
                         {t.withdrawCta}
                       </button>
+                      {withdrawError && (
+                        <p
+                          role="alert"
+                          aria-live="assertive"
+                          className="mono session-page__save-error"
+                        >
+                          {t.withdrawError}
+                        </p>
+                      )}
                     </section>
                   )}
                 </div>
@@ -1527,6 +1560,16 @@ export function SessionPage({ lang }: { lang: Lang }) {
                             </button>
                           </div>
                         </div>
+                      )}
+
+                      {sendError && (
+                        <p
+                          role="alert"
+                          aria-live="assertive"
+                          className="mono session-page__save-error"
+                        >
+                          {sendError}
+                        </p>
                       )}
 
                       <div className="thread__form-actions">

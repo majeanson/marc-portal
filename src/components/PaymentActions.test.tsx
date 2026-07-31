@@ -4,6 +4,7 @@ import { fireEvent } from '@testing-library/react'
 import { PaymentActions } from './PaymentActions'
 import * as paymentsApi from '../lib/paymentsApi'
 import * as sessionsApi from '../lib/sessionsApi'
+import { ApiError } from '../lib/api'
 import type { BuildSummary, PaymentSummary, PaymentRow } from '../lib/paymentsApi'
 import type { SessionRow } from '../lib/sessionsApi'
 
@@ -379,6 +380,70 @@ describe('PaymentActions project section', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Pay the scoping report/ })).toBeInTheDocument(),
     )
+  })
+})
+
+describe('PaymentActions checkout failures', () => {
+  // Before this fix, onPay's catch only reset `pending` to 'idle' — a
+  // rejected checkout silently re-enabled the button with no explanation.
+  it('shows the server message as checkoutError when startCheckout rejects with an ApiError', async () => {
+    mockSummary(mkSummary({ build: mkBuild({ tier: 1, nextAmountCents: 75000 }) }))
+    vi.spyOn(paymentsApi, 'startCheckout').mockRejectedValue(
+      new ApiError(409, 'already fully paid'),
+    )
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    const payBtn = await screen.findByRole('button', { name: /Pay \(/ })
+    fireEvent.click(payBtn)
+    expect(await screen.findByRole('alert')).toHaveTextContent('already fully paid')
+    // Button re-enables so the visitor can retry.
+    expect(payBtn).not.toBeDisabled()
+  })
+
+  it('falls back to a generic message on a non-ApiError (network) failure', async () => {
+    mockSummary(mkSummary({ build: mkBuild({ tier: 1, nextAmountCents: 75000 }) }))
+    vi.spyOn(paymentsApi, 'startCheckout').mockRejectedValue(new TypeError('Failed to fetch'))
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    fireEvent.click(await screen.findByRole('button', { name: /Pay \(/ }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(/couldn.t open/i)
+  })
+
+  it('redirects on success and shows no error', async () => {
+    mockSummary(mkSummary({ build: mkBuild({ tier: 1, nextAmountCents: 75000 }) }))
+    vi.spyOn(paymentsApi, 'startCheckout').mockResolvedValue({
+      url: 'https://checkout.stripe.com/x',
+      paymentId: 'pay_1',
+    })
+    const assignSpy = vi.spyOn(window.location, 'assign').mockImplementation(() => {})
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    fireEvent.click(await screen.findByRole('button', { name: /Pay \(/ }))
+    await waitFor(() => expect(assignSpy).toHaveBeenCalledWith('https://checkout.stripe.com/x'))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})
+
+describe('PaymentActions summary fetch failure', () => {
+  // Before this fix, ANY summary-fetch failure (network, 5xx) rendered
+  // nothing — the whole payment block vanished, indistinguishable from a
+  // Tier-0 session with nothing to pay. 503/404 must still render nothing
+  // (graceful-degrade for Stripe-unconfigured / no-payment-row); anything
+  // else earns a retry.
+  it('renders nothing on a 503 (Stripe unconfigured)', async () => {
+    vi.spyOn(paymentsApi, 'getPaymentSummary').mockRejectedValue(new ApiError(503, 'no stripe'))
+    const { container } = render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    await waitFor(() => expect(paymentsApi.getPaymentSummary).toHaveBeenCalled())
+    expect(container.firstChild).toBeNull()
+  })
+
+  it('shows a retryable error on a network failure, and retry re-fetches', async () => {
+    const getSummary = vi
+      .spyOn(paymentsApi, 'getPaymentSummary')
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(mkSummary({ build: mkBuild({ tier: 1, nextAmountCents: 75000 }) }))
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" />)
+    expect(await screen.findByRole('alert')).toHaveTextContent(/couldn.t load/i)
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }))
+    await waitFor(() => expect(getSummary).toHaveBeenCalledTimes(2))
+    expect(await screen.findByRole('button', { name: /Pay \(/ })).toBeInTheDocument()
   })
 })
 

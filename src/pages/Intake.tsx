@@ -368,10 +368,13 @@ export function Intake({ lang }: { lang: Lang }) {
     }
   }
 
-  const onResendLink = async () => {
+  const onResendLink = async (): Promise<boolean> => {
     const target = draft.account?.email ?? auth.email
-    if (!target) return
-    await auth.requestLink(target, lang)
+    // No target email is the same "never reached the server" case as a
+    // network failure, from the caller's perspective — Confirmation just
+    // needs a boolean to decide sent vs. error feedback.
+    if (!target) return false
+    return auth.requestLink(target, lang)
   }
 
   const onStartOver = () => {
