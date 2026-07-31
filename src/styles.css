@@ -1718,21 +1718,9 @@ html:not([data-lang-nudge='en']) .en-nudge {
   background: currentColor;
   flex-shrink: 0;
 }
-.status--draft {
-  color: var(--warm);
-  background: var(--warm-soft);
-}
 .status--active {
   color: var(--accent-warm);
   background: var(--accent-soft);
-}
-.status--frozen {
-  color: var(--cool);
-  background: var(--cool-soft);
-}
-.status--deprecated {
-  color: var(--warm);
-  background: var(--warm-soft);
 }
 
 /* Intake page */
@@ -2511,11 +2499,6 @@ button.intake__progress-step:focus-visible {
 .admin__link-dot--operator {
   background: var(--warm);
 }
-.admin__link-divider {
-  height: 1px;
-  background: var(--border-soft);
-  margin: 14px 0;
-}
 .admin__footer {
   margin-top: auto;
   padding-top: 16px;
@@ -2578,12 +2561,6 @@ button.intake__progress-step:focus-visible {
   margin-bottom: 16px;
   color: var(--text);
 }
-.admin-page__actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
 /* Actions row that sits at the end of `.admin-page__head` (below the
    description). Used by /admin/today and /admin/email-outbox for the
    Reload button + optional stamp pill. baseline alignment so a small
@@ -2594,366 +2571,6 @@ button.intake__progress-step:focus-visible {
   align-items: baseline;
   gap: 12px;
   margin-top: 14px;
-}
-.theme-error {
-  margin: 0;
-}
-
-/* Theme presets — color cards */
-.theme-presets {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-}
-.theme-preset {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--bg-section);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-  cursor: pointer;
-  font-family: var(--display);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  text-align: left;
-  transition:
-    box-shadow 0.15s,
-    background 0.15s;
-}
-.theme-preset:hover {
-  background: var(--bg-hover);
-}
-.theme-preset:active {
-  transform: translateY(1px);
-  box-shadow: none;
-}
-.theme-preset--active {
-  background: var(--accent-soft);
-  box-shadow:
-    var(--edge-shadow),
-    inset 0 0 0 2px var(--accent);
-  color: var(--accent-warm);
-  font-weight: 600;
-}
-.theme-preset__swatch {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.theme-preset__label {
-  flex: 1;
-  min-width: 0;
-}
-
-/* App shell — buyer-facing tenant chrome (header + main + footer wrapper).
-   Used by every per-template buyer app (VolunteerApp, future templates).
-   Lives at the buyer's root domain (RootByTemplate picks the inner app
-   based on tenant.templateId). */
-.app-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg);
-}
-.app-shell__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 22px 40px 18px;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-.app-shell__brand h1 {
-  margin: 0;
-  font-family: var(--display);
-  font-weight: 800;
-  font-size: 24px;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-.app-shell__nav {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-.app-shell__nav-link {
-  color: var(--text-mid);
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: 14px;
-  text-decoration: none;
-}
-.app-shell__nav-link:hover {
-  color: var(--accent-warm);
-}
-.app-shell__user {
-  font-size: 12px;
-  color: var(--text-soft);
-}
-.app-shell__preview-toggle {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-soft);
-  cursor: pointer;
-}
-.app-shell__preview-toggle:hover,
-.app-shell__preview-toggle:focus-visible {
-  border-color: var(--text);
-  color: var(--text);
-  outline: none;
-}
-.app-shell__preview-toggle--on {
-  color: #fff;
-  border-color: var(--accent-warm);
-  background: var(--accent-warm);
-}
-.app-shell__preview-toggle--on:hover,
-.app-shell__preview-toggle--on:focus-visible {
-  color: #fff;
-  border-color: var(--accent-warm);
-  filter: brightness(1.05);
-}
-.app-shell__main {
-  flex: 1;
-  max-width: 880px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 48px 40px 80px;
-}
-@media (max-width: 800px) {
-  .app-shell__head {
-    padding: 18px 24px;
-  }
-  .app-shell__main {
-    padding: 32px 24px 64px;
-  }
-}
-.app-shell__intro {
-  margin-bottom: 28px;
-}
-.app-shell__intro h2 {
-  font-size: clamp(28px, 3.4vw, 36px);
-  margin-bottom: 8px;
-}
-.app-shell__intro p {
-  font-size: 18px;
-  line-height: 1.6;
-  color: var(--text-mid);
-  max-width: 60ch;
-  margin: 0;
-}
-.app-shell__add-btn {
-  margin-bottom: 32px;
-}
-.app-shell__form {
-  margin-bottom: 32px;
-}
-.app-shell__empty {
-  padding: 36px 24px;
-  text-align: center;
-  background: var(--bg-card);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-lg);
-  color: var(--text-mid);
-  font-size: 17px;
-  margin: 0;
-}
-
-.app-shell-clips {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.app-shell-clip {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-  padding: 18px 22px;
-}
-.app-shell-clip__head {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-.app-shell-clip__when {
-  font-size: 12px;
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.app-shell-clip__client {
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--text);
-}
-.app-shell-clip__body {
-  margin: 0 0 12px;
-  font-size: 16.5px;
-  line-height: 1.55;
-  color: var(--text);
-  max-width: none;
-}
-.app-shell-clip__foot {
-  font-size: 11px;
-  color: var(--text-soft);
-}
-
-/* Volunteer Roster — feat-2026-022. Reuses app-shell, adds shift-specific bits. */
-.vr-day {
-  margin-bottom: 28px;
-}
-.vr-day__head {
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 16px;
-  color: var(--text-mid);
-  text-transform: capitalize;
-  letter-spacing: 0;
-  margin: 0 0 12px 4px;
-}
-.vr-shift__head {
-  flex-wrap: wrap;
-}
-.vr-shift__fill {
-  margin-left: auto;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--accent);
-  background: var(--accent-soft);
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-weight: 600;
-}
-.vr-shift__fill--full {
-  color: var(--warm);
-  background: var(--warm-soft);
-}
-.vr-shift__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-.vr-shift__action {
-  padding: 8px 16px;
-  font-size: 14px;
-}
-
-/* Stub-page treatments (team / billing / soon blocks) */
-.admin-block--soon {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-}
-.admin-block--soon h2 {
-  color: var(--accent-warm);
-}
-.admin-meta {
-  font-size: 12px;
-  color: var(--text-soft);
-  margin-top: 12px;
-}
-
-/* Team list (stub UI for /admin/equipe) */
-.team-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.team-list__item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  background: var(--bg-section);
-  border-radius: var(--btn-radius);
-  border: 1px solid var(--edge);
-  box-shadow: var(--edge-shadow);
-}
-.team-list__avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-.team-list__name {
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--text);
-}
-.team-list__role {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-/* Billing grid (stub) */
-.billing-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-}
-.billing-cell {
-  padding: 16px 18px;
-  background: var(--bg-section);
-  border-radius: var(--btn-radius);
-  border: 1px solid var(--edge);
-  box-shadow: var(--edge-shadow);
-}
-.billing-cell__label {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 6px;
-}
-.billing-cell__value {
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 22px;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
-.billing-cell__sub {
-  font-size: 12px;
-  color: var(--text-soft);
-  margin-top: 4px;
 }
 
 /* Fleet table (operator) */
@@ -3017,43 +2634,6 @@ button.intake__progress-step:focus-visible {
   color: var(--text-soft);
   margin-top: 2px;
 }
-.fleet-table__domain {
-  color: var(--accent-warm);
-  text-decoration: none;
-  font-weight: 500;
-}
-.fleet-table__domain:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-/* Theme custom fields */
-.theme-fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-}
-.theme-field__row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.theme-field__color {
-  width: 44px;
-  height: 44px;
-  padding: 2px;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-  background: var(--bg-section);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.theme-field__hex {
-  flex: 1;
-  font-size: 14px;
-  padding: 11px 14px;
-}
 
 /* Form fields */
 .form {
@@ -3061,12 +2641,6 @@ button.intake__progress-step:focus-visible {
   flex-direction: column;
   gap: 18px;
   margin: 22px 0 8px;
-}
-.form__label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: -10px;
 }
 .form__error {
   margin: 0 0 4px;
@@ -3732,15 +3306,6 @@ button.intake__progress-step:focus-visible {
 .me-portal__account-signout {
   font-size: 14px;
 }
-.me-portal__hero {
-  background: linear-gradient(180deg, var(--bg-section) 0%, var(--bg) 100%);
-  border-bottom: 1px solid var(--border-soft);
-  padding: 48px var(--gutter) 40px;
-}
-.me-portal__hero-inner {
-  max-width: var(--max-w);
-  margin: 0 auto;
-}
 .me-portal__title {
   margin: 8px 0 4px;
   font-family: var(--display);
@@ -3753,76 +3318,11 @@ button.intake__progress-step:focus-visible {
   color: var(--text-mid);
   font-size: 14px;
 }
-.me-portal__stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 28px;
-}
-.me-portal__stat {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  padding: 8px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: 999px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text-mid);
-}
-.me-portal__stat-n {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--text);
-}
-.me-portal__stat--active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent-warm);
-}
-.me-portal__stat--active .me-portal__stat-n {
-  color: var(--accent-warm);
-}
-.me-portal__stat--triage {
-  border-color: var(--cool);
-  background: var(--cool-soft);
-  color: var(--cool);
-}
-.me-portal__stat--triage .me-portal__stat-n {
-  color: var(--cool);
-}
-.me-portal__stat--draft {
-  border-color: var(--border);
-  background: var(--bg-card);
-}
-.me-portal__stat--shipped {
-  border-color: var(--accent-warm);
-  background: var(--accent-soft);
-  color: var(--accent-warm);
-}
-.me-portal__stat--shipped .me-portal__stat-n {
-  color: var(--accent-warm);
-}
-.me-portal__hero-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.me-portal__logout {
-  color: var(--text-soft);
-}
 
 .me-portal__list-section {
   max-width: var(--max-w);
   margin: 32px auto 0;
   padding: 0 var(--gutter);
-}
-.me-portal__loading {
-  text-align: center;
-  color: var(--text-soft);
-  padding: 32px 0;
 }
 
 .me-portal__empty {
@@ -3904,50 +3404,10 @@ button.intake__progress-step:focus-visible {
   line-height: 1.5;
 }
 
-/* MePortal — Account section (collapsible: download + delete) */
 .me-portal__account-section {
   max-width: 640px;
   margin: 56px auto 32px;
   padding: 0 var(--gutter);
-}
-.me-portal__account {
-  border: 1px dashed var(--border-soft);
-  border-radius: var(--radius);
-  background: var(--bg-card);
-  padding: 16px 22px;
-}
-.me-portal__account-summary {
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text-mid);
-  list-style: none;
-  user-select: none;
-}
-.me-portal__account-summary::-webkit-details-marker {
-  display: none;
-}
-.me-portal__account-summary::before {
-  content: '⚙';
-  display: inline-block;
-  margin-right: 8px;
-  color: var(--text-soft);
-}
-.me-portal__account[open] .me-portal__account-summary {
-  margin-bottom: 16px;
-}
-.me-portal__account-block + .me-portal__account-block {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-soft);
-}
-.me-portal__account-heading {
-  font-size: 16px;
-  margin: 0 0 6px;
-}
-.me-portal__account-body {
-  font-size: 14px;
-  color: var(--text-soft);
-  margin: 0 0 12px;
 }
 
 .me-portal__skeleton {
@@ -4987,9 +4447,6 @@ button.intake__progress-step:focus-visible {
   margin-top: 24px;
   font-size: 13.5px;
 }
-.meta-page__back-link {
-  margin-top: 18px;
-}
 
 /* ──────────────────────────────────────────────────────────────────────
    L'atelier — /atelier + /en/atelier. Two exhibits on one page: the
@@ -5757,26 +5214,8 @@ button.intake__progress-step:focus-visible {
 }
 
 @media (max-width: 560px) {
-  .me-portal__hero {
-    padding: 32px var(--gutter) 28px;
-  }
   .me-portal__title {
     font-size: 26px;
-  }
-  .me-portal__stats {
-    gap: 6px;
-  }
-  .me-portal__stat {
-    padding: 6px 10px;
-    font-size: 11px;
-  }
-  .me-portal__hero-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .me-portal__hero-actions .hero__cta {
-    text-align: center;
   }
   .me-portal__card-link {
     flex-direction: column;
@@ -6991,23 +6430,6 @@ button:focus-visible,
   gap: 18px;
   margin: 8px 0 24px;
 }
-.filter-group {
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-.filter-group__label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-soft);
-  margin-bottom: 6px;
-}
-.filter-group__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
 .chip {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -7033,51 +6455,6 @@ button:focus-visible,
   background: var(--accent-soft);
   border-color: var(--accent);
   font-weight: 600;
-}
-
-/* Next iterations — rendered from child features */
-.iterations {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
-}
-.iteration {
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-left: 3px solid var(--text-soft);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-  padding: 16px 18px;
-}
-.iteration__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.iteration__key {
-  font-size: 11px;
-  color: var(--text-soft);
-}
-.iteration h3 {
-  margin: 0 0 6px;
-  font-size: 15px;
-  color: var(--text);
-}
-.iteration p {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--text-mid);
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 /* ------------------------------------------------------------------
@@ -10025,77 +9402,6 @@ button.intake__progress-step:disabled {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   NAPKIN BADGE — shown across the intake when the visitor arrived via
-   /napkin. Tiny PNG thumbnail + "Napkin attached" + the caption + a Remove
-   button. Sits between CapacityNotice and ProgressDots.
-   ────────────────────────────────────────────────────────────────────── */
-.napkin-badge {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 16px 0 8px;
-  padding: 10px 12px 10px 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  box-shadow: var(--edge-shadow);
-}
-.napkin-badge__thumb {
-  width: 56px;
-  height: 40px;
-  object-fit: cover;
-  background: #fbf7ec;
-  border: 1px solid var(--border-soft);
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-.napkin-badge__thumb--empty {
-  display: grid;
-  place-items: center;
-  font-family: var(--mono);
-  color: var(--accent);
-  font-size: 22px;
-}
-.napkin-badge__body {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.napkin-badge__title {
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--accent-warm);
-}
-.napkin-badge__text {
-  font-size: 13px;
-  color: var(--text-mid);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.napkin-badge__remove {
-  appearance: none;
-  background: none;
-  border: 0;
-  color: var(--text-soft);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 4px;
-  transition: color 140ms ease;
-}
-.napkin-badge__remove:hover,
-.napkin-badge__remove:focus-visible {
-  color: var(--warm);
-  outline: none;
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
    SHARE — visitor-facing "Share this project" button + modal on /share/:id.
    Modal previews the live OG card so the visitor sees what their DM will
    render before they paste. Web Share API used when available.
@@ -10487,82 +9793,6 @@ button.intake__progress-step:disabled {
    eye groups it as "the special one" without being shouty. */
 .admin-showcase__card--home {
   border-style: dashed;
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
-   SHARE-SITE — home-page social-share affordance. Two-up layout:
-   left = live /og/home preview, right = action button + secondary link.
-   ────────────────────────────────────────────────────────────────────── */
-.section--share {
-  background: var(--bg);
-}
-.share-site {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 36px;
-  align-items: center;
-}
-@media (max-width: 800px) {
-  .share-site {
-    grid-template-columns: 1fr;
-    gap: 22px;
-  }
-}
-.share-site__preview {
-  display: block;
-  border: 1px solid var(--edge);
-  border-radius: var(--btn-radius);
-  overflow: hidden;
-  background: var(--bg-card);
-  box-shadow: var(--edge-shadow);
-  transition: box-shadow 160ms ease;
-}
-.share-site__preview:hover,
-.share-site__preview:focus-visible {
-  box-shadow:
-    var(--edge-shadow),
-    inset 0 0 0 2px var(--accent);
-  outline: none;
-}
-.share-site__preview-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1200 / 630;
-  object-fit: cover;
-}
-.share-site__copy {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.share-site__title {
-  font-family: var(--display);
-  font-size: clamp(26px, 3.2vw, 36px);
-  letter-spacing: -0.015em;
-  margin: 4px 0 4px;
-  color: var(--text);
-}
-.share-site__body {
-  margin: 0 0 8px;
-  color: var(--text-mid);
-  font-size: 16px;
-  line-height: 1.5;
-  max-width: 52ch;
-}
-.share-site__actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-.share-site__btn:disabled {
-  opacity: 0.7;
-  cursor: progress;
-}
-.share-site__preview-link {
-  font-size: 13px;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -11646,43 +10876,6 @@ button.intake__progress-step:disabled {
   gap: 16px;
   align-items: center;
   flex-wrap: wrap;
-}
-
-/* Checklist page — re-uses .handoff-steps for the numbered procedure. */
-.handoff-legend {
-  margin: 24px 0 32px;
-  padding: 14px 18px;
-  background: var(--bg-card);
-  border-left: 3px solid var(--accent-warm);
-  border-radius: var(--btn-radius);
-  max-width: 70ch;
-}
-.handoff-legend h2 {
-  font-size: 14px;
-  margin: 0 0 6px;
-  text-transform: lowercase;
-  letter-spacing: 0.04em;
-  color: var(--text-soft);
-}
-.handoff-legend ul {
-  margin: 0;
-  padding-left: 20px;
-  font-size: 14px;
-  line-height: 1.55;
-}
-.handoff-legend strong {
-  color: var(--accent-warm);
-}
-.handoff-checklist__section ol {
-  margin: 8px 0;
-  padding-left: 22px;
-  max-width: 70ch;
-}
-.handoff-checklist__steps li {
-  margin-bottom: 6px;
-  line-height: 1.55;
-  color: var(--text);
-  font-size: 14px;
 }
 
 /* Pricing — custodian-mode mini-section. Lives below the tier list as a
