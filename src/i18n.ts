@@ -699,6 +699,8 @@ const FR = {
       magicLinkSentBody: (email: string) =>
         `Je t’ai envoyé un lien de connexion à ${email}. Ouvre-le pour accéder à ta session. Il expire dans 30 minutes.`,
       magicLinkAgain: 'Pas reçu ? Renvoyer le lien',
+      magicLinkResent: 'Lien renvoyé — vérifie ton courriel.',
+      magicLinkResendError: 'Ça n’a pas pu s’envoyer. Réessaie dans un instant.',
       parkedStripHint: 'Ton formulaire est en attente, il démarre dès ta connexion.',
     },
   },
@@ -1739,6 +1741,8 @@ const EN: Copy = {
       magicLinkSentBody: (email: string) =>
         `I sent a sign-in link to ${email}. Open it to access your session. It expires in 30 minutes.`,
       magicLinkAgain: "Didn't get it? Resend the link",
+      magicLinkResent: 'Link resent — check your email.',
+      magicLinkResendError: "That didn't send. Try again in a moment.",
       parkedStripHint: 'Your form is parked, it kicks off as soon as you sign in.',
     },
   },

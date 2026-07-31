@@ -36,20 +36,26 @@ export function Confirmation({
    * default) if absent. */
   sessionStatus?: SessionStatus
   magicLinkSent?: boolean
-  onResendLink?: () => void | Promise<void>
+  /** Returns whether the request actually reached the server (mirrors
+   * AuthProvider.requestLink's return — see Intake.tsx's onResendLink). */
+  onResendLink?: () => Promise<boolean>
   onStartOver: () => void
 }) {
   const t = DICT[lang].intake.confirmation
   const sessionHref = sessionId ? `${lang === 'en' ? '/en' : ''}/session/${sessionId}` : null
 
-  const [resending, setResending] = useState(false)
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const onResendClick = async () => {
-    if (!onResendLink || resending) return
-    setResending(true)
+    if (!onResendLink || resendState === 'sending') return
+    setResendState('sending')
     try {
-      await onResendLink()
-    } finally {
-      setResending(false)
+      const ok = await onResendLink()
+      setResendState(ok ? 'sent' : 'error')
+    } catch {
+      // requestLink itself swallows its own failures and returns false, but
+      // catch here too — a caller-side throw shouldn't leave the button
+      // stuck on "Sending…" forever.
+      setResendState('error')
     }
   }
 
@@ -161,14 +167,26 @@ export function Confirmation({
             <h3 style={{ marginBottom: 8 }}>{t.magicLinkSentTitle}</h3>
             <p>{t.magicLinkSentBody(account.email)}</p>
             {onResendLink && (
-              <button
-                type="button"
-                className="link-btn mono"
-                onClick={onResendClick}
-                disabled={resending}
-              >
-                {resending ? t.submitting : t.magicLinkAgain}
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="link-btn mono"
+                  onClick={onResendClick}
+                  disabled={resendState === 'sending'}
+                >
+                  {resendState === 'sending' ? t.submitting : t.magicLinkAgain}
+                </button>
+                {resendState === 'sent' && (
+                  <p className="field__hint" role="status" aria-live="polite">
+                    {t.magicLinkResent}
+                  </p>
+                )}
+                {resendState === 'error' && (
+                  <p className="field__hint field__hint--error" role="alert" aria-live="assertive">
+                    {t.magicLinkResendError}
+                  </p>
+                )}
+              </>
             )}
           </div>
         </>

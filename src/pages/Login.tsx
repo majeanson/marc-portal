@@ -18,6 +18,7 @@ const COPY = {
     emailPlaceholder: 'ton@courriel.com',
     submit: 'Envoyer le lien',
     sending: 'Envoi…',
+    transportError: 'Ça n’a pas pu s’envoyer. Vérifie ta connexion pis réessaie.',
     reasons: {
       'missing-token': 'Le lien était incomplet. Demande-en un nouveau.',
       'unknown-token': 'Ce lien n’existe pas. Demande-en un nouveau.',
@@ -34,6 +35,7 @@ const COPY = {
     emailPlaceholder: 'you@email.com',
     submit: 'Send the link',
     sending: 'Sending…',
+    transportError: "That didn't send. Check your connection and try again.",
     reasons: {
       'missing-token': 'The link was incomplete. Request a new one.',
       'unknown-token': "That link doesn't exist. Request a new one.",
@@ -53,6 +55,7 @@ export function Login({ lang }: { lang: Lang }) {
   const { email: currentEmail, isAdmin, requestLink } = useAuth()
   const [email, setEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [transportError, setTransportError] = useState(false)
 
   usePageMeta({ title: `${t.title} — Marc`, lang })
 
@@ -60,9 +63,21 @@ export function Login({ lang }: { lang: Lang }) {
     e.preventDefault()
     if (!email.trim() || submitting) return
     setSubmitting(true)
-    await requestLink(email.trim(), lang)
-    // Always navigate to the sent page, even on a soft failure — the server
-    // returns 200 to avoid email enumeration. Visitor reads "check your email".
+    setTransportError(false)
+    const sent = await requestLink(email.trim(), lang)
+    // requestLink returns false in exactly one case: the request itself never
+    // reached the server (offline, DNS, server down) — a fetch that threw.
+    // That's distinct from the anti-enumeration 200 the server always sends
+    // once the request lands, which we can't and shouldn't distinguish from
+    // "no such account" here. So: false → the visitor's email was never
+    // submitted, stay on the form and say so; true → the server has it
+    // (real or not), always advance to "check your email" without leaking
+    // which.
+    if (!sent) {
+      setTransportError(true)
+      setSubmitting(false)
+      return
+    }
     navigate(`${lang === 'en' ? '/en' : ''}/login/sent?email=${encodeURIComponent(email.trim())}`)
   }
 
@@ -104,6 +119,11 @@ export function Login({ lang }: { lang: Lang }) {
           {reason && t.reasons[reason] && (
             <p role="alert" className="form__error">
               {t.reasons[reason]}
+            </p>
+          )}
+          {transportError && (
+            <p role="alert" className="form__error">
+              {t.transportError}
             </p>
           )}
           <form onSubmit={onSubmit} className="form">

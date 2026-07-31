@@ -114,6 +114,116 @@
 
 ---
 
+## UX solidification pass (2026-07-31)
+
+> Five-agent audit of every journey (visitor funnel, client, operator,
+> cross-cutting states/a11y, consistency/i18n/copy), findings verified by
+> hand before landing here. Nothing new: each batch tightens what exists.
+> One branch + PR per batch, merged green before the next starts.
+> Full finding details live in the session transcript; ids (AC-1, XC-23, …)
+> are kept so a future session can trace any line back to its evidence.
+
+- ⬜ **U1 · M · manual: none** — Silent failures on client money/message paths.
+  `SessionPage.onSend` has no catch (failed reply looks sent; also route 401 →
+  login); `onWithdraw` swallows errors; `PaymentActions` hides the whole
+  payment block when the summary fetch fails (`return null`) and resets
+  pay/portal buttons on error with no message; `MyData` fabricates an empty
+  Loi 25 bundle on fetch failure ("I hold no data" during an outage);
+  `Login.onSubmit` navigates to "check your email" even when the request never
+  left the device (branch on transport failure ONLY — the always-200
+  anti-enumeration behaviour is deliberate and stays); intake `Confirmation`
+  resend gives no success/failure feedback. Pattern to reuse: `ackError` /
+  `attachError` / `field__hint` idioms already in the same files.
+  [AC-1/2/3/5, XC-1/2/3/4/15/16/17, OP-3, VF-5]
+
+- ⬜ **U2 · M · manual: none** — Operator trust + admin nav. `onStatusChange`
+  renders every 409 as "modified elsewhere" — discriminate the at-capacity 409
+  (server message is already actionable) from a genuine stale row, mirroring
+  `CommunityDiscountToggle`; `AdminTrash.onRestore` and `DeclinePanel.save`
+  fail silently; tier/quote/split setters swallow non-409s; status/tier pills
+  need an in-flight guard (double-click can double-email the visitor); add
+  Inbox, Vouches, Trash, Custodians to the persistent admin sidebar (Inbox is
+  the self-described "primary working surface" and takes 2 clicks + a grid
+  scan today); fix the nonexistent `status-pill` class in AdminTrash/
+  AdminVouches (renders unstyled; real class is `session-frame__status-pill`)
+  and route AdminTrash's raw English status through a labels map; correct the
+  trash copy ("remet en triage" is false — restore keeps prior status);
+  `AdminEmailOutbox.reload` blanks the table mid-retry-loop; `FirstNameCard`
+  has a loading state with no render branch; `OperatorNotesPanel` load-path
+  catch is empty. [OP-1/2/5/6/7/8, XC-5/6/10/11/13/14/18, CI-18]
+
+- ⬜ **U3 · S · manual: none** — Router-link completion. Shared components the
+  f8f22bd migration missed: `HomeDrillCard`, `CrossFeatureLink`,
+  `BringAnything` CTA, intake `AccountStep` sign-in link, every `NotFound`
+  exit, `InlineIntakeTeaser` napkin line — plus the whole signed-in surface
+  (`MePortal`, `MyData`, `SessionPage` back link, `Login` already-signed-in
+  branch). Also seed `Login`'s email field from `?email=` so "send another
+  link" doesn't force retyping. No visual delta expected. [VF-1/2/3/4/6/11,
+  AC-4/8]
+
+- ⬜ **U4 · M · manual: none** — Fetch resilience + retry affordances. Five
+  surfaces show an error with no retry (`AdminAudit`, `AdminShowcase`,
+  `PublicAdvancements`, `Projects`, `Vouches` — reuse `AdminToday`'s
+  `load()`-plus-button shape; give Vouches its own error copy instead of the
+  global error-boundary string); `Hero` capacity pill sticks on "loading…"
+  forever on failure; `SketchAttachment` permanently blocks retry after one
+  blip and bypasses `api.ts`; `SessionPage.listAdvancements` masks failure as
+  empty; post-payment `/me?paid=1` can show "paiement reçu" beside a live
+  Payer button until the webhook lands — retry the summary fetch once or
+  twice with short backoff; surface the `suppressed` field request-link
+  already returns so a hard-bounced address stops getting "check your spam".
+  [XC-7/8/9/12, VF-10, AC-6/7]
+
+- ⬜ **U5 · M · manual: none** — A11y + contrast + touch targets. `--text-faint`
+  fails AA in BOTH themes (≈2.0:1 day, ≈2.4:1 night) and is real UI text at
+  ~24 sites — swap informational uses to `--text-soft`, keep faint for
+  decorative/disabled; night `--border`/`--border-soft` sit under the 3:1
+  UI-boundary guideline against `--bg-card` — nudge lighter; `ShareModal` has
+  no Tab trap (port the ~15-line cycle from `SiteSearch`); `theme-toggle`
+  focus-visible strips the outline for a hover-identical tint; hardcoded
+  English `aria-label="new activity"` over FR text in MePortal;
+  `EngagementStatusBar` conveys current step by color alone (add
+  `aria-current="step"`); auto-refreshed admin counts need a polite live
+  region; NapkinSection error missing `role="alert"`; `/me` skeleton shimmer
+  missing its reduce-motion override; accent-toggle swatches 18px and intake
+  progress chips ~20px tall (WCAG 2.5.8) — use the `::before` hit-area
+  technique from `.time-travel__notch`; SiteSearch close button under 24px.
+  Needs baseline regen. [XC-20…32 minus 23-adjacent, XC-23/24/25/26, VF-12/13]
+
+- ⬜ **U6 · M · manual: none** — Copy + form polish. Rewrite the negation-
+  anaphora on MyData and Privacy §2/§3, the em-dash-dense Privacy §2 list
+  paragraph, the flat FR triad on Home ("Vrai code, vrai problème, vrai
+  monde"), the two-dash Atelier intro; apply `frPunct()` to the FR strings
+  with unspaced `? ! : ; »` (EnglishNudge, HowItWorks, Vouch lead); converge
+  status vocabulary (MePortal FR ships untranslated "active" — client surfaces
+  use "en cours"; document or converge the declined/rejected/not-taken-on
+  three-way EN split); collapse the four local date-format forks onto
+  `formatDateTime`; fix PageMast's stale doc comment; intake email field gets
+  a why-is-this-disabled hint; vouch field errors clear on change instead of
+  next submit; intake autosave checkmark becomes honest — probe storage once
+  and warn when drafts can't persist; reply composer draft persists to
+  sessionStorage keyed by session id; `editorial-rise` drops `translateY`
+  (house rule: reveals are opacity-only; compliant keyframe exists in-file).
+  Needs baseline regen. [CI-6/7/8/11…16/20/21/22/23, VF-7/8/9/14, OP-4, AC-9,
+  XC-19]
+
+- ⬜ **U7 · M · manual: none** — i18n pattern consolidation. ~103 banned inline
+  `lang === 'fr' ? … : …` copy ternaries across 8+ files, mostly `PageMast`
+  stamp props — give PageMast a `Bi` stamp prop contract, fold AdminHub's
+  three ad-hoc shapes into its COPY block, move Footer/Runbook shared-chrome
+  strings into `DICT`. Mechanical, no visual delta. [CI-1/2/3]
+
+**Held for Marc (decisions, not code):** the status pill itself is a rounded
+colour-filled badge, which the house rules ban ("mono ledger tag with a
+filled/hollow square") — redesigning it is L effort + 6 call sites + full
+baseline churn, do it deliberately or bless the exception [CI-19]. Privacy
+uses "tu" throughout where CLAUDE.md prescribes "vous" for legal surfaces —
+either is defensible, pick one [CI-9]. `frPunct()` today covers 2 call sites;
+decide whether it's policy (adopt broadly) or opt-in (fix the comments that
+imply broad coverage) [CI-5].
+
+---
+
 ## Notes
 
 - Batch Tier 1 into one PR (all test/hygiene, low blast radius), then Tier 2
