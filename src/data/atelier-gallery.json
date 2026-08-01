@@ -378,7 +378,7 @@
       "full": "/atelier/full/phone/projects-error.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 2000,
+      "fullH": 2001,
       "cropped": true
     },
     {
@@ -450,7 +450,7 @@
       "full": "/atelier/full/phone/vouches-error.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1334,
+      "fullH": 1291,
       "cropped": true
     },
     {
@@ -1169,8 +1169,8 @@
       "thumb": "/atelier/thumbs/narrow/projects-error.webp",
       "full": "/atelier/full/narrow/projects-error.png",
       "thumbW": 600,
-      "thumbH": 936,
-      "fullH": 1560,
+      "thumbH": 937,
+      "fullH": 1561,
       "cropped": false
     },
     {
@@ -1241,8 +1241,8 @@
       "thumb": "/atelier/thumbs/narrow/vouches-error.webp",
       "full": "/atelier/full/narrow/vouches-error.png",
       "thumbW": 600,
-      "thumbH": 756,
-      "fullH": 1260,
+      "thumbH": 730,
+      "fullH": 1217,
       "cropped": false
     },
     {
@@ -1961,8 +1961,8 @@
       "thumb": "/atelier/thumbs/wide/projects-error.webp",
       "full": "/atelier/full/wide/projects-error.png",
       "thumbW": 600,
-      "thumbH": 625,
-      "fullH": 1501,
+      "thumbH": 626,
+      "fullH": 1502,
       "cropped": false
     },
     {
@@ -2033,8 +2033,8 @@
       "thumb": "/atelier/thumbs/wide/vouches-error.webp",
       "full": "/atelier/full/wide/vouches-error.png",
       "thumbW": 600,
-      "thumbH": 500,
-      "fullH": 1201,
+      "thumbH": 483,
+      "fullH": 1158,
       "cropped": false
     },
     {

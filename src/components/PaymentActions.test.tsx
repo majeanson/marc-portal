@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { fireEvent } from '@testing-library/react'
 import { PaymentActions } from './PaymentActions'
 import * as paymentsApi from '../lib/paymentsApi'
@@ -497,5 +497,95 @@ describe('PaymentActions All-yours acknowledgment', () => {
       expect(screen.getByRole('button', { name: /Manage subscription/ })).toBeInTheDocument(),
     )
     expect(screen.queryByRole('heading', { name: /All yours/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('PaymentActions post-payment reconciliation', () => {
+  // Stripe redirects to /me?paid=1&pay=<id> before its webhook necessarily
+  // lands, so the first summary fetch can still show the just-paid row as
+  // 'pending'. justPaidPaymentId (threaded from MePortal) drives a bounded
+  // two-attempt backoff refetch instead of leaving a stale Pay button.
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('refetches on a backoff and stops once the just-paid row shows as paid', async () => {
+    vi.useFakeTimers()
+    const pending = mkRow({ id: 'pay_123', status: 'pending' })
+    const paid = mkRow({ id: 'pay_123', status: 'paid' })
+    const build = mkBuild({ nextIndex: null, nextAmountCents: null, paidCount: 1 })
+    const getSummary = vi
+      .spyOn(paymentsApi, 'getPaymentSummary')
+      .mockResolvedValueOnce(mkSummary({ rows: [pending], build }))
+      .mockResolvedValueOnce(mkSummary({ rows: [paid], build }))
+
+    await act(async () => {
+      render(
+        <PaymentActions
+          session={mkSession({ tier: 1 })}
+          lang="en"
+          variant="compact"
+          justPaidPaymentId="pay_123"
+        />,
+      )
+      // Flush the mount-effect fetch (a resolved promise; not gated by the
+      // fake timer, but needs a tick to settle).
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(getSummary).toHaveBeenCalledTimes(1)
+
+    // First backoff step (~2s) fires the second, now-paid fetch.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000)
+    })
+    expect(getSummary).toHaveBeenCalledTimes(2)
+
+    // Row is paid now — no third attempt gets scheduled even after the
+    // second backoff window passes.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(4000)
+    })
+    expect(getSummary).toHaveBeenCalledTimes(2)
+  })
+
+  it('gives up after two attempts if the row never shows as paid', async () => {
+    vi.useFakeTimers()
+    const stillPending = mkRow({ id: 'pay_456', status: 'pending' })
+    const build = mkBuild({ nextIndex: null, nextAmountCents: null, paidCount: 1 })
+    const getSummary = vi
+      .spyOn(paymentsApi, 'getPaymentSummary')
+      .mockResolvedValue(mkSummary({ rows: [stillPending], build }))
+
+    await act(async () => {
+      render(
+        <PaymentActions
+          session={mkSession({ tier: 1 })}
+          lang="en"
+          variant="compact"
+          justPaidPaymentId="pay_456"
+        />,
+      )
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000)
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(4000)
+    })
+    expect(getSummary).toHaveBeenCalledTimes(3) // mount + 2 backoff retries
+
+    // No polling loop: further elapsed time doesn't trigger more attempts.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(20000)
+    })
+    expect(getSummary).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not schedule a reconcile fetch without justPaidPaymentId', async () => {
+    mockSummary(mkSummary({ build: mkBuild({ tier: 1, nextAmountCents: 75000 }) }))
+    render(<PaymentActions session={mkSession({ tier: 1 })} lang="en" variant="compact" />)
+    await screen.findByRole('button', { name: /Pay \(/ })
+    expect(paymentsApi.getPaymentSummary).toHaveBeenCalledTimes(1)
   })
 })

@@ -227,6 +227,7 @@ export function PaymentActions({
   session: sessionProp,
   lang,
   variant = 'full',
+  justPaidPaymentId = null,
 }: {
   session: SessionRow
   lang: Lang
@@ -235,6 +236,14 @@ export function PaymentActions({
    * 'compact': just the primary Pay button (or paid pill / pending hint) and
    *  a single-line custodian status pill. Used on /me cards. */
   variant?: 'compact' | 'full'
+  /** The `pay=<id>` query param from a Stripe success redirect
+   *  (/me?paid=1&pay=<id>), threaded down from MePortal — which captures it
+   *  at mount, before its own effect strips ?paid=/&pay= from the URL bar.
+   *  Read via a prop rather than useSearchParams here so this component
+   *  stays router-free (it's rendered inside SessionCard, one per session,
+   *  and doesn't otherwise need route context). Used to close the
+   *  post-checkout webhook race — see the reconciliation effect below. */
+  justPaidPaymentId?: string | null
 }) {
   const copy = COPY[lang]
   const langPrefix = lang === 'en' ? '/en' : ''
@@ -291,6 +300,31 @@ export function PaymentActions({
   }, [session.id])
 
   useEffect(() => loadSummary(), [loadSummary])
+
+  // Post-payment eventual-consistency window. Stripe redirects the browser
+  // to /me?paid=1&pay=<id> as soon as Checkout completes, but the row for
+  // that payment only flips to 'paid' once Stripe's webhook lands — which
+  // can trail the redirect by a couple seconds. Without this, a visitor can
+  // see the "paid, thanks" toast on /me sitting right above a Pay button
+  // that still thinks the installment is owed. justPaidPaymentId lets us
+  // check the *specific* row instead of guessing from the summary shape;
+  // if it isn't marked paid yet, refetch twice more on a short backoff.
+  // Deliberately not a polling loop: two bounded attempts, then settle
+  // either way (a visitor sitting on the page longer than ~6s will get the
+  // paid state on their next natural reload/action).
+  const [reconcileAttempt, setReconcileAttempt] = useState(0)
+  useEffect(() => {
+    if (!justPaidPaymentId || !summary) return
+    const row = summary.rows.find((r) => r.id === justPaidPaymentId)
+    if (row?.status === 'paid') return
+    if (reconcileAttempt >= 2) return
+    const delayMs = reconcileAttempt === 0 ? 2000 : 4000
+    const timer = window.setTimeout(() => {
+      setReconcileAttempt((n) => n + 1)
+      loadSummary()
+    }, delayMs)
+    return () => window.clearTimeout(timer)
+  }, [justPaidPaymentId, summary, reconcileAttempt, loadSummary])
 
   if (!summary) {
     if (!summaryError) return null

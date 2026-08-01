@@ -25,7 +25,7 @@ function Wrap({ children }: { children: React.ReactNode }) {
             previewAsUser: false,
             setPreviewAsUser: vi.fn(),
             loading: false,
-            requestLink: vi.fn().mockResolvedValue(false),
+            requestLink: vi.fn().mockResolvedValue({ sent: false }),
             logout: vi.fn().mockResolvedValue(undefined),
             refresh: vi.fn().mockResolvedValue(undefined),
           }}

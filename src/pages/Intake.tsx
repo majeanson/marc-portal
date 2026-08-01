@@ -343,8 +343,8 @@ export function Intake({ lang }: { lang: Lang }) {
         savedAt: new Date().toISOString(),
       }
       saveDraft(PENDING_INTAKE_KEY, pending)
-      const sent = await auth.requestLink(accountEmail, lang)
-      if (!sent) {
+      const result = await auth.requestLink(accountEmail, lang)
+      if (!result.sent) {
         // Network/API failure — keep the user on the form so they can retry.
         // The server itself returns 200 even on Resend soft-failures, so reaching
         // here means the request never landed (offline, server down).
@@ -372,9 +372,12 @@ export function Intake({ lang }: { lang: Lang }) {
     const target = draft.account?.email ?? auth.email
     // No target email is the same "never reached the server" case as a
     // network failure, from the caller's perspective — Confirmation just
-    // needs a boolean to decide sent vs. error feedback.
+    // needs a boolean to decide sent vs. error feedback. (Confirmation's
+    // inline resend button doesn't surface `suppressed` — that's only
+    // wired up on the dedicated /login/sent page for now.)
     if (!target) return false
-    return auth.requestLink(target, lang)
+    const result = await auth.requestLink(target, lang)
+    return result.sent
   }
 
   const onStartOver = () => {

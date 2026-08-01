@@ -27,6 +27,7 @@ export function SessionAdvancements({
   repoUrl,
   items,
   loading,
+  loadError,
   onCreated,
   onPatched,
   onDeleted,
@@ -38,6 +39,11 @@ export function SessionAdvancements({
   repoUrl?: string
   items: AdvancementRow[] | null
   loading: boolean
+  /** True when the parent's fetch failed — distinct from `items === []`
+   *  (a session that genuinely has no advancements yet). Rendered as a
+   *  one-line error instead of the empty state so a backend failure isn't
+   *  mistaken for "nothing here yet". */
+  loadError?: boolean
   onCreated: (row: AdvancementRow) => void
   onPatched: (row: AdvancementRow) => void
   onDeleted: (id: string) => void
@@ -114,7 +120,11 @@ export function SessionAdvancements({
         </p>
       )}
 
-      {items === null || items.length === 0 ? (
+      {loadError ? (
+        <p className="thread__empty mono" role="alert">
+          {t.loadError}
+        </p>
+      ) : items === null || items.length === 0 ? (
         <p className="thread__empty">{t.empty}</p>
       ) : (
         <>

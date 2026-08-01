@@ -123,7 +123,7 @@
 > Full finding details live in the session transcript; ids (AC-1, XC-23, …)
 > are kept so a future session can trace any line back to its evidence.
 
-- ⬜ **U1 · M · manual: none** — Silent failures on client money/message paths.
+- ✅ **U1 · done (2026-07-31, #28)** — Silent failures on client money/message paths.
   `SessionPage.onSend` has no catch (failed reply looks sent; also route 401 →
   login); `onWithdraw` swallows errors; `PaymentActions` hides the whole
   payment block when the summary fetch fails (`return null`) and resets
@@ -136,7 +136,7 @@
   `attachError` / `field__hint` idioms already in the same files.
   [AC-1/2/3/5, XC-1/2/3/4/15/16/17, OP-3, VF-5]
 
-- ⬜ **U2 · M · manual: none** — Operator trust + admin nav. `onStatusChange`
+- ✅ **U2 · done (2026-07-31, #29)** — Operator trust + admin nav. `onStatusChange`
   renders every 409 as "modified elsewhere" — discriminate the at-capacity 409
   (server message is already actionable) from a genuine stale row, mirroring
   `CommunityDiscountToggle`; `AdminTrash.onRestore` and `DeclinePanel.save`
@@ -152,7 +152,7 @@
   has a loading state with no render branch; `OperatorNotesPanel` load-path
   catch is empty. [OP-1/2/5/6/7/8, XC-5/6/10/11/13/14/18, CI-18]
 
-- ⬜ **U3 · S · manual: none** — Router-link completion. Shared components the
+- ✅ **U3 · done (2026-07-31, #30)** — Router-link completion. Shared components the
   f8f22bd migration missed: `HomeDrillCard`, `CrossFeatureLink`,
   `BringAnything` CTA, intake `AccountStep` sign-in link, every `NotFound`
   exit, `InlineIntakeTeaser` napkin line — plus the whole signed-in surface
@@ -161,7 +161,7 @@
   link" doesn't force retyping. No visual delta expected. [VF-1/2/3/4/6/11,
   AC-4/8]
 
-- ⬜ **U4 · M · manual: none** — Fetch resilience + retry affordances. Five
+- ✅ **U4 · done (2026-07-31, #31)** — Fetch resilience + retry affordances. Five
   surfaces show an error with no retry (`AdminAudit`, `AdminShowcase`,
   `PublicAdvancements`, `Projects`, `Vouches` — reuse `AdminToday`'s
   `load()`-plus-button shape; give Vouches its own error copy instead of the

@@ -426,6 +426,8 @@ const FR = {
       sketchLabel: 'Croquis',
       sketchOpen: 'Ouvrir le croquis',
       sketchClose: 'Masquer le croquis',
+      sketchLoadError: 'Le croquis n’a pas pu charger.',
+      sketchRetry: 'Réessayer',
     },
     intake: {
       voiceTeaser: 'Tu préfères le dire à voix haute ? Enregistre une note vocale →',
@@ -711,6 +713,10 @@ const FR = {
       'Étapes du build avec un lien vers le déploiement Cloudflare correspondant. Chaque entrée est un build que tu peux ouvrir.',
     loading: 'Chargement…',
     empty: 'Aucune avancée publiée pour l’instant.',
+    // Distinct from `empty` — a fetch failure isn't "nothing posted yet",
+    // it's "we don't know". Reusing the empty-state copy here would tell a
+    // visitor with real advancements that there simply aren't any.
+    loadError: 'Impossible de charger les avancées.',
     currentLabel: 'Build actuel',
     formEyebrow: 'Publier une avancée',
     formLabel: 'Titre',
@@ -734,6 +740,7 @@ const FR = {
     formStampHint:
       'Le lien Cloudflare et le commit sont ajoutés automatiquement au prochain déploiement.',
     formError: 'Échec, réessaie.',
+    retry: 'Réessayer',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
     doneEditing: 'Terminer',
@@ -793,6 +800,7 @@ const FR = {
     loading: 'Chargement…',
     empty: 'Rien de publié pour le moment. Reviens bientôt.',
     error: 'Impossible de charger les projets.',
+    retry: 'Réessayer',
     untitled: 'Projet sans titre',
     currentBuildLabel: 'Build actuel',
     noBuildYet: 'Pas encore de build épinglé',
@@ -844,6 +852,7 @@ const FR = {
     empty:
       'Aucune session en vitrine pour l’instant. Active la vitrine sur une session pour la voir apparaître ici.',
     error: 'Impossible de charger les vitrines.',
+    retry: 'Réessayer',
     editLink: 'Éditer →',
     openShare: 'Voir la page partage ↗',
     countSingular: '1 vitrine',
@@ -1020,6 +1029,11 @@ const FR = {
     heading: 'Quelques mots de gens qui ont travaillé avec moi',
     lead: 'Le portail est rapide à essayer ; ces témoignages aident à savoir si on va cliquer ensemble.',
     empty: 'Pas encore de témoignages publiés. Reviens dans quelques semaines.',
+    // Distinct from errorBoundary.body (the app-wide "this page didn't
+    // load" copy) — the rest of /vouches renders fine, only this list
+    // failed. A generic full-page error would overstate the damage.
+    loadError: 'La liste des témoignages n’a pas pu charger.',
+    retry: 'Réessayer',
     relationshipLabels: {
       client: 'Client',
       colleague: 'Collègue',
@@ -1469,6 +1483,8 @@ const EN: Copy = {
       sketchLabel: 'Sketch',
       sketchOpen: 'Open the sketch',
       sketchClose: 'Hide the sketch',
+      sketchLoadError: "The sketch couldn't load.",
+      sketchRetry: 'Try again',
     },
     intake: {
       voiceTeaser: 'Rather say it out loud? Record a voice note →',
@@ -1753,6 +1769,7 @@ const EN: Copy = {
       'Build milestones with a link to the matching Cloudflare deployment. Each entry is a build you can open.',
     loading: 'Loading…',
     empty: 'No advancements posted yet.',
+    loadError: "Couldn't load the advancements.",
     currentLabel: 'Current build',
     formEyebrow: 'Post an advancement',
     formLabel: 'Title',
@@ -1775,6 +1792,7 @@ const EN: Copy = {
     formSubmitting: 'Posting…',
     formStampHint: 'The Cloudflare URL and commit are added automatically on the next deploy.',
     formError: 'Failed, try again.',
+    retry: 'Try again',
     save: 'Save',
     saving: 'Saving…',
     doneEditing: 'Done',
@@ -1834,6 +1852,7 @@ const EN: Copy = {
     loading: 'Loading…',
     empty: 'Nothing published yet. Check back soon.',
     error: 'Failed to load projects.',
+    retry: 'Try again',
     untitled: 'Untitled project',
     currentBuildLabel: 'Current build',
     noBuildYet: 'No pinned build yet',
@@ -1884,6 +1903,7 @@ const EN: Copy = {
     loading: 'Loading…',
     empty: "No showcased sessions yet. Turn on a session's showcase to see it appear here.",
     error: "Couldn't load the showcases.",
+    retry: 'Try again',
     editLink: 'Edit →',
     openShare: 'Open share page ↗',
     countSingular: '1 showcase',
@@ -2058,6 +2078,8 @@ const EN: Copy = {
     heading: 'A few words from people who worked with me',
     lead: 'The portal is quick to try; these vouches help you decide if the contact fits.',
     empty: 'No vouches published yet. Check back in a few weeks.',
+    loadError: "The list of vouches couldn't load.",
+    retry: 'Try again',
     relationshipLabels: {
       client: 'Client',
       colleague: 'Colleague',

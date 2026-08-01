@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
@@ -34,21 +34,20 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
 
   usePageMeta({ title: `${t.heading} — Marc`, lang })
 
-  useEffect(() => {
+  // Hoisted so the error state's retry button re-runs the same fetch.
+  const load = useCallback(() => {
     if (!id) return
-    let cancelled = false
-    listPublicAdvancements(id)
+    return listPublicAdvancements(id)
       .then((r) => {
-        if (cancelled) return
         setItems(r.advancements)
+        setError(false)
       })
-      .catch(() => {
-        if (!cancelled) setError(true)
-      })
-    return () => {
-      cancelled = true
-    }
+      .catch(() => setError(true))
   }, [id])
+
+  useEffect(() => {
+    void load()
+  }, [load])
 
   useEffect(() => {
     if (!id) return
@@ -99,7 +98,10 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
 
             {error && (
               <p className="thread__empty mono" role="alert">
-                {t.formError}
+                {t.formError}{' '}
+                <button type="button" className="link-btn mono" onClick={() => void load()}>
+                  {t.retry}
+                </button>
               </p>
             )}
 

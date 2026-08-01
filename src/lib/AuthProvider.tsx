@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api } from './api'
-import { AuthContext, type AuthState } from './authContext'
+import { AuthContext, type AuthState, type RequestLinkResult } from './authContext'
 import { clearDraft } from './draft'
 import { setSentryUser } from './sentry'
 
@@ -90,17 +90,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const requestLink = useCallback(async (addr: string, lang: 'fr' | 'en') => {
-    try {
-      await api<{ sent: boolean }>('/api/auth/request-link', {
-        method: 'POST',
-        body: { email: addr, lang },
-      })
-      return true
-    } catch {
-      return false
-    }
-  }, [])
+  const requestLink = useCallback(
+    async (addr: string, lang: 'fr' | 'en'): Promise<RequestLinkResult> => {
+      try {
+        const r = await api<RequestLinkResult>('/api/auth/request-link', {
+          method: 'POST',
+          body: { email: addr, lang },
+        })
+        // The server's `sent` is always true on this path (it 200s even on
+        // bad input / rate-limit, by design — see request-link.ts). What we
+        // actually observed here is "the request reached the server", so
+        // that's what `sent` means from the caller's perspective too.
+        return { sent: true, suppressed: r.suppressed }
+      } catch {
+        return { sent: false }
+      }
+    },
+    [],
+  )
 
   const logout = useCallback(async () => {
     try {

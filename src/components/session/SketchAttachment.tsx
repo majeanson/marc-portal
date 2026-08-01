@@ -10,6 +10,7 @@
 
 import { useState } from 'react'
 import { DICT, type Lang } from '../../i18n'
+import { api } from '../../lib/api'
 import { attachmentUrl, type AttachmentRow } from '../../lib/attachmentsApi'
 import type { NapkinScene } from '../../lib/napkin'
 import { NapkinReplay } from '../NapkinReplay'
@@ -31,14 +32,20 @@ export function SketchAttachment({
 
   const reveal = async () => {
     setOpen(true)
-    if (scene || failed) return
+    // Guard on `scene` only, not `failed` — a prior failure must not
+    // permanently block retry. `failed` is reset on every attempt so a
+    // second click after a transient network blip can succeed.
+    if (scene) return
+    setFailed(false)
     try {
-      const res = await fetch(attachmentUrl(sessionId, att.id), { credentials: 'same-origin' })
-      if (!res.ok) {
-        setFailed(true)
-        return
-      }
-      const json = (await res.json()) as { elements?: unknown }
+      // api<T>() always calls res.json() regardless of content-type, and
+      // the attachment's stored content-type here is the Excalidraw vendor
+      // MIME (application/vnd.excalidraw+json), not application/json — but
+      // the body is still plain JSON text (see uploadSketch in
+      // attachmentsApi.ts), so this parses fine. Routes through the shared
+      // wrapper instead of a raw fetch() per house convention (CSRF/creds
+      // handling lives in one place even though this is a GET).
+      const json = await api<{ elements?: unknown }>(attachmentUrl(sessionId, att.id))
       if (json && Array.isArray(json.elements)) setScene({ elements: json.elements })
       else setFailed(true)
     } catch {
@@ -69,7 +76,14 @@ export function SketchAttachment({
       {open && !scene && !failed && (
         <div className="napkin__loading mono">{DICT[lang].napkin.loadingCanvas}</div>
       )}
-      {open && failed && <p className="mono thread__transcript-pending">—</p>}
+      {open && failed && (
+        <p className="mono thread__transcript-pending" role="alert">
+          {tm.sketchLoadError}{' '}
+          <button type="button" className="link-btn mono" onClick={() => void reveal()}>
+            {tm.sketchRetry}
+          </button>
+        </p>
+      )}
     </li>
   )
 }

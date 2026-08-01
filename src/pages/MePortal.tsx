@@ -285,6 +285,15 @@ export function MePortal({ lang }: { lang: Lang }) {
     const v = searchParams.get('paid')
     return v === '1' ? 'paid' : v === '0' ? 'canceled' : null
   })
+  // Captured once at construction too — same reasoning as paymentToast
+  // above — so it survives the effect below stripping ?pay= from the URL.
+  // Threaded down to PaymentActions so it can tell "this specific payment"
+  // apart from "some payment, eventually" when closing the post-Stripe-
+  // redirect webhook race (see the reconciliation effect in
+  // PaymentActions.tsx).
+  const [justPaidPaymentId] = useState<string | null>(() =>
+    searchParams.get('paid') === '1' ? searchParams.get('pay') : null,
+  )
   // Once initialized, clear the URL params (so reload / share-link is clean)
   // and arm an auto-dismiss. Runs only when the toast first becomes non-null,
   // not on every searchParams change — react-router gives us a stable
@@ -614,6 +623,7 @@ export function MePortal({ lang }: { lang: Lang }) {
                       lang={lang}
                       langPrefix={langPrefix}
                       copy={t}
+                      justPaidPaymentId={justPaidPaymentId}
                     />
                   ))}
                 </ul>
@@ -744,11 +754,13 @@ function SessionCard({
   lang,
   langPrefix,
   copy,
+  justPaidPaymentId,
 }: {
   session: SessionRow
   lang: Lang
   langPrefix: string
   copy: (typeof COPY)[Lang]
+  justPaidPaymentId: string | null
 }) {
   const preview = previewFromIntake(session.intake_json)
   const title = preview ? localized(getSchemaForType(preview.type).title, lang) : copy.untitled
@@ -790,7 +802,12 @@ function SessionCard({
         </div>
       </Link>
       {session.status === 'active' && (
-        <PaymentActions session={session} lang={lang} variant="compact" />
+        <PaymentActions
+          session={session}
+          lang={lang}
+          variant="compact"
+          justPaidPaymentId={justPaidPaymentId}
+        />
       )}
     </Surface>
   )

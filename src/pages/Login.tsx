@@ -69,21 +69,28 @@ export function Login({ lang }: { lang: Lang }) {
     if (!email.trim() || submitting) return
     setSubmitting(true)
     setTransportError(false)
-    const sent = await requestLink(email.trim(), lang)
-    // requestLink returns false in exactly one case: the request itself never
-    // reached the server (offline, DNS, server down) — a fetch that threw.
-    // That's distinct from the anti-enumeration 200 the server always sends
-    // once the request lands, which we can't and shouldn't distinguish from
-    // "no such account" here. So: false → the visitor's email was never
+    const result = await requestLink(email.trim(), lang)
+    // requestLink().sent is false in exactly one case: the request itself
+    // never reached the server (offline, DNS, server down) — a fetch that
+    // threw. That's distinct from the anti-enumeration 200 the server always
+    // sends once the request lands, which we can't and shouldn't distinguish
+    // from "no such account" here. So: false → the visitor's email was never
     // submitted, stay on the form and say so; true → the server has it
     // (real or not), always advance to "check your email" without leaking
     // which.
-    if (!sent) {
+    if (!result.sent) {
       setTransportError(true)
       setSubmitting(false)
       return
     }
-    navigate(`${lang === 'en' ? '/en' : ''}/login/sent?email=${encodeURIComponent(email.trim())}`)
+    // `suppressed` rides along on the URL to /login/sent — it only ever
+    // reflects deliverability for the exact address this visitor just
+    // typed (see MagicLinkSent.tsx), so passing it through a query param
+    // that only they see isn't a new enumeration surface.
+    const suppressedSuffix = result.suppressed ? `&suppressed=${result.suppressed}` : ''
+    navigate(
+      `${lang === 'en' ? '/en' : ''}/login/sent?email=${encodeURIComponent(email.trim())}${suppressedSuffix}`,
+    )
   }
 
   if (currentEmail) {

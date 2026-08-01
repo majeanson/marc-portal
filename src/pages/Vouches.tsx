@@ -3,7 +3,7 @@
 // which already strips author_email from the projection — see
 // PublicVouchRow in functions/_lib/vouches.ts.
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { FeatureContinue } from '../components/FeatureContinue'
@@ -26,20 +26,19 @@ export function Vouches({ lang }: { lang: Lang }) {
 
   usePageMeta({ title: `${t.pageTitle} — Marc`, lang })
 
-  useEffect(() => {
-    let cancelled = false
-    listPublicVouches()
+  // Hoisted so the error state's retry button re-runs the same fetch.
+  const load = useCallback(() => {
+    return listPublicVouches()
       .then((r) => {
-        if (cancelled) return
         setVouches(r.vouches)
+        setError(false)
       })
-      .catch(() => {
-        if (!cancelled) setError(true)
-      })
-    return () => {
-      cancelled = true
-    }
+      .catch(() => setError(true))
   }, [])
+
+  useEffect(() => {
+    void load()
+  }, [load])
 
   return (
     <div className="app" data-feature={PAGE_FEATURE['page.vouches']}>
@@ -71,7 +70,14 @@ export function Vouches({ lang }: { lang: Lang }) {
             </PageMast>
 
             <div className="vouches-list">
-              {error && <p className="form__error">{DICT[lang].errorBoundary.body}</p>}
+              {error && (
+                <p className="form__error" role="alert">
+                  {t.loadError}{' '}
+                  <button type="button" className="link-btn mono" onClick={() => void load()}>
+                    {t.retry}
+                  </button>
+                </p>
+              )}
               {!error && vouches === null && (
                 <p className="field__hint" aria-busy="true">
                   …

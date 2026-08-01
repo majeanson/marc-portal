@@ -6,7 +6,7 @@
  * /api/admin/audit (operator-gated).
  */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { api, ApiError } from '../lib/api'
 import { usePageMeta } from '../lib/usePageMeta'
@@ -27,6 +27,7 @@ const COPY = {
     title: 'Journal des actions',
     sub: 'Historique de chaque action d’opérateur — pour ta mémoire et pour la sécurité.',
     error: 'Hmm, on n’a pas pu charger le journal.',
+    retry: 'Réessayer',
     forbidden: 'Cette page est réservée à l’opérateur.',
     empty: 'Aucune action enregistrée — c’est neuf.',
     cols: { when: 'Quand', actor: 'Acteur', tenant: 'Client', action: 'Action' },
@@ -40,6 +41,7 @@ const COPY = {
     title: 'Action history',
     sub: 'Reverse-chronological log of every operator action — for your memory and security.',
     error: 'Hmm, couldn’t load the log.',
+    retry: 'Try again',
     forbidden: 'This page is for the operator only.',
     empty: 'No actions recorded yet — fresh slate.',
     cols: { when: 'When', actor: 'Actor', tenant: 'Buyer', action: 'Action' },
@@ -83,22 +85,25 @@ export function AdminAudit({ lang }: { lang: Lang }) {
 
   usePageMeta({ title: `${t.title} — Marc`, lang })
 
-  useEffect(() => {
-    let cancelled = false
-    api<{ entries: AuditEntry[] }>('/api/admin/audit')
+  // Hoisted so the retry button (on a transient failure) can re-run the
+  // exact same fetch instead of duplicating it. No cancelled-flag here: this
+  // is a single admin-only GET triggered by mount or an explicit click, and
+  // a late response setting state after unmount is harmless.
+  const load = useCallback(() => {
+    return api<{ entries: AuditEntry[] }>('/api/admin/audit')
       .then((r) => {
-        if (cancelled) return
         setEntries(r.entries)
+        setError(null)
       })
       .catch((err) => {
-        if (cancelled) return
         if (err instanceof ApiError && err.status === 403) setError('forbidden')
         else setError('other')
       })
-    return () => {
-      cancelled = true
-    }
   }, [])
+
+  useEffect(() => {
+    void load()
+  }, [load])
 
   if (error === 'forbidden') {
     return (
@@ -130,7 +135,14 @@ export function AdminAudit({ lang }: { lang: Lang }) {
       </header>
 
       <section className="surface admin-block fleet-block">
-        {error === 'other' && <p className="form__error">{t.error}</p>}
+        {error === 'other' && (
+          <p className="form__error" role="alert">
+            {t.error}{' '}
+            <button type="button" className="link-btn mono" onClick={() => void load()}>
+              {t.retry}
+            </button>
+          </p>
+        )}
         {!entries && !error && (
           <p className="mono" style={{ color: 'var(--text-soft)' }}>
             …
