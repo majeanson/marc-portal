@@ -1,14 +1,6 @@
 {
   "runs": [
     {
-      "commit": "add6630",
-      "date": "2026-05-24T00:29:33.116Z",
-      "performance": 80,
-      "accessibility": 93,
-      "bestPractices": 93,
-      "seo": 83
-    },
-    {
       "commit": "d35b000",
       "date": "2026-05-24T00:52:57.172Z",
       "performance": 80,
@@ -477,6 +469,14 @@
       "date": "2026-10-15T19:13:41.250Z",
       "performance": 71,
       "accessibility": 92,
+      "bestPractices": 75,
+      "seo": 83
+    },
+    {
+      "commit": "a406fdc",
+      "date": "2026-10-15T22:33:01.168Z",
+      "performance": 88,
+      "accessibility": 96,
       "bestPractices": 75,
       "seo": 83
     }
