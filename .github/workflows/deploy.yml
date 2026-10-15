@@ -30,18 +30,24 @@ jobs:
       # `postbuild` script (scripts/prerender.mjs), which drives Playwright to
       # snapshot the homepage to static HTML. Mirrors e2e.yml. ~30s added.
       - run: npx playwright install --with-deps chromium
-      - run: npm run build
 
-      # Apply any pending D1 migrations before the deploy. Idempotent — wrangler
-      # no-ops migrations that are already applied. Without this step the code
-      # ships with schema-ahead expectations and the API 500s until someone
-      # runs `npm run db:migrate:prod` by hand.
+      # Apply any pending D1 migrations BEFORE the build, not just before the
+      # deploy. Idempotent — wrangler no-ops migrations that are already
+      # applied. Two failure modes this ordering prevents: (1) code shipping
+      # with schema-ahead expectations and the API 500ing until someone runs
+      # `npm run db:migrate:prod` by hand; (2) the prerender's projects-seed
+      # fetch (postbuild hits the live API) baking PRE-migration showcase data
+      # into the shell, which left every data-only migration one deploy stale
+      # on first paint (caught on 0044). Migrations are additive by policy, so
+      # applying them while the previous code version is still live is safe.
       - name: Apply D1 migrations
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: d1 migrations apply marc-portal-db --remote
+
+      - run: npm run build
 
       # Cloudflare's deployments API rejects commit messages containing some
       # multi-byte UTF-8 chars (we hit it on a body with U+2192 right-arrows)
