@@ -171,7 +171,7 @@ boundary, the voice recorder.
 
 **Skip** (chrome — no standalone user-meaning; the feature lives
 elsewhere): Header, Footer, PageMast, FeatureDot, FeatureContinue,
-CrossFeatureLink, FeatureFolioLink, CTA, EnglishNudge, EmailTestCard,
+CrossFeatureLink, FeatureFolioLink, CTA, EmailTestCard,
 FirstNameCard, HeroShippedProject, HomeDrillCard, InlineIntakeTeaser,
 LangPrefCard, MobileStickyCta, NapperonDoodles, PaymentActions,
 ProjectCardPreview, PullQuote, Runbook, RunbookParallel, Scorecard,

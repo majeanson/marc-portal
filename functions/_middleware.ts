@@ -94,11 +94,12 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
 
   // First-visit locale redirect. Only fires on the bare root (`/`) so we
   // don't surprise users who deep-link into an FR page. FR is the default
-  // landing — the Québec-first pitch is the whole point, and an EN-browser
-  // visitor still gets a one-time nudge banner (src/components/EnglishNudge)
-  // pointing at /en. The only thing that redirects away from FR is an
-  // explicit prior choice via the language switcher (mp_lang=en cookie).
-  // Accept-Language is intentionally NOT consulted here.
+  // landing — the Québec-first pitch is the whole point; the EN path is a
+  // choice the visitor makes in the header menu, never a prompt we push
+  // (the one-time nudge banner was removed 2026-10-15 by Marc's call). The
+  // only thing that redirects away from FR is an explicit prior choice via
+  // the language switcher (mp_lang=en cookie). Accept-Language is
+  // intentionally NOT consulted here.
   if (url.pathname === '/' && ctx.request.method === 'GET') {
     const cookieLang = parseLangCookie(ctx.request)
     if (cookieLang === 'en') {

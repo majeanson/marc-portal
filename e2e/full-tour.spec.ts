@@ -235,38 +235,30 @@ test.describe('full tour — header chrome', () => {
     })
 
     for (const { section } of HEADER_NAV) {
-      test(`nav link → #${section} (${lang})`, async ({ page }) => {
-        // The header section nav is display:none below 640px by design —
-        // mobile navigates via the sticky CTA + scrolling, not anchor links
-        // (styles.css "Hide the section nav entirely on phones"). Nothing to
-        // click there, so this interaction only applies above the breakpoint.
-        test.skip(
-          (page.viewportSize()?.width ?? 0) < 640,
-          'header section nav is hidden on phone by design',
-        )
+      test(`menu link → #${section} (${lang})`, async ({ page }) => {
+        // Section links live inside the site menu now, at every viewport —
+        // the phone-only skip the old inline nav needed is gone.
         await page.goto(start)
+        await page.locator('.site-menu__trigger').click()
         const href = `${prefix}/#${section}`
-        await page.locator(`.site-header__section-link[href="${href}"]`).click()
+        await page.locator(`.site-menu__section-link[href="${href}"]`).click()
         await waitForPath(page, href)
         await expectRealPage(page)
+        // Clicking a same-page anchor must also close the menu.
+        await expect(page.locator('.site-menu__panel')).toHaveCount(0)
       })
     }
 
     for (const { section, feature } of HEADER_NAV) {
-      test(`nav dot on #${section} → site map filtered to ${feature} (${lang})`, async ({
+      test(`menu dot on #${section} → site map filtered to ${feature} (${lang})`, async ({
         page,
       }) => {
-        // Same as the nav link above: the section nav (dots included) is
-        // hidden below 640px, so this interaction is desktop/tablet only.
-        test.skip(
-          (page.viewportSize()?.width ?? 0) < 640,
-          'header section nav is hidden on phone by design',
-        )
         await page.goto(start)
+        await page.locator('.site-menu__trigger').click()
         const to = lang === 'fr' ? `/carte?feature=${feature}` : `/en/map?feature=${feature}`
         // `meta` appears on two sections (how + about) — both dots carry the
         // same destination, so .first() reaches a correct one either way.
-        await page.locator(`.site-header__section-dot[href="${to}"]`).first().click()
+        await page.locator(`.site-menu__section-dot[href="${to}"]`).first().click()
         await waitForPath(page, mapPath(lang))
         await expect(page).toHaveURL(new RegExp(`feature=${feature}`))
         await expectRealPage(page)
@@ -287,6 +279,8 @@ test.describe('full tour — header chrome', () => {
   for (const pair of LANG_PAIRS) {
     test(`lang switch FR→EN keeps the page (${pair.fr})`, async ({ page }) => {
       await page.goto(pair.fr)
+      // The FR/EN switcher lives in the site menu's preferences row.
+      await page.locator('.site-menu__trigger').click()
       await page.locator('nav.lang a', { hasText: 'EN' }).click()
       await waitForPath(page, pair.en)
       await expectRealPage(page)
@@ -294,6 +288,7 @@ test.describe('full tour — header chrome', () => {
 
     test(`lang switch EN→FR keeps the page (${pair.en})`, async ({ page }) => {
       await page.goto(pair.en)
+      await page.locator('.site-menu__trigger').click()
       await page.locator('nav.lang a', { hasText: 'FR' }).click()
       await waitForPath(page, pair.fr)
       await expectRealPage(page)

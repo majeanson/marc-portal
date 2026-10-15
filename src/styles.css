@@ -638,82 +638,10 @@ p {
     -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent);
   }
 }
-/* English-nudge — FR-default landing surfaces a single line of mono copy
-   above the hero, offering the EN switch to visitors whose browser reports
-   en-*. Chrome only: paper background, hairline border, no pill, no
-   gradient, no fade-up. The visual register matches the section-rail
-   ledger tags so it reads as quiet site furniture, not a popup.
-
-   Visibility is gated on html[data-lang-nudge="en"], which the inline
-   theme-bootstrap.js sets before paint based on navigator + cookie +
-   localStorage. The React component renders the banner DOM unconditionally
-   on the FR home; this rule keeps it out of view until the bootstrap decides
-   otherwise, so the prerendered banner doesn't blink in/out during mount. */
-html:not([data-lang-nudge='en']) .en-nudge {
-  display: none;
-}
-.en-nudge {
-  background: var(--bg-section);
-  border-bottom: 1px solid var(--border-soft);
-}
-.en-nudge__inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 10px var(--gutter);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--text-soft);
-}
-.en-nudge__prompt {
-  /* Sits at natural mono weight; no transform, no letter-spacing — the
-     prompt is a question, not a label. */
-}
-.en-nudge__yes {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  font-weight: 600;
-}
-.en-nudge__yes:hover,
-.en-nudge__yes:focus-visible {
-  color: var(--accent-warm);
-}
-.en-nudge__no {
-  background: none;
-  border: 0;
-  color: var(--text-soft);
-  font-family: inherit;
-  font-size: inherit;
-  cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 3px;
-  margin-left: auto;
-}
-.en-nudge__no:hover,
-.en-nudge__no:focus-visible {
-  color: var(--text-mid);
-}
-@media (max-width: 640px) {
-  .en-nudge__inner {
-    font-size: 12px;
-    gap: 12px;
-  }
-  .en-nudge__no {
-    margin-left: 0;
-  }
-}
-
 .site-header__inner {
-  /* Wider than --max-w (which sizes content to a reading column). Brand +
-     5-link section nav + admin chrome (Mes sessions · Déconnexion · VOIR
-     COMME VISITEUR pill · theme · lang) needs ~1150px to avoid crowding;
-     at 880px the nav overflowed back into the brand on logged-in admin. */
+  /* Wider than --max-w (which sizes content to a reading column) so the
+     brand and the control cluster sit at the page's visual edges, in line
+     with the footer and the home sections below. */
   max-width: 1280px;
   margin: 0 auto;
   padding: 14px var(--gutter);
@@ -732,67 +660,22 @@ html:not([data-lang-nudge='en']) .en-nudge {
 .brand .dot {
   color: var(--accent);
 }
-.site-header__sections {
-  display: inline-flex;
-  align-items: center;
-  gap: 18px;
-  font-family: var(--display);
-  font-size: 13.5px;
-  min-width: 0;
-  flex: 1 1 auto;
-  justify-content: center;
-}
-.site-header__section-link {
-  color: var(--text-mid);
-  text-decoration: none;
-  font-weight: 500;
-  white-space: nowrap;
-  padding: 6px 2px;
-  border-bottom: 2px solid transparent;
-  transition:
-    color 120ms ease,
-    border-color 120ms ease;
-}
-.site-header__section-link:hover,
-.site-header__section-link:focus-visible {
-  color: var(--accent-warm);
-  border-bottom-color: var(--accent-warm);
-  outline: none;
-  text-decoration: none;
-}
-/* Section nav item: holds the FeatureDot + the anchor side-by-side. The
-   wrapping span carries data-feature so descendants (the dot, the link's
-   hover underline) read the matching --ft-color. The dot is a SEPARATE
-   target — clicks land on /carte?feature=X — while the anchor still
-   scrolls to the home section. */
-.site-header__section {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.site-header__section[data-feature] .site-header__section-link:hover,
-.site-header__section[data-feature] .site-header__section-link:focus-visible {
-  color: var(--ft-color);
-  border-bottom-color: var(--ft-color);
-}
-.site-header__section-dot {
-  flex-shrink: 0;
-}
-
-/* Session variant: the nav collapses to a single "← Mes sessions" back
-   link, styled like the page-back link visitors already see lower in the
-   session (familiar affordance, no learning cost). On mobile the strip
-   stays on row 1 next to the brand instead of wrapping to a second row —
-   one link doesn't need the swipable shelf the full marketing nav does. */
+/* Session variant: a single "← Mes sessions" back link next to the brand,
+   styled like the page-back link visitors already see lower in the session
+   (familiar affordance, no learning cost). This is the only nav the bar
+   itself carries — the marketing section links live in the site menu. */
 .site-header__sections--session {
+  display: inline-flex;
+  align-items: center;
   justify-content: flex-start;
-  gap: 0;
   flex: 1 1 auto;
+  min-width: 0;
   padding-inline-start: 18px;
 }
 .site-header__section-link--back {
   color: var(--text-mid);
-  border-bottom: none;
+  text-decoration: none;
+  white-space: nowrap;
   padding: 6px 4px;
   font-family: var(--mono);
   font-size: 12.5px;
@@ -801,20 +684,8 @@ html:not([data-lang-nudge='en']) .en-nudge {
 .site-header__section-link--back:hover,
 .site-header__section-link--back:focus-visible {
   color: var(--accent);
-  border-bottom: none;
-}
-@media (max-width: 1180px) {
-  /* Don't apply the marketing-nav second-row wrap to the session back link
-     — it's a single link, stays inline with the brand. */
-  .site-header__sections--session {
-    order: 0;
-    flex-basis: auto;
-    margin-top: 0;
-    padding-bottom: 0;
-    overflow: visible;
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
+  outline: none;
+  text-decoration: none;
 }
 @media (max-width: 640px) {
   .site-header__sections--session {
@@ -822,57 +693,6 @@ html:not([data-lang-nudge='en']) .en-nudge {
   }
   .site-header__section-link--back {
     font-size: 12px;
-  }
-}
-/* Below 1180px the centered nav can't share a row with brand + admin chrome
-   (Mes sessions · Déconnexion · VOIR COMME VISITEUR pill) without colliding.
-   Instead of hiding it (which left phone visitors with no section nav and
-   no SectionRail either), wrap the header to two rows: brand + auth on top,
-   sections as a horizontally-swipable strip below. Same scroll-with-fade
-   pattern as .site-header__right on phones. */
-@media (max-width: 1180px) {
-  .site-header__inner {
-    flex-wrap: wrap;
-  }
-  .site-header__sections {
-    /* order:3 puts the strip after both brand and the right cluster (both
-       default order:0), so row 1 stays "brand … auth" and row 2 holds the
-       section nav full-width. flex-basis: 100% forces the wrap. */
-    order: 3;
-    flex-basis: 100%;
-    min-width: 0;
-    justify-content: flex-start;
-    gap: 22px;
-    margin-top: 6px;
-    padding-bottom: 2px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-    /* Soft fade on the right edge hints "more to swipe" the same way the
-       right-cluster mask does. Left edge stays flush so the first item
-       lines up with the brand above it. */
-    mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
-    -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
-  }
-  .site-header__sections::-webkit-scrollbar {
-    display: none;
-  }
-  .site-header__section-link {
-    flex-shrink: 0;
-  }
-}
-/* Below 640px the swipe-strip nav becomes a second sticky row of chrome
-   that takes ~40px of viewport before the visitor reads anything. The
-   home is short enough that anchor links to its own sections aren't the
-   right mobile affordance — the MobileStickyCta + ordinary scrolling
-   IS the mobile navigation. Hide the section nav entirely on phones.
-   The session-variant ("← Mes sessions" back link) keeps showing
-   because it's a different, primary navigation gesture. */
-@media (max-width: 640px) {
-  .site-header__sections:not(.site-header__sections--session) {
-    display: none;
   }
 }
 .site-header__right {
@@ -935,57 +755,157 @@ html:not([data-lang-nudge='en']) .en-nudge {
   border-color: var(--accent-warm);
   filter: brightness(1.05);
 }
-.theme-toggle {
-  appearance: none;
-  background: var(--bg-hover);
-  border: 0;
-  border-radius: 999px;
-  width: 32px;
-  height: 32px;
+
+/* Site menu — the one disclosure that holds everything the bar used to
+   carry inline: section anchors, sign-out, the admin preview toggle, and
+   the lang/theme/accent preferences. Keeps the bar itself sparse at every
+   width (no two-row wrap, no swipable strips). Same keycap chrome as the
+   other header controls. */
+.site-menu {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text-soft);
-  padding: 0;
-  transition:
-    background 160ms ease,
-    color 160ms ease,
-    transform 220ms cubic-bezier(0.32, 0.72, 0.24, 1);
+  flex-shrink: 0;
 }
-.theme-toggle:hover,
-.theme-toggle:focus-visible {
-  background: var(--bg-active);
+.site-menu__trigger {
+  appearance: none;
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-mid);
+  background: var(--bg-card);
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
+  padding: 5px 13px;
+  cursor: pointer;
+}
+.site-menu__trigger:hover,
+.site-menu__trigger:focus-visible {
   color: var(--text);
   outline: none;
 }
-.theme-toggle[aria-pressed='true'] {
+.site-menu__trigger--open {
+  color: var(--text);
+  background: var(--bg-active);
+  box-shadow: none;
+}
+.site-menu__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 236px;
+  max-width: calc(100vw - 24px);
+  background: var(--bg-card);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  /* The hard edge does the framing; the wide soft shadow only separates the
+     panel from whatever content scrolls behind it. */
+  box-shadow:
+    var(--edge-shadow),
+    0 12px 32px rgba(20, 16, 10, 0.12);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+  z-index: 40;
+}
+.site-menu__sections {
+  display: grid;
+  gap: 2px;
+  font-family: var(--display);
+  font-size: 14px;
+}
+/* Menu nav item: FeatureDot + anchor side-by-side. The wrapping span
+   carries data-feature so descendants read the matching --ft-color. The
+   dot is a SEPARATE target — clicks land on /carte?feature=X — while the
+   anchor scrolls to the home section. */
+.site-menu__section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.site-menu__section-dot {
+  flex-shrink: 0;
+}
+.site-menu__section-link {
+  flex: 1 1 auto;
+  color: var(--text-mid);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 6px 2px;
+}
+.site-menu__section-link:hover,
+.site-menu__section-link:focus-visible {
   color: var(--accent-warm);
+  outline: none;
+  text-decoration: none;
 }
-.theme-toggle__glyph {
-  /* Per-glyph optical centering. The sun is roughly balanced by the
-     flex parent; the crescent ☾ renders low + right of geometric center
-     in serif fonts, so we shift it up and left when it's the active
-     glyph (aria-pressed='true' = night mode). */
-  --glyph-x: 0px;
-  --glyph-y: -0.5px;
-  font-size: 15px;
-  line-height: 1;
-  transform: translate(var(--glyph-x), var(--glyph-y));
-  transition: transform 280ms cubic-bezier(0.32, 0.72, 0.24, 1);
+.site-menu__section[data-feature] .site-menu__section-link:hover,
+.site-menu__section[data-feature] .site-menu__section-link:focus-visible {
+  color: var(--ft-color);
 }
-.theme-toggle[aria-pressed='true'] .theme-toggle__glyph {
-  --glyph-x: -2px;
-  --glyph-y: -3px;
+.site-menu__account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
 }
-.theme-toggle:active .theme-toggle__glyph {
-  transform: translate(var(--glyph-x), var(--glyph-y)) scale(0.9);
+.site-menu__signout {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-soft);
+  cursor: pointer;
 }
-@media (prefers-reduced-motion: reduce) {
-  .theme-toggle,
-  .theme-toggle__glyph {
-    transition: none;
-  }
+.site-menu__signout:hover,
+.site-menu__signout:focus-visible {
+  color: var(--text);
+  outline: none;
+}
+.site-menu__prefs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
+}
+/* Day/night switch — same segmented keycap chrome as the FR/EN switcher
+   below, so the two preference controls read as one family. Text segments
+   (Jour | Nuit), not sun/moon glyphs: U+2600-block characters render with
+   emoji presentation on several platforms, which breaks the no-emoji rule
+   for site chrome. */
+.theme-toggle {
+  display: inline-flex;
+  gap: 0;
+  font-family: var(--display);
+  font-size: 13px;
+  background: var(--bg-card);
+  padding: 2px;
+  border: 1px solid var(--edge);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--edge-shadow);
+}
+.theme-toggle button {
+  appearance: none;
+  padding: 4px 11px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  color: var(--text-soft);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.theme-toggle button.active {
+  color: var(--on-accent);
+  background: var(--accent);
 }
 
 /* Accent picker — the second theme axis (sage default | violet | …). A row of
@@ -8539,18 +8459,12 @@ button.intake__progress-step:disabled {
 }
 
 @media (max-width: 640px) {
-  /* Header on phones: too many controls to fit on one row when signed in as
-     admin (Mes sessions · Déconnexion · VOIR COMME VISITEUR · theme · FR/EN).
-     Instead of dropping a hamburger menu — which adds a stateful component
-     and an extra tap — we make the right cluster horizontally swipable.
-     iOS/Android bounce-scroll discovers it naturally; a soft mask on the
-     right edge hints "more there". Brand stays anchored on the left.
-     Single row, never wraps. */
+  /* Header on phones: brand on the left, search + one auth word + Menu on
+     the right. The menu holds everything else, so the row fits a 360px
+     screen without wrapping or swiping. */
   .site-header__inner {
     gap: 8px;
     padding: 12px 14px;
-    /* Wrap is enabled in the 1180px rule above so the section nav drops
-       to its own row beneath brand + auth. Keep that here. */
   }
   .brand {
     flex-shrink: 0;
@@ -8560,29 +8474,6 @@ button.intake__progress-step:disabled {
     flex: 1 1 0;
     min-width: 0;
     justify-content: flex-end;
-    overflow-x: auto;
-    overflow-y: hidden;
-    /* Hide the scrollbar — visual chrome the visitor doesn't need. The
-       fade on the right (mask-image below) does the affordance work. */
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-    /* Fade only on the right (where overflow happens). Left edge stays
-       flush against the brand. 28px is wide enough to read as soft fade,
-       narrow enough to not eat content on first paint. */
-    mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
-    -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
-  }
-  .site-header__right::-webkit-scrollbar {
-    display: none;
-  }
-  /* Items inside the scroll container don't shrink — each pill stays
-     whole so labels read cleanly while you swipe. */
-  .site-header__auth,
-  .theme-toggle,
-  .lang,
-  .site-header__preview-toggle {
-    flex-shrink: 0;
   }
   .site-header__auth {
     gap: 8px;
@@ -8591,27 +8482,12 @@ button.intake__progress-step:disabled {
   .site-header__auth-link {
     white-space: nowrap;
   }
-  .site-header__preview-toggle {
-    font-size: 10px;
-    padding: 3px 7px;
-    letter-spacing: 0.04em;
+  /* Thumb-sized tap targets inside the menu panel. */
+  .site-menu__section-link {
+    padding: 9px 2px;
   }
-  .lang {
-    font-size: 12px;
-    padding: 2px;
-  }
-  .lang a {
-    padding: 4px 8px;
-  }
-  /* Below ~44px the theme toggle is a thumb-sized button on a thumb-sized
-     phone. Pad the hit area without growing the visual disc — the glyph
-     stays small, only the touch surface scales. Pairs with the lang pills
-     below which get the same minimum 40px height. */
-  .theme-toggle {
-    width: 40px;
-    height: 40px;
-  }
-  .lang a {
+  .theme-toggle button,
+  .site-menu__panel .lang a {
     padding: 8px 12px;
   }
 }
@@ -8637,16 +8513,6 @@ button.intake__progress-step:disabled {
   .site-header__auth {
     gap: 6px;
     font-size: 12px;
-  }
-  /* Keep tap targets ≥40px even at 360-wide. The horizontally-scrolling
-     right cluster means small elements never compete for space, so we can
-     safely up-size each cell without breaking the row. */
-  .theme-toggle {
-    width: 40px;
-    height: 40px;
-  }
-  .lang a {
-    padding: 8px 11px;
   }
   /* Paper grain off on very small viewports — perf + clarity */
   .home::before {

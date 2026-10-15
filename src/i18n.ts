@@ -46,6 +46,7 @@ const FR = {
   skipToContent: 'Aller au contenu principal',
   langNavLabel: 'Choix de langue',
   nav: {
+    menu: 'Menu',
     signIn: 'Connexion',
     signOut: 'Déconnexion',
     mySessions: 'Mes sessions',
@@ -85,16 +86,6 @@ const FR = {
     slotOpen: (n: number) => (n > 1 ? `${n} places ouvertes` : '1 place ouverte'),
     slotOpenLoading: 'Ouvert aux projets',
     slotFull: 'plein, liste d’attente ouverte',
-  },
-
-  /* One-time banner offered to EN-browser visitors who landed on the FR
-     home. Component (EnglishNudge.tsx) only renders on lang === 'fr', so
-     the EN parity below is contract-fulfillment — the keys must exist
-     for the typeof FR check but the strings never paint. */
-  enNudge: {
-    prompt: 'Tu lis en anglais d’habitude?',
-    yes: 'En anglais →',
-    no: 'Reste en français',
   },
 
   how: {
@@ -358,8 +349,9 @@ const FR = {
   },
 
   themeToggle: {
-    switchToDay: 'Mode jour',
-    switchToNight: 'Mode nuit',
+    label: 'Thème',
+    day: 'Jour',
+    night: 'Nuit',
   },
   accentToggle: {
     label: 'Couleur',
@@ -1121,6 +1113,7 @@ const EN: Copy = {
   skipToContent: 'Skip to main content',
   langNavLabel: 'Language selection',
   nav: {
+    menu: 'Menu',
     signIn: 'Sign in',
     signOut: 'Sign out',
     mySessions: 'My sessions',
@@ -1154,14 +1147,6 @@ const EN: Copy = {
     slotOpen: (n: number) => (n > 1 ? `${n} slots open` : '1 slot open'),
     slotOpenLoading: 'Open for projects',
     slotFull: 'currently full, waitlist open',
-  },
-
-  /* Contract-only — see DICT.fr.enNudge. Never rendered: the component
-     short-circuits on lang !== 'fr'. */
-  enNudge: {
-    prompt: 'Do you usually read in English?',
-    yes: 'In English →',
-    no: 'Stay in French',
   },
 
   how: {
@@ -1421,8 +1406,9 @@ const EN: Copy = {
   },
 
   themeToggle: {
-    switchToDay: 'Day mode',
-    switchToNight: 'Night mode',
+    label: 'Theme',
+    day: 'Day',
+    night: 'Night',
   },
   accentToggle: {
     label: 'Accent',

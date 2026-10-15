@@ -45,12 +45,16 @@ type DocumentWithViewTransition = Document & {
 }
 
 /**
- * Header-mounted day/night switch. Pairs with public/theme-bootstrap.js which
- * paints the right theme on first load. Once React is alive, this toggle
- * takes over: it wraps the swap in document.startViewTransition() for a
- * cinematic crossfade in Chromium, listens to OS theme changes (only honored
- * when the visitor hasn't made an explicit choice yet), and keeps
- * meta[name=theme-color] in sync so the mobile address bar matches.
+ * Day/night switch, rendered as a labelled two-segment control (Jour | Nuit)
+ * in the same keycap chrome as the FR/EN switcher. Text segments, not
+ * sun/moon glyphs: U+2600-block characters get emoji presentation on several
+ * platforms (Windows, Android), which broke the no-emoji rule in the site's
+ * chrome. Pairs with public/theme-bootstrap.js which paints the right theme
+ * on first load. Once React is alive, this control takes over: it wraps the
+ * swap in document.startViewTransition() for a crossfade in Chromium,
+ * listens to OS theme changes (only honored when the visitor hasn't made an
+ * explicit choice yet), and keeps meta[name=theme-color] in sync so the
+ * mobile address bar matches.
  */
 export function ThemeToggle({ lang }: { lang: Lang }) {
   const t = DICT[lang].themeToggle
@@ -75,8 +79,8 @@ export function ThemeToggle({ lang }: { lang: Lang }) {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
-  function toggle() {
-    const next: Theme = theme === 'night' ? 'day' : 'night'
+  function pick(next: Theme) {
+    if (next === theme) return
     try {
       localStorage.setItem(STORAGE_KEY, next)
     } catch {
@@ -90,19 +94,19 @@ export function ThemeToggle({ lang }: { lang: Lang }) {
     }
   }
 
-  const isNight = theme === 'night'
   return (
-    <button
-      type="button"
-      className="theme-toggle"
-      onClick={toggle}
-      aria-pressed={isNight}
-      aria-label={isNight ? t.switchToDay : t.switchToNight}
-      title={isNight ? t.switchToDay : t.switchToNight}
-    >
-      <span className="theme-toggle__glyph" aria-hidden="true">
-        {isNight ? '☾' : '☀'}
-      </span>
-    </button>
+    <div className="theme-toggle" role="group" aria-label={t.label}>
+      {(['day', 'night'] as const).map((option) => (
+        <button
+          key={option}
+          type="button"
+          className={theme === option ? 'active' : ''}
+          onClick={() => pick(option)}
+          aria-pressed={theme === option}
+        >
+          {t[option]}
+        </button>
+      ))}
+    </div>
   )
 }

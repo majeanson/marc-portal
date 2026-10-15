@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
@@ -28,14 +29,17 @@ const NAV_LINKS = [
 
 /**
  * variant:
- *   'full'    — default. Marketing nav (Projets / Comment ça marche / Prix /
- *               Je fais — Je fais pas / À propos). Used on home + every
- *               marketing-style page (handoff, vouches, tier0, etc.).
- *   'session' — drops the marketing nav and replaces it with a single
- *               "← Mes sessions" back link so the session detail page reads
- *               as a product surface, not a marketing one. Especially
- *               important on mobile where the 5-link nav otherwise wraps
- *               to a second row and pushes session content below the fold.
+ *   'full'    — default. Used on home + every marketing-style page (handoff,
+ *               vouches, tier0, etc.).
+ *   'session' — adds a single "← Mes sessions" back link next to the brand
+ *               so the session detail page reads as a product surface.
+ *
+ * The bar itself stays sparse by design: brand, search, one auth entry, and
+ * a Menu disclosure. Everything secondary (section anchors, sign-out, the
+ * admin preview toggle, lang/theme/accent preferences) lives inside the
+ * menu panel. The previous all-in-a-row header needed a 1280px ceiling, a
+ * two-row wrap below 1180px and a swipable strip on phones just to fit —
+ * one small menu removes all three contraptions at every width.
  */
 export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full' | 'session' }) {
   const t = DICT[lang]
@@ -47,6 +51,35 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
   const loginHref = `${langPrefix}/login`
 
   const { frHref, enHref, onLangSwitch } = useLangSwitch(lang)
+
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+
+  // Dismissal wiring: Escape closes and hands focus back to the trigger
+  // (keyboard visitors shouldn't be dropped at <body>); any pointerdown
+  // outside the menu closes it without swallowing that click's real target.
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setMenuOpen(false)
+      triggerRef.current?.focus()
+    }
+    const onPointerDown = (e: PointerEvent) => {
+      if (menuRef.current && e.target instanceof Node && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onPointerDown)
+    }
+  }, [menuOpen])
+
+  const closeMenu = () => setMenuOpen(false)
 
   return (
     <>
@@ -62,11 +95,7 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
           >
             marc<span className="dot">.</span>portal
           </Link>
-          {/* Header nav: in 'full' mode it's anchor-only, every link points
-              at a home section. In 'session' mode it collapses to a single
-              "← back to sessions" link so the header stays out of the way
-              on a product surface (especially mobile). */}
-          {variant === 'session' ? (
+          {variant === 'session' && (
             <nav
               className="site-header__sections site-header__sections--session"
               aria-label={t.nav.mySessions}
@@ -78,99 +107,125 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
                 ← {t.nav.mySessions}
               </Link>
             </nav>
-          ) : (
-            <nav className="site-header__sections" aria-label={t.nav.sections.projects}>
-              {NAV_LINKS.map(({ id, labelKey }) => {
-                const feature = HOME_SECTION_FEATURE[id]
-                const label = t.nav.sections[labelKey]
-                return (
-                  <span key={id} className="site-header__section" data-feature={feature}>
-                    {/* Dot is a separate target — clicks land on /carte
-                        filtered to this feature, mirroring the SectionRail
-                        + Footer pattern. The anchor next to it still
-                        scrolls to the section like before. */}
-                    <FeatureDot
-                      feature={feature}
-                      lang={lang}
-                      size="sm"
-                      className="site-header__section-dot"
-                    />
-                    <Link to={`${langPrefix}/#${id}`} className="site-header__section-link">
-                      {label}
-                    </Link>
-                  </span>
-                )
-              })}
-            </nav>
           )}
           <div className="site-header__right">
             <SiteSearch lang={lang} />
             {!loading && (
               <div className="site-header__auth">
                 {email ? (
-                  <>
-                    {isAdmin ? (
-                      // Admin: Console link replaces "Mes sessions". The hub
-                      // surfaces Inbox as its first tile, so the shortcut
-                      // isn't lost.
-                      <Link to={adminHref} className="site-header__auth-link">
-                        {t.nav.adminConsole}
-                      </Link>
-                    ) : (
-                      // Regular visitor: keep the entry to their /me page.
-                      <Link to={sessionsHref} className="site-header__auth-link">
-                        {t.nav.mySessions}
-                      </Link>
-                    )}
-                    <button
-                      type="button"
-                      className="site-header__auth-link site-header__auth-link--btn"
-                      onClick={() => {
-                        void logout()
-                      }}
-                    >
-                      {t.nav.signOut}
-                    </button>
-                  </>
+                  isAdmin ? (
+                    // Admin: Console link replaces "Mes sessions". The hub
+                    // surfaces Inbox as its first tile, so the shortcut
+                    // isn't lost.
+                    <Link to={adminHref} className="site-header__auth-link">
+                      {t.nav.adminConsole}
+                    </Link>
+                  ) : (
+                    // Regular visitor: keep the entry to their /me page.
+                    <Link to={sessionsHref} className="site-header__auth-link">
+                      {t.nav.mySessions}
+                    </Link>
+                  )
                 ) : (
                   <Link to={loginHref} className="site-header__auth-link">
                     {t.nav.signIn}
                   </Link>
                 )}
-                {realIsAdmin && (
-                  <button
-                    type="button"
-                    className={`site-header__preview-toggle mono${previewAsUser ? ' site-header__preview-toggle--on' : ''}`}
-                    onClick={() => setPreviewAsUser(!previewAsUser)}
-                    aria-pressed={previewAsUser}
-                  >
-                    {previewAsUser ? `← ${t.nav.exitPreview}` : t.nav.viewAsUser}
-                  </button>
-                )}
               </div>
             )}
-            <AccentToggle lang={lang} />
-            <ThemeToggle lang={lang} />
-            <nav className="lang" aria-label={t.langNavLabel}>
-              <a
-                href={frHref}
-                onClick={(e) => onLangSwitch(e, 'fr')}
-                className={lang === 'fr' ? 'active' : ''}
-                hrefLang="fr-CA"
-                aria-current={lang === 'fr' ? 'page' : undefined}
+            <div className="site-menu" ref={menuRef}>
+              <button
+                ref={triggerRef}
+                type="button"
+                className={`site-menu__trigger${menuOpen ? ' site-menu__trigger--open' : ''}`}
+                aria-expanded={menuOpen}
+                aria-controls="site-menu-panel"
+                onClick={() => setMenuOpen((open) => !open)}
               >
-                FR
-              </a>
-              <a
-                href={enHref}
-                onClick={(e) => onLangSwitch(e, 'en')}
-                className={lang === 'en' ? 'active' : ''}
-                hrefLang="en-CA"
-                aria-current={lang === 'en' ? 'page' : undefined}
-              >
-                EN
-              </a>
-            </nav>
+                {t.nav.menu}
+              </button>
+              {menuOpen && (
+                <div className="site-menu__panel" id="site-menu-panel">
+                  <nav className="site-menu__sections" aria-label={t.nav.sections.projects}>
+                    {NAV_LINKS.map(({ id, labelKey }) => {
+                      const feature = HOME_SECTION_FEATURE[id]
+                      const label = t.nav.sections[labelKey]
+                      return (
+                        <span key={id} className="site-menu__section" data-feature={feature}>
+                          {/* Dot is a separate target — clicks land on /carte
+                              filtered to this feature, mirroring the
+                              SectionRail + Footer pattern. That's a route
+                              change, so the header remounts and the menu
+                              closes on its own; only the same-page anchor
+                              below needs the explicit close. */}
+                          <FeatureDot
+                            feature={feature}
+                            lang={lang}
+                            size="sm"
+                            className="site-menu__section-dot"
+                          />
+                          <Link
+                            to={`${langPrefix}/#${id}`}
+                            className="site-menu__section-link"
+                            onClick={closeMenu}
+                          >
+                            {label}
+                          </Link>
+                        </span>
+                      )
+                    })}
+                  </nav>
+                  {email && (
+                    <div className="site-menu__account">
+                      <button
+                        type="button"
+                        className="site-menu__signout"
+                        onClick={() => {
+                          closeMenu()
+                          void logout()
+                        }}
+                      >
+                        {t.nav.signOut}
+                      </button>
+                      {realIsAdmin && (
+                        <button
+                          type="button"
+                          className={`site-header__preview-toggle mono${previewAsUser ? ' site-header__preview-toggle--on' : ''}`}
+                          onClick={() => setPreviewAsUser(!previewAsUser)}
+                          aria-pressed={previewAsUser}
+                        >
+                          {previewAsUser ? `← ${t.nav.exitPreview}` : t.nav.viewAsUser}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <div className="site-menu__prefs">
+                    <nav className="lang" aria-label={t.langNavLabel}>
+                      <a
+                        href={frHref}
+                        onClick={(e) => onLangSwitch(e, 'fr')}
+                        className={lang === 'fr' ? 'active' : ''}
+                        hrefLang="fr-CA"
+                        aria-current={lang === 'fr' ? 'page' : undefined}
+                      >
+                        FR
+                      </a>
+                      <a
+                        href={enHref}
+                        onClick={(e) => onLangSwitch(e, 'en')}
+                        className={lang === 'en' ? 'active' : ''}
+                        hrefLang="en-CA"
+                        aria-current={lang === 'en' ? 'page' : undefined}
+                      >
+                        EN
+                      </a>
+                    </nav>
+                    <ThemeToggle lang={lang} />
+                    <AccentToggle lang={lang} />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {/* Session-page sub-header is rendered INSIDE the main <header> so
