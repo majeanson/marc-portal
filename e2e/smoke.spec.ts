@@ -52,6 +52,8 @@ test.describe('site wayfinding', () => {
 
   test('language switch moves from fr to en', async ({ page }) => {
     await page.goto('/')
+    // The FR/EN switcher lives in the site menu's preferences row.
+    await page.locator('.site-menu__trigger').click()
     await page.locator('nav.lang a', { hasText: 'EN' }).click()
     await expect(page).toHaveURL(/\/en$/)
   })

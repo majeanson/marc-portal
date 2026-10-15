@@ -194,7 +194,7 @@
   anaphora on MyData and Privacy §2/§3, the em-dash-dense Privacy §2 list
   paragraph, the flat FR triad on Home ("Vrai code, vrai problème, vrai
   monde"), the two-dash Atelier intro; apply `frPunct()` to the FR strings
-  with unspaced `? ! : ; »` (EnglishNudge, HowItWorks, Vouch lead); converge
+  with unspaced `? ! : ; »` (HowItWorks, Vouch lead); converge
   status vocabulary (MePortal FR ships untranslated "active" — client surfaces
   use "en cours"; document or converge the declined/rejected/not-taken-on
   three-way EN split); collapse the four local date-format forks onto

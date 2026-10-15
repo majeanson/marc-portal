@@ -53,7 +53,8 @@ const COPY = {
       mp_session: 'Te reconnaît quand tu reviens (signé, HttpOnly, 7 jours).',
       mp_csrf: 'Anti-falsification de formulaire (lisible par le site, par session).',
       mp_lang: 'Ta langue préférée (30 jours).',
-      mp_en_nudge_dismissed: 'Tu as déjà fait le choix d’anglais — on n’insiste plus.',
+      mp_en_nudge_dismissed:
+        'Reliquat de l’ancienne bannière anglaise (retirée en octobre 2026). Plus rien ne le lit.',
     } as Record<string, string>,
     cookieGeneric: 'Cookie d’usage interne au portail.',
     localStorageHeading: 'Mémo gardé dans ton navigateur',
@@ -97,7 +98,8 @@ const COPY = {
       mp_session: 'Recognises you on return (signed, HttpOnly, 7 days).',
       mp_csrf: 'Form-forgery guard (site-readable, per session).',
       mp_lang: 'Your preferred language (30 days).',
-      mp_en_nudge_dismissed: 'You already picked English — no more nudges.',
+      mp_en_nudge_dismissed:
+        'Leftover from the old English banner (retired October 2026). Nothing reads it anymore.',
     } as Record<string, string>,
     cookieGeneric: 'Portal-internal cookie.',
     localStorageHeading: 'Notes kept in your browser',

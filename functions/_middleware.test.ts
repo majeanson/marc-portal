@@ -217,8 +217,8 @@ describe('middleware locale redirect', () => {
       next: async () => new Response('home', { headers: { 'content-type': 'text/plain' } }),
     })
     const res = await onRequest(ctx)
-    // Accept-Language is intentionally not consulted — the EnglishNudge
-    // component handles the EN-browser case client-side instead.
+    // Accept-Language is intentionally not consulted — EN is a choice the
+    // visitor makes in the header menu, never a server-pushed redirect.
     expect(res.status).toBe(200)
   })
 
