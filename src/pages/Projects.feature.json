@@ -99,7 +99,9 @@
       "date": "2026-10-15",
       "author": "marc+claude",
       "fields_changed": ["knownLimitations"],
-      "reason": "Showcase wave 3: seeded Babillard, Horizon, Ashwake and dads (migrations 0032-0035) and backfilled Retrodio's EN copy (0036). Replaced the stale OG limitation (each engagement has had its own generated /og/share/:id image for a while) with the real current one: live previews depend on each embedded app's frame-ancestors allowing marcportal.com."
+      "reason": "Showcase wave 3: seeded Babillard, Horizon, Ashwake and dads (migrations 0032-0035) and backfilled Retrodio's EN copy (0036). Replaced the stale OG limitation (each engagement has had its own generated /og/share/:id image for a while) with the real current one: live previews depend on each embedded app's frame-ancestors allowing marcportal.com.",
+      "commit": "5080d14",
+      "buildUrl": "https://90cb9d99.marc-portal.pages.dev"
     }
   ],
   "annotations": []
