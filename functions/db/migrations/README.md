@@ -74,6 +74,7 @@ npm run db:migrate:prod
 | `0040_phone_preview_flags.sql`      | Flags Ashwake + Dungeon Depths advancements previewViewport='phone' so their cards embed a 430×932 portrait frame                |
 | `0041_showcase_timelines.sql`       | Backfills real milestones on the seeded showcase timelines (Jaffre, DD, Ashwake, Babillard, Horizon) so /share reads as history  |
 | `0042_portal_self_showcase.sql`     | Showcases marcportal.com itself (T4, embeds /meta inside the site — recursion stops at depth one)                                |
+| `0043_retrodio_apercu.sql`          | Points the Retrodio card's embed + open-build link at /apercu (odio's new public demo; the login redirect stops being the card)  |
 
 ## After applying 0002
 
