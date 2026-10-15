@@ -69,6 +69,7 @@ npm run db:migrate:prod
 | `0035_dads_showcase.sql`            | Seeds the dads showcase (private clubhouse, dads.marcportal.com) — Tier 3; the embed deliberately shows only the invite door     |
 | `0036_retrodio_en.sql`              | Fills Retrodio's missing EN gallery copy (row predates the 0030 _en columns, same backfill Jaffre got in 0031)                   |
 | `0037_showcase_dedupe_en.sql`       | Un-showcases the stale admin-showcased Babillard engagement (0032 seeded the canonical card) + fills Truck notes' EN copy        |
+| `0038_showcase_tiers.sql`           | Re-tiers three showcase cards: Dungeon Depths and Truck notes to T1, Ashwake to T3                                               |
 
 ## After applying 0002
 
