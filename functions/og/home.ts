@@ -16,6 +16,7 @@
 import { ImageResponse } from 'workers-og'
 import type { Env } from '../_lib/env'
 import { loadOgFonts } from '../_lib/og-fonts'
+import { keyPart, pngFromR2OrRender } from '../_lib/og-cache'
 import { captureWorkerException } from '../_lib/sentry'
 
 interface HomeFields {
@@ -180,13 +181,20 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     `</div>`
 
   try {
-    const fonts = await loadOgFonts(request)
-    const imgResp = new ImageResponse(html, {
-      width: 1200,
-      height: 630,
-      fonts,
+    // The key carries everything the card renders (lang, shipped count,
+    // active title), so a stat change mints a new key and the stale PNG
+    // simply stops being asked for. See _lib/og-cache.ts for why the render
+    // itself hides behind R2 (Worker 1102 at the CPU cliff).
+    const key = `og/home/${lang}-${fields.shippedCount}-${keyPart(fields.activeTitle)}.png`
+    const { png, source } = await pngFromR2OrRender(env, key, async () => {
+      const fonts = await loadOgFonts(request)
+      const imgResp = new ImageResponse(html, {
+        width: 1200,
+        height: 630,
+        fonts,
+      })
+      return await imgResp.arrayBuffer()
     })
-    const png = await imgResp.arrayBuffer()
     return new Response(png, {
       status: 200,
       headers: {
@@ -196,6 +204,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
         // to absorb scraper bursts. Project cards use 24h because
         // their content is per-card and slower-moving.
         'cache-control': 'public, max-age=3600, s-maxage=3600',
+        'x-og-cache': source,
       },
     })
   } catch (err) {

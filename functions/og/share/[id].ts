@@ -15,6 +15,7 @@ import { ImageResponse } from 'workers-og'
 import type { Env } from '../../_lib/env'
 import { loadSession } from '../../_lib/sessions'
 import { loadOgFonts } from '../../_lib/og-fonts'
+import { pngFromR2OrRender } from '../../_lib/og-cache'
 import { captureWorkerException } from '../../_lib/sentry'
 
 interface OgFields {
@@ -22,6 +23,9 @@ interface OgFields {
   tagline: string
   tier: number | null
   status: string
+  // Feeds the R2 cache key: a copy edit bumps updated_at, which mints a new
+  // key instead of serving the stale PNG.
+  updatedAt: number
 }
 
 async function loadOgFields(env: Env, id: string, lang: 'fr' | 'en'): Promise<OgFields | null> {
@@ -41,6 +45,7 @@ async function loadOgFields(env: Env, id: string, lang: 'fr' | 'en'): Promise<Og
     tagline: tagline || '',
     tier: session.tier,
     status: session.status,
+    updatedAt: session.updated_at,
   }
 }
 
@@ -155,27 +160,37 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
     `</div>` +
     `</div>`
 
-  // Render path. Two failure modes wrapped here:
+  // Render path. Three failure modes wrapped here:
   //   1. Font fetch — synchronous error before satori runs (caught easily).
   //   2. satori/resvg streaming — `new ImageResponse(...)` returns sync,
   //      but the actual render happens lazily as the body streams. We
   //      `await imgResp.arrayBuffer()` inside the try so streaming
   //      errors land in the catch instead of slipping out as a 200 with
   //      a few bytes of garbage (the bug this whole change exists to fix).
+  //   3. Worker 1102 (CPU exceeded) — uncatchable, the request just dies as
+  //      a 503/504. That's why the render sits behind pngFromR2OrRender:
+  //      one successful render per key is stored in R2 forever, so the
+  //      gamble is only ever taken on a key nobody has won yet. Verified in
+  //      prod 2026-10-15: cache-busted renders died 1102 while R2-less
+  //      concurrent card loads 503'd a /projects pageview's worth of cards.
   try {
-    const fonts = await loadOgFonts(request)
-    const imgResp = new ImageResponse(html, {
-      width: 1200,
-      height: 630,
-      fonts,
+    const key = `og/share/${id}-${lang}-${fields.updatedAt}.png`
+    const { png, source } = await pngFromR2OrRender(env, key, async () => {
+      const fonts = await loadOgFonts(request)
+      const imgResp = new ImageResponse(html, {
+        width: 1200,
+        height: 630,
+        fonts,
+      })
+      return await imgResp.arrayBuffer()
     })
-    const png = await imgResp.arrayBuffer()
     return new Response(png, {
       status: 200,
       headers: {
         'content-type': 'image/png',
         // Cache for a day at the edge; the showcase title rarely changes.
         'cache-control': 'public, max-age=86400, s-maxage=86400',
+        'x-og-cache': source,
       },
     })
   } catch (err) {

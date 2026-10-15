@@ -2044,3 +2044,12 @@ from tomorrow's email.
 2xx passes. An app that bounces anonymous visitors to its own login page
 (Retrodio) passes because the login page answers 200; an app that answers
 3xx-to-nowhere or 304 to a fresh GET is flagged on purpose.
+
+**Card looks broken but the ping says the build is fine?** Then it's
+probably the OG layer, not the build: `/og/share/:id` renders with satori
+at the Worker CPU cliff and can die as error 1102 (503/504 in devtools).
+Check the `x-og-cache` response header — `r2` means the stored PNG served,
+`render` means it just re-rendered, a 503 means 1102. Renders persist to R2
+on first success (`functions/_lib/og-cache.ts`), so one good render per
+card self-heals this; `?debug=render` surfaces a catchable render error,
+but 1102 dies before the catch.

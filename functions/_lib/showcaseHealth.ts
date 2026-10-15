@@ -2,9 +2,11 @@
 // each pointing at an app deployed from its own repo. None of those deploys
 // notify this one, so a dead build shows up as a broken-looking card and
 // nothing else. The daily digest pings every showcased build URL and emails
-// the ones that don't answer. (Observed 2026-10-15: Jaffre 504'd on a cold
-// Durable Object and Retrodio's host threw 503s while six other cards were
-// fine — exactly the failure this is for.)
+// the ones that don't answer. (The 503/504s that motivated this on
+// 2026-10-15 turned out to be the portal's own OG renderer at the CPU
+// cliff, not the builds — see _lib/og-cache.ts — but the watch is still
+// the right instrument: the builds deploy from eight repos that never
+// report back here.)
 
 import { parseFlags } from './advancements'
 
