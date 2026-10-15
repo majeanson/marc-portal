@@ -89,7 +89,9 @@
       "date": "2026-10-15",
       "author": "marc+claude",
       "fields_changed": ["implementation"],
-      "reason": "Header declutter: the inline 5-link section nav, lang switcher and theme/accent toggles collapse into one Menu disclosure; the EnglishNudge banner is removed entirely (no more language prompting — the FR-first landing plus the menu's FR/EN switch carry the bilingual contract); the day/night toggle becomes a text Jour|Nuit segmented control (the sun glyph rendered as an emoji on several platforms)."
+      "reason": "Header declutter: the inline 5-link section nav, lang switcher and theme/accent toggles collapse into one Menu disclosure; the EnglishNudge banner is removed entirely (no more language prompting — the FR-first landing plus the menu's FR/EN switch carry the bilingual contract); the day/night toggle becomes a text Jour|Nuit segmented control (the sun glyph rendered as an emoji on several platforms).",
+      "commit": "a406fdc",
+      "buildUrl": "https://20271da3.marc-portal.pages.dev"
     }
   ],
   "annotations": []
