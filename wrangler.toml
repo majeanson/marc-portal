@@ -74,7 +74,7 @@ STRIPE_CUSTODIAN_CARE_PRICE_ID = "price_1TZzrtGnRBlK2p4GfZx3BgeK"
 # SENTRY_AUTH_TOKEN` (a token with org:read). All unset = watchdog is a no-op.
 #   SENTRY_ORG                 - org slug (the …/organizations/<slug>/ segment)
 #   SENTRY_MONTHLY_ERROR_QUOTA - errors/month cap; defaults to 5000 (free plan)
-# SENTRY_ORG = "your-org-slug"
+SENTRY_ORG = "jaffre"
 # SENTRY_MONTHLY_ERROR_QUOTA = "5000"
 
 # Optional env vars (feat-2026-018 — automate buyer custom-domain attach).

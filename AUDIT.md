@@ -60,7 +60,12 @@
   2 new unit tests on the replace branch + a new e2e backend spec
   (real wrangler + R2) confirming the swap is atomic and the old
   attachment id 404s after replacement.
-- ⚠ **P1.2** — Resend bounce/complaint webhook handler shipped at
+- ✅ **P1.2** — ACTIVATED 2026-10-15: `RESEND_WEBHOOK_SECRET` deployed and
+  the live smoke test passed (magic-link send to `bounced@resend.dev` →
+  `email.bounced/permanent` row in `email_events`; `email.delivered`
+  events had already been flowing). Unsigned POST answers 401, the
+  healthy signal. Original code-only landing below for the record.
+  Resend bounce/complaint webhook handler shipped at
   `POST /api/webhooks/resend`. Code-only landing: signature verification
   (Svix-style HMAC-SHA-256, `whsec_` prefix accepted), idempotency via the
   shared `webhook_events` table, persists every bounce/complaint/delivered/
@@ -623,6 +628,7 @@
   - ⏭ Deferred with rationale: P1.3, P1.8, P1.9, P2.1, P2.2, P2.3, P2.4,
     P2.5, P2.7, P2.8, P2.14, P2.18, P2.20, P3.8, P3.11, P3.12, P3.13,
     P3.14, P3.15, P3.16, P3.21, P3.22.
-  - ⚠ External-blocked: P1.1, P1.2 (Resend DNS).
+  - ⚠ External-blocked: P1.1, P1.2 (Resend DNS) — both since cleared:
+    P1.1 on 2026-05-16, P1.2 on 2026-10-15.
 - **174 active tests** pass (+5 skipped under happy-dom). Typecheck + lint
   + build all clean throughout.
