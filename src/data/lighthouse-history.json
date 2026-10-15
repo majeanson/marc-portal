@@ -1,14 +1,6 @@
 {
   "runs": [
     {
-      "commit": "0c654df",
-      "date": "2026-05-23T18:32:11.318Z",
-      "performance": 80,
-      "accessibility": 93,
-      "bestPractices": 93,
-      "seo": 83
-    },
-    {
       "commit": "eafdad8",
       "date": "2026-05-23T19:21:16.073Z",
       "performance": 79,
@@ -476,6 +468,14 @@
       "commit": "9afd941",
       "date": "2026-10-15T14:11:52.306Z",
       "performance": 82,
+      "accessibility": 92,
+      "bestPractices": 75,
+      "seo": 83
+    },
+    {
+      "commit": "4d480a9",
+      "date": "2026-10-15T15:03:21.531Z",
+      "performance": 86,
       "accessibility": 92,
       "bestPractices": 75,
       "seo": 83
