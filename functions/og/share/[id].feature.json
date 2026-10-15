@@ -72,6 +72,12 @@
       "reason": "Initial author — P3 OG-endpoint sweep.",
       "commit": "add6630",
       "buildUrl": "https://52917cc7.marc-portal.pages.dev"
+    },
+    {
+      "date": "2026-10-15",
+      "author": "marc+claude",
+      "fields_changed": ["implementation"],
+      "reason": "R2 render-once store (functions/_lib/og-cache.ts): the satori render sits at the Worker CPU cliff and died as error 1102 in prod (verified with a cache-busted GET; 8 parallel card loads from /projects all failed). Each PNG now persists to the MEDIA bucket on first successful render under a key embedding updated_at, renders are serialized per isolate, and x-og-cache reports r2/render. Same wrap applied to og/home and og/certificate. RUNBOOK §25 carries the triage note."
     }
   ],
   "annotations": []

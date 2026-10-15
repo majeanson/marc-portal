@@ -17,14 +17,26 @@ import { describe, expect, it, vi } from 'vitest'
 import { makeMockEnv } from '../../../tests/d1-mock'
 
 // workers-og imports satori + resvg WASM at module load; mock the package
-// out completely so the test runtime never tries to bootstrap them.
+// out completely so the test runtime never tries to bootstrap them. The
+// arrayBuffer stub stands in for the rendered PNG so the R2 read-through
+// path (og-cache) can be exercised without a real render.
 vi.mock('workers-og', () => ({
   ImageResponse: class {
     constructor(
       public html: string,
       public init: { width: number; height: number },
     ) {}
+    async arrayBuffer(): Promise<ArrayBuffer> {
+      return new ArrayBuffer(32)
+    }
   },
+}))
+
+// The font loader fetches /fonts/*.ttf from the request origin, which does
+// not exist under happy-dom; the mocked ImageResponse above ignores fonts
+// anyway, so stub the loader out.
+vi.mock('../../_lib/og-fonts', () => ({
+  loadOgFonts: async () => [],
 }))
 
 import { onRequestGet } from './[id]'
@@ -127,5 +139,48 @@ describe('GET /og/share/:id', () => {
     const body = (await res.json()) as { ok: boolean; reason: string }
     expect(body.ok).toBe(false)
     expect(body.reason).toBe('not-showcased-or-missing')
+  })
+
+  it('renders once into R2, then serves the stored PNG (x-og-cache: r2)', async () => {
+    const store = new Map<string, ArrayBuffer>()
+    const media = {
+      async get(key: string) {
+        const v = store.get(key)
+        return v ? { arrayBuffer: async () => v } : null
+      },
+      async put(key: string, val: ArrayBuffer) {
+        store.set(key, val)
+      },
+    }
+    const seed = (c: ReturnType<typeof ctx>) => {
+      ;(c.env as ReturnType<typeof makeMockEnv>)._db.sessions.set('s4', {
+        id: 's4',
+        email: 'a@x.com',
+        intake_json: null,
+        status: 'shipped',
+        created_at: 1,
+        updated_at: 77,
+        deleted_at: null,
+        status_history: null,
+        showcased_at: 2,
+        showcase_title: 'Horizon',
+        showcase_tagline: 'Quand la retraite ?',
+      })
+    }
+
+    const c1 = ctx('s4', { MEDIA: media })
+    seed(c1)
+    const first = await onRequestGet(c1)
+    expect(first.status).toBe(200)
+    expect(first.headers.get('content-type')).toBe('image/png')
+    expect(first.headers.get('x-og-cache')).toBe('render')
+    // The key embeds updated_at so copy edits mint a new object.
+    expect([...store.keys()]).toEqual(['og/share/s4-fr-77.png'])
+
+    const c2 = ctx('s4', { MEDIA: media })
+    seed(c2)
+    const second = await onRequestGet(c2)
+    expect(second.status).toBe(200)
+    expect(second.headers.get('x-og-cache')).toBe('r2')
   })
 })

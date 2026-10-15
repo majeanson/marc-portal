@@ -20,6 +20,7 @@ import { isAdmin } from '../../_lib/env'
 import { currentEmail } from '../../_lib/auth'
 import { loadSession } from '../../_lib/sessions'
 import { loadOgFonts } from '../../_lib/og-fonts'
+import { keyPart, pngFromR2OrRender } from '../../_lib/og-cache'
 import { captureWorkerException } from '../../_lib/sentry'
 
 const MONTHS = {
@@ -243,15 +244,23 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
     `</div>`
 
   try {
-    const fonts = await loadOgFonts(request)
-    const imgResp = new ImageResponse(html, { width: 1000, height: 1400, fonts })
-    const png = await imgResp.arrayBuffer()
+    // R2 is our own private store (attachments with personal data already
+    // live there), so caching the certificate PNG server-side is fine; the
+    // response header below keeps it off SHARED caches. The key carries all
+    // render inputs, so a renamed project or visitor mints a new key.
+    const key = `og/certificate/${id}-${lang}-${fields.shippedAt}-${keyPart(fields.name)}-${keyPart(project)}.png`
+    const { png, source } = await pngFromR2OrRender(env, key, async () => {
+      const fonts = await loadOgFonts(request)
+      const imgResp = new ImageResponse(html, { width: 1000, height: 1400, fonts })
+      return await imgResp.arrayBuffer()
+    })
     return new Response(png, {
       status: 200,
       headers: {
         'content-type': 'image/png',
         // Private — the certificate is personal data; keep it off shared caches.
         'cache-control': 'private, max-age=300',
+        'x-og-cache': source,
       },
     })
   } catch (err) {

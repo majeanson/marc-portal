@@ -9,8 +9,9 @@ type Outcome = 'loaded' | 'errored' | 'timeout' | null
 // Soft timeout: if the iframe hasn't fired `load` yet (slow build, 504,
 // hung deploy), the OG image stays as the thumbnail. 5s matches the
 // visitor's patience budget for an idle card. The frame keeps booting
-// underneath: a cold-started Worker (Jaffre's Durable Object 504'd then
-// recovered, 2026-10-15) fades in late instead of being killed mid-boot.
+// underneath, so a build that answers late fades in instead of being
+// killed mid-boot (verified 2026-10-15: with a scroll + wait, all eight
+// cards' embeds eventually loaded).
 const LOAD_TIMEOUT_MS = 5000
 
 /**
