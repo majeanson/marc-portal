@@ -6132,13 +6132,17 @@ button:focus-visible,
 /* Bottom layer — per-project OG card. Always paints (edge-cached PNG);
    stays as the thumbnail when there's no buildHref OR when the iframe
    above errors. object-fit: cover crops the 1200×630 OG into the 16:10
-   card slot, keeping the title legible. */
+   card slot — the OG is the wider ratio, so cover eats the sides. The
+   title block sits on the OG's left edge; anchored left, the crop only
+   eats the right. Center-anchored it clipped the title ("affre",
+   observed live 2026-10-15). */
 .project-card__preview-og {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: left center;
   pointer-events: none;
   z-index: 0;
   transition: transform 600ms cubic-bezier(0.2, 0.6, 0.2, 1);

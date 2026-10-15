@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Lang } from '../i18n'
 
-type Outcome = 'loaded' | 'errored' | null
+// 'timeout' means "stop waiting visually, show the OG layer" — but the
+// iframe stays mounted so a slow build can still take over when it finally
+// loads. 'errored' (a real onError) unmounts it for good.
+type Outcome = 'loaded' | 'errored' | 'timeout' | null
 
-// Hard timeout: if the iframe never fires `load` (slow build, CSP block,
-// 504, hung deploy), we surrender and let the OG image stay as the
-// thumbnail. 5s matches the visitor's patience budget for an idle card.
+// Soft timeout: if the iframe hasn't fired `load` yet (slow build, 504,
+// hung deploy), the OG image stays as the thumbnail. 5s matches the
+// visitor's patience budget for an idle card. The frame keeps booting
+// underneath: a cold-started Worker (Jaffre's Durable Object 504'd then
+// recovered, 2026-10-15) fades in late instead of being killed mid-boot.
 const LOAD_TIMEOUT_MS = 5000
 
 /**
@@ -80,7 +85,7 @@ export function ProjectCardPreview({
   useEffect(() => {
     if (!visible || !buildHref) return
     const tid = window.setTimeout(() => {
-      setOutcome((prev) => (prev === null ? 'errored' : prev))
+      setOutcome((prev) => (prev === null ? 'timeout' : prev))
     }, LOAD_TIMEOUT_MS)
     return () => window.clearTimeout(tid)
   }, [visible, buildHref])
@@ -96,7 +101,9 @@ export function ProjectCardPreview({
 
   const isLoading = visible && !!buildHref && outcome === null
   const isLoaded = outcome === 'loaded'
-  const isErrored = outcome === 'errored' || !buildHref
+  // Both failure flavours read as 'errored' to the CSS (OG layer showing);
+  // only the mount condition below distinguishes them.
+  const isErrored = outcome === 'errored' || outcome === 'timeout' || !buildHref
   const state = isErrored ? 'errored' : isLoaded ? 'loaded' : isLoading ? 'loading' : 'idle'
 
   return (
@@ -116,7 +123,7 @@ export function ProjectCardPreview({
           decoding="async"
         />
       )}
-      {visible && buildHref && !isErrored && (
+      {visible && buildHref && outcome !== 'errored' && (
         <iframe
           className={`project-card__preview-frame${isLoaded ? ' is-loaded' : ''}`}
           src={buildHref}
