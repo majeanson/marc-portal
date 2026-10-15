@@ -2013,3 +2013,34 @@ there's still headroom.
 (a token with `org:read`, via `wrangler secret put`) and `SENTRY_ORG` (the
 org slug, in `wrangler.toml [vars]`) are both set and the digest cron is
 running. It piggybacks the daily digest — no separate schedule.
+
+## 25. Showcase build unreachable (digest "builds injoignables" section)
+
+**Symptom:** the daily digest email has a "Builds du showcase injoignables"
+section naming a project, its build URL, and a detail (`HTTP 503`,
+`timeout (10s)`, a fetch error). On the live site that card shows the static
+OG thumbnail instead of its live iframe.
+
+**What it means:** the digest pings every showcased `build_url` once a day
+(`functions/_lib/showcaseHealth.ts`, piggybacked on `/api/admin/digest`).
+Each of those apps deploys from its own repo; none of them report here, so
+this ping is the only thing watching the gallery wall. Nothing persists —
+the check re-runs from scratch each firing, so a one-day blip self-clears
+from tomorrow's email.
+
+**Fix:**
+
+1. Open the build URL in a browser. Fine now? It was a cold start or a
+   transient — the card also self-heals (the iframe keeps booting past its
+   5s visual timeout and fades in when the app answers). No action.
+2. Really down: go to that project's repo and check its deploy
+   (`gh run list` there, or the Cloudflare dashboard for its Worker).
+   Fix the deploy where it lives; the portal needs no change.
+3. Dead for good (project retired, domain dropped): pull the card via
+   `/admin/showcase`, or repoint its advancement `build_url` at a
+   replacement — the 0031 Jaffre-v2 migration is the model.
+
+**Checked but wrong verdict?** Remember the ping follows redirects and only
+2xx passes. An app that bounces anonymous visitors to its own login page
+(Retrodio) passes because the login page answers 200; an app that answers
+3xx-to-nowhere or 304 to a fresh GET is flagged on purpose.

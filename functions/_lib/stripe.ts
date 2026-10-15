@@ -60,7 +60,11 @@ interface OneTimeOpts {
 // intercepts. Production never sees this value — sk_test_e2e_stub is not a
 // valid Stripe key shape, so it cannot accidentally leak past the test
 // fixtures into a live deployment.
-const E2E_STUB_API_KEY = 'sk_test_e2e_stub'
+//
+// Exported because it doubles as the "this runtime is the hermetic e2e
+// harness" marker: the digest's showcase health ping checks it to avoid
+// hitting real deployed apps from CI.
+export const E2E_STUB_API_KEY = 'sk_test_e2e_stub'
 
 function makeStubCheckoutResult(paymentId: string): CheckoutSessionResult {
   return {

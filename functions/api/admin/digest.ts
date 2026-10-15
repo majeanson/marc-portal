@@ -22,6 +22,9 @@ import { getLang } from '../../_lib/userPrefs'
 import { sweepEmailOutbox } from '../../_lib/email'
 import { reconcileCustodians } from '../../_lib/custodianReconcile'
 import { checkSentryQuota } from '../../_lib/sentryQuota'
+import { listShowcasedBuilds, pingBuilds } from '../../_lib/showcaseHealth'
+import type { DownBuild } from '../../_lib/showcaseHealth'
+import { E2E_STUB_API_KEY } from '../../_lib/stripe'
 
 interface DigestEnv extends Env {
   DIGEST_TOKEN?: string
@@ -43,9 +46,16 @@ const COPY = {
     alertOne: 'alerte non résolue',
     alertMany: 'alertes non résolues',
     alertResolveHelp: 'Marque comme résolue via D1 :',
+    buildsHeading: 'Builds du showcase injoignables',
+    buildsOne: 'build injoignable',
+    buildsMany: 'builds injoignables',
+    buildsHelp:
+      'Vérifie le déploiement dans le repo du projet (RUNBOOK §25). Mort pour de bon ? Retire la carte via /admin/showcase.',
     subjectPrefix: 'Digest',
     subjectTriage: (n: number) => `${n} en triage`,
     subjectAlerts: (n: number) => `${n} alerte${n === 1 ? '' : 's'}`,
+    subjectBuilds: (n: number) =>
+      `${n} build${n === 1 ? '' : 's'} injoignable${n === 1 ? '' : 's'}`,
   },
   en: {
     triageHeading: 'In triage for more than 48h',
@@ -56,9 +66,15 @@ const COPY = {
     alertOne: 'unresolved alert',
     alertMany: 'unresolved alerts',
     alertResolveHelp: 'Mark resolved via D1:',
+    buildsHeading: 'Showcase builds unreachable',
+    buildsOne: 'build unreachable',
+    buildsMany: 'builds unreachable',
+    buildsHelp:
+      'Check the deploy in that project’s repo (RUNBOOK §25). Dead for good? Pull the card via /admin/showcase.',
     subjectPrefix: 'Digest',
     subjectTriage: (n: number) => `${n} in triage`,
     subjectAlerts: (n: number) => `${n} alert${n === 1 ? '' : 's'}`,
+    subjectBuilds: (n: number) => `${n} build${n === 1 ? '' : 's'} down`,
   },
 } as const
 
@@ -241,6 +257,32 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     console.warn('digest: sentry quota check failed (continuing)', err)
   }
 
+  // Piggyback housekeeping #6: ping every showcased build URL (gallery
+  // health). The /projects page is a wall of live iframes pointing at apps
+  // deployed from other repos; none of those deploys report here, so a dead
+  // build is invisible until a visitor sees a broken card. Down builds get
+  // their own digest section below. Side benefit: the daily GET touches
+  // cold-start-prone builds (Jaffre's Durable Object 504'd on first contact,
+  // 2026-10-15). Best-effort: an unreachable portfolio piece must not block
+  // the triage nudge.
+  // Skipped under the e2e harness: its ephemeral D1 carries the seeded
+  // showcases with their REAL production URLs, and a hermetic suite must
+  // not fan out network calls to live apps on every digest test.
+  let buildsDown: DownBuild[] = []
+  try {
+    if (env.STRIPE_SECRET_KEY !== E2E_STUB_API_KEY) {
+      buildsDown = await pingBuilds(await listShowcasedBuilds(env.DB))
+    }
+    if (buildsDown.length > 0) {
+      console.warn(
+        `digest: showcase health — ${buildsDown.length} down:`,
+        buildsDown.map((b) => `${b.title} (${b.detail})`),
+      )
+    }
+  } catch (err) {
+    console.warn('digest: showcase health check failed (continuing)', err)
+  }
+
   let rows: SessionRow[] = []
   try {
     const res = await env.DB.prepare(
@@ -282,14 +324,20 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     console.warn('digest: admin_alerts query failed (continuing without)', err)
   }
 
-  if (rows.length === 0 && alerts.length === 0) {
+  if (rows.length === 0 && alerts.length === 0 && buildsDown.length === 0) {
     // Nothing to nudge about — silently return 200 so cron logs stay clean.
-    return ok({ sent: false, count: 0, alerts: 0 })
+    return ok({ sent: false, count: 0, alerts: 0, buildsDown: 0 })
   }
 
   const marc = primaryAdminEmail(env.ADMIN_EMAILS)
   if (!marc) {
-    return ok({ sent: false, count: rows.length, alerts: alerts.length, reason: 'no admin email' })
+    return ok({
+      sent: false,
+      count: rows.length,
+      alerts: alerts.length,
+      buildsDown: buildsDown.length,
+      reason: 'no admin email',
+    })
   }
 
   const origin = new URL(request.url).origin
@@ -312,7 +360,12 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     alerts.length > 0
       ? `${alerts.length} ${alerts.length === 1 ? t.alertOne : t.alertMany} (${t.alertsHeading}):\n\n${alertLines.join('\n')}\n\n${t.alertResolveHelp} UPDATE admin_alerts SET resolved_at = unixepoch() WHERE id = '...';\n`
       : ''
-  const text = [triageBlock, alertsBlock].filter(Boolean).join('\n')
+  const buildLines = buildsDown.map((b) => `• ${b.title} · ${b.url} · ${b.detail}`)
+  const buildsBlock =
+    buildsDown.length > 0
+      ? `${buildsDown.length} ${buildsDown.length === 1 ? t.buildsOne : t.buildsMany} (${t.buildsHeading}):\n\n${buildLines.join('\n')}\n\n${t.buildsHelp}\n`
+      : ''
+  const text = [triageBlock, alertsBlock, buildsBlock].filter(Boolean).join('\n')
 
   const triageHtml =
     rows.length > 0
@@ -341,6 +394,20 @@ ${alerts
 </ul>
 <p style="color:#8a8478;font-size:13px;line-height:1.5;">${t.alertResolveHelp} <code style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;">UPDATE admin_alerts SET resolved_at = unixepoch() WHERE id = '…';</code></p>`
       : ''
+  const buildsHtml =
+    buildsDown.length > 0
+      ? `<h2 style="margin:18px 0 12px 0;color:#1f1d1a;font-size:18px;">${t.buildsHeading}</h2>
+<p style="margin:0 0 12px 0;color:#1f1d1a;"><strong>${buildsDown.length}</strong> ${buildsDown.length === 1 ? t.buildsOne : t.buildsMany}.</p>
+<ul style="margin:0 0 18px 0;padding-left:20px;color:#3f3c34;line-height:1.7;">
+${buildsDown
+  .map(
+    (b) =>
+      `<li>${escapeHtml(b.title)} · <a href="${escapeHtml(b.url)}" style="color:#3d6e4e;">${escapeHtml(b.url)}</a> · <code style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#5a554b;">${escapeHtml(b.detail)}</code></li>`,
+  )
+  .join('\n')}
+</ul>
+<p style="color:#8a8478;font-size:13px;line-height:1.5;">${t.buildsHelp}</p>`
+      : ''
   const html = `<!doctype html>
 <html lang="${lang}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -354,6 +421,7 @@ ${alerts
       <div style="padding:24px 28px;">
         ${triageHtml}
         ${alertsHtml}
+        ${buildsHtml}
       </div>
     </div>
   </div>
@@ -363,6 +431,7 @@ ${alerts
   const subjectParts: string[] = []
   if (rows.length > 0) subjectParts.push(t.subjectTriage(rows.length))
   if (alerts.length > 0) subjectParts.push(t.subjectAlerts(alerts.length))
+  if (buildsDown.length > 0) subjectParts.push(t.subjectBuilds(buildsDown.length))
   const subject = `${t.subjectPrefix} — ${subjectParts.join(' · ')}`
 
   // Best-effort send. If Resend is down we still return 200 so the cron job
@@ -399,13 +468,20 @@ ${alerts
   //   count  — number of triage rows >48h old. The actual nudge subject.
   //   alerts — number of unresolved admin_alerts rows. Webhook-fallback
   //            signal; a future operator UI would clear these explicitly.
+  //   buildsDown — showcased build URLs that failed today's health ping.
+  //            Point-in-time, re-checked every firing; nothing persists.
   //
   // For an outside observer wondering "did the digest do its job?": the
   // job is "identify work AND deliver email." `count + alerts > 0`
   // answers the first half; `sent` answers the second. A cron consumer
   // should treat HTTP 200 as "handler executed cleanly"; the body fields
   // are operator-facing diagnostics, not retry signals.
-  return ok({ sent: mailSent, count: rows.length, alerts: alerts.length })
+  return ok({
+    sent: mailSent,
+    count: rows.length,
+    alerts: alerts.length,
+    buildsDown: buildsDown.length,
+  })
 }
 
 function escapeHtml(s: string): string {
