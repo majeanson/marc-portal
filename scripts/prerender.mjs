@@ -74,24 +74,41 @@ const PAGES = [
 // render (src/lib/prerenderSeed.ts) matches the snapshot exactly. Without it
 // (first-ever deploy, prod unreachable from CI), everything falls back to
 // the old skeleton-freeze behavior — fail-soft, never a blocked deploy.
-const PROJECTS_API = 'https://marcportal.com/api/public/projects'
+// Two origins, tried in order. The custom domain sits behind the zone's bot
+// protection, which 403'd the GitHub-runner fetch on the first deploy (Node
+// default UA + datacenter IP); the pages.dev origin serves the same
+// Functions outside those rules and is a seeded tenant domain. A browser-ish
+// UA is sent either way — this is our own build fetching our own public
+// endpoint, not a scraper.
+const PROJECTS_API_ORIGINS = ['https://marcportal.com', 'https://marc-portal.pages.dev']
 
 async function fetchProjectsSeed() {
-  try {
-    const res = await fetch(PROJECTS_API, { signal: AbortSignal.timeout(15_000) })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const body = await res.text()
-    const parsed = JSON.parse(body)
-    if (!Array.isArray(parsed?.projects)) throw new Error('unexpected shape')
-    console.log(`prerender: projects seed fetched (${parsed.projects.length} cards)`)
-    return body
-  } catch (err) {
-    console.warn(
-      'prerender: projects seed fetch failed, falling back to skeleton freeze:',
-      err instanceof Error ? err.message : String(err),
-    )
-    return null
+  for (const origin of PROJECTS_API_ORIGINS) {
+    try {
+      const res = await fetch(`${origin}/api/public/projects`, {
+        signal: AbortSignal.timeout(15_000),
+        headers: {
+          'user-agent': 'Mozilla/5.0 (prerender; +https://marcportal.com) marc-portal-build',
+          accept: 'application/json',
+        },
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const body = await res.text()
+      const parsed = JSON.parse(body)
+      if (!Array.isArray(parsed?.projects)) throw new Error('unexpected shape')
+      console.log(
+        `prerender: projects seed fetched from ${origin} (${parsed.projects.length} cards)`,
+      )
+      return body
+    } catch (err) {
+      console.warn(
+        `prerender: projects seed fetch from ${origin} failed:`,
+        err instanceof Error ? err.message : String(err),
+      )
+    }
   }
+  console.warn('prerender: no seed origin answered, falling back to skeleton freeze')
+  return null
 }
 
 /** Inject the seed as a non-executable JSON script tag. `<` is escaped so
