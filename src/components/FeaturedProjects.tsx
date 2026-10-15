@@ -5,6 +5,7 @@ import { DICT } from '../i18n'
 import { formatDate } from '../lib/format'
 import { HOME_FOLIOS } from '../lib/folios'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
+import { readProjectsSeed } from '../lib/prerenderSeed'
 import { ProjectCardPreview } from './ProjectCardPreview'
 import { SectionEyebrow } from './SectionEyebrow'
 import { HomeDrillCard } from './HomeDrillCard'
@@ -17,7 +18,12 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
   const langPrefix = lang === 'en' ? '/en' : ''
   const intakeHref = `${langPrefix}/intake`
   const galleryHref = `${langPrefix}/projects`
-  const [projects, setProjects] = useState<PublicProject[] | null>(null)
+  // Seeded from the prerender's build-time snapshot when present (see
+  // lib/prerenderSeed.ts): first render = cards = the prerendered HTML.
+  // The effect below still fetches live data over it.
+  const [projects, setProjects] = useState<PublicProject[] | null>(
+    () => readProjectsSeed()?.slice(0, FEATURED_LIMIT) ?? null,
+  )
   const [errored, setErrored] = useState(false)
 
   useEffect(() => {
@@ -67,13 +73,14 @@ export function FeaturedProjects({ lang }: { lang: Lang }) {
           <>
             {/* Skeleton mirrors the real 3-card grid so the loading paint and
                 the eventual cards share the exact silhouette — content fills
-                in over the placeholders with no layout jump. This is also the
-                state the homepage prerender freezes: scripts/prerender.mjs
-                leaves /api/public/projects pending so the snapshot captures
-                this skeleton (matching React's boot first-render), not the
-                backendless error panel that networkidle would otherwise bake
-                in. Same trick Hero/StudioSign get for free (their loading
-                state already equals their neutral default). */}
+                in over the placeholders with no layout jump. The prerender
+                normally skips this state entirely: scripts/prerender.mjs
+                injects a projects seed (lib/prerenderSeed.ts), so the first
+                render is already the cards. The skeleton remains the boot
+                state in dev and whenever the build-time seed fetch failed —
+                the prerender then falls back to holding the API request
+                pending so the snapshot captures this skeleton, matching
+                React's seedless first render. */}
             <p className="featured-projects__loading-sr" role="status">
               {t.loading}
             </p>
@@ -188,6 +195,7 @@ function FeaturedCard({
           title={title}
           sessionId={project.id}
           lang={lang}
+          previewViewport={project.currentBuild?.previewViewport ?? null}
         />
         <div className="project-card__head">
           <span className="project-card__date mono">{formatDate(project.showcasedAt, lang)}</span>

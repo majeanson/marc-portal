@@ -15,6 +15,9 @@ export interface AdvancementFlags {
   allowedForPublic?: boolean
   showInConversation?: boolean
   showAsCurrentBuild?: boolean
+  /** 'phone' renders the gallery-card embed as a 430×932 portrait frame
+   * (phone-first builds look stretched in the default desktop viewport). */
+  previewViewport?: 'phone'
 }
 
 export interface AdvancementRow {

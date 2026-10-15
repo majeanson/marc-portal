@@ -983,6 +983,11 @@
       "name": "marc-portal-media"
     },
     {
+      "id": "binding.SENTRY_ORG",
+      "kind": "var",
+      "binding": "SENTRY_ORG"
+    },
+    {
       "id": "binding.STRIPE_CUSTODIAN_CARE_PRICE_ID",
       "kind": "var",
       "binding": "STRIPE_CUSTODIAN_CARE_PRICE_ID"

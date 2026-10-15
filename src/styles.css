@@ -6169,6 +6169,32 @@ button:focus-visible,
 .project-card__preview-frame.is-loaded {
   opacity: 1;
 }
+/* Phone variant — a 430×932 portrait frame, height-fit and centred in the
+   16:10 slot (scale var set by the same ResizeObserver). The hard hairline
+   is the house edge treatment, not device chrome. */
+.project-card__preview-frame--phone {
+  inset: 0 auto auto 50%;
+  width: 430px;
+  height: 932px;
+  transform: translateX(-50%) scale(var(--preview-scale-phone, 0.2));
+  transform-origin: top center;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+/* Once the phone frame paints, the OG card behind it would read as noise on
+   both sides — fade it and let the slot's flat background hold the stage. */
+.project-card__preview--phone.project-card__preview--loaded .project-card__preview-og {
+  opacity: 0;
+  transition: opacity 380ms ease;
+}
+.project-card:hover .project-card__preview-frame--phone.is-loaded {
+  transform: translateX(-50%) scale(calc(var(--preview-scale-phone, 0.2) * 1.045));
+}
+@media (prefers-reduced-motion: reduce) {
+  .project-card:hover .project-card__preview-frame--phone.is-loaded {
+    transform: translateX(-50%) scale(var(--preview-scale-phone, 0.2));
+  }
+}
 /* Small zoom on hover — lands on whichever layer is showing: the live
    build iframe when loaded, the OG thumbnail otherwise. */
 .project-card:hover .project-card__preview-frame.is-loaded {

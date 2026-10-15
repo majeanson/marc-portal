@@ -17,6 +17,12 @@ export interface AdvancementFlags {
   showInConversation?: boolean
   /** Pin as the headline "current demo" entry in the renderer. */
   showAsCurrentBuild?: boolean
+  /** Gallery-card embed shape. 'phone' renders the live iframe as a 430×932
+   * portrait frame instead of the default 1280×800 desktop one — for builds
+   * that are phone-first (Ashwake, Dungeon Depths) and look stretched in a
+   * desktop viewport. Absent = desktop. A string (not boolean) so other
+   * shapes can slot in without another flag. */
+  previewViewport?: 'phone'
 }
 
 export interface AdvancementRow {
@@ -55,6 +61,9 @@ export function parseFlags(raw: string | null | undefined): AdvancementFlags {
         out.showInConversation = obj.showInConversation
       if (typeof obj.showAsCurrentBuild === 'boolean')
         out.showAsCurrentBuild = obj.showAsCurrentBuild
+      // Whitelist the value, not just the type — an unknown shape must not
+      // reach the renderer's class names.
+      if (obj.previewViewport === 'phone') out.previewViewport = 'phone'
       return out
     }
   } catch {
@@ -69,6 +78,7 @@ export function stringifyFlags(flags: AdvancementFlags): string {
   if (flags.allowedForPublic) trimmed.allowedForPublic = true
   if (flags.showInConversation) trimmed.showInConversation = true
   if (flags.showAsCurrentBuild) trimmed.showAsCurrentBuild = true
+  if (flags.previewViewport === 'phone') trimmed.previewViewport = 'phone'
   return JSON.stringify(trimmed)
 }
 

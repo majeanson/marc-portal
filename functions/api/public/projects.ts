@@ -62,12 +62,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     .all<AdvancementJoinRow>()
 
   // Index by session_id, picking the first (= newest) showAsCurrentBuild.
-  const currentBySession = new Map<string, AdvancementJoinRow>()
+  // Keep the parsed flags alongside — previewViewport rides out to the card.
+  const currentBySession = new Map<
+    string,
+    { row: AdvancementJoinRow; previewViewport: 'phone' | null }
+  >()
   for (const a of advRes.results ?? []) {
     if (currentBySession.has(a.session_id)) continue
     const flags = parseFlags(a.flags_json)
     if (!flags.showAsCurrentBuild) continue
-    currentBySession.set(a.session_id, a)
+    currentBySession.set(a.session_id, { row: a, previewViewport: flags.previewViewport ?? null })
   }
 
   const projects = sessions.map((s) => {
@@ -83,11 +87,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       tier: s.tier,
       currentBuild: cur
         ? {
-            label: cur.label,
-            body: cur.body,
-            buildUrl: cur.build_url,
-            iframePath: cur.iframe_path,
-            date: cur.date,
+            label: cur.row.label,
+            body: cur.row.body,
+            buildUrl: cur.row.build_url,
+            iframePath: cur.row.iframe_path,
+            date: cur.row.date,
+            previewViewport: cur.previewViewport,
           }
         : null,
     }

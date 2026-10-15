@@ -71,6 +71,7 @@ npm run db:migrate:prod
 | `0037_showcase_dedupe_en.sql`       | Un-showcases the stale admin-showcased Babillard engagement (0032 seeded the canonical card) + fills Truck notes' EN copy        |
 | `0038_showcase_tiers.sql`           | Re-tiers three showcase cards: Dungeon Depths and Truck notes to T1, Ashwake to T3                                               |
 | `0039_horizon_preview_path.sql`     | Points the Horizon card's embed + open-build link at /resultats?apercu (the repo's purpose-built portfolio preview)              |
+| `0040_phone_preview_flags.sql`      | Flags Ashwake + Dungeon Depths advancements previewViewport='phone' so their cards embed a 430×932 portrait frame                |
 
 ## After applying 0002
 

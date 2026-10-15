@@ -34,12 +34,18 @@ export function ProjectCardPreview({
   title,
   sessionId,
   lang,
+  previewViewport,
 }: {
   buildHref: string | null
   title: string
   sessionId?: string
   lang?: Lang
+  /** 'phone' renders the live build in a 430×932 portrait frame, centred in
+   * the 16:10 slot — phone-first builds (Ashwake, Dungeon Depths) look like
+   * themselves instead of a stretched desktop viewport. */
+  previewViewport?: 'phone' | null
 }) {
+  const isPhone = previewViewport === 'phone'
   const ref = useRef<HTMLDivElement>(null)
   const hasIO = typeof IntersectionObserver !== 'undefined'
   const [visible, setVisible] = useState(!hasIO)
@@ -70,13 +76,18 @@ export function ProjectCardPreview({
     return () => io.disconnect()
   }, [buildHref, hasIO])
 
-  // Keep --preview-scale in sync with the card width. The iframe renders at
-  // a fixed 1280×800 desktop size; CSS scales it by this value so it fills
-  // the 16:10 box exactly at any card width (a fixed scale left a gap).
+  // Keep the scale vars in sync with the card width. The desktop iframe
+  // renders at a fixed 1280×800 and fills the 16:10 box by width; the phone
+  // iframe renders at 430×932 and fits the box by HEIGHT (box height =
+  // width × 10/16), centred, so the portrait frame sits inside the slot
+  // instead of overflowing it.
   useEffect(() => {
     const el = ref.current
     if (!el || typeof ResizeObserver === 'undefined') return
-    const sync = () => el.style.setProperty('--preview-scale', String(el.clientWidth / 1280))
+    const sync = () => {
+      el.style.setProperty('--preview-scale', String(el.clientWidth / 1280))
+      el.style.setProperty('--preview-scale-phone', String((el.clientWidth * 0.625) / 932))
+    }
     sync()
     const ro = new ResizeObserver(sync)
     ro.observe(el)
@@ -110,7 +121,7 @@ export function ProjectCardPreview({
   return (
     <div
       ref={ref}
-      className={`project-card__preview project-card__preview--${state}`}
+      className={`project-card__preview project-card__preview--${state}${isPhone ? ' project-card__preview--phone' : ''}`}
       aria-hidden="true"
     >
       {ogSrc && (
@@ -126,7 +137,7 @@ export function ProjectCardPreview({
       )}
       {visible && buildHref && outcome !== 'errored' && (
         <iframe
-          className={`project-card__preview-frame${isLoaded ? ' is-loaded' : ''}`}
+          className={`project-card__preview-frame${isPhone ? ' project-card__preview-frame--phone' : ''}${isLoaded ? ' is-loaded' : ''}`}
           src={buildHref}
           title={`${title} — aperçu`}
           loading="lazy"

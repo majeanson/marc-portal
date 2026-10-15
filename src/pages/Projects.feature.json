@@ -102,6 +102,12 @@
       "reason": "Showcase wave 3: seeded Babillard, Horizon, Ashwake and dads (migrations 0032-0035) and backfilled Retrodio's EN copy (0036). Replaced the stale OG limitation (each engagement has had its own generated /og/share/:id image for a while) with the real current one: live previews depend on each embedded app's frame-ancestors allowing marcportal.com.",
       "commit": "5080d14",
       "buildUrl": "https://90cb9d99.marc-portal.pages.dev"
+    },
+    {
+      "date": "2026-10-15",
+      "author": "marc+claude",
+      "fields_changed": ["implementation"],
+      "reason": "Gallery polish wave: (1) previewViewport='phone' advancement flag renders a 430x932 portrait embed for phone-first builds (Ashwake, Dungeon Depths via 0040; admin toggle in SessionAdvancements); (2) the admin showcase panel gained EN title/tagline fields so admin-showcased sessions never ship FR-only again (the Retrodio/Truck-notes backfill class of bug, closed at the source); (3) /projects and /en/projects are now prerendered with a build-time data seed (scripts/prerender.mjs + lib/prerenderSeed.ts), so crawlers see real card titles and the static paint matches React's first render."
     }
   ],
   "annotations": []

@@ -5065,7 +5065,7 @@
       ],
       "successCriteria": "- Flagging an engagement for the showcase in the admin view publishes it to the public gallery with no separate authoring step\n- The public endpoint returns only showcased sessions and only public-safe fields\n- Every gallery card shows the engagement's tier and status\n- The gallery can be filtered by tier and status\n- Reusable as a pattern for any project that turns finished work into public references",
       "knownLimitations": [
-        "Per-card preview images share the site-wide OG card — there is no per-engagement generated preview image yet",
+        "A card's live iframe preview depends on the embedded app allowing marcportal.com in its frame-ancestors; until a sibling repo ships that header, its card shows the generated OG image without the live layer",
         "There is no self-serve client redaction flow — a client who wants something changed asks the consultant directly",
         "Gallery cards do not cross-link to related engagements; each is standalone"
       ],
@@ -5148,5 +5148,5 @@
       "lastTransitionDate": "2026-05-21"
     }
   ],
-  "generatedAt": "2026-06-03T01:36:21.100Z"
+  "generatedAt": "2026-10-15T17:32:50.190Z"
 }
