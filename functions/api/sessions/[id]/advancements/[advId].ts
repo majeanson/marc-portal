@@ -81,6 +81,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
       allowedForPublic: !!flagsObj.allowedForPublic,
       showInConversation: !!flagsObj.showInConversation,
       showAsCurrentBuild: !!flagsObj.showAsCurrentBuild,
+      previewViewport: flagsObj.previewViewport === 'phone' ? 'phone' : undefined,
     })
     updates.push({ col: 'flags_json', val: flagsJson })
   }

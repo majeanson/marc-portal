@@ -35,6 +35,9 @@ export interface SessionRow {
   showcased_at: number | null
   showcase_title: string | null
   showcase_tagline: string | null
+  /** EN twins for the /en gallery card; null falls back to the FR field. */
+  showcase_title_en: string | null
+  showcase_tagline_en: string | null
   tier: SessionTier | null
   /** Tier-4 admin-quoted amount in CAD cents. NULL when the admin hasn't
    * yet set a quote. PaymentActions disables the "Pay (quoted)" button
@@ -127,6 +130,9 @@ export interface ShowcasePatch {
   enabled?: boolean
   title?: string | null
   tagline?: string | null
+  /** EN twins; null/empty clears so the /en card falls back to FR. */
+  titleEn?: string | null
+  taglineEn?: string | null
 }
 
 export function patchSession(
@@ -255,6 +261,8 @@ export interface PublicProject {
     buildUrl: string | null
     iframePath: string | null
     date: number
+    /** 'phone' renders the card embed as a 430×932 portrait frame. */
+    previewViewport: 'phone' | null
   } | null
 }
 

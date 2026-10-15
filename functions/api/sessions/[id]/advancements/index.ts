@@ -107,6 +107,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     allowedForPublic: !!(flagsObj as Record<string, unknown>).allowedForPublic,
     showInConversation: !!(flagsObj as Record<string, unknown>).showInConversation,
     showAsCurrentBuild: !!(flagsObj as Record<string, unknown>).showAsCurrentBuild,
+    previewViewport:
+      (flagsObj as Record<string, unknown>).previewViewport === 'phone' ? 'phone' : undefined,
   })
 
   // Optional pre-fill of build_url + commit_sha on create. Validate same as

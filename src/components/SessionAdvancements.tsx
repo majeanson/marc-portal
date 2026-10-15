@@ -190,6 +190,7 @@ function AdvancementForm({
   const [allowedForPublic, setAllowedForPublic] = useState(false)
   const [showInConversation, setShowInConversation] = useState(false)
   const [showAsCurrentBuild, setShowAsCurrentBuild] = useState(false)
+  const [phonePreview, setPhonePreview] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const reset = () => {
@@ -200,6 +201,7 @@ function AdvancementForm({
     setAllowedForPublic(false)
     setShowInConversation(false)
     setShowAsCurrentBuild(false)
+    setPhonePreview(false)
   }
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -214,7 +216,12 @@ function AdvancementForm({
         body: body.trim(),
         iframePath: iframePath.trim() || null,
         buildUrl: buildUrl.trim() || null,
-        flags: { allowedForPublic, showInConversation, showAsCurrentBuild },
+        flags: {
+          allowedForPublic,
+          showInConversation,
+          showAsCurrentBuild,
+          previewViewport: phonePreview ? 'phone' : undefined,
+        },
       })
       onCreated(r.advancement)
       reset()
@@ -298,6 +305,14 @@ function AdvancementForm({
           />
           <span>{t.flagShowAsCurrentBuild}</span>
         </label>
+        <label className="session-advancements__flag">
+          <input
+            type="checkbox"
+            checked={phonePreview}
+            onChange={(e) => setPhonePreview(e.target.checked)}
+          />
+          <span>{t.flagPhonePreview}</span>
+        </label>
       </fieldset>
       <div className="session-advancements__form-actions">
         <button type="submit" className="hero__cta" disabled={submitting || !label.trim()}>
@@ -354,6 +369,23 @@ function AdvancementEntry({
     try {
       const r = await patchAdvancement(row.session_id, row.id, {
         flags: { ...row.flags, [key]: !row.flags[key] },
+      })
+      onPatched(r.advancement)
+    } catch (err) {
+      onError(err instanceof Error ? err.message : t.formError)
+    }
+  }
+
+  // previewViewport is a string flag ('phone' | absent), so the boolean
+  // flip above can't drive it — this toggles presence instead.
+  const onTogglePhonePreview = async () => {
+    onError(null)
+    try {
+      const r = await patchAdvancement(row.session_id, row.id, {
+        flags: {
+          ...row.flags,
+          previewViewport: row.flags.previewViewport === 'phone' ? undefined : 'phone',
+        },
       })
       onPatched(r.advancement)
     } catch (err) {
@@ -433,6 +465,11 @@ function AdvancementEntry({
             active={!!row.flags.showAsCurrentBuild}
             onClick={() => onToggleFlag('showAsCurrentBuild')}
           />
+          <FlagToggle
+            label={t.flagPhonePreview}
+            active={row.flags.previewViewport === 'phone'}
+            onClick={onTogglePhonePreview}
+          />
         </div>
       )}
       {isAdmin && (
@@ -464,6 +501,7 @@ function AdvancementEntry({
           }}
           onError={onError}
           onToggleFlag={onToggleFlag}
+          onTogglePhonePreview={onTogglePhonePreview}
         />
       )}
     </li>
@@ -476,12 +514,14 @@ function EditPanel({
   onPatched,
   onError,
   onToggleFlag,
+  onTogglePhonePreview,
 }: {
   row: AdvancementRow
   lang: Lang
   onPatched: (row: AdvancementRow) => void
   onError: (msg: string | null) => void
   onToggleFlag: (key: keyof AdvancementFlags) => void
+  onTogglePhonePreview: () => void
 }) {
   const t = DICT[lang].sessionAdvancements
   const [label, setLabel] = useState(row.label)
@@ -562,6 +602,14 @@ function EditPanel({
             onChange={() => onToggleFlag('showAsCurrentBuild')}
           />
           <span>{t.flagShowAsCurrentBuild}</span>
+        </label>
+        <label className="session-advancements__flag">
+          <input
+            type="checkbox"
+            checked={row.flags.previewViewport === 'phone'}
+            onChange={onTogglePhonePreview}
+          />
+          <span>{t.flagPhonePreview}</span>
         </label>
       </fieldset>
       <div className="session-advancements__form-actions">

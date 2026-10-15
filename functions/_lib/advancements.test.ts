@@ -39,6 +39,15 @@ describe('parseFlags', () => {
     expect(parseFlags(JSON.stringify({ allowedForPublic: 'yes' }))).toEqual({})
     expect(parseFlags(JSON.stringify({ showAsCurrentBuild: 1 }))).toEqual({})
   })
+
+  it('whitelists previewViewport values, not just the type', () => {
+    expect(parseFlags(JSON.stringify({ previewViewport: 'phone' }))).toEqual({
+      previewViewport: 'phone',
+    })
+    // Unknown shapes must never reach the renderer's class names.
+    expect(parseFlags(JSON.stringify({ previewViewport: 'tablet' }))).toEqual({})
+    expect(parseFlags(JSON.stringify({ previewViewport: true }))).toEqual({})
+  })
 })
 
 describe('stringifyFlags', () => {
@@ -55,6 +64,7 @@ describe('stringifyFlags', () => {
       allowedForPublic: true,
       showInConversation: true,
       showAsCurrentBuild: true,
+      previewViewport: 'phone' as const,
     }
     expect(parseFlags(stringifyFlags(flags))).toEqual(flags)
   })

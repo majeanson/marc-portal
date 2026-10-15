@@ -79,6 +79,8 @@ function seedSession(db: D1Mock, over: Record<string, unknown> = {}) {
     showcased_at: null,
     showcase_title: null,
     showcase_tagline: null,
+    showcase_title_en: null,
+    showcase_tagline_en: null,
     tier: null,
     tier4_amount_cents: null,
     tier3_split: null,
@@ -882,6 +884,44 @@ describe('PATCH /api/sessions/:id — audit_log writes', () => {
     expect(payload.title).toEqual({ from: null, to: 'Cool project' })
     // Tagline didn't change → key absent.
     expect(payload.tagline).toBeUndefined()
+  })
+
+  it('patches the EN showcase twins and audits them (titleEn/taglineEn)', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: {
+        showcase: {
+          enabled: true,
+          titleEn: '  Cool project (EN)  ',
+          taglineEn: 'For the /en card',
+        },
+      },
+    })
+    seedSession(ctx.env._db)
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(200)
+
+    const row = ctx.env._db.sessions.get('s1')!
+    expect(row.showcase_title_en).toBe('Cool project (EN)')
+    expect(row.showcase_tagline_en).toBe('For the /en card')
+    // FR fields untouched by an EN-only patch.
+    expect(row.showcase_title).toBeNull()
+
+    const payload = JSON.parse(findAuditRows(ctx.env._db, 'session.showcase')[0].payload!)
+    expect(payload.titleEn).toEqual({ from: null, to: 'Cool project (EN)' })
+    expect(payload.taglineEn).toEqual({ from: null, to: 'For the /en card' })
+  })
+
+  it('rejects a non-string showcase.titleEn with 400', async () => {
+    const ctx = makeCtx({
+      method: 'PATCH',
+      asEmail: 'marc@x.com',
+      body: { showcase: { titleEn: 42 } },
+    })
+    seedSession(ctx.env._db)
+    const res = await onRequestPatch(ctx as never)
+    expect(res.status).toBe(400)
   })
 
   it('writes session.decline_note WITHOUT the note text (PII discipline)', async () => {

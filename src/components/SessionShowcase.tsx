@@ -27,6 +27,8 @@ export function SessionShowcase({
   const [enabled, setEnabled] = useState(session.showcased_at !== null)
   const [title, setTitle] = useState(session.showcase_title ?? '')
   const [tagline, setTagline] = useState(session.showcase_tagline ?? '')
+  const [titleEn, setTitleEn] = useState(session.showcase_title_en ?? '')
+  const [taglineEn, setTaglineEn] = useState(session.showcase_tagline_en ?? '')
   const [tier, setTier] = useState<SessionTier | null>(session.tier ?? null)
   const [saving, setSaving] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
@@ -45,6 +47,8 @@ export function SessionShowcase({
     enabled !== (session.showcased_at !== null) ||
     title.trim() !== (session.showcase_title ?? '') ||
     tagline.trim() !== (session.showcase_tagline ?? '') ||
+    titleEn.trim() !== (session.showcase_title_en ?? '') ||
+    taglineEn.trim() !== (session.showcase_tagline_en ?? '') ||
     tier !== (session.tier ?? null)
 
   const onSave = async () => {
@@ -58,6 +62,8 @@ export function SessionShowcase({
           enabled,
           title: title.trim() || null,
           tagline: tagline.trim() || null,
+          titleEn: titleEn.trim() || null,
+          taglineEn: taglineEn.trim() || null,
         },
         tier,
       })
@@ -101,6 +107,31 @@ export function SessionShowcase({
           value={tagline}
           onChange={(e) => setTagline(e.target.value)}
           placeholder={t.taglinePlaceholder}
+          rows={2}
+          maxLength={500}
+        />
+      </label>
+
+      <label className="field">
+        <span className="field__label">{t.titleEnLabel}</span>
+        <span className="field__hint">{t.enHint}</span>
+        <input
+          type="text"
+          className="input field__input"
+          value={titleEn}
+          onChange={(e) => setTitleEn(e.target.value)}
+          placeholder={t.titleEnPlaceholder}
+          maxLength={200}
+        />
+      </label>
+
+      <label className="field">
+        <span className="field__label">{t.taglineEnLabel}</span>
+        <textarea
+          className="input field__input"
+          value={taglineEn}
+          onChange={(e) => setTaglineEn(e.target.value)}
+          placeholder={t.taglineEnPlaceholder}
           rows={2}
           maxLength={500}
         />

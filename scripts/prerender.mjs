@@ -1,9 +1,13 @@
-// Homepage prerender — npm `postbuild`, runs automatically after `vite build`.
+// Page prerender — npm `postbuild`, runs automatically after `vite build`.
 //
 // The app is a client-rendered SPA: nothing meaningful paints until the JS
 // bundle loads, parses and renders. This script snapshots the real
-// browser-rendered DOM of the homepage (FR `/` and EN `/en`) to static HTML
-// so content paints immediately (FCP/LCP); the SPA then boots over it.
+// browser-rendered DOM of the homepage (FR `/` and EN `/en`) and the public
+// gallery (`/projects`, `/en/projects`) to static HTML so content paints
+// immediately (FCP/LCP) and crawlers see real card titles; the SPA then
+// boots over it. Gallery data comes from a build-time fetch of the live
+// /api/public/projects, injected as a JSON seed the SPA also boots from
+// (src/lib/prerenderSeed.ts) so snapshot and first render agree.
 //
 // Why a browser snapshot, not react-dom/server SSR: the app already runs
 // perfectly in a browser, so this needs zero app refactor and risks no
@@ -53,10 +57,51 @@ const HEADERS = join(DIST, '_headers')
 const THEME_BOOTSTRAP = join(DIST, 'theme-bootstrap.js')
 
 // Pages to snapshot: URL path → the dist file to write the snapshot to.
+// `waitFor` is the selector that proves the page's content has rendered.
+// The gallery pages wait for a card when the projects seed is available,
+// because that's the state the seed makes React render first.
 const PAGES = [
-  { path: '/', out: INDEX },
-  { path: '/en', out: join(DIST, 'en', 'index.html') },
+  { path: '/', out: INDEX, waitFor: '.app' },
+  { path: '/en', out: join(DIST, 'en', 'index.html'), waitFor: '.app' },
+  { path: '/projects', out: join(DIST, 'projects', 'index.html'), waitFor: '.app' },
+  { path: '/en/projects', out: join(DIST, 'en', 'projects', 'index.html'), waitFor: '.app' },
 ]
+
+// The live gallery data, fetched from production at build time. With it, the
+// prerendered pages carry the real cards (titles + taglines — the SEO
+// content), and the same JSON is injected into every snapshot as
+// <script id="projects-seed" type="application/json"> so React's first
+// render (src/lib/prerenderSeed.ts) matches the snapshot exactly. Without it
+// (first-ever deploy, prod unreachable from CI), everything falls back to
+// the old skeleton-freeze behavior — fail-soft, never a blocked deploy.
+const PROJECTS_API = 'https://marcportal.com/api/public/projects'
+
+async function fetchProjectsSeed() {
+  try {
+    const res = await fetch(PROJECTS_API, { signal: AbortSignal.timeout(15_000) })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const body = await res.text()
+    const parsed = JSON.parse(body)
+    if (!Array.isArray(parsed?.projects)) throw new Error('unexpected shape')
+    console.log(`prerender: projects seed fetched (${parsed.projects.length} cards)`)
+    return body
+  } catch (err) {
+    console.warn(
+      'prerender: projects seed fetch failed, falling back to skeleton freeze:',
+      err instanceof Error ? err.message : String(err),
+    )
+    return null
+  }
+}
+
+/** Inject the seed as a non-executable JSON script tag. `<` is escaped so
+ *  payload content can never close the tag; application/json is inert, so
+ *  no CSP hash is needed (inlineScriptHashes skips non-JS types). */
+function injectProjectsSeed(html, payload) {
+  if (!payload) return html
+  const tag = `<script id="projects-seed" type="application/json">${payload.replace(/</g, '\\u003c')}</script>`
+  return html.replace('</body>', `${tag}</body>`)
+}
 
 /**
  * Replace every same-origin `<link rel="stylesheet">` with an inline
@@ -132,31 +177,44 @@ async function applyCriticalCss(html) {
  * and return its complete static HTML (doctype + rendered <html>). The
  * stylesheet <link> is left intact for applyCriticalCss to process.
  */
-async function snapshot(browser, url) {
+async function snapshot(browser, url, { waitFor, projectsPayload }) {
   const page = await browser.newPage()
+  const origin = new URL(url).origin
   try {
-    // Freeze FeaturedProjects in its *loading* (skeleton) state, not its
-    // error state. `vite preview` has no Functions backend, so left alone
-    // /api/public/projects fails and the component renders its error panel
-    // ("couldn't load projects") — which then gets baked into the static
-    // first paint. On a real visit React boots into its loading state
-    // (skeleton), so the visitor would see error → skeleton → cards: a
-    // three-step flicker, and an error message as the fast paint. Holding
-    // the request open keeps the snapshot in the skeleton state, which is
-    // exactly what React renders first on boot → the cards fill in over the
-    // placeholders with no visible swap. (Hero/StudioSign need no such help:
-    // their loading state already equals their neutral default, and /capacity
-    // is left to fail fast into that same neutral state.)
-    await page.route('**/api/public/projects*', () => {
-      // Intentionally never fulfilled/aborted — the pending fetch holds the
-      // component in `isLoading`. Playwright tears it down when the page
-      // closes. This is also why we can't waitUntil:'networkidle' below.
+    // One route handler owns all request policy:
+    //
+    //   1. Cross-origin → abort. With seeded cards, the gallery pages mount
+    //      live iframes to the showcased builds; a prerender must not fan
+    //      out network calls to eight external apps (slow, nondeterministic,
+    //      and a CI leak). Aborted frames fail fast; the cards keep their
+    //      OG-image layer, which is the state a crawler should see anyway.
+    //   2. /api/public/projects → fulfilled with the build-time payload, so
+    //      the snapshot carries the real cards. When the seed fetch failed,
+    //      the request is held pending instead (never fulfilled/aborted):
+    //      that freezes FeaturedProjects/Projects in their *loading*
+    //      skeleton — matching React's seedless first render — rather than
+    //      the backendless error panel. (This hold is also why
+    //      waitUntil:'networkidle' can't be used below.)
+    //   3. Everything else same-origin → continue; the other backendless
+    //      fetches (/capacity, /vouches, /tenant) fail fast into their
+    //      neutral frozen states.
+    await page.route('**/*', (route) => {
+      const reqUrl = new URL(route.request().url())
+      if (reqUrl.origin !== origin) return route.abort()
+      if (reqUrl.pathname.startsWith('/api/public/projects')) {
+        if (projectsPayload) {
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: projectsPayload,
+          })
+        }
+        return // hold pending — see above
+      }
+      return route.continue()
     })
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
-    // The homepage root wrapper — present once <Home> has mounted. Because
-    // isLoading is FeaturedProjects' initial state, the skeleton is in the
-    // DOM the moment `.app` appears.
-    await page.waitForSelector('.app', { timeout: 30_000 })
+    await page.waitForSelector(waitFor, { timeout: 30_000 })
     // Webfonts resolved, so the snapshot reflects the final layout.
     await page.evaluate(() => document.fonts.ready)
     // Let the other backendless fetches (/capacity, /vouches, /tenant) reject
@@ -242,11 +300,14 @@ async function main() {
 
     browser = await chromium.launch()
 
-    // Capture both pages first; only write once BOTH succeed, so a failure on
-    // /en never leaves a prerendered / with a stale shell for /en.
+    const projectsPayload = await fetchProjectsSeed()
+
+    // Capture every page first; only write once ALL succeed, so a failure on
+    // one route never leaves a half-updated set of prerendered shells.
     const captured = []
-    for (const { path, out } of PAGES) {
-      const html = await snapshot(browser, base + path)
+    for (const { path, out, waitFor } of PAGES) {
+      let html = await snapshot(browser, base + path, { waitFor, projectsPayload })
+      html = injectProjectsSeed(html, projectsPayload)
       captured.push({ out, html })
       console.log(`prerender: captured ${path} (${html.length} bytes)`)
     }
@@ -267,7 +328,7 @@ async function main() {
     // loader) in the CSP before the HTML that depends on it goes live.
     addCspHashes(processed.flatMap((p) => inlineScriptHashes(p.html)))
     for (const { out, html } of processed) writeAtomic(out, html)
-    console.log('prerender: dist/index.html + dist/en/index.html written')
+    console.log(`prerender: ${PAGES.length} page shells written (/, /en, /projects, /en/projects)`)
   } catch (err) {
     // Fail-soft. dist/index.html is still the Vite-built shell (we only
     // overwrite it at the very end, after both snapshots succeed), so the

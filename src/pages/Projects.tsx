@@ -10,6 +10,7 @@ import { ProjectCardPreview } from '../components/ProjectCardPreview'
 import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicProjects, type PublicProject } from '../lib/sessionsApi'
+import { readProjectsSeed } from '../lib/prerenderSeed'
 import { PAGE_FOLIOS } from '../lib/folios'
 import { PAGE_FEATURE } from '../lib/features'
 import { usePageMeta } from '../lib/usePageMeta'
@@ -37,7 +38,11 @@ function isStatus(v: string | null): v is StatusFilter {
 export function Projects({ lang }: { lang: Lang }) {
   const t = DICT[lang].projects
   const tf = DICT[lang].projectsFilter
-  const [projects, setProjects] = useState<PublicProject[] | null>(null)
+  // Seeded from the prerender's build-time snapshot when present (see
+  // lib/prerenderSeed.ts): first render = cards = the prerendered HTML, so
+  // the static paint and React's boot agree. The load() below still fetches
+  // live data over it.
+  const [projects, setProjects] = useState<PublicProject[] | null>(() => readProjectsSeed())
   const [error, setError] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const langPrefix = lang === 'en' ? '/en' : ''
@@ -338,6 +343,7 @@ function ProjectCard({
           title={title}
           sessionId={project.id}
           lang={lang}
+          previewViewport={project.currentBuild?.previewViewport ?? null}
         />
         <div className="project-card__head">
           <span className="project-card__date mono">{formatDate(project.showcasedAt, lang)}</span>

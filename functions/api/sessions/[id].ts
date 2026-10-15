@@ -195,7 +195,11 @@ export const onRequestPatch: PagesFunction<Env> = async (ctx) => {
   }
 
   // Showcase fields — admin-only. Object shape lets us patch enabled / title
-  // / tagline independently. enabled flips showcased_at to now / null.
+  // / tagline (and their _en twins for the /en gallery) independently.
+  // enabled flips showcased_at to now / null. The EN twins exist so an
+  // admin-showcased session never ships FR-only again — Retrodio and Truck
+  // notes each needed a backfill migration (0036, 0037) because this handler
+  // predated the 0030 columns.
   if (body.showcase !== undefined) {
     if (!admin) return forbidden('only admin can showcase a session')
     if (!body.showcase || typeof body.showcase !== 'object') {
@@ -205,6 +209,8 @@ export const onRequestPatch: PagesFunction<Env> = async (ctx) => {
       enabled?: unknown
       title?: unknown
       tagline?: unknown
+      titleEn?: unknown
+      taglineEn?: unknown
     }
     const updates: { col: string; val: unknown }[] = []
     if (sc.enabled !== undefined) {
@@ -213,24 +219,29 @@ export const onRequestPatch: PagesFunction<Env> = async (ctx) => {
       }
       updates.push({ col: 'showcased_at', val: sc.enabled ? now : null })
     }
-    if (sc.title !== undefined) {
-      if (sc.title === null) {
-        updates.push({ col: 'showcase_title', val: null })
-      } else if (typeof sc.title === 'string') {
-        const trimmed = sc.title.trim().slice(0, 200)
-        updates.push({ col: 'showcase_title', val: trimmed.length > 0 ? trimmed : null })
+    // Four text fields, one shape: null/empty clears, a string trims and
+    // length-caps, anything else 400s. Kept as a loop so the FR field and
+    // its EN twin can never drift in validation.
+    const textFields: {
+      key: 'title' | 'tagline' | 'titleEn' | 'taglineEn'
+      col: string
+      max: number
+    }[] = [
+      { key: 'title', col: 'showcase_title', max: 200 },
+      { key: 'tagline', col: 'showcase_tagline', max: 500 },
+      { key: 'titleEn', col: 'showcase_title_en', max: 200 },
+      { key: 'taglineEn', col: 'showcase_tagline_en', max: 500 },
+    ]
+    for (const f of textFields) {
+      const v = sc[f.key]
+      if (v === undefined) continue
+      if (v === null) {
+        updates.push({ col: f.col, val: null })
+      } else if (typeof v === 'string') {
+        const trimmed = v.trim().slice(0, f.max)
+        updates.push({ col: f.col, val: trimmed.length > 0 ? trimmed : null })
       } else {
-        return badRequest('showcase.title must be a string or null')
-      }
-    }
-    if (sc.tagline !== undefined) {
-      if (sc.tagline === null) {
-        updates.push({ col: 'showcase_tagline', val: null })
-      } else if (typeof sc.tagline === 'string') {
-        const trimmed = sc.tagline.trim().slice(0, 500)
-        updates.push({ col: 'showcase_tagline', val: trimmed.length > 0 ? trimmed : null })
-      } else {
-        return badRequest('showcase.tagline must be a string or null')
+        return badRequest(`showcase.${f.key} must be a string or null`)
       }
     }
     if (updates.length > 0) {
@@ -457,6 +468,15 @@ export const onRequestPatch: PagesFunction<Env> = async (ctx) => {
     }
     if (fresh.showcase_tagline !== session.showcase_tagline) {
       showcaseChanges.tagline = { from: session.showcase_tagline, to: fresh.showcase_tagline }
+    }
+    if (fresh.showcase_title_en !== session.showcase_title_en) {
+      showcaseChanges.titleEn = { from: session.showcase_title_en, to: fresh.showcase_title_en }
+    }
+    if (fresh.showcase_tagline_en !== session.showcase_tagline_en) {
+      showcaseChanges.taglineEn = {
+        from: session.showcase_tagline_en,
+        to: fresh.showcase_tagline_en,
+      }
     }
     if (Object.keys(showcaseChanges).length > 0) {
       await appendAuditLog(env, {
