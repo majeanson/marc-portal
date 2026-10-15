@@ -72,6 +72,8 @@ npm run db:migrate:prod
 | `0038_showcase_tiers.sql`           | Re-tiers three showcase cards: Dungeon Depths and Truck notes to T1, Ashwake to T3                                               |
 | `0039_horizon_preview_path.sql`     | Points the Horizon card's embed + open-build link at /resultats?apercu (the repo's purpose-built portfolio preview)              |
 | `0040_phone_preview_flags.sql`      | Flags Ashwake + Dungeon Depths advancements previewViewport='phone' so their cards embed a 430×932 portrait frame                |
+| `0041_showcase_timelines.sql`       | Backfills real milestones on the seeded showcase timelines (Jaffre, DD, Ashwake, Babillard, Horizon) so /share reads as history  |
+| `0042_portal_self_showcase.sql`     | Showcases marcportal.com itself (T4, embeds /meta inside the site — recursion stops at depth one)                                |
 
 ## After applying 0002
 
