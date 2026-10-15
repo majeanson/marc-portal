@@ -82,7 +82,9 @@
       "date": "2026-10-15",
       "author": "marc+claude",
       "fields_changed": ["implementation"],
-      "reason": "Showcase health ping added as housekeeping #6 (functions/_lib/showcaseHealth.ts): the digest GETs every showcased build_url and emails a 'builds injoignables' section for the ones that fail, with RUNBOOK §25 as the triage path. Point-in-time, nothing persists; skipped under the e2e harness (E2E_STUB_API_KEY marker) so CI never pings live apps. Motivated by the 2026-10-15 showcase wave: eight live cards, none of whose deploys report back here."
+      "reason": "Showcase health ping added as housekeeping #6 (functions/_lib/showcaseHealth.ts): the digest GETs every showcased build_url and emails a 'builds injoignables' section for the ones that fail, with RUNBOOK §25 as the triage path. Point-in-time, nothing persists; skipped under the e2e harness (E2E_STUB_API_KEY marker) so CI never pings live apps. Motivated by the 2026-10-15 showcase wave: eight live cards, none of whose deploys report back here.",
+      "commit": "3b0ffaf",
+      "buildUrl": "https://16c0be7d.marc-portal.pages.dev"
     }
   ],
   "annotations": []
