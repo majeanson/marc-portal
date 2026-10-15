@@ -31,9 +31,9 @@ INSERT OR IGNORE INTO sessions (
   NULL,
   unixepoch(),
   'Babillard',
-  'Le babillard familial calme, pensé pour une tablette accrochée au mur de la cuisine.',
+  'Le souper, l''agenda, l''épicerie pis les routines des enfants sur une tablette au mur, sans points ni notifications.',
   'Babillard',
-  'A calm household planner that lives on a wall tablet in the kitchen.',
+  'Supper, the calendar, groceries and the kids'' routines on a wall tablet, with no points and no notifications.',
   4
 );
 

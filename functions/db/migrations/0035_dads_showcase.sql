@@ -28,9 +28,9 @@ INSERT OR IGNORE INTO sessions (
   NULL,
   unixepoch() - 300,
   'dads',
-  'Un salon privé pour une gang de pères qui se connaissent déjà : jaser franchement, s''organiser, pis s''asseoir à une table de Jaffre.',
+  'Quelques pères, une soirée ensemble, pis un chat pour le reste de la semaine.',
   'dads',
-  'A private clubhouse for a few dads who already know each other: honest talk, plans, and a Jaffre table to sit at.',
+  'A few dads, one night together, and a chat for the days in between.',
   3
 );
 
