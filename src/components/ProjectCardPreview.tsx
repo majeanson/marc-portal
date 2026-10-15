@@ -123,6 +123,14 @@ export function ProjectCardPreview({
       ref={ref}
       className={`project-card__preview project-card__preview--${state}${isPhone ? ' project-card__preview--phone' : ''}`}
       aria-hidden="true"
+      // inert, not just aria-hidden: an embedded build that autofocuses an
+      // input on boot (the dads invite door does) steals system focus
+      // through the iframe, and the browser scrolls THIS page down to the
+      // card to reveal it — which read as "navigation didn't go back to
+      // top". The preview is pointer-events:none, so no focus landing here
+      // is ever user intent; inert propagates into the child browsing
+      // context and stops the grab at the source.
+      inert
     >
       {ogSrc && (
         <img
@@ -145,6 +153,10 @@ export function ProjectCardPreview({
           tabIndex={-1}
           onLoad={() => setOutcome('loaded')}
           onError={() => setOutcome('errored')}
+          // Backstop for engines that don't propagate inert into a
+          // cross-origin frame: if the frame still manages to take focus,
+          // hand it straight back so the page doesn't stay trapped there.
+          onFocus={(e) => e.currentTarget.blur()}
         />
       )}
     </div>
