@@ -40,7 +40,7 @@
   "successCriteria": "- Flagging an engagement for the showcase in the admin view publishes it to the public gallery with no separate authoring step\n- The public endpoint returns only showcased sessions and only public-safe fields\n- Every gallery card shows the engagement's tier and status\n- The gallery can be filtered by tier and status\n- Reusable as a pattern for any project that turns finished work into public references",
   "userGuide": "Visit /projects (or /en/projects) to browse shipped engagements, filterable by tier and status. To publish an engagement: open it in the admin session view, give it a public title and tagline, and flag it for the showcase — it appears in the gallery immediately. The admin grid at /admin/showcase is the operator-side overview. A single engagement's progress timeline can be shared publicly at /share/:id.",
   "knownLimitations": [
-    "Per-card preview images share the site-wide OG card — there is no per-engagement generated preview image yet",
+    "A card's live iframe preview depends on the embedded app allowing marcportal.com in its frame-ancestors; until a sibling repo ships that header, its card shows the generated OG image without the live layer",
     "There is no self-serve client redaction flow — a client who wants something changed asks the consultant directly",
     "Gallery cards do not cross-link to related engagements; each is standalone"
   ],
@@ -94,6 +94,12 @@
       "reason": "Code-first overhaul: the renderer is now src/pages/Projects.tsx, generating the public gallery from real engagement records via the public sessions endpoint. Rewrote the entire feature from the shipped code — the build-time feature.json glob, the annotation-data schema, and the StatusHistoryStrip/RevisionLog components it once described are gone.",
       "commit": "dcfea4b",
       "buildUrl": "https://e9c0dcb9.marc-portal.pages.dev"
+    },
+    {
+      "date": "2026-10-15",
+      "author": "marc+claude",
+      "fields_changed": ["knownLimitations"],
+      "reason": "Showcase wave 3: seeded Babillard, Horizon, Ashwake and dads (migrations 0032-0035) and backfilled Retrodio's EN copy (0036). Replaced the stale OG limitation (each engagement has had its own generated /og/share/:id image for a while) with the real current one: live previews depend on each embedded app's frame-ancestors allowing marcportal.com."
     }
   ],
   "annotations": []

@@ -63,6 +63,11 @@ npm run db:migrate:prod
 | `0029_system_kv.sql`                | System-level key/value store for cron heartbeats (first use: `last_digest_at` for digest-cron staleness on `/admin/today`) |
 | `0030_dungeondepths_showcase.sql`   | Adds `showcase_title_en`/`showcase_tagline_en` for the /en gallery + seeds the Dungeon Depths showcase (Expo game on CF Workers) |
 | `0031_jaffre_v2_showcase.sql`       | Points the Jaffre showcase at the v2 rehaul (jaffre.marcportal.com, replaces the retired Vercel app) + fills its EN gallery copy |
+| `0032_babillard_showcase.sql`       | Seeds the Babillard showcase (calm wall-tablet household planner, babillard.marcportal.com) — Tier 4, top home-strip slot        |
+| `0033_horizon_showcase.sql`         | Seeds the Horizon showcase (Québec retirement planner, retraite.marcportal.com) — Tier 3, second home-strip slot                 |
+| `0034_ashwake_showcase.sql`         | Seeds the Ashwake showcase (3D hex tile game, ashwake.marcportal.com) — Tier 2, third home-strip slot                            |
+| `0035_dads_showcase.sql`            | Seeds the dads showcase (private clubhouse, dads.marcportal.com) — Tier 3; the embed deliberately shows only the invite door     |
+| `0036_retrodio_en.sql`              | Fills Retrodio's missing EN gallery copy (row predates the 0030 _en columns, same backfill Jaffre got in 0031)                   |
 
 ## After applying 0002
 
