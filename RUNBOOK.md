@@ -2055,13 +2055,22 @@ from tomorrow's email.
    replacement — the 0031 Jaffre-v2 migration is the model.
 
 **Every `*.marcportal.com` build says HTTP 403, but the URL loads fine in a
-browser?** The Worker's subrequest hit the zone's own bot/WAF rules (first
-seen 2026-10-16: jaffre, babillard, retraite, ashwake, dads at once). One-time
-setup: `wrangler secret put PROBE_TOKEN` (any long random string), then in the
-Cloudflare dashboard for marcportal.com add a WAF custom rule: expression
-`http.request.headers["x-portal-probe"][0] eq "<same value>"`, action *Skip*
-(bot fight / super bot fight, managed rules, rate limiting). The digest sends
-that header on every ping when `PROBE_TOKEN` is set. Rotating = change both.
+browser?** The Worker's subrequest hit the zone's own bot rules (first seen
+2026-10-16: jaffre, babillard, retraite, ashwake, dads at once). The culprit
+was Bot Fight Mode (free tier), which answers Worker subrequests with a managed
+challenge and which a WAF custom rule **cannot skip**. The digest therefore
+treats a response carrying `cf-mitigated: challenge` as reachable (the edge
+answered for a live host); anything else still reports, with the `server`,
+`cf-mitigated`, `cf-ray` headers and a body snippet in the detail line so the
+next email says who answered. If this reappears with a detail that is NOT a
+challenge, read that detail first: it names the layer.
+
+`PROBE_TOKEN` and the WAF skip rule from the first attempt are redundant
+against Bot Fight Mode. The header is still sent when `PROBE_TOKEN` is set, and
+the rule still helps against managed/rate-limit rules, so leaving them is
+harmless; do not rely on them to get past Bot Fight Mode. To remove both, delete
+the rule in the dashboard, `wrangler pages secret delete PROBE_TOKEN`, and drop
+the header in `functions/_lib/showcaseHealth.ts` together.
 
 **Checked but wrong verdict?** Remember the ping follows redirects and only
 2xx passes. An app that bounces anonymous visitors to its own login page
