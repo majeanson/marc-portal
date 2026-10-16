@@ -67,7 +67,7 @@ const COPY = {
     notLoggedIn: 'Tu n’es pas connecté.',
     signIn: 'Se connecter',
     statsTotal: 'session(s)',
-    statsActive: 'active',
+    statsActive: 'en cours',
     statsTriage: 'en triage',
     statsDraft: 'brouillon',
     statsShipped: 'livrée',
@@ -75,7 +75,10 @@ const COPY = {
     statusNames: {
       draft: 'brouillon',
       triage: 'en triage',
-      active: 'active',
+      // « en cours », pas « active » : c'est le mot que toutes les autres
+      // surfaces client emploient pour cet état (SessionStatusStrip,
+      // galerie, MyData).
+      active: 'en cours',
       shipped: 'livrée',
       rejected: 'refusée',
     } as const,
@@ -111,7 +114,7 @@ const COPY = {
       },
       {
         q: 'Que veulent dire les statuts ?',
-        a: 'Brouillon = juste reçu. En triage = Marc lit et répond bientôt. Active = build en cours. Livrée = terminé. Refusée = pas un fit, Marc t’a expliqué pourquoi.',
+        a: 'Brouillon = juste reçu. En triage = Marc lit et répond bientôt. En cours = le build avance. Livrée = terminé. Refusée = pas un fit, Marc t’a expliqué pourquoi.',
       },
       {
         q: 'Pourquoi 72h ?',
@@ -175,13 +178,15 @@ const COPY = {
     statsTriage: 'in triage',
     statsDraft: 'draft',
     statsShipped: 'shipped',
-    statsRejected: 'rejected',
+    statsRejected: 'declined',
     statusNames: {
       draft: 'draft',
       triage: 'in triage',
       active: 'active',
       shipped: 'shipped',
-      rejected: 'rejected',
+      // "declined", not "rejected": the one EN word for this state on every
+      // visitor-facing surface (the DB enum stays `rejected`).
+      rejected: 'declined',
     } as const,
     untitled: 'Session without intake',
     searchPlaceholder: 'Filter by keyword…',
@@ -213,7 +218,7 @@ const COPY = {
       },
       {
         q: 'What do the statuses mean?',
-        a: "Draft = just received. Triage = Marc is reading and will reply soon. Active = build in progress. Shipped = done. Rejected = not a fit, Marc'll have told you why.",
+        a: "Draft = just received. Triage = Marc is reading and will reply soon. Active = build in progress. Shipped = done. Declined = not a fit, Marc'll have told you why.",
       },
       {
         q: 'Why 72 hours?',

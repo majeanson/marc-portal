@@ -69,6 +69,28 @@ export function clearDraft(key: string): void {
   safeRemove(key)
 }
 
+/**
+ * One-time storage probe. The intake UI shows "✓ Sauvegardé automatiquement"
+ * next to every field — a claim that is false in private browsing or with
+ * site data blocked, where every safeSet above silently no-ops. A real
+ * write+read+remove round-trip is the only honest check (localStorage can
+ * exist but throw on write when quota is 0). Memoized: storage availability
+ * doesn't change within a page's lifetime.
+ */
+let persistProbe: boolean | null = null
+export function canPersistDrafts(): boolean {
+  if (persistProbe !== null) return persistProbe
+  try {
+    const probeKey = PREFIX + 'probe'
+    localStorage.setItem(probeKey, '1')
+    persistProbe = localStorage.getItem(probeKey) === '1'
+    localStorage.removeItem(probeKey)
+  } catch {
+    persistProbe = false
+  }
+  return persistProbe
+}
+
 export function flagSet(key: string): boolean {
   return safeGet(key) === '1'
 }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
+import { canPersistDrafts } from '../../lib/draft'
 import { SectionEyebrow } from '../SectionEyebrow'
 
 export interface Account {
@@ -119,18 +120,31 @@ export function AccountStep({
       </label>
 
       {/* Autosave reassurance — visible from the account step so visitors
-          don't worry that closing the tab loses what they've typed. */}
-      <p className="intake__autosave-note mono">{t.autosaveNote}</p>
+          don't worry that closing the tab loses what they've typed. When the
+          browser blocks storage (private browsing, blocked site data), the
+          reassurance would be a lie: swap it for the honest warning. */}
+      <p className="intake__autosave-note mono">
+        {canPersistDrafts() ? t.autosaveNote : t.autosaveOff}
+      </p>
 
       <button
         type="button"
         className="hero__cta"
         disabled={!valid}
+        aria-describedby={valid ? undefined : 'intake-cta-hint'}
         onClick={() => onContinue({ email, name: name || undefined })}
         style={{ opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'not-allowed' }}
       >
         {t.cta}
       </button>
+      {/* A disabled button with no explanation reads as broken. The hint
+          names the one unmet condition; it disappears once the email is
+          valid and the button wakes up. */}
+      {!valid && (
+        <p id="intake-cta-hint" className="field__hint">
+          {t.ctaDisabledHint}
+        </p>
+      )}
     </div>
   )
 }

@@ -281,7 +281,7 @@ const COPY = {
     certificateBody:
       'A signed page — the project, the date, and everything handed to you. Download it and keep it.',
     certificateDownload: 'Download the certificate ↓',
-    declineHeading: 'Not taken on — but not a dead end',
+    declineHeading: 'Declined — but not a dead end',
     declineLead:
       'This one isn’t a fit for me this time. That takes nothing away from the idea — it just shouldn’t be me building it.',
     declineNoteFrom: 'A note from Marc',
@@ -397,6 +397,35 @@ export function SessionPage({ lang }: { lang: Lang }) {
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [error, setError] = useState<'forbidden' | 'notfound' | null>(null)
   const [draft, setDraft] = useState('')
+  // The reply draft survives a refresh or an accidental back-swipe via
+  // sessionStorage, keyed by session id so two open sessions don't bleed
+  // into each other. sessionStorage, not localStorage: message text is the
+  // most personal thing typed on this site, and per-tab storage that dies
+  // with the tab is the right retention for it. On a successful send the
+  // `if (draft)` branch below removes the key.
+  const replyDraftKey = `marc-portal:reply-draft:${id ?? ''}`
+  // Load during render, not in an effect (React's documented "adjust state
+  // when a prop changes" pattern, state-compare form): runs once per session
+  // id, including the first render.
+  const [loadedDraftKey, setLoadedDraftKey] = useState<string | null>(null)
+  if (loadedDraftKey !== replyDraftKey) {
+    setLoadedDraftKey(replyDraftKey)
+    let saved = ''
+    try {
+      saved = sessionStorage.getItem(replyDraftKey) ?? ''
+    } catch {
+      /* storage blocked — the composer still works, it just won't survive a refresh */
+    }
+    if (saved !== draft) setDraft(saved)
+  }
+  useEffect(() => {
+    try {
+      if (draft) sessionStorage.setItem(replyDraftKey, draft)
+      else sessionStorage.removeItem(replyDraftKey)
+    } catch {
+      /* same degraded mode as above */
+    }
+  }, [draft, replyDraftKey])
   const [sending, setSending] = useState(false)
   // Send failure (network, 429, expired cookie) — the draft + attachments
   // stay in place so the visitor can retry without retyping. A 401 skips

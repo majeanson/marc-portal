@@ -30,7 +30,7 @@ import {
   type TodaySessionEntry,
   type UnansweredMessageEntry,
 } from '../lib/todayApi'
-import { formatCadCents, formatRelativeWindow } from '../lib/format'
+import { formatCadCents, formatDateTime, formatRelativeWindow } from '../lib/format'
 import { usePageMeta } from '../lib/usePageMeta'
 
 // Operator-only surface — inline COPY block per the i18n convention.
@@ -199,13 +199,6 @@ function formatAge(seconds: number, t: CopyT): string {
   return t.days(Math.round(seconds / (24 * 3600)))
 }
 
-function formatStamp(unix: number, lang: Lang): string {
-  return new Date(unix * 1000).toLocaleString(lang === 'fr' ? 'fr-CA' : 'en-CA', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  })
-}
-
 export function AdminToday({ lang }: { lang: Lang }) {
   const t = COPY[lang]
   const langPrefix = lang === 'en' ? '/en' : ''
@@ -271,7 +264,7 @@ export function AdminToday({ lang }: { lang: Lang }) {
           </button>
           {data && (
             <span className="mono admin-today__stamp">
-              {t.refreshed(formatStamp(data.generatedAtS, lang))}
+              {t.refreshed(formatDateTime(data.generatedAtS, lang))}
             </span>
           )}
         </div>
@@ -447,7 +440,7 @@ function SessionRow({
           {lastMsg && (
             <span
               className={`mono${lastMsg.urgent ? ' admin-today__session-waiting' : ''}`}
-              title={formatStamp(lastMsg.atS, lang)}
+              title={formatDateTime(lastMsg.atS, lang)}
             >
               {lastMsg.label}: {formatRelativeWindow(lastMsg.atS * 1000 - nowMs, lang)}
             </span>

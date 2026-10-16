@@ -9,7 +9,7 @@ describe('SessionStatusStrip read mode', () => {
     expect(screen.getByText(/Triage/)).toBeInTheDocument()
     expect(screen.getByText(/In progress/)).toBeInTheDocument()
     expect(screen.getByText(/Shipped/)).toBeInTheDocument()
-    expect(screen.queryByText(/Rejected/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Declined/)).not.toBeInTheDocument()
   })
 
   it('marks current and prior steps as --done; later steps stay neutral', () => {
@@ -53,7 +53,7 @@ describe('SessionStatusStrip admin onPick', () => {
 
   it('shows the rejected button when admin can act, even on a non-rejected session', () => {
     render(<SessionStatusStrip lang="en" status="active" onPick={() => {}} />)
-    expect(screen.getByRole('button', { name: /Rejected/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Declined/i })).toBeInTheDocument()
   })
 })
 

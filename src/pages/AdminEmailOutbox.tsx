@@ -13,6 +13,7 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { api, ApiError } from '../lib/api'
+import { formatDateTime } from '../lib/format'
 import { usePageMeta } from '../lib/usePageMeta'
 
 interface OutboxEntry {
@@ -89,16 +90,6 @@ const COPY = {
     pendingTag: 'pending',
   },
 } as const
-
-function formatTime(unixSec: number, lang: Lang): string {
-  return new Date(unixSec * 1000).toLocaleString(lang === 'fr' ? 'fr-CA' : 'en-CA', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 export function AdminEmailOutbox({ lang }: { lang: Lang }) {
   const t = COPY[lang]
@@ -241,7 +232,7 @@ export function AdminEmailOutbox({ lang }: { lang: Lang }) {
                       </td>
                       <td className="mono fleet-table__secondary">{e.lastError ?? '—'}</td>
                       <td className="mono fleet-table__secondary">
-                        {formatTime(e.createdAt, lang)}
+                        {formatDateTime(e.createdAt, lang)}
                       </td>
                       <td>
                         <button

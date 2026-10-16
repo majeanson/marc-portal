@@ -157,7 +157,7 @@ describe('SessionPage onStatusChange in-flight guard', () => {
     // disabled — a double-click on a different pill must not fire a second
     // PATCH (the server emails the visitor on every status transition).
     await waitFor(() => expect(activeBtn).toBeDisabled())
-    const rejectBtn = screen.getByRole('button', { name: /rejected/i })
+    const rejectBtn = screen.getByRole('button', { name: /declined/i })
     expect(rejectBtn).toBeDisabled()
 
     resolvePatch({ session: makeSession({ status: 'active', updated_at: 1 }) })

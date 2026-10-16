@@ -8,6 +8,7 @@ import type { ExcalidrawAPI, NapkinSketch } from '../../lib/napkin'
 import { VoiceRecorder } from '../VoiceRecorder'
 import { transcribeIntakeVoice, type VoiceNapkin } from '../../lib/intakeMediaApi'
 import { ApiError } from '../../lib/api'
+import { canPersistDrafts } from '../../lib/draft'
 import { SceneBoundary } from '../SceneBoundary'
 
 // Excalidraw is heavy — keep <SketchCanvas> (and the ~600 KB chunk it pulls)
@@ -196,7 +197,9 @@ export function TypeForm({
     <div className="intake__step">
       <div className="section__eyebrow">{t.eyebrow}</div>
       <h2>{localized(schema.title, lang)}</h2>
-      <p className="form__autosave mono">{t.autosaved}</p>
+      {/* Honest autosave claim: when storage is blocked the drafts don't
+          actually persist, so say that instead of showing the checkmark. */}
+      <p className="form__autosave mono">{canPersistDrafts() ? t.autosaved : t.autosaveOff}</p>
 
       <div className="form">
         {schema.fields.map((field) => (

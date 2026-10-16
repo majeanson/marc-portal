@@ -51,7 +51,7 @@ const COPY = {
     pageTitle: 'Mes données — Marc',
     eyebrow: 'loi 25 · droit d’accès',
     title: 'Ce que je détiens sur toi',
-    lead: 'Pas un fichier brut, pas du jargon : voici, en clair, toutes les données que ce portail garde à ton sujet. Tu as le droit de les voir — la Loi 25 le dit, et c’est normal.',
+    lead: 'Oublie le fichier brut pis le jargon : voici, en clair, toutes les données que ce portail garde à ton sujet. Tu as le droit de les voir — la Loi 25 le dit, et c’est normal.',
     generatedFor: (email: string) => `Préparé pour ${email}`,
     generatedAt: (iso: string) => `le ${formatDate(iso, 'fr')}`,
     countLine: (n: number) =>
@@ -96,7 +96,7 @@ const COPY = {
     pageTitle: 'My data — Marc',
     eyebrow: 'bill 25 · right of access',
     title: 'What I hold about you',
-    lead: 'Not a raw file, not jargon: here, in plain words, is every piece of data this portal keeps about you. You have the right to see it — Bill 25 says so, and that’s how it should be.',
+    lead: 'Forget raw files and jargon: here, in plain words, is every piece of data this portal keeps about you. You have the right to see it — Bill 25 says so, and that’s how it should be.',
     generatedFor: (email: string) => `Prepared for ${email}`,
     generatedAt: (iso: string) => `on ${formatDate(iso, 'en')}`,
     countLine: (n: number) =>
@@ -132,7 +132,7 @@ const COPY = {
       triage: 'in triage',
       active: 'in progress',
       shipped: 'shipped',
-      rejected: 'not taken on',
+      rejected: 'declined',
     } as Record<SessionStatus, string>,
   },
 } as const

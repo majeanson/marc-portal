@@ -190,7 +190,7 @@
   technique from `.time-travel__notch`; SiteSearch close button under 24px.
   Needs baseline regen. [XC-20…32 minus 23-adjacent, XC-23/24/25/26, VF-12/13]
 
-- ⬜ **U6 · M · manual: none** — Copy + form polish. Rewrite the negation-
+- ✅ **U6 · M · manual: none** — DONE 2026-10-15. Copy + form polish. Rewrite the negation-
   anaphora on MyData and Privacy §2/§3, the em-dash-dense Privacy §2 list
   paragraph, the flat FR triad on Home ("Vrai code, vrai problème, vrai
   monde"), the two-dash Atelier intro; apply `frPunct()` to the FR strings
