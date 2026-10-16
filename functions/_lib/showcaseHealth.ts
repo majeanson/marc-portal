@@ -79,6 +79,12 @@ export async function pingBuilds(
           signal: AbortSignal.timeout(10_000),
         })
         if (res.ok) return null
+        // The zone's Bot Fight Mode (free tier, not skippable by a WAF rule)
+        // managed-challenges Worker subrequests to our own *.marcportal.com
+        // builds. A challenge is the edge answering for a live host, so it is
+        // not "down". Anything else (5xx, timeout, a plain 403 from the app)
+        // still reports. Evidence: Security Events 2026-10-16, Bot fight mode.
+        if (res.headers.get('cf-mitigated') === 'challenge') return null
         // A bare "HTTP 403" can't say who answered: the zone's WAF, a Zero
         // Trust policy, or the build itself. Surfacing the edge headers plus
         // the first bytes of the body turns the next email into the diagnosis
