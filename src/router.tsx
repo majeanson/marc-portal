@@ -3,7 +3,15 @@
 // the standard react-router setup pattern, and HMR isn't useful for the
 // router config anyway (it'd recreate the router and lose route state).
 /* eslint-disable react-refresh/only-export-components */
-import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from 'react'
 import {
   Navigate,
   Outlet,
@@ -25,58 +33,112 @@ import { MagicLinkSent } from './pages/MagicLinkSent'
 import { NotFound } from './pages/NotFound'
 import { RouteError } from './pages/RouteError'
 
+// Stale-deploy self-heal for lazy chunks. A visitor whose tab carries an
+// older index.html asks for a chunk hash that the latest deploy no longer
+// serves; Pages' SPA fallback answers that 404 with index.html, and the
+// dynamic import() throws ("'text/html' is not a valid JavaScript MIME
+// type" on Safari — Sentry issue 7795108842, iOS visitor on /en/projects
+// after a multi-deploy day). The stale shell can't be fixed client-side
+// except by fetching a fresh one: reload once. The sessionStorage latch
+// stops a reload loop when the failure is real (offline, extension
+// blocking); the latch clears on the next successful chunk load so a
+// future deploy can self-heal again. Storage-blocked browsers skip the
+// latch read/write and still get the one reload per document lifetime.
+const CHUNK_RELOAD_KEY = 'marc-portal:chunk-reloaded'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- mirrors React.lazy's own constraint; the component types flow through unchanged
+function lazyPage<T extends ComponentType<any>>(importer: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      const mod = await importer()
+      try {
+        sessionStorage.removeItem(CHUNK_RELOAD_KEY)
+      } catch {
+        /* storage blocked — latch degrades to the in-page error below */
+      }
+      return mod
+    } catch (err) {
+      let alreadyReloaded = false
+      try {
+        alreadyReloaded = sessionStorage.getItem(CHUNK_RELOAD_KEY) === '1'
+        if (!alreadyReloaded) sessionStorage.setItem(CHUNK_RELOAD_KEY, '1')
+      } catch {
+        /* storage blocked — reload once anyway; a loop needs the latch to
+           have failed AND the import to keep failing, and in that state the
+           browser would be reloading an unusable page either way */
+      }
+      if (!alreadyReloaded) {
+        window.location.reload()
+        // Keep the Suspense fallback up until the reload lands — resolving
+        // or throwing here would flash the error page mid-reload.
+        return new Promise<never>(() => {})
+      }
+      throw err
+    }
+  })
+}
+
 // Cold-path pages — lazy. Cuts the initial bundle (demos, all admin
 // surfaces, the auth-gated dashboard + session views) at the cost of one
 // network round-trip when first visited. MePortal and SessionPage are only
 // reached after sign-in, so they stay off the home/intake/login path.
-const MePortal = lazy(() => import('./pages/MePortal').then((m) => ({ default: m.MePortal })))
-const SessionPage = lazy(() =>
+const MePortal = lazyPage(() => import('./pages/MePortal').then((m) => ({ default: m.MePortal })))
+const SessionPage = lazyPage(() =>
   import('./pages/SessionPage').then((m) => ({ default: m.SessionPage })),
 )
-const Engagement = lazy(() => import('./pages/Engagement').then((m) => ({ default: m.Engagement })))
-const Tier0 = lazy(() => import('./pages/Tier0').then((m) => ({ default: m.Tier0 })))
-const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
-const Pia = lazy(() => import('./pages/Pia').then((m) => ({ default: m.Pia })))
-const Handoff = lazy(() => import('./pages/Handoff').then((m) => ({ default: m.Handoff })))
-const HandoffChecklist = lazy(() =>
+const Engagement = lazyPage(() =>
+  import('./pages/Engagement').then((m) => ({ default: m.Engagement })),
+)
+const Tier0 = lazyPage(() => import('./pages/Tier0').then((m) => ({ default: m.Tier0 })))
+const Privacy = lazyPage(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
+const Pia = lazyPage(() => import('./pages/Pia').then((m) => ({ default: m.Pia })))
+const Handoff = lazyPage(() => import('./pages/Handoff').then((m) => ({ default: m.Handoff })))
+const HandoffChecklist = lazyPage(() =>
   import('./pages/HandoffChecklist').then((m) => ({ default: m.HandoffChecklist })),
 )
-const AdminInbox = lazy(() => import('./pages/AdminInbox').then((m) => ({ default: m.AdminInbox })))
-const AdminTrash = lazy(() => import('./pages/AdminTrash').then((m) => ({ default: m.AdminTrash })))
-const AdminCustodians = lazy(() =>
+const AdminInbox = lazyPage(() =>
+  import('./pages/AdminInbox').then((m) => ({ default: m.AdminInbox })),
+)
+const AdminTrash = lazyPage(() =>
+  import('./pages/AdminTrash').then((m) => ({ default: m.AdminTrash })),
+)
+const AdminCustodians = lazyPage(() =>
   import('./pages/AdminCustodians').then((m) => ({ default: m.AdminCustodians })),
 )
-const Meta = lazy(() => import('./pages/Meta').then((m) => ({ default: m.Meta })))
-const Atelier = lazy(() => import('./pages/Atelier').then((m) => ({ default: m.Atelier })))
+const Meta = lazyPage(() => import('./pages/Meta').then((m) => ({ default: m.Meta })))
+const Atelier = lazyPage(() => import('./pages/Atelier').then((m) => ({ default: m.Atelier })))
 // Aliased to MapPage at import to avoid shadowing the global Map constructor.
-const MapPage = lazy(() => import('./pages/Map').then((m) => ({ default: m.Map })))
-const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
-const AdminAudit = lazy(() => import('./pages/AdminAudit').then((m) => ({ default: m.AdminAudit })))
-const AdminEmailOutbox = lazy(() =>
+const MapPage = lazyPage(() => import('./pages/Map').then((m) => ({ default: m.Map })))
+const Admin = lazyPage(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
+const AdminAudit = lazyPage(() =>
+  import('./pages/AdminAudit').then((m) => ({ default: m.AdminAudit })),
+)
+const AdminEmailOutbox = lazyPage(() =>
   import('./pages/AdminEmailOutbox').then((m) => ({ default: m.AdminEmailOutbox })),
 )
-const AdminShowcase = lazy(() =>
+const AdminShowcase = lazyPage(() =>
   import('./pages/AdminShowcase').then((m) => ({ default: m.AdminShowcase })),
 )
-const AdminHub = lazy(() => import('./pages/AdminHub').then((m) => ({ default: m.AdminHub })))
-const AdminRunbook = lazy(() =>
+const AdminHub = lazyPage(() => import('./pages/AdminHub').then((m) => ({ default: m.AdminHub })))
+const AdminRunbook = lazyPage(() =>
   import('./pages/AdminRunbook').then((m) => ({ default: m.AdminRunbook })),
 )
-const AdminToday = lazy(() => import('./pages/AdminToday').then((m) => ({ default: m.AdminToday })))
-const PublicAdvancements = lazy(() =>
+const AdminToday = lazyPage(() =>
+  import('./pages/AdminToday').then((m) => ({ default: m.AdminToday })),
+)
+const PublicAdvancements = lazyPage(() =>
   import('./pages/PublicAdvancements').then((m) => ({ default: m.PublicAdvancements })),
 )
-const Projects = lazy(() => import('./pages/Projects').then((m) => ({ default: m.Projects })))
-const Journey = lazy(() => import('./pages/Journey').then((m) => ({ default: m.Journey })))
-const Vouches = lazy(() => import('./pages/Vouches').then((m) => ({ default: m.Vouches })))
-const Vouch = lazy(() => import('./pages/Vouch').then((m) => ({ default: m.Vouch })))
-const MyData = lazy(() => import('./pages/MyData').then((m) => ({ default: m.MyData })))
-const AdminVouches = lazy(() =>
+const Projects = lazyPage(() => import('./pages/Projects').then((m) => ({ default: m.Projects })))
+const Journey = lazyPage(() => import('./pages/Journey').then((m) => ({ default: m.Journey })))
+const Vouches = lazyPage(() => import('./pages/Vouches').then((m) => ({ default: m.Vouches })))
+const Vouch = lazyPage(() => import('./pages/Vouch').then((m) => ({ default: m.Vouch })))
+const MyData = lazyPage(() => import('./pages/MyData').then((m) => ({ default: m.MyData })))
+const AdminVouches = lazyPage(() =>
   import('./pages/AdminVouches').then((m) => ({ default: m.AdminVouches })),
 )
-const Passage = lazy(() => import('./pages/Passage').then((m) => ({ default: m.Passage })))
-const Dossier = lazy(() => import('./pages/Dossier').then((m) => ({ default: m.Dossier })))
-const AuRevoir = lazy(() => import('./pages/AuRevoir').then((m) => ({ default: m.AuRevoir })))
+const Passage = lazyPage(() => import('./pages/Passage').then((m) => ({ default: m.Passage })))
+const Dossier = lazyPage(() => import('./pages/Dossier').then((m) => ({ default: m.Dossier })))
+const AuRevoir = lazyPage(() => import('./pages/AuRevoir').then((m) => ({ default: m.AuRevoir })))
 
 // Minimal skeleton shown while a lazy() chunk is in flight. Visually quiet,
 // avoids the "is this broken?" feel of an empty aria-busy main. Header is
