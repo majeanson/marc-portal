@@ -702,7 +702,7 @@
       "full": "/atelier/full/phone/meta.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 39192,
+      "fullH": 39627,
       "cropped": true
     },
     {
@@ -720,7 +720,7 @@
       "full": "/atelier/full/phone/en-meta.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 39139,
+      "fullH": 39574,
       "cropped": true
     },
     {
@@ -829,6 +829,42 @@
       "thumbW": 532,
       "thumbH": 851,
       "fullH": 14219,
+      "cropped": true
+    },
+    {
+      "slug": "conditions",
+      "viewport": "phone",
+      "route": "/conditions",
+      "component": "Tos",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Les conditions",
+        "en": "The terms"
+      },
+      "thumb": "/atelier/thumbs/phone/conditions.webp",
+      "full": "/atelier/full/phone/conditions.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 5113,
+      "cropped": true
+    },
+    {
+      "slug": "en-terms",
+      "viewport": "phone",
+      "route": "/en/terms",
+      "component": "Tos",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Les conditions",
+        "en": "The terms"
+      },
+      "thumb": "/atelier/thumbs/phone/en-terms.webp",
+      "full": "/atelier/full/phone/en-terms.png",
+      "thumbW": 390,
+      "thumbH": 624,
+      "fullH": 4876,
       "cropped": true
     },
     {
@@ -1494,7 +1530,7 @@
       "full": "/atelier/full/narrow/meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19430,
+      "fullH": 19498,
       "cropped": true
     },
     {
@@ -1512,7 +1548,7 @@
       "full": "/atelier/full/narrow/en-meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19382,
+      "fullH": 19449,
       "cropped": true
     },
     {
@@ -1621,6 +1657,42 @@
       "thumbW": 600,
       "thumbH": 960,
       "fullH": 9693,
+      "cropped": true
+    },
+    {
+      "slug": "conditions",
+      "viewport": "narrow",
+      "route": "/conditions",
+      "component": "Tos",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Les conditions",
+        "en": "The terms"
+      },
+      "thumb": "/atelier/thumbs/narrow/conditions.webp",
+      "full": "/atelier/full/narrow/conditions.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3661,
+      "cropped": true
+    },
+    {
+      "slug": "en-terms",
+      "viewport": "narrow",
+      "route": "/en/terms",
+      "component": "Tos",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Les conditions",
+        "en": "The terms"
+      },
+      "thumb": "/atelier/thumbs/narrow/en-terms.webp",
+      "full": "/atelier/full/narrow/en-terms.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3503,
       "cropped": true
     },
     {
@@ -2286,7 +2358,7 @@
       "full": "/atelier/full/wide/meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19430,
+      "fullH": 19498,
       "cropped": true
     },
     {
@@ -2304,7 +2376,7 @@
       "full": "/atelier/full/wide/en-meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19382,
+      "fullH": 19449,
       "cropped": true
     },
     {
@@ -2413,6 +2485,42 @@
       "thumbW": 600,
       "thumbH": 960,
       "fullH": 9693,
+      "cropped": true
+    },
+    {
+      "slug": "conditions",
+      "viewport": "wide",
+      "route": "/conditions",
+      "component": "Tos",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Les conditions",
+        "en": "The terms"
+      },
+      "thumb": "/atelier/thumbs/wide/conditions.webp",
+      "full": "/atelier/full/wide/conditions.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3661,
+      "cropped": true
+    },
+    {
+      "slug": "en-terms",
+      "viewport": "wide",
+      "route": "/en/terms",
+      "component": "Tos",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Les conditions",
+        "en": "The terms"
+      },
+      "thumb": "/atelier/thumbs/wide/en-terms.webp",
+      "full": "/atelier/full/wide/en-terms.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3503,
       "cropped": true
     },
     {
@@ -3006,7 +3114,7 @@
       "full": "/atelier/full/dark/meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19430,
+      "fullH": 19498,
       "cropped": true
     },
     {
@@ -3024,7 +3132,7 @@
       "full": "/atelier/full/dark/en-meta.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 19382,
+      "fullH": 19449,
       "cropped": true
     },
     {
@@ -3134,7 +3242,43 @@
       "thumbH": 960,
       "fullH": 9693,
       "cropped": true
+    },
+    {
+      "slug": "conditions",
+      "viewport": "dark",
+      "route": "/conditions",
+      "component": "Tos",
+      "lang": "fr",
+      "variant": null,
+      "label": {
+        "fr": "Les conditions",
+        "en": "The terms"
+      },
+      "thumb": "/atelier/thumbs/dark/conditions.webp",
+      "full": "/atelier/full/dark/conditions.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3661,
+      "cropped": true
+    },
+    {
+      "slug": "en-terms",
+      "viewport": "dark",
+      "route": "/en/terms",
+      "component": "Tos",
+      "lang": "en",
+      "variant": null,
+      "label": {
+        "fr": "Les conditions",
+        "en": "The terms"
+      },
+      "thumb": "/atelier/thumbs/dark/en-terms.webp",
+      "full": "/atelier/full/dark/en-terms.png",
+      "thumbW": 600,
+      "thumbH": 960,
+      "fullH": 3503,
+      "cropped": true
     }
   ],
-  "count": 172
+  "count": 180
 }
