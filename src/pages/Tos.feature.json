@@ -65,7 +65,9 @@
         "liveUrl",
         "tags"
       ],
-      "reason": "Initial author for backlog item B10 (terms of service, gap #15)."
+      "reason": "Initial author for backlog item B10 (terms of service, gap #15).",
+      "commit": "a6251d7",
+      "buildUrl": "https://f53dbb04.marc-portal.pages.dev"
     }
   ],
   "annotations": []
