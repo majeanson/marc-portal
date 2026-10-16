@@ -27,6 +27,14 @@ export interface Env {
   // etc.) at the endpoint with the X-Digest-Token header. Unset = endpoint is
   // unreachable (the rare case Marc opens it manually).
   DIGEST_TOKEN?: string
+  // Optional: value sent as X-Portal-Probe on the digest's showcase pings. A
+  // Worker subrequest to a *.marcportal.com build crosses the zone's own bot/WAF
+  // rules and can 403 even though the build is fine (RUNBOOK §25). A WAF custom
+  // rule (skip bot + managed rules when the header equals this value) lets the
+  // probe through without opening the rules to anyone who guesses a header name.
+  // Separate from DIGEST_TOKEN so that secret never ships to third-party builds.
+  // Unset = no header sent, pings behave as before.
+  PROBE_TOKEN?: string
   // Stripe — server-side key for creating Checkout sessions + Portal sessions.
   // Secret: rotates via `wrangler secret put STRIPE_SECRET_KEY`. Unset = the
   // payments endpoints return 503 (graceful degrade, like MEDIA above).
