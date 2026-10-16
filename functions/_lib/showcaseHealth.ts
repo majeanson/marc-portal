@@ -78,7 +78,19 @@ export async function pingBuilds(
           headers: probeToken ? { 'X-Portal-Probe': probeToken } : undefined,
           signal: AbortSignal.timeout(10_000),
         })
-        return res.ok ? null : { ...b, detail: `HTTP ${res.status}` }
+        if (res.ok) return null
+        // A bare "HTTP 403" can't say who answered: the zone's WAF, a Zero
+        // Trust policy, or the build itself. Surfacing the edge headers plus
+        // the first bytes of the body turns the next email into the diagnosis
+        // (the 2026-10-16 same-zone 403s needed exactly this).
+        const body = (await res.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 120)
+        const hints = [
+          res.headers.get('cf-mitigated') && `cf-mitigated=${res.headers.get('cf-mitigated')}`,
+          res.headers.get('server') && `server=${res.headers.get('server')}`,
+          res.headers.get('cf-ray') && `ray=${res.headers.get('cf-ray')}`,
+          body && `body="${body}"`,
+        ].filter(Boolean)
+        return { ...b, detail: [`HTTP ${res.status}`, ...hints].join(' ') }
       } catch (err) {
         // DOMException (what AbortSignal.timeout throws) is not an Error
         // subclass on every runtime, so match on .name, not instanceof.

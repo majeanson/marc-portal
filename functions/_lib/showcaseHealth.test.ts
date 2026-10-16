@@ -58,6 +58,18 @@ describe('pingBuilds', () => {
     expect(down.map((d) => d.id)).toEqual(['c3'])
   })
 
+  it('adds edge headers and a body snippet to a non-2xx detail', async () => {
+    const blocked = (async () =>
+      new Response('Attention  Required!\n Cloudflare', {
+        status: 403,
+        headers: { server: 'cloudflare', 'cf-mitigated': 'challenge', 'cf-ray': 'abc-CDG' },
+      })) as unknown as typeof fetch
+    const down = await pingBuilds([BUILDS[0]], undefined, blocked)
+    expect(down[0].detail).toBe(
+      'HTTP 403 cf-mitigated=challenge server=cloudflare ray=abc-CDG body="Attention Required! Cloudflare"',
+    )
+  })
+
   it('sends X-Portal-Probe only when a probe token is configured', async () => {
     const seen: Array<string | null> = []
     const spy = (async (_i: RequestInfo | URL, init?: RequestInit) => {
