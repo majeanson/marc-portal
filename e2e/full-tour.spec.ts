@@ -377,16 +377,18 @@ test.describe('full tour — page outro (continue / back home)', () => {
   // the site map. Walk the whole ring in one go.
   for (const lang of ['fr', 'en'] as const) {
     test(`the meta tour loop closes (${lang})`, async ({ page }) => {
-      // Six sequential loads of the site's heaviest pages (meta, atelier)
-      // in one test — the default 30s budget is sized for one navigation,
-      // and the walk started timing out mid-ring on loaded runners as those
-      // pages grew. 3× is the slow-test budget, not a flake band-aid: each
-      // individual hop still has to land, in order.
-      test.slow()
+      // Sequential loads of the site's heaviest pages (meta, atelier) in
+      // one test. The default 30s budget is sized for ONE navigation, so the
+      // budget below is 30s per page in the ring and grows with it: a flat
+      // test.slow() (3×, 90s) fit five pages and timed out on the phone
+      // project once the terms page made it seven. Each hop still has to
+      // land, in order; this only stops the ring's length from eating the
+      // per-page allowance.
       const ring =
         lang === 'fr'
           ? ['/carte', '/meta', '/atelier', '/confidentialite', '/pia', '/conditions', '/carte']
           : ['/en/map', '/en/meta', '/en/atelier', '/en/privacy', '/en/pia', '/en/terms', '/en/map']
+      test.setTimeout(ring.length * 30_000)
       await page.goto(ring[0], { waitUntil: 'networkidle' })
       for (let i = 1; i < ring.length; i++) {
         await page.locator('.feature-continue__link').click()
