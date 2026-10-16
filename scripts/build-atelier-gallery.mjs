@@ -73,6 +73,7 @@ const ROUTE_LABELS = {
   MapPage: { fr: 'La carte du site', en: 'The site map' },
   Privacy: { fr: 'La vie privée', en: 'Privacy' },
   Pia: { fr: 'La protection des données', en: 'Data protection' },
+  Tos: { fr: 'Les conditions', en: 'The terms' },
   Atelier: { fr: 'L’atelier', en: 'The workshop' },
 }
 

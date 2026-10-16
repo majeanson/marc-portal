@@ -35,6 +35,8 @@ const urls = [
   urlEntry('/en/privacy'),
   urlEntry('/pia'),
   urlEntry('/en/pia'),
+  urlEntry('/conditions'),
+  urlEntry('/en/terms'),
   urlEntry('/handoff'),
   urlEntry('/en/handoff'),
   urlEntry('/handoff/checklist'),

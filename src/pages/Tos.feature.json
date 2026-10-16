@@ -1,0 +1,72 @@
+{
+  "featureKey": "feat-2026-110",
+  "title": "Conditions d’utilisation — terms of service",
+  "status": "active",
+  "schemaVersion": 1,
+  "domain": "marc-portal/legal",
+  "componentFile": "src/pages/Tos.tsx",
+  "liveUrl": "/conditions",
+  "problem": "The portal takes money (Stripe checkout, tiers 1 to 4, a custodian subscription) and promises a deliverable, but no page says what the visitor is agreeing to: when the contract starts, what a refund looks like, who owns the code, what happens if the work stops. The answers existed, scattered across the pricing copy, the FAQ, the journey steps and the refund mailto, which is exactly how two readers end up with two different understandings. /conditions collects them in one place that /confidentialite can sit next to.",
+  "tags": ["legal", "terms", "quebec", "payments", "compliance"],
+  "analysis": "Fourteen numbered sections in the same shell as /confidentialite (the .privacy CSS block), so the two legal pages read as one set. Sections 2 to 8 only restate what the site already says: tier prices and the community discount (i18n.ts pricing), the Stripe payment schedule (journey step 06), manual refunds answered within 2 business days (PaymentActions), ownership with the two handoff modes (FAQ + /handoff), and the two-active-builds cap (functions/_lib/sessions.ts ACTIVE_CAP). Sections 9 to 14 are new drafting: acceptable use, a liability cap limited to what was paid for the project and carved out for intentional or gross fault and bodily injury (Civil Code art. 1474 does not allow excluding those), availability with no SLA, how either side ends things, change notice mirroring Privacy §12, and Quebec governing law. The page also states that it never limits consumer rights the law gives. Voice is first-person Québécois with tu, matching /confidentialite.",
+  "implementation": "src/pages/Tos.tsx, one component, all copy in a top-of-file COPY constant keyed by Lang (the inline pattern from i18n.ts pattern 2). Sections render from an array of { h, p } with hand-written inline HTML for links; the leading 'N.' of each heading becomes the #section-N anchor, the same rule as Privacy.tsx, so other pages can deep-link a clause. Routed explicitly in parallel as /conditions and /en/terms (src/router.tsx, lazy). Registered as page.tos in the meta feature (PAGE_FEATURE), in the meta tour loop after the PIA (META_PAGE_NEXT, META_PAGE_LINK), on the site map (map/curated.ts, map/data.ts, folio 14), in swapLangPath's translated slugs, in build-sitemap.mjs, and in the atelier gallery labels. The e2e screenshot and a11y suites pick the routes up from map-skeleton.json automatically.",
+  "decisions": [
+    {
+      "decision": "Restate existing commitments, and mark the new ones",
+      "rationale": "A terms page that quietly adds promises nobody decided on is worse than none. Sections 2 to 8 are traceable to existing copy or code; the clauses that are new drafting are listed in the header comment of Tos.tsx so they can be confirmed or struck one by one rather than discovered later.",
+      "recommendation": "When any source of truth changes (a tier price, the payment schedule, the refund flow, the active cap), change this page in the same PR and bump the 'En vigueur' date. Accepted projects keep the terms in force the day they were accepted (§13), so a bump never rewrites a deal already made.",
+      "date": "2026-10-16"
+    },
+    {
+      "decision": "Same shell and tu register as /confidentialite",
+      "rationale": "Two legal pages that look and sound alike read as one set. The CLAUDE.md allowance for formal vous on legal surfaces is permissive, not required, and a solo practice where Marc speaks for himself is better served by the same voice the privacy policy already uses.",
+      "recommendation": "If a lawyer asks for formal vous, change both pages together rather than letting them drift.",
+      "date": "2026-10-16"
+    },
+    {
+      "decision": "Liability cap at the amount paid for the project, with the legal carve-outs written in",
+      "rationale": "A cap at the project price is the common shape for a solo practice and is enforceable in Quebec only where it leaves intentional or gross fault, bodily injury and consumer-protection rights untouched, so the clause says exactly that instead of claiming a blanket exclusion.",
+      "recommendation": "This is the clause most in need of the lawyer review below. Do not tighten it on instinct.",
+      "date": "2026-10-16"
+    }
+  ],
+  "successCriteria": "- /conditions and /en/terms render the same fourteen sections with parity\n- Every price, the payment schedule, the refund flow and the ownership modes match the pricing copy, journey step 06, PaymentActions and the FAQ\n- The links into /confidentialite#section-8 and #section-11 land on real anchors\n- The page is on the meta tour loop after the PIA and the loop still closes on the site map\n- Language switch keeps the visitor on the terms page\n- Marc confirms or strikes each clause flagged as new drafting, and a Quebec lawyer reviews the page before it is treated as binding",
+  "userGuide": "Open /conditions (or /en/terms), linked from the site map and the tour after the data-protection page. It covers who Marc is, how intake and triage work, the cap of two active builds, the four paid tiers and the community discount, how payment runs through Stripe, how refunds are handled by hand, who owns the code (always the client, in 'all yours' or custodian mode), what Marc expects from visitors, the liability cap, availability, how either side ends things, how changes are announced and the governing law. To change it: edit the COPY constant in Tos.tsx, keep FR and EN in step, bump the 'En vigueur' date, and update this file if a decision changes.",
+  "knownLimitations": [
+    "Not reviewed by a Quebec lawyer. Ships as a plain-language draft; the liability cap (§10) and governing law (§14) carry the most legal weight and need that review before the page is treated as binding.",
+    "Clauses flagged as new drafting in the Tos.tsx header comment (§2 contract start, §7 tooling reuse, §9 content licence, §10 cap, §12 right to stop a project, §13 grandfathering, §14 law) are Claude's proposal and not yet confirmed by Marc.",
+    "Tier 3 and 4 payment terms are described only as 'a first installment, the rest as written together' because the site itself says no more than that; a fixed schedule would need to come from the pricing source first.",
+    "No click-through acceptance: the page is linked from the portal but nothing records that a visitor agreed. Whether intake submission should require a checkbox is a separate decision.",
+    "The 'En vigueur' date is hardcoded, bumped by hand like /confidentialite."
+  ],
+  "statusHistory": [
+    {
+      "from": "draft",
+      "to": "active",
+      "date": "2026-10-16",
+      "reason": "Page, routes, map and tour wiring shipped; legal review pending."
+    }
+  ],
+  "lastVerifiedDate": "2026-10-16",
+  "revisions": [
+    {
+      "date": "2026-10-16",
+      "author": "marc+claude",
+      "fields_changed": [
+        "title",
+        "problem",
+        "analysis",
+        "implementation",
+        "decisions",
+        "successCriteria",
+        "userGuide",
+        "knownLimitations",
+        "componentFile",
+        "liveUrl",
+        "tags"
+      ],
+      "reason": "Initial author for backlog item B10 (terms of service, gap #15)."
+    }
+  ],
+  "annotations": []
+}

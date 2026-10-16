@@ -192,6 +192,15 @@ const PAGE_PATCHES = [
     ),
     group: 'group.feat-meta',
   },
+  {
+    id: 'page.tos',
+    label: bi('Conditions', 'Terms'),
+    desc: bi(
+      'Conditions d’utilisation : prix, paiements, remboursements, propriété du code.',
+      'Terms of service: prices, payments, refunds, who owns the code.',
+    ),
+    group: 'group.feat-meta',
+  },
 
   // 6 — Handoff (+ transparency pages a buyer would consult during takeover)
   {
@@ -500,6 +509,7 @@ const GROUPS: MapGroup[] = [
     nodeIds: [
       'page.privacy',
       'page.pia',
+      'page.tos',
       'page.meta',
       'page.atelier',
       'page.map-page',

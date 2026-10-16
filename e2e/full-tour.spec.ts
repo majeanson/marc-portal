@@ -156,6 +156,12 @@ const TOUR_STOPS: TourStop[] = [
   {
     name: 'pia',
     path: { fr: '/pia', en: '/en/pia' },
+    continueTo: { fr: '/conditions', en: '/en/terms' },
+    homeHref: { fr: '/#how', en: '/en/#how' },
+  },
+  {
+    name: 'tos',
+    path: { fr: '/conditions', en: '/en/terms' },
     continueTo: { fr: '/carte', en: '/en/map' },
     homeHref: { fr: '/#how', en: '/en/#how' },
   },
@@ -367,11 +373,11 @@ test.describe('full tour — page outro (continue / back home)', () => {
     }
   }
 
-  // The meta loop is fully clickable — five "continue" hops close back on
+  // The meta loop is fully clickable — six "continue" hops close back on
   // the site map. Walk the whole ring in one go.
   for (const lang of ['fr', 'en'] as const) {
     test(`the meta tour loop closes (${lang})`, async ({ page }) => {
-      // Five sequential loads of the site's heaviest pages (meta, atelier)
+      // Six sequential loads of the site's heaviest pages (meta, atelier)
       // in one test — the default 30s budget is sized for one navigation,
       // and the walk started timing out mid-ring on loaded runners as those
       // pages grew. 3× is the slow-test budget, not a flake band-aid: each
@@ -379,8 +385,8 @@ test.describe('full tour — page outro (continue / back home)', () => {
       test.slow()
       const ring =
         lang === 'fr'
-          ? ['/carte', '/meta', '/atelier', '/confidentialite', '/pia', '/carte']
-          : ['/en/map', '/en/meta', '/en/atelier', '/en/privacy', '/en/pia', '/en/map']
+          ? ['/carte', '/meta', '/atelier', '/confidentialite', '/pia', '/conditions', '/carte']
+          : ['/en/map', '/en/meta', '/en/atelier', '/en/privacy', '/en/pia', '/en/terms', '/en/map']
       await page.goto(ring[0], { waitUntil: 'networkidle' })
       for (let i = 1; i < ring.length; i++) {
         await page.locator('.feature-continue__link').click()

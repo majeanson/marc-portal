@@ -85,6 +85,20 @@
       "inAdminShell": false
     },
     {
+      "path": "/conditions",
+      "component": "Tos",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/terms",
+      "component": "Tos",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
       "path": "/handoff",
       "component": "Handoff",
       "lang": "fr",
