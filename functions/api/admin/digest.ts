@@ -271,7 +271,7 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
   let buildsDown: DownBuild[] = []
   try {
     if (env.STRIPE_SECRET_KEY !== E2E_STUB_API_KEY) {
-      buildsDown = await pingBuilds(await listShowcasedBuilds(env.DB))
+      buildsDown = await pingBuilds(await listShowcasedBuilds(env.DB), env.PROBE_TOKEN)
     }
     if (buildsDown.length > 0) {
       console.warn(

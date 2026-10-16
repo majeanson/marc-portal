@@ -2054,6 +2054,15 @@ from tomorrow's email.
    `/admin/showcase`, or repoint its advancement `build_url` at a
    replacement — the 0031 Jaffre-v2 migration is the model.
 
+**Every `*.marcportal.com` build says HTTP 403, but the URL loads fine in a
+browser?** The Worker's subrequest hit the zone's own bot/WAF rules (first
+seen 2026-10-16: jaffre, babillard, retraite, ashwake, dads at once). One-time
+setup: `wrangler secret put PROBE_TOKEN` (any long random string), then in the
+Cloudflare dashboard for marcportal.com add a WAF custom rule: expression
+`http.request.headers["x-portal-probe"][0] eq "<same value>"`, action *Skip*
+(bot fight / super bot fight, managed rules, rate limiting). The digest sends
+that header on every ping when `PROBE_TOKEN` is set. Rotating = change both.
+
 **Checked but wrong verdict?** Remember the ping follows redirects and only
 2xx passes. An app that bounces anonymous visitors to its own login page
 (Retrodio) passes because the login page answers 200; an app that answers

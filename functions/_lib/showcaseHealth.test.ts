@@ -20,6 +20,7 @@ describe('pingBuilds', () => {
   it('reports only the builds that fail, with the failure detail', async () => {
     const down = await pingBuilds(
       BUILDS,
+      undefined,
       fakeFetch({
         'https://up.example': 200,
         'https://down.example': 503,
@@ -35,6 +36,7 @@ describe('pingBuilds', () => {
     const timeout = new DOMException('The operation timed out.', 'TimeoutError')
     const down = await pingBuilds(
       [BUILDS[0]],
+      undefined,
       fakeFetch({ 'https://up.example': timeout as unknown as Error }),
     )
     expect(down).toHaveLength(1)
@@ -44,6 +46,7 @@ describe('pingBuilds', () => {
   it('returns empty for an all-green wall', async () => {
     const down = await pingBuilds(
       BUILDS,
+      undefined,
       fakeFetch({
         'https://up.example': 200,
         'https://down.example': 200,
@@ -53,5 +56,16 @@ describe('pingBuilds', () => {
     // 304 is not res.ok — but a build answering 304 to a no-cache GET is
     // misconfigured enough to want to hear about it, so only 2xx passes.
     expect(down.map((d) => d.id)).toEqual(['c3'])
+  })
+
+  it('sends X-Portal-Probe only when a probe token is configured', async () => {
+    const seen: Array<string | null> = []
+    const spy = (async (_i: RequestInfo | URL, init?: RequestInit) => {
+      seen.push(new Headers(init?.headers).get('X-Portal-Probe'))
+      return new Response(null, { status: 200 })
+    }) as typeof fetch
+    await pingBuilds([BUILDS[0]], 'secret', spy)
+    await pingBuilds([BUILDS[0]], undefined, spy)
+    expect(seen).toEqual(['secret', null])
   })
 })

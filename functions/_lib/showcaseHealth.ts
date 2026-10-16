@@ -65,6 +65,7 @@ export async function listShowcasedBuilds(db: D1Database): Promise<ShowcasedBuil
 // means the visitor-facing surface is broken.
 export async function pingBuilds(
   builds: ShowcasedBuild[],
+  probeToken?: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<DownBuild[]> {
   const outcomes = await Promise.all(
@@ -73,6 +74,8 @@ export async function pingBuilds(
         const res = await fetchImpl(b.url, {
           method: 'GET',
           redirect: 'follow',
+          // Lets the zone's WAF skip rule recognise us; see env.ts PROBE_TOKEN.
+          headers: probeToken ? { 'X-Portal-Probe': probeToken } : undefined,
           signal: AbortSignal.timeout(10_000),
         })
         return res.ok ? null : { ...b, detail: `HTTP ${res.status}` }
