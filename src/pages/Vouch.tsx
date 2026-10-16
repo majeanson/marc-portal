@@ -56,6 +56,12 @@ export function Vouch({ lang }: { lang: Lang }) {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [submitted, setSubmitted] = useState(false)
 
+  // A field's error clears as soon as the visitor edits that field — making
+  // them re-submit just to find out whether the fix took is a dead loop.
+  // Validation still reasserts on the next submit if the edit wasn't enough.
+  const clearFieldError = (key: keyof FieldErrors) =>
+    setFieldErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev))
+
   usePageMeta({ title: `${ts.pageTitle} — Marc`, lang })
 
   // Mirror server-side validation so visitors see errors inline. Returns
@@ -202,7 +208,9 @@ export function Vouch({ lang }: { lang: Lang }) {
       <main id="main-content" className="page" data-feature={PAGE_FEATURE['page.vouch']}>
         <Surface as="section" className="page__panel">
           <h1>{frPunct(ts.heading)}</h1>
-          <p>{ts.lead}</p>
+          {/* The lead carries two "mot :" tight pairs — same treatment as
+              the heading so the colon never strands on its own line. */}
+          <p>{frPunct(ts.lead)}</p>
           {sessionFor && (
             <p className="field__hint vouch-form__for-project">
               {ts.forProjectPrefix}{' '}
@@ -227,7 +235,10 @@ export function Vouch({ lang }: { lang: Lang }) {
                 id="v-name"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  clearFieldError('name')
+                }}
                 placeholder={ts.fields.namePlaceholder}
                 className="input field__input"
                 autoComplete="name"
@@ -249,7 +260,10 @@ export function Vouch({ lang }: { lang: Lang }) {
                 id="v-email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  clearFieldError('email')
+                }}
                 placeholder={ts.fields.emailPlaceholder}
                 className="input field__input"
                 autoComplete="email"
@@ -271,7 +285,10 @@ export function Vouch({ lang }: { lang: Lang }) {
               <select
                 id="v-rel"
                 value={relationship}
-                onChange={(e) => setRelationship(e.target.value as VouchRelationship | '')}
+                onChange={(e) => {
+                  setRelationship(e.target.value as VouchRelationship | '')
+                  clearFieldError('relationship')
+                }}
                 className="input field__input"
                 required
               >
@@ -296,7 +313,10 @@ export function Vouch({ lang }: { lang: Lang }) {
               <textarea
                 id="v-body"
                 value={body}
-                onChange={(e) => setBody(e.target.value)}
+                onChange={(e) => {
+                  setBody(e.target.value)
+                  clearFieldError('body')
+                }}
                 placeholder={ts.fields.bodyPlaceholder}
                 className="input field__input"
                 rows={6}
@@ -319,7 +339,10 @@ export function Vouch({ lang }: { lang: Lang }) {
                 id="v-link"
                 type="url"
                 value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
+                onChange={(e) => {
+                  setLinkUrl(e.target.value)
+                  clearFieldError('linkUrl')
+                }}
                 placeholder={ts.fields.linkPlaceholder}
                 className="input field__input"
                 maxLength={VOUCH_LIMITS.linkUrlMax}

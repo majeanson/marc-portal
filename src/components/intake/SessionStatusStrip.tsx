@@ -16,7 +16,9 @@ const COPY = {
     triage: 'Triage',
     active: 'In progress',
     shipped: 'Shipped',
-    rejected: 'Rejected',
+    // "Declined", not "Rejected": the one EN word for this state on every
+    // visitor-facing surface (the DB enum stays `rejected`).
+    rejected: 'Declined',
   },
 } as const
 

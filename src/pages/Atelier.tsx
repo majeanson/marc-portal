@@ -107,7 +107,7 @@ const COPY = {
     backHome: "← Retour à l'accueil",
     eyebrow: "méta · l'établi, montré tel quel",
     title: "L'atelier",
-    lead: "Un site se juge à deux choses : le soin du dessin, et la rigueur qui le tient en place. Cette page montre les deux, à découvert. D'abord le langage visuel — les pièces dont le portail est fait. Ensuite la galerie — chaque écran du site, capturé et vérifié automatiquement à chaque changement de code.",
+    lead: "Un site se juge à deux choses : le soin du dessin, et la rigueur qui le tient en place. Cette page montre les deux, à découvert. D'abord le langage visuel, les pièces dont le portail est fait. Ensuite la galerie : chaque écran du site, capturé et vérifié automatiquement à chaque changement de code.",
     lead2:
       "Rien d'inventé pour la vitrine : ce sont les vrais glyphes, les vrais jetons de couleur, les vraies captures de test. L'atelier, porte ouverte.",
     langTitle: 'Le langage visuel',
@@ -162,7 +162,7 @@ const COPY = {
     backHome: '← Back home',
     eyebrow: 'meta · the workbench, shown as-is',
     title: 'The workshop',
-    lead: 'A site is judged on two things: the care in the drawing, and the rigor that holds it in place. This page shows both, out in the open. First the visual language — the parts the portal is made of. Then the gallery — every screen of the site, captured and checked automatically on every code change.',
+    lead: 'A site is judged on two things: the care in the drawing, and the rigor that holds it in place. This page shows both, out in the open. First the visual language, the parts the portal is made of. Then the gallery: every screen of the site, captured and checked automatically on every code change.',
     lead2:
       'Nothing staged for the showroom: these are the real glyphs, the real colour tokens, the real test captures. The workshop, door open.',
     langTitle: 'The visual language',

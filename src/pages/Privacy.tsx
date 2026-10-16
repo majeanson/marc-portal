@@ -37,11 +37,11 @@ const COPY = {
       },
       {
         h: '2. Renseignements collectés',
-        p: 'Le portail collecte uniquement le strict nécessaire à la prestation du service : ton adresse courriel (pour la connexion par lien magique), le contenu de ton intake (le problème que tu m’apportes), nos messages échangés dans la session, et toute pièce jointe que tu déposes. Aucune analytique comportementale, aucun cookie tiers, aucun pixel marketing. Un outil de monitoring d’erreurs techniques (Sentry) est utilisé pour diagnostiquer les bogues — détails et minimisation à la <a href="#section-6">section 6</a>.',
+        p: 'Le portail collecte uniquement le strict nécessaire à la prestation du service : ton adresse courriel (pour la connexion par lien magique), le contenu de ton intake (le problème que tu m’apportes), nos messages échangés dans la session, et toute pièce jointe que tu déposes. Le portail ne fait aucune analytique comportementale et n’embarque ni cookie tiers ni pixel marketing. Un outil de monitoring d’erreurs techniques (Sentry) est utilisé pour diagnostiquer les bogues — détails et minimisation à la <a href="#section-6">section 6</a>.',
       },
       {
         h: '3. Finalités',
-        p: 'Ces données servent à : (a) t’authentifier sans mot de passe, (b) te permettre de suivre ta session, (c) que je puisse triager et livrer le travail. Elles ne sont ni revendues, ni utilisées pour de la prospection, ni partagées avec des tiers à des fins de marketing.',
+        p: 'Ces données servent à : (a) t’authentifier sans mot de passe, (b) te permettre de suivre ta session, (c) que je puisse triager et livrer le travail. Elles ne sont jamais revendues, ne servent pas à de la prospection, et aucun tiers ne les reçoit à des fins de marketing.',
       },
       {
         h: '4. Consentement',
@@ -49,7 +49,7 @@ const COPY = {
       },
       {
         h: '5. Hébergement et résidence des données',
-        p: 'Tes données de session (intake, messages, pièces jointes, identité) vivent dans Cloudflare D1, région <code>enam</code> (Eastern North America, primaire à Toronto). Cloudflare peut répliquer en lecture vers d’autres régions pour la latence, mais l’écriture et la copie de référence restent au Canada. Trois services tiers reçoivent un sous-ensemble strictement limité : <strong>Resend</strong> (États-Unis) pour les courriels transactionnels — uniquement ton adresse courriel et le contenu strictement requis pour livrer le message ; <strong>Sentry</strong> (États-Unis) pour le monitoring d’erreurs techniques — voir <a href="#section-6">section 6</a> pour la liste exhaustive de ce qui y transite et ce qui en est exclu ; <strong>Stripe Payments Canada Ltd.</strong> (Toronto, Canada) pour le traitement des paiements — voir <a href="#section-11">section 11</a>. Le cas Stripe est matériellement différent : l’entité de traitement étant canadienne, il ne s’agit pas d’un transfert hors Canada.',
+        p: 'Tes données de session (intake, messages, pièces jointes, identité) vivent dans Cloudflare D1, région <code>enam</code> (Eastern North America, primaire à Toronto). Cloudflare peut répliquer en lecture vers d’autres régions pour la latence, mais l’écriture et la copie de référence restent au Canada. Trois services tiers reçoivent un sous-ensemble strictement limité : <strong>Resend</strong> (États-Unis) pour les courriels transactionnels (uniquement ton adresse courriel et le contenu strictement requis pour livrer le message) ; <strong>Sentry</strong> (États-Unis) pour le monitoring d’erreurs techniques (la <a href="#section-6">section 6</a> liste exhaustivement ce qui y transite et ce qui en est exclu) ; <strong>Stripe Payments Canada Ltd.</strong> (Toronto, Canada) pour le traitement des paiements (voir la <a href="#section-11">section 11</a>). Le cas Stripe est matériellement différent : l’entité de traitement étant canadienne, il ne s’agit pas d’un transfert hors Canada.',
       },
       {
         h: '6. Monitoring d’erreurs (Sentry)',
@@ -94,11 +94,11 @@ const COPY = {
       },
       {
         h: '2. Information collected',
-        p: 'The portal collects only what the service requires: your email address (for magic-link sign-in), your intake content (the problem you bring me), the messages we exchange in the session, and any attachments you upload. No behavioral analytics, no third-party cookies, no marketing pixels. A technical error-monitoring tool (Sentry) is used to diagnose bugs — details and minimization in <a href="#section-6">section 6</a>.',
+        p: 'The portal collects only what the service requires: your email address (for magic-link sign-in), your intake content (the problem you bring me), the messages we exchange in the session, and any attachments you upload. The portal runs no behavioral analytics and ships neither third-party cookies nor marketing pixels. A technical error-monitoring tool (Sentry) is used to diagnose bugs — details and minimization in <a href="#section-6">section 6</a>.',
       },
       {
         h: '3. Purposes',
-        p: 'This data is used to (a) authenticate you without a password, (b) let you track your session, (c) let me triage and deliver the work. It is not resold, not used for outbound prospecting, not shared with third parties for marketing.',
+        p: 'This data is used to (a) authenticate you without a password, (b) let you track your session, (c) let me triage and deliver the work. It is never resold, never feeds outbound prospecting, and no third party receives it for marketing.',
       },
       {
         h: '4. Consent',
@@ -106,7 +106,7 @@ const COPY = {
       },
       {
         h: '5. Hosting and data residency',
-        p: 'Your session data (intake, messages, attachments, identity) lives in Cloudflare D1, region <code>enam</code> (Eastern North America, primary in Toronto). Cloudflare may replicate reads to other regions for latency, but writes and the canonical copy stay in Canada. Three third-party services receive a strictly limited subset: <strong>Resend</strong> (United States) for transactional emails — only your address and the content strictly required to deliver the message; <strong>Sentry</strong> (United States) for technical error monitoring — see <a href="#section-6">section 6</a> for the exhaustive list of what transits there and what is excluded; <strong>Stripe Payments Canada Ltd.</strong> (Toronto, Canada) for payment processing — see <a href="#section-11">section 11</a>. The Stripe case is materially different: the processing entity is Canadian, so it is not a transfer outside Canada.',
+        p: 'Your session data (intake, messages, attachments, identity) lives in Cloudflare D1, region <code>enam</code> (Eastern North America, primary in Toronto). Cloudflare may replicate reads to other regions for latency, but writes and the canonical copy stay in Canada. Three third-party services receive a strictly limited subset: <strong>Resend</strong> (United States) for transactional emails (only your address and the content strictly required to deliver the message); <strong>Sentry</strong> (United States) for technical error monitoring (<a href="#section-6">section 6</a> lists exhaustively what transits there and what is excluded); <strong>Stripe Payments Canada Ltd.</strong> (Toronto, Canada) for payment processing (see <a href="#section-11">section 11</a>). The Stripe case is materially different: the processing entity is Canadian, so it is not a transfer outside Canada.',
       },
       {
         h: '6. Error monitoring (Sentry)',

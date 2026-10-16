@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
 import { api, ApiError } from '../lib/api'
+import { formatDateTime } from '../lib/format'
 import { usePageMeta } from '../lib/usePageMeta'
 
 interface AuditEntry {
@@ -51,17 +52,6 @@ const COPY = {
     noMatch: 'No entries match the filters.',
   },
 } as const
-
-function formatTime(unixSec: number, lang: Lang): string {
-  const d = new Date(unixSec * 1000)
-  return d.toLocaleString(lang === 'fr' ? 'fr-CA' : 'en-CA', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 function summarizePayload(p: unknown): string {
   if (p === null || p === undefined) return ''
@@ -200,7 +190,9 @@ export function AdminAudit({ lang }: { lang: Lang }) {
                   <tbody>
                     {filtered.map((e) => (
                       <tr key={e.id}>
-                        <td className="mono fleet-table__secondary">{formatTime(e.ts, lang)}</td>
+                        <td className="mono fleet-table__secondary">
+                          {formatDateTime(e.ts, lang)}
+                        </td>
                         <td className="mono fleet-table__secondary">{e.actorEmail}</td>
                         <td>
                           {e.tenantSlug ? (

@@ -13,6 +13,7 @@
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
 import type { FeatureId } from '../lib/features'
+import { frPunct } from '../lib/frPunct'
 import { FeatureDot } from './FeatureDot'
 
 export interface DrillStat {
@@ -40,7 +41,10 @@ export function HomeDrillCard({ lang, feature, href, eyebrow, title, body, cta, 
         <div className="home-drill-card-text">
           <span className="home-drill-card-feature">
             <FeatureDot feature={feature} lang={lang} size="sm" decorative />
-            <span className="home-drill-card-eyebrow mono">{eyebrow}</span>
+            {/* frPunct keeps FR tight pairs ("voir ?", "lire ?") from
+                stranding their punctuation on a wrapped line; EN strings
+                pass through untouched. */}
+            <span className="home-drill-card-eyebrow mono">{frPunct(eyebrow)}</span>
           </span>
           <h3 className="home-drill-card-title">{title}</h3>
           <p className="home-drill-card-body">{body}</p>

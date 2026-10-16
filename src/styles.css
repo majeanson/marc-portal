@@ -8358,14 +8358,16 @@ button.intake__progress-step:disabled {
     }
   }
 }
+/* Opacity-only, despite the name: the house rule says reveals are
+   "ink-in", never slide-up (translateY was the uniform-staggered-reveal
+   tell the copy rules ban for visuals too). The name stays because the
+   animation-timeline wiring above references it. */
 @keyframes editorial-rise {
   from {
     opacity: 0;
-    transform: translateY(18px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

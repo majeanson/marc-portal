@@ -93,7 +93,10 @@ const FR = {
     title: 'Comment ça marche',
     fullJourneyCta: 'Voir le parcours complet (les 12 étapes) →',
     journeyCard: {
-      eyebrow: 'envie de tout voir?',
+      // Plain space before "?" — HomeDrillCard renders eyebrows through
+      // frPunct(), which nowraps the pair (a literal NBSP wouldn't survive
+      // the build; see project memory project_build_strips_nbsp).
+      eyebrow: 'envie de tout voir ?',
       title: 'Le parcours complet, étape par étape',
       body: 'Les 4 grands moments ci-dessus se décomposent en 12 étapes concrètes. Le détail : qui fait quoi, en combien de temps, à quel moment.',
       stats: [
@@ -130,10 +133,10 @@ const FR = {
   featured: {
     eyebrow: 'projets en cours',
     title: 'Ce que je livre, en vrai',
-    sub: 'Derrière chaque carte, un projet en production que tu peux aller tester là, maintenant. Vrai code, vrai problème, vrai monde.',
+    sub: 'Derrière chaque carte, un projet en production que tu peux aller tester là, maintenant : du vrai code qui règle un vrai problème pour du vrai monde.',
     seeAll: 'Voir tous les projets →',
     galleryCard: {
-      eyebrow: 'envie de tout voir?',
+      eyebrow: 'envie de tout voir ?',
       title: 'La galerie complète, tous les projets',
       body: 'Au-delà des trois cartes ci-dessus, la galerie filtre par tier et par statut. Chaque carte ouvre le détail du projet avec le dernier build en direct.',
       cta: 'Voir tous les projets →',
@@ -635,6 +638,12 @@ const FR = {
       namePlaceholder: 'Marie',
       hint: 'Marc lit chaque formulaire lui-même. Aucun spam, aucune revente.',
       autosaveNote: '✓ Pas de pression, ton brouillon t’attend si tu reviens.',
+      // Honest fallback when the browser blocks localStorage (navigation
+      // privée, stockage bloqué) : promettre un brouillon qui ne peut pas
+      // persister serait un mensonge.
+      autosaveOff:
+        'Ton navigateur bloque la sauvegarde locale : garde l’onglet ouvert jusqu’à l’envoi.',
+      ctaDisabledHint: 'Entre un courriel valide pour continuer.',
       cta: 'Continuer →',
       alreadyHaveAccount: 'Tu as déjà un compte ?',
       signIn: 'Connecte-toi →',
@@ -653,6 +662,8 @@ const FR = {
     form: {
       eyebrow: 'le détail',
       autosaved: '✓ Sauvegardé automatiquement à chaque champ',
+      autosaveOff:
+        'Ton navigateur bloque la sauvegarde locale : garde l’onglet ouvert jusqu’à l’envoi.',
       back: '← Changer de type',
       continue: 'Soumettre →',
       needsInput: 'Écris quelques mots, fais un croquis ou laisse une note vocale pour soumettre.',
@@ -1191,7 +1202,7 @@ const EN: Copy = {
   featured: {
     eyebrow: 'projects in progress',
     title: 'What I ship',
-    sub: 'Behind each card, a real project in production you can go test right now. Production code, real users, things that ship.',
+    sub: 'Behind each card, a real project in production you can go test right now: production code doing a real job for real people.',
     seeAll: 'See all projects →',
     galleryCard: {
       eyebrow: 'want to see everything?',
@@ -1503,7 +1514,10 @@ const EN: Copy = {
       triage: 'triage',
       active: 'active',
       shipped: 'shipped',
-      rejected: 'rejected',
+      // "declined" is the single EN word for this state everywhere a
+      // visitor can see it (SessionWhatsNext, AdminToday, MyData agree) —
+      // the enum stays `rejected` in the DB, the label does not.
+      rejected: 'declined',
     },
   },
 
@@ -1692,6 +1706,8 @@ const EN: Copy = {
       namePlaceholder: 'Marie',
       hint: 'Marc reads every form himself. No spam, no resale.',
       autosaveNote: '✓ No pressure, your draft will be here if you come back.',
+      autosaveOff: 'Your browser blocks local saving: keep this tab open until you submit.',
+      ctaDisabledHint: 'Enter a valid email to continue.',
       cta: 'Continue →',
       alreadyHaveAccount: 'Already have an account?',
       signIn: 'Sign in →',
@@ -1710,6 +1726,7 @@ const EN: Copy = {
     form: {
       eyebrow: 'the details',
       autosaved: '✓ Auto-saved on every field',
+      autosaveOff: 'Your browser blocks local saving: keep this tab open until you submit.',
       back: '← Change type',
       continue: 'Submit →',
       needsInput: 'Write a few words, sketch it, or leave a voice note to submit.',

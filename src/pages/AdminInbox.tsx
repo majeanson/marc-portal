@@ -6,7 +6,7 @@ import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
 import { listSessions, type SessionRow, type SessionStatus } from '../lib/sessionsApi'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
-import { computeSla, formatDate, formatRelativeWindow } from '../lib/format'
+import { computeSla, formatDate, formatDateTime, formatRelativeWindow } from '../lib/format'
 import { Surface } from '../components/Surface'
 import { usePageMeta } from '../lib/usePageMeta'
 
@@ -138,13 +138,6 @@ function sortInboxRows(rows: SessionRow[]): SessionRow[] {
   })
 }
 
-function formatTime(unix: number, lang: Lang): string {
-  return new Date(unix * 1000).toLocaleString(lang === 'fr' ? 'fr-CA' : 'en-CA', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  })
-}
-
 function AdminCard({
   session,
   lang,
@@ -169,7 +162,7 @@ function AdminCard({
             <span className="mono admin-inbox__email">{session.email}</span>
             <span className="me-portal__id mono">{session.id.slice(0, 8)}</span>
             {submittedAt && <span className="me-portal__date">{submittedAt}</span>}
-            <span className="mono me-portal__date">{formatTime(session.updated_at, lang)}</span>
+            <span className="mono me-portal__date">{formatDateTime(session.updated_at, lang)}</span>
             {sla.active && (
               <span
                 className={`me-portal__sla mono${sla.overdue ? ' me-portal__sla--overdue' : ''}`}

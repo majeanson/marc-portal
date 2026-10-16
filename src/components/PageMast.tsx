@@ -24,7 +24,7 @@ import { FeatureDot } from './FeatureDot'
  *
  *   export function Foo({ lang }: { lang: Lang }) {
  *     const t = COPY[lang]              // or DICT[lang].foo — pick one per file
- *     useEffect(() => { document.title = `${t.crumb} — Marc` }, [t])
+ *     usePageMeta(t.pageTitle, t.metaDescription)  // title + description + og tags
  *     return (
  *       <article className="foo">      // single page-class wrapper
  *         <PageMast folio={`№ ${PAGE_FOLIOS.foo} — ${t.title}`}
