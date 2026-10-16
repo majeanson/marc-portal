@@ -137,6 +137,8 @@ await check('OG meta on /', `${host}/`, {
 //    privacy page before they decide to engage.
 await check('GET /confidentialite (FR)', `${host}/confidentialite`)
 await check('GET /en/privacy (EN)', `${host}/en/privacy`)
+await check('GET /conditions (FR)', `${host}/conditions`)
+await check('GET /en/terms (EN)', `${host}/en/terms`)
 
 // 4. API health — covers D1 reachability + the handler itself.
 await check('GET /api/health', `${host}/api/health`, {

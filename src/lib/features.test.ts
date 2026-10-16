@@ -351,6 +351,7 @@ describe('page wayfinding', () => {
     'Atelier.tsx': 'page.atelier',
     'Privacy.tsx': 'page.privacy',
     'Pia.tsx': 'page.pia',
+    'Tos.tsx': 'page.tos',
     'Map.tsx': 'page.map-page',
   }
 

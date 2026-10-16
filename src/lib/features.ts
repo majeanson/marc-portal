@@ -155,6 +155,7 @@ export const PAGE_FEATURE: Partial<Record<string, FeatureId>> = {
   // Meta (backstage — transparency + how-it-works pages)
   'page.privacy': 'meta',
   'page.pia': 'meta',
+  'page.tos': 'meta',
   'page.meta': 'meta',
   'page.atelier': 'meta',
   'page.map-page': 'meta',
@@ -217,9 +218,9 @@ export const FEATURE_PRIMARY_PAGE: Record<ProductFeatureId, Bi> = {
 }
 
 /* -------------------------------------------------------------------------
- * Backstage (meta) page loop. The five explanatory meta pages form their
+ * Backstage (meta) page loop. The six explanatory meta pages form their
  * own small loop — site map → under the hood → the workshop → privacy →
- * PIA → back to the map — so the page-outro "where next" pointer works
+ * PIA → terms → back to the map — so the page-outro "where next" pointer works
  * for backstage pages too.
  *
  * The "ton passage" trio (passage / dossier / au-revoir) is meta-tinted
@@ -231,13 +232,14 @@ export const FEATURE_PRIMARY_PAGE: Record<ProductFeatureId, Bi> = {
  * ------------------------------------------------------------------------- */
 
 /** Next backstage page in the loop, keyed by page-node id. A single
- *  closed 5-cycle; guarded in features.test.ts. */
+ *  closed 6-cycle; guarded in features.test.ts. */
 export const META_PAGE_NEXT: Record<string, string> = {
   'page.map-page': 'page.meta',
   'page.meta': 'page.atelier',
   'page.atelier': 'page.privacy',
   'page.privacy': 'page.pia',
-  'page.pia': 'page.map-page',
+  'page.pia': 'page.tos',
+  'page.tos': 'page.map-page',
 }
 
 /** Route + short label for each backstage page on the tour — what the
@@ -263,6 +265,10 @@ export const META_PAGE_LINK: Record<string, { label: Bi; path: Bi }> = {
   'page.pia': {
     label: { fr: 'Protection des données', en: 'Data protection' },
     path: { fr: '/pia', en: '/en/pia' },
+  },
+  'page.tos': {
+    label: { fr: 'Conditions', en: 'Terms' },
+    path: { fr: '/conditions', en: '/en/terms' },
   },
 }
 

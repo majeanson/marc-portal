@@ -91,6 +91,7 @@ const Engagement = lazyPage(() =>
 const Tier0 = lazyPage(() => import('./pages/Tier0').then((m) => ({ default: m.Tier0 })))
 const Privacy = lazyPage(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
 const Pia = lazyPage(() => import('./pages/Pia').then((m) => ({ default: m.Pia })))
+const Tos = lazyPage(() => import('./pages/Tos').then((m) => ({ default: m.Tos })))
 const Handoff = lazyPage(() => import('./pages/Handoff').then((m) => ({ default: m.Handoff })))
 const HandoffChecklist = lazyPage(() =>
   import('./pages/HandoffChecklist').then((m) => ({ default: m.HandoffChecklist })),
@@ -304,6 +305,22 @@ export const router = createBrowserRouter(
         element={
           <L>
             <Pia lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/conditions"
+        element={
+          <L>
+            <Tos lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/terms"
+        element={
+          <L>
+            <Tos lang="en" />
           </L>
         }
       />

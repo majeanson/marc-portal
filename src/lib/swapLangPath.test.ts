@@ -36,6 +36,10 @@ describe('swapLangPath', () => {
     it('EN /en/journey → FR /parcours', () => {
       expect(swapLangPath('/en/journey', '', '', false)).toBe('/parcours')
     })
+    it('FR /conditions → EN /en/terms and back', () => {
+      expect(swapLangPath('/conditions', '', '', true)).toBe('/en/terms')
+      expect(swapLangPath('/en/terms', '', '', false)).toBe('/conditions')
+    })
     it('FR /confidentialite → EN /en/privacy', () => {
       expect(swapLangPath('/confidentialite', '', '', true)).toBe('/en/privacy')
     })
