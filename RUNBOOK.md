@@ -259,6 +259,20 @@ hashes in the new deploy.
    cached):
    - CF Pages → Deployments tab → the prior good entry → "..." →
      "Rollback to this deployment".
+
+### Related: lazy-chunk 404s on open tabs after a deploy
+
+The inverse case: the visitor's *already-open* tab carries the previous
+shell, then navigates to a lazy route. The old chunk hash 404s, Pages'
+SPA fallback answers with index.html, and the dynamic import throws
+("`'text/html' is not a valid JavaScript MIME type`" on Safari — Sentry
+issue 7795108842 was exactly this, an iOS visitor on /en/projects after a
+multi-deploy day). Since 2026-10-15 `src/router.tsx`'s `lazyPage()`
+self-heals: one automatic reload fetches the fresh shell, with a
+sessionStorage latch so a genuinely broken network doesn't reload-loop.
+Seeing this error in Sentry *after* that date means either the latch
+tripped (second failure in one session — look for network/extension
+causes) or a surface that bypasses `lazyPage`.
    - Schema is forward-only (D1 migrations don't rollback), but old
      code against new schema is usually fine — most of our migrations
      are additive columns the old code ignores.
