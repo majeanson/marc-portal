@@ -410,14 +410,14 @@
   under `features/` would touch `lac.config.json` plus possibly hardcoded
   paths in `lac-mcp` tools that read these. The noise is real but contained;
   most ignore globs (.eslintignore, glob includes) can be tuned cheaper.
-- ⏭ **P3.23** — `/tier-0` "Modèle Google Sheets (à dupliquer)" links.
+- ✅ **P3.23** — `/tier-0` "Modèle Google Sheets (à dupliquer)" links.
   **Deferred (2026-10-23, stranger review).** Both links pointed at the generic
   Sheets home (`…/spreadsheets/u/0/?tgif=d`), so the one promise a Niveau 0
   visitor acts on failed. The `template` entries were removed from
   `src/lib/patterns.ts` (snow-rotation, potluck); the written recipe stays.
-  Re-open when two real sheets are published: add `template: { label, href }`
-  back with a `…/copy` URL so « dupliquer » is one click. Interim mitigation:
-  no link at all rather than a link that lands on the wrong page.
+  **Closed (2026-10-23, Marc):** no sheets will be published; the written recipe
+  is the deliverable. The `template` field stays optional in `patterns.ts` if a
+  real sheet ever exists.
 - ⏭ **P3.24** — stranger-review items left open (2026-10-23).
   Decided not to do now, each for a reason:
   - **Contact needs an account** (friction #2): anonymous steps 1-4 or a
