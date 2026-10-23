@@ -6,7 +6,12 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { recipientOf, verifyResendSignature, type ResendWebhookEvent } from './resendWebhook'
+import {
+  isPortalSender,
+  recipientOf,
+  verifyResendSignature,
+  type ResendWebhookEvent,
+} from './resendWebhook'
 
 // Known good base64 key + secret used by every test. Standard base64 (not
 // URL-safe), the same encoding Svix accepts after stripping `whsec_`.
@@ -53,7 +58,7 @@ describe('verifyResendSignature', () => {
       'svix-signature': sig,
     })
     const ctx = await verifyResendSignature(body, headers, WHSEC_KEY, ts)
-    expect(ctx).toEqual({ id, timestamp: ts })
+    expect(ctx).toEqual({ ok: true, ctx: { id, timestamp: ts } })
   })
 
   it('accepts the secret without the whsec_ prefix too', async () => {
@@ -66,7 +71,10 @@ describe('verifyResendSignature', () => {
       'svix-timestamp': String(ts),
       'svix-signature': sig,
     })
-    expect(await verifyResendSignature(body, headers, KNOWN_KEY, ts)).toEqual({ id, timestamp: ts })
+    expect(await verifyResendSignature(body, headers, KNOWN_KEY, ts)).toEqual({
+      ok: true,
+      ctx: { id, timestamp: ts },
+    })
   })
 
   it('rejects a tampered body', async () => {
@@ -79,7 +87,10 @@ describe('verifyResendSignature', () => {
       'svix-signature': sig,
     })
     // Body bytes don't match what we signed.
-    expect(await verifyResendSignature('{"changed":true}', headers, WHSEC_KEY, ts)).toBeNull()
+    expect(await verifyResendSignature('{"changed":true}', headers, WHSEC_KEY, ts)).toEqual({
+      ok: false,
+      reason: 'no_matching_signature',
+    })
   })
 
   it('rejects a wrong secret', async () => {
@@ -93,7 +104,10 @@ describe('verifyResendSignature', () => {
       'svix-signature': sig,
     })
     const otherSecret = `whsec_${btoa('a-different-secret-of-some-length')}`
-    expect(await verifyResendSignature(body, headers, otherSecret, ts)).toBeNull()
+    expect(await verifyResendSignature(body, headers, otherSecret, ts)).toEqual({
+      ok: false,
+      reason: 'no_matching_signature',
+    })
   })
 
   it('rejects a stale timestamp (replay attack outside the 5-minute window)', async () => {
@@ -108,12 +122,32 @@ describe('verifyResendSignature', () => {
     })
     // Verifier asked at "now" 10 minutes after the signed timestamp.
     const tsNow = tsSigned + 10 * 60
-    expect(await verifyResendSignature(body, headers, WHSEC_KEY, tsNow)).toBeNull()
+    expect(await verifyResendSignature(body, headers, WHSEC_KEY, tsNow)).toEqual({
+      ok: false,
+      reason: 'stale_timestamp',
+    })
   })
 
   it('rejects when required headers are missing', async () => {
     const empty = new Headers()
-    expect(await verifyResendSignature('{}', empty, WHSEC_KEY, 1_700_000_000)).toBeNull()
+    expect(await verifyResendSignature('{}', empty, WHSEC_KEY, 1_700_000_000)).toEqual({
+      ok: false,
+      reason: 'missing_headers',
+    })
+  })
+
+  it('names an undecodable secret instead of throwing', async () => {
+    const id = 'msg_badsecret'
+    const ts = 1_700_000_000
+    const headers = new Headers({
+      'svix-id': id,
+      'svix-timestamp': String(ts),
+      'svix-signature': 'v1,abc=',
+    })
+    expect(await verifyResendSignature('{}', headers, 'whsec_!!not base64!!', ts)).toEqual({
+      ok: false,
+      reason: 'bad_secret_format',
+    })
   })
 
   it('accepts a rotated header that carries multiple v1 sigs (any-match)', async () => {
@@ -128,7 +162,10 @@ describe('verifyResendSignature', () => {
       'svix-timestamp': String(ts),
       'svix-signature': headerWithRotation,
     })
-    expect(await verifyResendSignature(body, headers, WHSEC_KEY, ts)).toEqual({ id, timestamp: ts })
+    expect(await verifyResendSignature(body, headers, WHSEC_KEY, ts)).toEqual({
+      ok: true,
+      ctx: { id, timestamp: ts },
+    })
   })
 })
 
@@ -145,5 +182,21 @@ describe('recipientOf', () => {
     expect(recipientOf({ type: 'email.bounced' })).toBeNull()
     expect(recipientOf({ type: 'email.bounced', data: {} })).toBeNull()
     expect(recipientOf({ type: 'email.bounced', data: { to: [] } })).toBeNull()
+  })
+})
+
+describe('isPortalSender', () => {
+  const ev = (from?: unknown): ResendWebhookEvent => ({ type: 'email.bounced', data: { from } })
+  it('accepts the portal sender, bare or with a display name', () => {
+    expect(isPortalSender(ev('noreply@marcportal.com'))).toBe(true)
+    expect(isPortalSender(ev('Marc <NoReply@marcportal.com>'))).toBe(true)
+  })
+  it('rejects mail from other sites on the same Resend account', () => {
+    expect(isPortalSender(ev('babillard@marcportal.com'))).toBe(false)
+    expect(isPortalSender(ev('Babillard <babillard@marcportal.com>'))).toBe(false)
+  })
+  it('keeps events with no from, since a dropped real bounce costs more', () => {
+    expect(isPortalSender({ type: 'email.bounced' })).toBe(true)
+    expect(isPortalSender(ev(undefined))).toBe(true)
   })
 })

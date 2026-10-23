@@ -129,6 +129,17 @@ test.describe('POST /api/webhooks/resend — happy-path ingest', () => {
     expect(rows[0].type).toBe('email.delivered')
   })
 
+  test('bounce for mail from another site (babillard@) → 200 ignored, NO email_events row', async () => {
+    // One Resend account, one webhook: Babillard's bounces must not reach the
+    // portal's suppression list.
+    const to = `babillard-${randomUUID().slice(0, 6)}@e2e.test`
+    const event = makeResendBouncedEvent({ to })
+    ;(event.data as Record<string, unknown>).from = 'babillard@marcportal.com'
+    const res = await deliverResendWebhook(event)
+    expect(res.status).toBe(200)
+    expect(readEmailEvents(to)).toHaveLength(0)
+  })
+
   test('email.sent → 200 with ignored:true, NO email_events row', async () => {
     // email.sent is informational (mirror of our own outbound send log) —
     // the handler's INGEST_TYPES whitelist deliberately omits it. We still

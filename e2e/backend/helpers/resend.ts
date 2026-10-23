@@ -79,7 +79,7 @@ export function makeResendBouncedEvent(args: {
     created_at: new Date().toISOString(),
     data: {
       to: [args.to],
-      from: 'marc@marcportal.com',
+      from: 'noreply@marcportal.com',
       subject: 'magic link',
       bounce: { type: args.bounceType ?? 'Permanent', message: 'permanent fail' },
     },
@@ -90,7 +90,7 @@ export function makeResendComplainedEvent(args: { to: string }): Record<string, 
   return {
     type: 'email.complained',
     created_at: new Date().toISOString(),
-    data: { to: [args.to], from: 'marc@marcportal.com', subject: 'magic link' },
+    data: { to: [args.to], from: 'noreply@marcportal.com', subject: 'magic link' },
   }
 }
 
@@ -98,7 +98,7 @@ export function makeResendDeliveredEvent(args: { to: string }): Record<string, u
   return {
     type: 'email.delivered',
     created_at: new Date().toISOString(),
-    data: { to: [args.to], from: 'marc@marcportal.com', subject: 'magic link' },
+    data: { to: [args.to], from: 'noreply@marcportal.com', subject: 'magic link' },
   }
 }
 
@@ -106,7 +106,7 @@ export function makeResendSentEvent(args: { to: string }): Record<string, unknow
   return {
     type: 'email.sent',
     created_at: new Date().toISOString(),
-    data: { to: [args.to], from: 'marc@marcportal.com', subject: 'magic link' },
+    data: { to: [args.to], from: 'noreply@marcportal.com', subject: 'magic link' },
   }
 }
 

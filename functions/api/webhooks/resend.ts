@@ -25,7 +25,9 @@
 
 import type { Env } from '../../_lib/env'
 import { ok, serviceUnavailable, unauthorized } from '../../_lib/json'
+import { captureWorkerException } from '../../_lib/sentry'
 import {
+  isPortalSender,
   recipientOf,
   verifyResendSignature,
   type ResendWebhookEvent,
@@ -53,8 +55,38 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // and breaks the HMAC.
   const rawBody = await request.text()
   const now = Math.floor(Date.now() / 1000)
-  const ctx = await verifyResendSignature(rawBody, request.headers, env.RESEND_WEBHOOK_SECRET, now)
-  if (!ctx) return unauthorized('signature mismatch')
+  const verified = await verifyResendSignature(
+    rawBody,
+    request.headers,
+    env.RESEND_WEBHOOK_SECRET,
+    now,
+  )
+  if (!verified.ok) {
+    // The body stays generic; the reason goes to Sentry only. A wrong secret
+    // 401'd every event for 8 days in Oct 2026 with nothing to say why.
+    console.warn(`resend webhook: rejected (${verified.reason})`)
+    captureWorkerException(new Error(`resend webhook rejected: ${verified.reason}`), {
+      request,
+      op: 'webhooks/resend',
+      extra: { reason: verified.reason },
+    })
+    return unauthorized('signature mismatch')
+  }
+  const ctx = verified.ctx
+
+  // Liveness stamp for the daily digest ("last accepted event > 48h ago").
+  // Written for every verified event, ours or not: it proves the secret and
+  // the endpoint work. Best-effort; system_kv may not exist pre-migration.
+  try {
+    await env.DB.prepare(
+      `INSERT INTO system_kv (key, value, updated_at) VALUES (?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+    )
+      .bind('last_resend_event_at', String(now), now)
+      .run()
+  } catch (err) {
+    console.warn('resend webhook: liveness stamp failed (continuing)', err)
+  }
 
   let event: ResendWebhookEvent
   try {
@@ -85,6 +117,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // already log every successful Resend response in send()).
   if (!INGEST_TYPES.has(event.type)) {
     return ok({ received: true, ignored: true })
+  }
+
+  // Mail from other sites sharing this Resend account never enters
+  // email_events, so it can't feed the suppression list (RUNBOOK §16).
+  if (!isPortalSender(event)) {
+    return ok({ received: true, ignored: 'other sender' })
   }
 
   const to = recipientOf(event)

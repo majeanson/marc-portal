@@ -1225,6 +1225,31 @@ nothing arrives:
 - The Resend Dashboard's webhook log — the event will be marked
   "delivered" with our 200, or with our error code if rejected.
 
+### Step 6: when the webhook goes quiet or 401s
+
+- **Why a verify failed** is in Sentry, not in the response (the 401 body
+  stays `signature mismatch`). Search for `resend webhook rejected`; the
+  `reason` extra is one of `missing_headers`, `stale_timestamp`,
+  `bad_secret_format`, `no_matching_signature`. `no_matching_signature` on
+  every event = the `RESEND_WEBHOOK_SECRET` the Pages project runs with is not
+  the endpoint's current signing secret (re-put, rotated, or set on the wrong
+  environment). Re-put it, redeploy (Pages applies secrets to new deployments
+  only), re-enable the endpoint in Resend, then Replay a failed event.
+- **The daily digest flags silence**: a "Webhook Resend silencieux" section
+  appears when the last verified event is older than 48 h (`system_kv`
+  `last_resend_event_at`, falling back to `MAX(email_events.received_at)`). A
+  quiet week with no sends also trips it; check Sentry first.
+- **Other senders share this webhook.** One Resend account serves Babillard
+  too (`babillard@marcportal.com`), but there is one webhook. Decision
+  (2026-10-23): events whose `from` is not a portal sender are acknowledged
+  with 200 and **not** written to `email_events`, so a Babillard bounce can't
+  suppress portal mail to that person. The allow-list is `PORTAL_SENDERS` in
+  `functions/_lib/resendWebhook.ts` (today: `noreply@marcportal.com`); add an
+  address there if the portal ever sends from another one. Events with no
+  `from` are kept. Keep e2e/walkthrough sends (`*@resend.dev`) off the
+  production API key; they are ignored here only if they come from another
+  sender.
+
 ### Why this lands in two parts
 
 P1.1 (domain) and P1.2 (webhook) are split because they fail

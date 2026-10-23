@@ -5,7 +5,7 @@
  * e2e backend suite; here we just pin the heartbeat contract.
  */
 
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { makeMockEnv } from '../../../tests/d1-mock'
 import { onRequestPost } from './digest'
 
@@ -73,5 +73,43 @@ describe('POST /api/admin/digest — heartbeat', () => {
     // matters is the row count.
     expect(secondStamp).toBeDefined()
     expect(typeof firstStamp).toBe('string')
+  })
+})
+
+describe('POST /api/admin/digest — Resend webhook liveness', () => {
+  // A stale flag makes the digest send mail; keep that off the real Resend API.
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })))
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  const nowSec = () => Math.floor(Date.now() / 1000)
+  const seed = (ctx: ReturnType<typeof makeCtx>, ageSeconds: number) =>
+    ctx.env._db.system_kv.set('last_resend_event_at', {
+      key: 'last_resend_event_at',
+      value: String(nowSec() - ageSeconds),
+      updated_at: nowSec(),
+    })
+
+  it('flags a webhook whose last accepted event is older than 48h', async () => {
+    const ctx = makeCtx({ token: 'good-token' })
+    seed(ctx, 72 * 3600)
+    const body = (await (await onRequestPost(ctx)).json()) as { resendSilentHours: number | null }
+    expect(body.resendSilentHours).toBe(72)
+  })
+
+  it('stays quiet when the last event is recent', async () => {
+    const ctx = makeCtx({ token: 'good-token' })
+    seed(ctx, 3600)
+    const body = (await (await onRequestPost(ctx)).json()) as { resendSilentHours?: number | null }
+    expect(body.resendSilentHours ?? null).toBeNull()
+  })
+
+  it('stays quiet on an env that never received an event', async () => {
+    const ctx = makeCtx({ token: 'good-token' })
+    const body = (await (await onRequestPost(ctx)).json()) as { resendSilentHours?: number | null }
+    expect(body.resendSilentHours ?? null).toBeNull()
   })
 })

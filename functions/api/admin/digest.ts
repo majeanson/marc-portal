@@ -51,6 +51,11 @@ const COPY = {
     buildsMany: 'builds injoignables',
     buildsHelp:
       'Vérifie le déploiement dans le repo du projet (RUNBOOK §25). Mort pour de bon ? Retire la carte via /admin/showcase.',
+    resendHeading: 'Webhook Resend silencieux',
+    resendStale: (h: number) => `Dernier événement Resend accepté il y a ${h} h.`,
+    resendHelp:
+      'Ça peut être juste un coin tranquille, ou un secret qui ne concorde plus (RUNBOOK §16). Cherche « resend webhook rejected » dans Sentry : la raison y est.',
+    subjectResend: 'webhook Resend silencieux',
     subjectPrefix: 'Digest',
     subjectTriage: (n: number) => `${n} en triage`,
     subjectAlerts: (n: number) => `${n} alerte${n === 1 ? '' : 's'}`,
@@ -71,6 +76,11 @@ const COPY = {
     buildsMany: 'builds unreachable',
     buildsHelp:
       'Check the deploy in that project’s repo (RUNBOOK §25). Dead for good? Pull the card via /admin/showcase.',
+    resendHeading: 'Resend webhook silent',
+    resendStale: (h: number) => `Last accepted Resend event was ${h} h ago.`,
+    resendHelp:
+      'Could be a quiet stretch, or a secret that no longer matches (RUNBOOK §16). Search Sentry for “resend webhook rejected”: the reason is there.',
+    subjectResend: 'Resend webhook silent',
     subjectPrefix: 'Digest',
     subjectTriage: (n: number) => `${n} in triage`,
     subjectAlerts: (n: number) => `${n} alert${n === 1 ? '' : 's'}`,
@@ -283,6 +293,32 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     console.warn('digest: showcase health check failed (continuing)', err)
   }
 
+  // Piggyback housekeeping #7: is the Resend webhook still delivering? On
+  // 2026-10-16 a mismatched signing secret made every event 401 and Resend
+  // disabled the endpoint after 8 days; nothing here noticed, so suppression
+  // ran on stale data. The webhook stamps system_kv on every verified event;
+  // email_events is the fallback for the first deploy after this lands (key
+  // not written yet). A fresh env with no events at all
+  // stays quiet: there is nothing to be silent about.
+  let resendSilentHours: number | null = null
+  try {
+    const kv = await env.DB.prepare(`SELECT value FROM system_kv WHERE key = ?`)
+      .bind('last_resend_event_at')
+      .first<{ value: string }>()
+    let lastAt = kv ? Number.parseInt(kv.value, 10) : NaN
+    if (!Number.isFinite(lastAt)) {
+      const ev = await env.DB.prepare(`SELECT MAX(received_at) AS last FROM email_events`).first<{
+        last: number | null
+      }>()
+      lastAt = ev?.last ?? NaN
+    }
+    if (Number.isFinite(lastAt) && now - lastAt > SLA_THRESHOLD_SECONDS) {
+      resendSilentHours = Math.floor((now - lastAt) / 3600)
+    }
+  } catch (err) {
+    console.warn('digest: resend liveness check failed (continuing)', err)
+  }
+
   let rows: SessionRow[] = []
   try {
     const res = await env.DB.prepare(
@@ -324,7 +360,12 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     console.warn('digest: admin_alerts query failed (continuing without)', err)
   }
 
-  if (rows.length === 0 && alerts.length === 0 && buildsDown.length === 0) {
+  if (
+    rows.length === 0 &&
+    alerts.length === 0 &&
+    buildsDown.length === 0 &&
+    resendSilentHours === null
+  ) {
     // Nothing to nudge about — silently return 200 so cron logs stay clean.
     return ok({ sent: false, count: 0, alerts: 0, buildsDown: 0 })
   }
@@ -336,6 +377,7 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
       count: rows.length,
       alerts: alerts.length,
       buildsDown: buildsDown.length,
+      resendSilentHours,
       reason: 'no admin email',
     })
   }
@@ -365,7 +407,16 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     buildsDown.length > 0
       ? `${buildsDown.length} ${buildsDown.length === 1 ? t.buildsOne : t.buildsMany} (${t.buildsHeading}):\n\n${buildLines.join('\n')}\n\n${t.buildsHelp}\n`
       : ''
-  const text = [triageBlock, alertsBlock, buildsBlock].filter(Boolean).join('\n')
+  const resendBlock =
+    resendSilentHours !== null
+      ? `${t.resendHeading}:
+
+${t.resendStale(resendSilentHours)}
+
+${t.resendHelp}
+`
+      : ''
+  const text = [triageBlock, alertsBlock, buildsBlock, resendBlock].filter(Boolean).join('\n')
 
   const triageHtml =
     rows.length > 0
@@ -408,6 +459,12 @@ ${buildsDown
 </ul>
 <p style="color:#8a8478;font-size:13px;line-height:1.5;">${t.buildsHelp}</p>`
       : ''
+  const resendHtml =
+    resendSilentHours !== null
+      ? `<h2 style="margin:18px 0 12px 0;color:#1f1d1a;font-size:18px;">${t.resendHeading}</h2>
+<p style="margin:0 0 12px 0;color:#1f1d1a;">${t.resendStale(resendSilentHours)}</p>
+<p style="color:#8a8478;font-size:13px;line-height:1.5;">${t.resendHelp}</p>`
+      : ''
   const html = `<!doctype html>
 <html lang="${lang}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -422,6 +479,7 @@ ${buildsDown
         ${triageHtml}
         ${alertsHtml}
         ${buildsHtml}
+        ${resendHtml}
       </div>
     </div>
   </div>
@@ -432,6 +490,7 @@ ${buildsDown
   if (rows.length > 0) subjectParts.push(t.subjectTriage(rows.length))
   if (alerts.length > 0) subjectParts.push(t.subjectAlerts(alerts.length))
   if (buildsDown.length > 0) subjectParts.push(t.subjectBuilds(buildsDown.length))
+  if (resendSilentHours !== null) subjectParts.push(t.subjectResend)
   const subject = `${t.subjectPrefix} — ${subjectParts.join(' · ')}`
 
   // Best-effort send. If Resend is down we still return 200 so the cron job
@@ -481,6 +540,7 @@ ${buildsDown
     count: rows.length,
     alerts: alerts.length,
     buildsDown: buildsDown.length,
+    resendSilentHours,
   })
 }
 

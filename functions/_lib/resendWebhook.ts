@@ -26,10 +26,24 @@ export interface ResendWebhookContext {
   timestamp: number
 }
 
+/** Why a verify failed. Kept out of the HTTP body (the 401 stays generic so a
+ *  prober learns nothing) but logged to Sentry: on 2026-10-16 every event
+ *  401'd for 8 days and "signature mismatch" could not tell a rotated secret
+ *  from a stale clock from a mangled secret. */
+export type ResendVerifyFailure =
+  | 'missing_headers'
+  | 'stale_timestamp'
+  | 'bad_secret_format'
+  | 'no_matching_signature'
+
+export type ResendVerifyResult =
+  | { ok: true; ctx: ResendWebhookContext }
+  | { ok: false; reason: ResendVerifyFailure }
+
 /**
  * Verify a Resend webhook signature against the configured secret. Returns
- * the parsed context on success; null on any failure (missing headers,
- * stale timestamp, signature mismatch). Pure crypto — no DB or fetch.
+ * the parsed context on success, or the reason it failed. Pure crypto, no DB
+ * or fetch.
  *
  * Caller must pass the EXACT raw body string. Re-encoded JSON has different
  * whitespace and breaks the HMAC.
@@ -39,17 +53,19 @@ export async function verifyResendSignature(
   headers: Headers,
   secret: string,
   nowSeconds: number,
-): Promise<ResendWebhookContext | null> {
+): Promise<ResendVerifyResult> {
   const id = headers.get('svix-id')
   const tsHeader = headers.get('svix-timestamp')
   const sigHeader = headers.get('svix-signature')
-  if (!id || !tsHeader || !sigHeader) return null
+  if (!id || !tsHeader || !sigHeader) return { ok: false, reason: 'missing_headers' }
 
   const ts = Number.parseInt(tsHeader, 10)
-  if (!Number.isFinite(ts)) return null
+  if (!Number.isFinite(ts)) return { ok: false, reason: 'missing_headers' }
   // Replay window: reject events older than the tolerance OR more than the
   // tolerance in the future (clock skew).
-  if (Math.abs(nowSeconds - ts) > SVIX_TOLERANCE_SECONDS) return null
+  if (Math.abs(nowSeconds - ts) > SVIX_TOLERANCE_SECONDS) {
+    return { ok: false, reason: 'stale_timestamp' }
+  }
 
   // Resend's secrets ship as `whsec_<base64>` — strip the prefix before
   // decoding. An unprefixed secret is also accepted (matches Svix's own
@@ -59,7 +75,7 @@ export async function verifyResendSignature(
   try {
     keyBytes = base64Decode(rawSecret)
   } catch {
-    return null
+    return { ok: false, reason: 'bad_secret_format' }
   }
 
   const cryptoKey = await crypto.subtle.importKey(
@@ -84,10 +100,10 @@ export async function verifyResendSignature(
     const [version, candidate] = part.split(',')
     if (version !== 'v1' || !candidate) continue
     if (constantTimeEquals(candidate, expectedB64)) {
-      return { id, timestamp: ts }
+      return { ok: true, ctx: { id, timestamp: ts } }
     }
   }
-  return null
+  return { ok: false, reason: 'no_matching_signature' }
 }
 
 /** Shape of the Resend webhook envelope we care about. The `data` field
@@ -116,6 +132,25 @@ export type ResendEventType =
   | 'email.opened'
   | 'email.clicked'
   | (string & {}) // accept forward-compat unknown types without losing narrowing
+
+/** Addresses the portal itself sends from. One Resend account serves several
+ *  sites (Babillard sends from babillard@marcportal.com), but there is one
+ *  webhook, so events arrive for mail that isn't ours. Ingesting those would
+ *  put Babillard users and e2e `*@resend.dev` addresses into `email_events`,
+ *  and a Babillard bounce would then suppress portal mail to that person.
+ *  Keep in sync with RESEND_FROM in _lib/email.ts. */
+const PORTAL_SENDERS = new Set(['noreply@marcportal.com'])
+
+/** True when the event is for mail the portal sent. An event with no `from`
+ *  is treated as ours: we can't tell, and wrongly dropping a real bounce
+ *  costs more than wrongly keeping a foreign one. */
+export function isPortalSender(event: ResendWebhookEvent): boolean {
+  const from = event.data?.from
+  if (typeof from !== 'string') return true
+  // `from` may be `Name <addr@host>` or a bare address.
+  const addr = (/<([^>]+)>/.exec(from)?.[1] ?? from).trim().toLowerCase()
+  return PORTAL_SENDERS.has(addr)
+}
 
 /** Extract the recipient address from a Resend event. Returns null when the
  *  shape is unexpected — caller logs and ignores. */
