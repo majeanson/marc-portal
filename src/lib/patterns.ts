@@ -14,6 +14,10 @@ export interface SelfServicePattern {
   title: { fr: string; en: string }
   problem: { fr: string; en: string }
   recipe: { fr: string; en: string }
+  /** A published Google Sheets "make a copy" link (…/copy). Omitted on purpose
+   *  until the sheets exist: the two links that shipped pointed at the generic
+   *  Sheets home, so the one promise a Niveau 0 visitor acts on (« à dupliquer »)
+   *  failed. See AUDIT.md. */
   template?: { label: { fr: string; en: string }; href: string }
 }
 
@@ -33,13 +37,6 @@ export const PATTERNS: SelfServicePattern[] = [
     recipe: {
       fr: "Un Google Sheets : colonne A = nom, colonne B = date du dernier tour. Trie par colonne B, le plus ancien est le prochain. Partage en lecture-seule au groupe Facebook. Tu coches après chaque tempête. C'est assez.",
       en: "A Google Sheets: column A = name, column B = date of last turn. Sort by column B, oldest is next. Share read-only to the Facebook group. Check off after each storm. That's enough.",
-    },
-    template: {
-      label: {
-        fr: 'Modèle Google Sheets (à dupliquer)',
-        en: 'Google Sheets template (duplicate it)',
-      },
-      href: 'https://docs.google.com/spreadsheets/u/0/?tgif=d',
     },
   },
   {
@@ -76,7 +73,7 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'You want to know how many hours your 2 employees worked this week without paying for software.',
     },
     recipe: {
-      fr: "Un Google Sheets : colonne A = date, B = employé, C = heures, D = chantier. Chaque employé écrit ses heures lui-même chaque jour. Total automatique en bas avec SUM. Si tu as 4+ employés, là c'est Tier 2 et ça vaut la peine.",
+      fr: "Un Google Sheets : colonne A = date, B = employé, C = heures, D = chantier. Chaque employé écrit ses heures lui-même chaque jour. Total automatique en bas avec SUM. Si tu as 4+ employés, là c'est Niveau 2 et ça vaut la peine.",
       en: "A Google Sheets: column A = date, B = employee, C = hours, D = job site. Each employee writes their own hours daily. Auto-total at the bottom with SUM. If you have 4+ employees, that's Tier 2 and worth investing in.",
     },
   },
@@ -116,13 +113,6 @@ export const PATTERNS: SelfServicePattern[] = [
     recipe: {
       fr: "Google Sheets : colonne A = plat à apporter (tarte, salade, jambon, chaudière de sirop), colonne B = qui (vide au début). Tout le monde a le lien, chacun se met sur ce qu'il apporte. Premier arrivé, premier servi. Tu peux geler la liste 3 jours avant.",
       en: 'Google Sheets: column A = dish to bring (pie, salad, ham, bucket of syrup), column B = who (empty at first). Everyone has the link, each person signs up for what they bring. First-come, first-served. Freeze the list 3 days before.',
-    },
-    template: {
-      label: {
-        fr: 'Modèle Google Sheets (à dupliquer)',
-        en: 'Google Sheets template (duplicate it)',
-      },
-      href: 'https://docs.google.com/spreadsheets/u/0/?tgif=d',
     },
   },
   {
@@ -218,7 +208,7 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'You volunteer for your neighborhood association. You want to send a monthly newsletter to 80 neighbors without paying for an email service.',
     },
     recipe: {
-      fr: "Brevo (anciennement Sendinblue, gratuit jusqu'à 300 envois/jour). Importe ta liste, écris ton bulletin dans l'éditeur, envoie. Tu vois qui ouvre, qui clique. Si ta liste grossit au-delà de 500 personnes, là on en reparle — c'est rendu Tier 1.",
+      fr: "Brevo (anciennement Sendinblue, gratuit jusqu'à 300 envois/jour). Importe ta liste, écris ton bulletin dans l'éditeur, envoie. Tu vois qui ouvre, qui clique. Si ta liste grossit au-delà de 500 personnes, là on en reparle — c'est rendu Niveau 1.",
       en: "Brevo (formerly Sendinblue, free up to 300 sends/day). Import your list, write the newsletter in the editor, send. See who opens, who clicks. If your list grows past 500 people, then come back — that's Tier 1.",
     },
     template: {

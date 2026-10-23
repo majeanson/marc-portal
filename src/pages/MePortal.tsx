@@ -30,16 +30,16 @@ const COPY = {
   fr: {
     eyebrow: 'console',
     title: 'Mon espace',
-    sub: 'Tes sessions, tes données, ton compte. Tout au même endroit.',
+    sub: 'Tes demandes, tes données, ton compte. Tout au même endroit.',
     intro: (e: string) => `Connecté en tant que ${e}.`,
-    tileSessionsTitle: 'Mes sessions',
+    tileSessionsTitle: 'Mes demandes',
     tileSessionsBody: (n: number, active: number) =>
       n === 0
         ? 'Aucune pour l’instant.'
-        : `${n} session${n > 1 ? 's' : ''}${active > 0 ? ` · ${active} active${active > 1 ? 's' : ''}` : ''}.`,
+        : `${n} demande${n > 1 ? 's' : ''}${active > 0 ? ` · ${active} active${active > 1 ? 's' : ''}` : ''}.`,
     tileSessionsAction: 'Voir la liste ↓',
-    tileNewTitle: 'Nouvelle proposition',
-    tileNewBody: 'Démarre un intake pour un nouveau projet.',
+    tileNewTitle: 'Nouvelle demande',
+    tileNewBody: 'Envoie-moi une demande pour un nouveau projet.',
     tileNewAction: 'Commencer →',
     tileDataTitle: 'Mes données',
     tileDataBody:
@@ -52,12 +52,12 @@ const COPY = {
     tileAccountBody: 'Déconnexion ou suppression complète (Loi 25 — droit à l’effacement).',
     tileAccountSignout: 'Se déconnecter',
     tileAccountDelete: 'Supprimer mon compte',
-    sectionSessionsTitle: 'Sessions',
+    sectionSessionsTitle: 'Demandes',
     sectionAccountTitle: 'Compte & données',
-    none: 'Aucune session pour l’instant.',
-    noneCta: 'Démarre une nouvelle proposition de projet.',
-    newBtn: 'Nouvelle proposition',
-    loadError: 'Impossible de charger tes sessions.',
+    none: 'Aucune demande pour l’instant.',
+    noneCta: 'Démarre une nouvelle demande.',
+    newBtn: 'Nouvelle demande',
+    loadError: 'Impossible de charger tes demandes.',
     retry: 'Réessayer',
     finalizing: 'Finalisation de ton intake…',
     statusLabel: 'Statut',
@@ -66,14 +66,14 @@ const COPY = {
     loading: 'Chargement…',
     notLoggedIn: 'Tu n’es pas connecté.',
     signIn: 'Se connecter',
-    statsTotal: 'session(s)',
+    statsTotal: 'demande(s)',
     statsActive: 'en cours',
     statsTriage: 'en triage',
-    statsDraft: 'brouillon',
+    statsDraft: 'reçue',
     statsShipped: 'livrée',
     statsRejected: 'refusée',
     statusNames: {
-      draft: 'brouillon',
+      draft: 'reçue',
       triage: 'en triage',
       // « en cours », pas « active » : c'est le mot que toutes les autres
       // surfaces client emploient pour cet état (SessionStatusStrip,
@@ -82,22 +82,22 @@ const COPY = {
       shipped: 'livrée',
       rejected: 'refusée',
     } as const,
-    untitled: 'Session sans intake',
+    untitled: 'Demande sans titre',
     searchPlaceholder: 'Filtrer par mot-clé…',
     filterAll: 'Toutes',
-    noMatches: 'Aucune session ne correspond.',
-    slaDueLabel: 'Réponse de Marc',
+    noMatches: 'Aucune demande ne correspond.',
+    slaDueLabel: 'Je te réponds',
     slaOverdue: 'En retard',
     deleteHeading: 'Supprimer mon compte et toutes mes données',
     deleteBody:
-      'Loi 25 — droit à l’effacement. Cette action est immédiate et irréversible. Toutes tes sessions, messages et pièces jointes sont supprimés du serveur.',
+      'Loi 25 — droit à l’effacement. Cette action est immédiate et irréversible. Toutes tes demandes, messages et pièces jointes sont supprimés du serveur.',
     deleteBtn: 'Supprimer mes données',
     deleteConfirm: 'Confirmer la suppression',
     deleteCancel: 'Annuler',
     deleteConfirmDetail: (n: number) =>
       n === 0
-        ? 'Aucune session à effacer — il reste seulement ton courriel et tes préférences. Un courriel de confirmation t’est envoyé.'
-        : `${n} session${n > 1 ? 's' : ''} (avec messages, pièces jointes et historique de paiement) ${n > 1 ? 'seront effacées' : 'sera effacée'}, plus tes brouillons et tes préférences. Un courriel de confirmation t’est envoyé.`,
+        ? 'Aucune demande à effacer — il reste seulement ton courriel et tes préférences. Un courriel de confirmation t’est envoyé.'
+        : `${n} demande${n > 1 ? 's' : ''} (avec messages, pièces jointes et historique de paiement) ${n > 1 ? 'seront effacées' : 'sera effacée'}, plus tes brouillons et tes préférences. Un courriel de confirmation t’est envoyé.`,
     deleting: 'Suppression…',
     deleteFailed: 'La suppression a échoué — réessaie ou écris-moi.',
     unreadBadge: 'NOUVEAU',
@@ -109,24 +109,24 @@ const COPY = {
     helpToggle: 'Comment ça marche ?',
     helpItems: [
       {
-        q: 'C’est quoi une session ?',
-        a: 'Chaque demande que tu envoies est sauvegardée comme une « session ». Tu peux la rouvrir, la modifier, et discuter avec Marc dans le fil.',
+        q: 'C’est quoi une demande ?',
+        a: 'Chaque demande que tu m’envoies est sauvegardée ici. Tu peux la rouvrir, la modifier et jaser avec moi dans le fil.',
       },
       {
         q: 'Que veulent dire les statuts ?',
-        a: 'Brouillon = juste reçu. En triage = Marc lit et répond bientôt. En cours = le build avance. Livrée = terminé. Refusée = pas un fit, Marc t’a expliqué pourquoi.',
+        a: 'Reçue = je viens de la recevoir. En triage = je la lis et je te réponds bientôt. En cours = le build avance. Livrée = terminé. Refusée = pas un bon fit, et je t’ai expliqué pourquoi.',
       },
       {
         q: 'Pourquoi 72h ?',
-        a: 'Marc s’engage à répondre — oui, non, ou « raconte-moi plus » — dans les 72 heures suivant ta soumission. Tu vois le compte à rebours sur chaque session en triage.',
+        a: 'Je m’engage à te répondre (oui, non, ou « raconte-moi plus ») dans les 72 heures suivant ta soumission. Tu vois le compte à rebours sur chaque demande en attente.',
       },
       {
         q: 'Lien de connexion ?',
         a: 'Pas de mot de passe. Tu reçois un lien par courriel valide 30 minutes. Clique-le pour te connecter. Tu peux en redemander un à tout moment — c’est gratuit et instantané.',
       },
       {
-        q: 'Modifier ou retirer une session ?',
-        a: 'Ouvre la session, clique « Modifier » pour ajuster tes réponses. « Retirer cette session » la cache du portail (Marc reçoit une notification).',
+        q: 'Modifier ou retirer une demande ?',
+        a: 'Ouvre la demande, clique « Modifier » pour ajuster tes réponses. « Retirer cette demande » la cache du portail (je reçois une notification).',
       },
       {
         q: 'Mes données ?',
@@ -137,16 +137,16 @@ const COPY = {
   en: {
     eyebrow: 'console',
     title: 'My space',
-    sub: 'Your sessions, your data, your account. All in one place.',
+    sub: 'Your requests, your data, your account. All in one place.',
     intro: (e: string) => `Signed in as ${e}.`,
-    tileSessionsTitle: 'My sessions',
+    tileSessionsTitle: 'My requests',
     tileSessionsBody: (n: number, active: number) =>
       n === 0
         ? 'None yet.'
-        : `${n} session${n > 1 ? 's' : ''}${active > 0 ? ` · ${active} active` : ''}.`,
+        : `${n} request${n > 1 ? 's' : ''}${active > 0 ? ` · ${active} active` : ''}.`,
     tileSessionsAction: 'See the list ↓',
     tileNewTitle: 'New proposal',
-    tileNewBody: 'Start an intake for a new project.',
+    tileNewBody: 'Send me a request for a new project.',
     tileNewAction: 'Start →',
     tileDataTitle: 'My data',
     tileDataBody:
@@ -159,12 +159,12 @@ const COPY = {
     tileAccountBody: 'Sign out or delete entirely (Bill 25 — right to erasure).',
     tileAccountSignout: 'Sign out',
     tileAccountDelete: 'Delete my account',
-    sectionSessionsTitle: 'Sessions',
+    sectionSessionsTitle: 'Requests',
     sectionAccountTitle: 'Account & data',
-    none: 'No sessions yet.',
+    none: 'No requests yet.',
     noneCta: 'Start a new project proposal.',
     newBtn: 'New proposal',
-    loadError: 'Could not load your sessions.',
+    loadError: 'Could not load your requests.',
     retry: 'Retry',
     finalizing: 'Finalizing your intake…',
     statusLabel: 'Status',
@@ -173,14 +173,14 @@ const COPY = {
     loading: 'Loading…',
     notLoggedIn: "You're not signed in.",
     signIn: 'Sign in',
-    statsTotal: 'session(s)',
+    statsTotal: 'request(s)',
     statsActive: 'active',
     statsTriage: 'in triage',
-    statsDraft: 'draft',
+    statsDraft: 'received',
     statsShipped: 'shipped',
     statsRejected: 'declined',
     statusNames: {
-      draft: 'draft',
+      draft: 'received',
       triage: 'in triage',
       active: 'active',
       shipped: 'shipped',
@@ -188,22 +188,22 @@ const COPY = {
       // visitor-facing surface (the DB enum stays `rejected`).
       rejected: 'declined',
     } as const,
-    untitled: 'Session without intake',
+    untitled: 'Untitled request',
     searchPlaceholder: 'Filter by keyword…',
     filterAll: 'All',
-    noMatches: 'No sessions match.',
-    slaDueLabel: "Marc's reply",
+    noMatches: 'No requests match.',
+    slaDueLabel: 'I reply',
     slaOverdue: 'Overdue',
     deleteHeading: 'Delete my account and all my data',
     deleteBody:
-      'Bill 25 — right to erasure. This action is immediate and irreversible. All your sessions, messages, and attachments are deleted from the server.',
+      'Bill 25 — right to erasure. This action is immediate and irreversible. All your requests, messages, and attachments are deleted from the server.',
     deleteBtn: 'Delete my data',
     deleteConfirm: 'Confirm deletion',
     deleteCancel: 'Cancel',
     deleteConfirmDetail: (n: number) =>
       n === 0
-        ? 'No sessions to erase — only your email and preferences remain. A confirmation email is on its way.'
-        : `${n} session${n > 1 ? 's' : ''} (with messages, attachments, and payment history) will be erased, plus your drafts and preferences. A confirmation email is on its way.`,
+        ? 'No requests to erase — only your email and preferences remain. A confirmation email is on its way.'
+        : `${n} request${n > 1 ? 's' : ''} (with messages, attachments, and payment history) will be erased, plus your drafts and preferences. A confirmation email is on its way.`,
     deleting: 'Deleting…',
     deleteFailed: 'Deletion failed — retry or write to me.',
     unreadBadge: 'NEW',
@@ -213,8 +213,8 @@ const COPY = {
     helpToggle: 'How this works',
     helpItems: [
       {
-        q: 'What is a session?',
-        a: 'Every request you send is saved as a "session." You can reopen it, edit it, and chat with Marc in the thread.',
+        q: 'What is a request?',
+        a: 'Every request you send me is saved here. You can reopen it, edit it, and chat with me in the thread.',
       },
       {
         q: 'What do the statuses mean?',
@@ -222,15 +222,15 @@ const COPY = {
       },
       {
         q: 'Why 72 hours?',
-        a: "Marc commits to a reply — yes, no, or 'tell me more' — within 72 hours of submission. You'll see the countdown on every session in triage.",
+        a: "I commit to a reply (yes, no, or 'tell me more') within 72 hours of submission. You'll see the countdown on every request waiting on me.",
       },
       {
         q: 'Sign-in link?',
         a: 'No password. You get a link by email valid for 30 minutes. Click to sign in. You can request a new one anytime — it’s free and instant.',
       },
       {
-        q: 'Edit or withdraw a session?',
-        a: "Open it, hit Edit to adjust your answers. 'Withdraw this session' hides it from the portal (Marc gets a heads-up).",
+        q: 'Edit or withdraw a request?',
+        a: "Open it, hit Edit to adjust your answers. 'Withdraw this request' hides it from the portal (I get a heads-up).",
       },
       {
         q: 'My data?',

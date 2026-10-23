@@ -36,11 +36,17 @@ export function Home({ lang }: { lang: Lang }) {
     // crawlers that don't run JS; for clients that re-resolve OG on copy-
     // link (some chat apps do, Slack notably does not), the swap below
     // ensures the EN page also offers the EN card. Same for twitter:image.
-    const ogImage = lang === 'en' ? '/og-image-en.png' : '/og-image.png'
+    // Absolute, and only over the static default: scrapers (Facebook,
+    // LinkedIn, some Slack paths) drop a relative og:image, and the edge has
+    // already pointed the tag at the dynamic /og/home card, which a blind
+    // overwrite here would throw away.
+    const ogImage = `${window.location.origin}${lang === 'en' ? '/og-image-en.png' : '/og-image.png'}`
+    const isStaticDefault = (el: Element | null) =>
+      /\/og-image(-en)?\.png$/.test(el?.getAttribute('content') ?? '')
     const ogImageEl = document.querySelector('meta[property="og:image"]')
-    if (ogImageEl) ogImageEl.setAttribute('content', ogImage)
+    if (ogImageEl && isStaticDefault(ogImageEl)) ogImageEl.setAttribute('content', ogImage)
     const twImageEl = document.querySelector('meta[name="twitter:image"]')
-    if (twImageEl) twImageEl.setAttribute('content', ogImage)
+    if (twImageEl && isStaticDefault(twImageEl)) twImageEl.setAttribute('content', ogImage)
     // og:locale follows the language too.
     const ogLocale = document.querySelector('meta[property="og:locale"]')
     if (ogLocale) ogLocale.setAttribute('content', lang === 'en' ? 'en_CA' : 'fr_CA')

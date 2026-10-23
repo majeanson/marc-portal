@@ -660,41 +660,6 @@ p {
 .brand .dot {
   color: var(--accent);
 }
-/* Session variant: a single "← Mes sessions" back link next to the brand,
-   styled like the page-back link visitors already see lower in the session
-   (familiar affordance, no learning cost). This is the only nav the bar
-   itself carries — the marketing section links live in the site menu. */
-.site-header__sections--session {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex: 1 1 auto;
-  min-width: 0;
-  padding-inline-start: 18px;
-}
-.site-header__section-link--back {
-  color: var(--text-mid);
-  text-decoration: none;
-  white-space: nowrap;
-  padding: 6px 4px;
-  font-family: var(--mono);
-  font-size: 12.5px;
-  letter-spacing: 0.04em;
-}
-.site-header__section-link--back:hover,
-.site-header__section-link--back:focus-visible {
-  color: var(--accent);
-  outline: none;
-  text-decoration: none;
-}
-@media (max-width: 640px) {
-  .site-header__sections--session {
-    padding-inline-start: 12px;
-  }
-  .site-header__section-link--back {
-    font-size: 12px;
-  }
-}
 .site-header__right {
   display: inline-flex;
   align-items: center;
@@ -16241,4 +16206,44 @@ a.feature-dot:focus-visible {
 .operator-notes__stamp {
   color: var(--text-soft);
   margin-left: auto;
+}
+
+/* First message of a session thread: the answers the client submitted. */
+.thread__answers {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.thread__answers dt {
+  font-size: 12px;
+  color: var(--text-mid);
+}
+.thread__answers dd {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* Admin one-tap triage (oui / non / raconte-moi plus) above the composer. */
+.thread__quick {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 12px;
+}
+.thread__quick-label {
+  font-size: 12px;
+  color: var(--text-mid);
+}
+.thread__quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* One-line who / what / price under the hero manifesto. */
+.hero__who {
+  max-width: 52ch;
+  margin: 18px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-mid);
 }

@@ -82,6 +82,21 @@ export function computeSla(session: { created_at: number; status: string }): Sla
   return { deadline, msLeft, overdue: msLeft < 0, active }
 }
 
+/** « lun. 26 oct. »: the date the reply is due, for the operator. The client
+ *  sees a countdown ("dans 3 jours"); Marc plans a day, not a countdown. */
+export function formatDueDate(deadlineSeconds: number, lang: Lang): string {
+  return new Date(deadlineSeconds * 1000).toLocaleDateString(LOCALES[lang], {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+}
+
+/** Whole hours left before the deadline, floored at 0 (overdue shows as 0). */
+export function hoursLeft(msLeft: number): number {
+  return Math.max(0, Math.floor(msLeft / 3_600_000))
+}
+
 /**
  * "in 23h", "12h overdue", "in 2 days" — short, single-line, locale-aware.
  * For SLA pills on the session list and detail.

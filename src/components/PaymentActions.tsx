@@ -33,9 +33,9 @@ const COPY = {
     payInstallment: (idx: number, of: number, amount: string) =>
       of > 1 ? `Payer le versement ${idx}/${of} (${amount}) →` : `Payer (${amount}) →`,
     installmentHint:
-      'Disponible maintenant si tu veux régler d’avance. Sinon, Marc te ping — pas pressé.',
+      'Disponible maintenant si tu veux régler d’avance. Sinon, je t’écris. Pas pressé.',
     quotePending:
-      'Devis Tier 4 en attente — Marc poste le montant dans le fil ci-dessous (et te ping par courriel) sous 72 h.',
+      'Devis Niveau 4 en attente: je poste le montant dans le fil ci-dessous (et je t’écris par courriel) sous 72 h.',
     scopingPaid: 'Rapport de cadrage payé — 250 $ crédités sur ton build.',
     scopingOffer:
       'Tu veux un cadrage écrit et un devis ferme avant de t’engager ? Le rapport de cadrage est à 250 $, entièrement crédité sur ton build si tu embarques.',
@@ -48,10 +48,10 @@ const COPY = {
     checkoutPending: 'Ouverture du paiement…',
     refundRequestLabel: 'Demander un remboursement →',
     refundRequestHint:
-      'Pas de bouton self-serve — Marc traite chaque demande à la main. Tu lui écris, il te répond sous 2 jours ouvrables.',
+      'Pas de bouton libre-service: je traite chaque demande à la main. Écris-moi, je te réponds sous 2 jours ouvrables.',
     refundRequestSubject: (sid: string) => `Demande de remboursement — session ${sid}`,
     refundRequestBody: (sid: string, paidAmount: string) =>
-      `Bonjour Marc,\n\nJ'aimerais discuter d'un remboursement pour la session ${sid} (montant payé : ${paidAmount}).\n\nMotif : [à compléter]\n\nMerci.`,
+      `Bonjour Marc,\n\nJ'aimerais discuter d'un remboursement pour la demande ${sid} (montant payé : ${paidAmount}).\n\nMotif : [à compléter]\n\nMerci.`,
 
     // Custodian section — the recommended default at delivery. Two annual
     // plans (Watch / Care); bigger changes are billed hourly ($75/h).
@@ -62,9 +62,9 @@ const COPY = {
     custodianEnded: 'terminé',
     custodianDetailsLink: 'Voir les détails ↗',
     custodianPitch:
-      'Mode par défaut à la livraison. Marc garde les clés (repo, domaine, Cloudflare, Resend) et garde le site en ligne. Deux forfaits annuels : Watch (120 $/an — surveillance, correctifs de sécurité, mises à jour des dépendances) ou Care (400 $/an — tout Watch, plus 2 h/an de retouches et la file prioritaire). Les changements plus gros se facturent à 75 $/h. Annulable à tout moment — bascule automatique vers « Tout à toi ».',
+      'Mode par défaut à la livraison. Je garde les clés (repo, domaine, Cloudflare, Resend) et je garde le site en ligne. Deux forfaits annuels : Watch (120 $/an — surveillance, correctifs de sécurité, mises à jour des dépendances) ou Care (400 $/an — tout Watch, plus 2 h/an de retouches et la file prioritaire). Les changements plus gros se facturent à 75 $/h. Annulable à tout moment — bascule automatique vers « Tout à toi ».',
     custodianActiveBody:
-      'Marc détient repo, domaine et comptes en son nom. Renouvellement annuel automatique. Tu peux annuler ou modifier le mode de paiement via le portail Stripe.',
+      'Je détiens repo, domaine et comptes en mon nom. Renouvellement annuel automatique. Tu peux annuler ou modifier le mode de paiement via le portail Stripe.',
     custodianPastDueBody:
       'Stripe n’a pas réussi à débiter ta carte. Mets à jour le mode de paiement avant la fin de la période de grâce, sinon ton mode bascule automatiquement vers « Tout à toi ».',
     custodianEndedBody:
@@ -81,9 +81,9 @@ const COPY = {
     toutAToiCurrent: 'mode actuel',
     toutAToiEndedByCancel: 'mode actuel (abonnement annulé)',
     toutAToiPitch:
-      'À la place du dépositaire — pour les visiteurs déjà à l’aise avec leur stack. Tout passe à ton nom à la livraison. Tu reprends la garde du repo, du domaine, du compte Cloudflare, et de Resend. Marc n’assure plus le service.',
+      'À la place du dépositaire — pour les visiteurs déjà à l’aise avec leur stack. Tout passe à ton nom à la livraison. Tu reprends la garde du repo, du domaine, du compte Cloudflare, et de Resend. Je n’assure plus le service.',
     toutAToiAckIntro:
-      'Avant de confirmer, coche la case ci-dessous. Le mode dépositaire existe précisément parce que ces tâches sont fastidieuses ; si tu coches sans les connaître, tu prends le risque d’un site qui casse silencieusement et que Marc ne te dépannera pas gratuitement.',
+      'Avant de confirmer, coche la case ci-dessous. Le mode dépositaire existe précisément parce que ces tâches sont fastidieuses ; si tu coches sans les connaître, tu prends le risque d’un site qui casse silencieusement et que je ne dépannerai pas gratuitement.',
     toutAToiSkillsHeading: 'Je sais gérer :',
     toutAToiSkills: [
       'Enregistrements DNS (A, CNAME, MX, TXT) chez mon registrar',
@@ -99,7 +99,7 @@ const COPY = {
     toutAToiAcking: 'Confirmation…',
     toutAToiAckedOn: (date: string) => `Confirmé le ${date}`,
     toutAToiAckedBody:
-      'Tu as pris la responsabilité des outils. Marc te transfère les comptes à la livraison ; au-delà, c’est à toi.',
+      'Tu as pris la responsabilité des outils. Je te transfère les comptes à la livraison, et au-delà c’est à toi.',
     toutAToiSwitchToCustodian: 'Activer le mode dépositaire à la place →',
     toutAToiAckError: 'Échec — réessaie. La décision peut aussi être prise plus tard.',
 
@@ -122,10 +122,9 @@ const COPY = {
     communityAnchor: (regular: string) => `Regular ${regular} · −20%`,
     payInstallment: (idx: number, of: number, amount: string) =>
       of > 1 ? `Pay installment ${idx}/${of} (${amount}) →` : `Pay (${amount}) →`,
-    installmentHint:
-      "Available now if you'd like to pay ahead. Otherwise Marc'll ping you — no rush.",
+    installmentHint: "Available now if you'd like to pay ahead. Otherwise I'll email you. No rush.",
     quotePending:
-      'Tier 4 quote pending — Marc posts the amount in the thread below (and emails you) within 72h.',
+      'Tier 4 quote pending: I post the amount in the thread below (and email you) within 72 h.',
     scopingPaid: 'Scoping report paid — $250 credited to your build.',
     scopingOffer:
       'Want a written scope and a firm quote before you commit? The scoping report is $250, fully credited to your build if you go ahead.',
@@ -138,10 +137,10 @@ const COPY = {
     checkoutPending: 'Opening checkout…',
     refundRequestLabel: 'Request a refund →',
     refundRequestHint:
-      'No self-serve button — Marc handles each request by hand. Email him, he replies within 2 business days.',
+      'No self-serve button: I handle each request by hand. Write to me and I reply within 2 business days.',
     refundRequestSubject: (sid: string) => `Refund request — session ${sid}`,
     refundRequestBody: (sid: string, paidAmount: string) =>
-      `Hi Marc,\n\nI'd like to discuss a refund for session ${sid} (amount paid: ${paidAmount}).\n\nReason: [fill in]\n\nThanks.`,
+      `Hi Marc,\n\nI'd like to discuss a refund for request ${sid} (amount paid: ${paidAmount}).\n\nReason: [fill in]\n\nThanks.`,
 
     custodianHeading: 'Custodian mode',
     custodianRecommended: 'recommended',
@@ -150,9 +149,9 @@ const COPY = {
     custodianEnded: 'ended',
     custodianDetailsLink: 'See the details ↗',
     custodianPitch:
-      'Default mode at delivery. Marc holds the keys (repo, domain, Cloudflare, Resend) and keeps the site online. Two annual plans: Watch ($120/yr — monitoring, security patches, dependency updates) or Care ($400/yr — everything in Watch, plus 2h/yr of tweaks and the priority queue). Bigger changes are billed at $75/hr. Cancel anytime — auto-switches to "All yours".',
+      'Default mode at delivery. I hold the keys (repo, domain, Cloudflare, Resend) and keep the site online. Two annual plans: Watch ($120/yr — monitoring, security patches, dependency updates) or Care ($400/yr — everything in Watch, plus 2h/yr of tweaks and the priority queue). Bigger changes are billed at $75/hr. Cancel anytime — auto-switches to "All yours".',
     custodianActiveBody:
-      'Marc holds repo, domain, and accounts in his name. Auto-renews annually. You can cancel or update the payment method via the Stripe portal.',
+      'I hold the repo, domain, and accounts in my name. Auto-renews annually. You can cancel or update the payment method via the Stripe portal.',
     custodianPastDueBody:
       'Stripe failed to charge your card. Update the payment method before the grace period ends, otherwise your mode auto-switches to "All yours".',
     custodianEndedBody:
@@ -167,9 +166,9 @@ const COPY = {
     toutAToiCurrent: 'current mode',
     toutAToiEndedByCancel: 'current mode (subscription canceled)',
     toutAToiPitch:
-      'Instead of Custodian — for visitors already comfortable with their stack. Everything moves to your name at delivery. You take back the repo, domain, Cloudflare account, and Resend setup. Marc is no longer on the hook.',
+      'Instead of Custodian — for visitors already comfortable with their stack. Everything moves to your name at delivery. You take back the repo, domain, Cloudflare account, and Resend setup. I’m no longer on the hook.',
     toutAToiAckIntro:
-      "Before you confirm, tick the checkbox below. Custodian mode exists precisely because these tasks are tedious; if you tick without knowing them, you risk a site that breaks quietly and Marc won't fix it for free.",
+      "Before you confirm, tick the checkbox below. Custodian mode exists precisely because these tasks are tedious; if you tick without knowing them, you risk a site that breaks quietly and I won't fix it for free.",
     toutAToiSkillsHeading: 'I can handle:',
     toutAToiSkills: [
       'DNS records (A, CNAME, MX, TXT) at my registrar',
@@ -185,7 +184,7 @@ const COPY = {
     toutAToiAcking: 'Confirming…',
     toutAToiAckedOn: (date: string) => `Confirmed on ${date}`,
     toutAToiAckedBody:
-      "You've taken responsibility for the stack. Marc transfers the accounts at delivery; from there, it's on you.",
+      "You've taken responsibility for the stack. I transfer the accounts at delivery, and from there it's on you.",
     toutAToiSwitchToCustodian: 'Activate Custodian mode instead →',
     toutAToiAckError: 'Failed — try again. The decision can also be made later.',
 

@@ -57,10 +57,10 @@ const COPY = {
             'Le repo GitHub passe sous ton compte (ou celui de ton entreprise)',
             'Le domaine est enregistré à ton nom chez le registrar de ton choix',
             'Le compte Cloudflare (hébergement) et Resend (courriels) sont à toi',
-            'Tu gères DNS, renouvellements, certificats, secrets — Marc n’assure plus le service',
+            'Tu gères DNS, renouvellements, certificats, secrets. Je n’assure plus le service',
           ],
           skillsIntro:
-            'Avant de pouvoir confirmer ce mode à la livraison, tu attestes savoir gérer les six points ci-dessous. Le mode dépositaire existe précisément parce que ces tâches sont fastidieuses — si tu coches sans les connaître, tu prends le risque d’un site qui casse silencieusement et que Marc ne dépannera pas gratuitement.',
+            'Avant de pouvoir confirmer ce mode à la livraison, tu attestes savoir gérer les six points ci-dessous. Le mode dépositaire existe précisément parce que ces tâches sont fastidieuses — si tu coches sans les connaître, tu prends le risque d’un site qui casse silencieusement et que je ne dépannerai pas gratuitement.',
           skillsHeading: 'Tu sais gérer :',
           skills: [
             'Enregistrements DNS (A, CNAME, MX, TXT) chez mon registrar',
@@ -216,7 +216,7 @@ const COPY = {
             "You manage DNS, renewals, certificates, secrets — I'm no longer on the hook",
           ],
           skillsIntro:
-            "Before you can confirm this mode at delivery, you attest you can handle the six items below. Custodian mode exists precisely because these tasks are tedious — if you tick without knowing them, you risk a site that breaks quietly and Marc won't fix for free.",
+            "Before you can confirm this mode at delivery, you attest you can handle the six items below. Custodian mode exists precisely because these tasks are tedious — if you tick without knowing them, you risk a site that breaks quietly and I won't fix for free.",
           skillsHeading: 'You can handle:',
           skills: [
             'DNS records (A, CNAME, MX, TXT) at my registrar',

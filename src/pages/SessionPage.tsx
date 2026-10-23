@@ -33,7 +33,13 @@ import { getPaymentSummary, type PaymentSummary } from '../lib/paymentsApi'
 import { SessionHeader } from '../components/intake/SessionHeader'
 import { SectionEyebrow } from '../components/SectionEyebrow'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
-import { computeSla, formatDateTime, formatRelativeWindow } from '../lib/format'
+import {
+  computeSla,
+  formatDateTime,
+  formatDueDate,
+  formatRelativeWindow,
+  hoursLeft,
+} from '../lib/format'
 import { markSeen } from '../lib/unread'
 import { resolveActiveTab, sessionTabsFor, type SessionTabId } from '../lib/sessionTabs'
 import { SessionTabsContext, type SessionTabsState } from '../lib/sessionTabsContext'
@@ -57,9 +63,11 @@ import {
   CommunityDiscountFrozenError,
   CommunityDiscountToggle,
 } from '../components/session/CommunityDiscountToggle'
+import { HANDOFF_MODE_KEY, HandoffPreference } from '../components/session/HandoffPreference'
 import { Tier3SplitInput } from '../components/session/Tier3SplitInput'
 import { Tier4AmountInput } from '../components/session/Tier4AmountInput'
 import { usePageMeta } from '../lib/usePageMeta'
+import { STATUS_LABEL } from '../lib/statusLabel'
 
 // Excalidraw is ~600 KB — the compose-box sketch surface stays behind
 // React.lazy so a thread the visitor never sketches into doesn't pay for it.
@@ -80,6 +88,21 @@ interface ParsedIntake {
   /** Optional voice note recorded on the intake form — transcript only (the
    * audio is transcribed at the edge and discarded; see intakeMediaApi.ts). */
   voiceNapkin?: VoiceNapkin
+}
+
+/** One-tap triage replies, written in the visitor's language (the language
+ *  they filled the form in), first person, no filler. */
+const QUICK_REPLY: Record<Lang, Record<'yes' | 'no' | 'more', string>> = {
+  fr: {
+    yes: 'Oui, ça m’intéresse. Je classe ta demande et je t’écris ici le prix et la suite dans les prochains jours.',
+    no: 'Merci de m’avoir écrit. Cette fois c’est non: ce n’est pas un projet que je peux bien faire. Je te laisse quelques pistes ici pour avancer autrement.',
+    more: 'Merci, c’est une belle piste. Il me manque quelques détails avant de te dire oui ou non. Réponds ici avec ce qui te vient, même en vrac.',
+  },
+  en: {
+    yes: 'Yes, this is interesting to me. I’ll size your request and write the price and next steps here in the next few days.',
+    no: 'Thanks for writing. This time it’s a no: it’s not a project I can do well. I’ll leave a few pointers here so you can move forward another way.',
+    more: 'Thanks, this is a good lead. I’m missing a few details before I can say yes or no. Reply here with whatever comes to mind, even if it’s messy.',
+  },
 }
 
 function tryParseIntake(raw: string | null): ParsedIntake | null {
@@ -158,6 +181,9 @@ const COPY = {
     notFound: 'Session introuvable.',
     forbidden: 'Tu n’as pas accès à cette session.',
     threadHeading: 'Discussion',
+    firstMsg: 'Ta demande',
+    firstMsgAdmin: 'Sa demande',
+    noneAdmin: 'Aucun message pour l’instant.',
     arcPinnedHeading: 'Le croquis de départ',
     arcShippedHeading: 'Du croquis au livré',
     arcSketchLabel: 'Le croquis',
@@ -187,7 +213,7 @@ const COPY = {
     declineNoteSave: 'Enregistrer la note',
     declineNoteSaving: 'Enregistrement…',
     declineNoteError: 'L’enregistrement de la note a pas passé. Réessaie.',
-    none: 'Marc répond en moins de 72h. Laisse-lui un mot ici dès que tu en as un.',
+    none: 'Je te réponds en 72 h. Laisse-moi un mot ici dès que tu en as un.',
     placeholder: 'Écris un message…',
     sending: 'Envoi…',
     send: 'Envoyer',
@@ -198,9 +224,9 @@ const COPY = {
     statusLabel: 'Statut',
     changeStatus: 'Changer le statut',
     statusHint: 'Clique une étape pour changer le statut de la session.',
-    operatorPricingHeading: 'Tier et tarification',
+    operatorPricingHeading: 'Niveau et tarification',
     tierHint:
-      'Tier de la session — détermine le bouton « Payer » côté visiteur. T0 = gratuit, pas de bouton.',
+      'Niveau de la session. C’est lui qui détermine le bouton « Payer » côté visiteur (Niveau 0 = gratuit, pas de bouton). Le « Niveau » plus bas, dans la fiche galerie, n’étiquette que la carte publique et ne change aucun prix.',
     tier4AmountLabel: 'Montant Tier 4 (CAD)',
     tier4AmountHint:
       'Saisis le montant convenu en dollars canadiens. Le bouton « Payer (sur devis) » apparaît côté visiteur quand cette valeur est définie. Laisse vide pour cacher le bouton (pas de devis encore).',
@@ -255,8 +281,18 @@ const COPY = {
     timelineStatus: (from: string, to: string, by: string, d: string) =>
       `${from} → ${to} · par ${by} · ${d}`,
     timelineEmpty: 'Aucun changement de statut pour l’instant.',
-    slaPrefix: 'Réponse de Marc',
+    slaPrefix: 'Je te réponds',
     slaOverdue: 'En retard',
+    slaDueAdmin: 'À répondre d’ici',
+    slaOverdueAdmin: 'En retard, dû le',
+    slaLeftAdmin: (h: number) => `reste ${h} h`,
+    quickHeading: 'Réponse rapide',
+    quickHint:
+      'Poste le message type dans le fil et change le statut. Le visiteur reçoit un courriel.',
+    quickYes: 'Oui',
+    quickNo: 'Non',
+    quickMore: 'Raconte-moi plus',
+    quickError: 'Le message type a pas passé. Le statut a peut-être changé: vérifie le fil.',
     attachLabel: 'Joindre un fichier',
     attaching: 'Téléversement…',
     attachError: 'Téléversement échoué',
@@ -271,6 +307,9 @@ const COPY = {
     notFound: 'Session not found.',
     forbidden: "You don't have access to this session.",
     threadHeading: 'Thread',
+    firstMsg: 'Your request',
+    firstMsgAdmin: 'Their request',
+    noneAdmin: 'No messages yet.',
     arcPinnedHeading: 'The starting sketch',
     arcShippedHeading: 'From sketch to shipped',
     arcSketchLabel: 'The sketch',
@@ -299,7 +338,7 @@ const COPY = {
     declineNoteSave: 'Save the note',
     declineNoteSaving: 'Saving…',
     declineNoteError: "The note didn't save. Try again.",
-    none: 'Marc replies within 72h. Drop him a note here whenever you have one.',
+    none: 'I reply within 72 h. Drop me a note here whenever you have one.',
     placeholder: 'Write a message…',
     sending: 'Sending…',
     send: 'Send',
@@ -311,7 +350,8 @@ const COPY = {
     changeStatus: 'Change status',
     statusHint: 'Click a stage to change the session status.',
     operatorPricingHeading: 'Tier & pricing',
-    tierHint: 'Session tier — drives the visitor-side "Pay" button. T0 = free, no button.',
+    tierHint:
+      'Session tier. This one drives the visitor-side "Pay" button (Tier 0 = free, no button). The "Tier" further down, in the gallery card, only labels the public card and changes no price.',
     tier4AmountLabel: 'Tier 4 amount (CAD)',
     tier4AmountHint:
       'Enter the agreed-upon dollar amount. The visitor\'s "Pay (quoted)" button appears once this is set. Leave blank to hide the button (no quote yet).',
@@ -364,8 +404,18 @@ const COPY = {
     timelineStatus: (from: string, to: string, by: string, d: string) =>
       `${from} → ${to} · by ${by} · ${d}`,
     timelineEmpty: 'No status changes yet.',
-    slaPrefix: "Marc's reply",
+    slaPrefix: 'I reply',
     slaOverdue: 'Overdue',
+    slaDueAdmin: 'Reply by',
+    slaOverdueAdmin: 'Overdue, was due',
+    slaLeftAdmin: (h: number) => `${h} h left`,
+    quickHeading: 'Quick reply',
+    quickHint:
+      'Posts the templated message to the thread and changes the status. The visitor gets an email.',
+    quickYes: 'Yes',
+    quickNo: 'No',
+    quickMore: 'Tell me more',
+    quickError: "The templated message didn't post. The status may have changed: check the thread.",
     attachLabel: 'Attach file',
     attaching: 'Uploading…',
     attachError: 'Upload failed',
@@ -729,8 +779,8 @@ export function SessionPage({ lang }: { lang: Lang }) {
     }
   }
 
-  const onStatusChange = async (next: SessionStatus) => {
-    if (!id || !session || changingStatus) return
+  const onStatusChange = async (next: SessionStatus): Promise<boolean> => {
+    if (!id || !session || changingStatus) return false
     // Confirm destructive transitions: any move that touches a terminal state
     // (shipped/rejected) — either entering one, or reopening from one. The
     // visitor sees these transitions, so a stray click shouldn't drive them.
@@ -741,7 +791,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
     else if (next === 'shipped') prompt = t.statusConfirmShip(idTag)
     else if (current === 'shipped') prompt = t.statusConfirmReopenShipped(idTag)
     else if (current === 'rejected') prompt = t.statusConfirmReopenRejected(idTag)
-    if (prompt && !window.confirm(prompt)) return
+    if (prompt && !window.confirm(prompt)) return false
 
     setChangingStatus(true)
     try {
@@ -749,6 +799,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
       setSession(r.session)
       setStaleConflict(false)
       setCapacityBlocked(false)
+      return true
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         // Two distinct 409 causes need distinct UI. (a) the atomic
@@ -769,8 +820,30 @@ export function SessionPage({ lang }: { lang: Lang }) {
         }
       }
       // Other errors: server-side check refuses non-admins anyway, ignore.
+      return false
     } finally {
       setChangingStatus(false)
+    }
+  }
+
+  // One-tap triage: the 72 h promise is « oui, non, ou raconte-moi plus ».
+  // Status first, message second: a refused move (cap reached, stale row,
+  // cancelled confirm) must not leave a « oui » in the thread with the session
+  // still in draft. The reverse failure (status moved, message didn't post)
+  // is reported, and Marc can type the message by hand.
+  const onQuickReply = async (kind: 'yes' | 'no' | 'more') => {
+    if (!id || !session || sending || changingStatus) return
+    const next: SessionStatus = kind === 'yes' ? 'active' : kind === 'no' ? 'rejected' : 'triage'
+    if (session.status !== next && !(await onStatusChange(next))) return
+    setSending(true)
+    setSendError(null)
+    try {
+      await postMessage(id, QUICK_REPLY[visitorLang][kind], [])
+      await refresh()
+    } catch {
+      setSendError(t.quickError)
+    } finally {
+      setSending(false)
     }
   }
 
@@ -1085,11 +1158,17 @@ export function SessionPage({ lang }: { lang: Lang }) {
   }
   // Visitor edits their own; admin can edit any. Server enforces this too.
   const canEditIntake = !!parsed && (isAdmin || session.email === email)
+  // The language the visitor filled the form in; older rows have none.
+  const visitorLang: Lang = parsed?.lang ?? lang
 
   const sla = computeSla(session)
+  // The client sees a countdown ("dans 3 jours"); the operator sees the day it
+  // is due, which is what he schedules around.
   const slaPill = sla.active ? (
     <span className={`me-portal__sla mono${sla.overdue ? ' me-portal__sla--overdue' : ''}`}>
-      {t.slaPrefix} {sla.overdue ? t.slaOverdue : formatRelativeWindow(sla.msLeft, lang)}
+      {isAdmin
+        ? `${sla.overdue ? t.slaOverdueAdmin : t.slaDueAdmin} ${formatDueDate(sla.deadline, lang)}${sla.overdue ? '' : ` · ${t.slaLeftAdmin(hoursLeft(sla.msLeft))}`}`
+        : `${t.slaPrefix} ${sla.overdue ? t.slaOverdue : formatRelativeWindow(sla.msLeft, lang)}`}
     </span>
   ) : null
 
@@ -1120,8 +1199,8 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 feature={PAGE_FEATURE['page.session-page']}
                 eyebrow={
                   parsed
-                    ? `${localized(getSchemaForType(parsed.type).title, lang)} · ${session.status}`
-                    : `${t.eyebrow} · ${session.status}`
+                    ? `${localized(getSchemaForType(parsed.type).title, lang)} · ${STATUS_LABEL[lang][session.status]}`
+                    : `${t.eyebrow} · ${STATUS_LABEL[lang][session.status]}`
                 }
                 title={t.title}
                 idTag={session.id.slice(0, 8)}
@@ -1130,7 +1209,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     <span
                       className={`session-frame__status-pill session-frame__status-pill--${session.status}`}
                     >
-                      {session.status}
+                      {STATUS_LABEL[lang][session.status]}
                     </span>
                     {slaPill}
                     {currentBuild &&
@@ -1191,6 +1270,23 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     isAdmin={isAdmin}
                     lang={lang}
                   />
+
+                  {/* Hosting preference: asked once I've said yes (status active),
+                      not in the intake form. Visitors only; the operator reads the
+                      answer in the intake recap. */}
+                  {!isAdmin && parsed && canEditIntake && session.status === 'active' && (
+                    <HandoffPreference
+                      lang={lang}
+                      value={parsed.formData[HANDOFF_MODE_KEY]}
+                      busy={saving}
+                      onPick={(mode) =>
+                        void onIntakeChange({
+                          account: parsed.account,
+                          values: { ...parsed.formData, [HANDOFF_MODE_KEY]: mode },
+                        })
+                      }
+                    />
+                  )}
 
                   {/* The generous no — a rejected session is not a dead end. */}
                   {session.status === 'rejected' && (
@@ -1488,10 +1584,32 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     className="surface intake__step session-frame__panel"
                   >
                     <h2>{t.threadHeading}</h2>
-                    {threadItems.length === 0 ? (
-                      <p className="thread__empty">{t.none}</p>
-                    ) : (
+                    {(parsed || threadItems.length > 0) && (
                       <ul className="thread">
+                        {/* The submitted answers open the conversation, so the
+                            client sees their request where the reply will
+                            land instead of an empty thread. */}
+                        {parsed && (
+                          <li className="thread__msg thread__msg--visitor thread__msg--first">
+                            <div className="thread__head mono">
+                              {isAdmin ? t.firstMsgAdmin : t.firstMsg} ·{' '}
+                              {formatDateTime(session.created_at, lang)}
+                            </div>
+                            <dl className="thread__answers">
+                              {getSchemaForType(parsed.type).fields.map((field) => {
+                                const v = parsed.formData[field.id]
+                                if (!v) return null
+                                const opt = field.options?.find((o) => o.value === v)
+                                return (
+                                  <div key={field.id}>
+                                    <dt>{localized(field.label, lang)}</dt>
+                                    <dd>{opt ? localized(opt.label, lang) : v}</dd>
+                                  </div>
+                                )
+                              })}
+                            </dl>
+                          </li>
+                        )}
                         {threadItems.map((item) => {
                           if (item.kind === 'message') {
                             const m = item.msg
@@ -1560,6 +1678,29 @@ export function SessionPage({ lang }: { lang: Lang }) {
                           )
                         })}
                       </ul>
+                    )}
+                    {threadItems.length === 0 && (
+                      <p className="thread__empty">{isAdmin ? t.noneAdmin : t.none}</p>
+                    )}
+
+                    {isAdmin && (session.status === 'draft' || session.status === 'triage') && (
+                      <div className="thread__quick" role="group" aria-label={t.quickHeading}>
+                        <span className="mono thread__quick-label">{t.quickHeading}</span>
+                        <div className="thread__quick-actions">
+                          {(['yes', 'no', 'more'] as const).map((k) => (
+                            <button
+                              key={k}
+                              type="button"
+                              className="btn mono"
+                              disabled={sending || changingStatus}
+                              onClick={() => void onQuickReply(k)}
+                            >
+                              {k === 'yes' ? t.quickYes : k === 'no' ? t.quickNo : t.quickMore}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="field__hint">{t.quickHint}</p>
+                      </div>
                     )}
 
                     <form onSubmit={onSend} className="thread__form">

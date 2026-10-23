@@ -133,7 +133,7 @@ const PAGE_PATCHES = [
   // 3 — Pricing
   {
     id: 'page.tier0',
-    label: bi('Tier 0', 'Tier 0'),
+    label: bi('Niveau 0', 'Tier 0'),
     desc: bi('La conversation gratuite, sans engagement.', 'The free, no-strings conversation.'),
     group: 'group.feat-pricing',
   },
@@ -909,7 +909,7 @@ const VISION: VisionBubble[] = [
     feature: 'pricing',
     label: bi('Tarification claire', 'Clear pricing'),
     sub: bi(
-      'Tier 0 gratuit pour jaser. Trois forfaits fixes, un quatrième sur devis. Custodian optionnel.',
+      'Niveau 0 gratuit pour jaser. Trois forfaits fixes, un quatrième sur devis. Custodian optionnel.',
       'Free Tier 0 chat. Three fixed tiers, a fourth by quote. Optional Custodian.',
     ),
     size: 'md',

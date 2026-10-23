@@ -127,7 +127,7 @@ export function Journey({ lang }: { lang: Lang }) {
                 <div className="journey__cartouche-row mono">
                   <span>XII PORTS</span>
                   <span>·</span>
-                  <span>{lang === 'fr' ? 'MARC.PORTAIL' : 'MARC.PORTAL'}</span>
+                  <span>MARC.PORTAL</span>
                 </div>
               </div>
               <svg className="journey__compass" viewBox="0 0 80 80" aria-hidden="true">

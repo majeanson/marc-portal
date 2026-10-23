@@ -86,7 +86,7 @@ describe('SessionWhatsNext', () => {
 
   it('points to the thread for a Tier 0 redirect', () => {
     const { getByText } = whatsNext({ session: sess({ status: 'active', tier: 0 }) })
-    expect(getByText(/pattern\/template/i)).toBeInTheDocument()
+    expect(getByText(/pattern or template/i)).toBeInTheDocument()
   })
 
   it('shows a loading line while the build summary is still in flight', () => {
@@ -115,7 +115,7 @@ describe('SessionWhatsNext', () => {
       session: sess({ status: 'shipped' }),
       summary: summary({ custodianStatus: 'active' }),
     })
-    expect(getByText(/custodian mode active/i)).toBeInTheDocument()
+    expect(getByText(/custodian mode is active/i)).toBeInTheDocument()
   })
 
   it('renders nothing for a shipped session with no ownership decision yet', () => {

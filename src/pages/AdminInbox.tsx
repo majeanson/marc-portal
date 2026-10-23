@@ -6,7 +6,8 @@ import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
 import { listSessions, type SessionRow, type SessionStatus } from '../lib/sessionsApi'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
-import { computeSla, formatDate, formatDateTime, formatRelativeWindow } from '../lib/format'
+import { computeSla, formatDate, formatDateTime, formatDueDate, hoursLeft } from '../lib/format'
+import { STATUS_LABEL } from '../lib/statusLabel'
 import { Surface } from '../components/Surface'
 import { usePageMeta } from '../lib/usePageMeta'
 
@@ -26,13 +27,15 @@ const COPY = {
     viewTrash: 'Voir la corbeille →',
     custodianLink: 'Tableau dépositaires →',
     untitled: 'Session sans intake',
-    slaDueLabel: 'Réponse',
-    slaOverdue: 'En retard',
+    slaDueLabel: 'À répondre d’ici',
+    slaOverdue: 'En retard, dû le',
+    slaLeft: (h: number) => `reste ${h} h`,
     countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
     needsAttentionHeading: 'À traiter',
     filterAll: 'Toutes',
-    filterActiveNoTier: 'Active sans tier',
-    filterT4NoQuote: 'Tier 4 sans devis',
+    filterNew: 'Nouvelle, à répondre',
+    filterActiveNoTier: 'Active sans niveau',
+    filterT4NoQuote: 'Niveau 4 sans devis',
     filterShippedNoMode: 'Livrée — mode à choisir',
     filterCustodianPastDue: 'Dépositaire en retard',
     noFiltered: 'Rien à traiter dans cette catégorie.',
@@ -52,11 +55,13 @@ const COPY = {
     viewTrash: 'View trash →',
     custodianLink: 'Custodian dashboard →',
     untitled: 'Session without intake',
-    slaDueLabel: 'Reply',
-    slaOverdue: 'Overdue',
+    slaDueLabel: 'Reply by',
+    slaOverdue: 'Overdue, was due',
+    slaLeft: (h: number) => `${h} h left`,
     countLabel: (n: number) => `${n} session${n === 1 ? '' : 's'}`,
     needsAttentionHeading: 'Needs attention',
     filterAll: 'All',
+    filterNew: 'New, needs a reply',
     filterActiveNoTier: 'Active w/o tier',
     filterT4NoQuote: 'Tier 4 w/o quote',
     filterShippedNoMode: 'Shipped — mode TBD',
@@ -67,6 +72,7 @@ const COPY = {
 
 type AttentionFilter =
   | 'all'
+  | 'new_to_answer'
   | 'active_no_tier'
   | 't4_no_quote'
   | 'shipped_no_mode'
@@ -76,6 +82,11 @@ const THIRTY_DAYS_S = 30 * 24 * 3600
 
 function matchesFilter(s: SessionRow, f: AttentionFilter, nowS: number): boolean {
   if (f === 'all') return true
+  // A session row only exists once the visitor submitted, and `draft` is the
+  // state it lands in: the 72 h promise is running and nobody has answered.
+  // It belonged to no bucket, so the to-do row read 0 for the one thing with
+  // a deadline.
+  if (f === 'new_to_answer') return s.status === 'draft'
   if (f === 'active_no_tier') return s.status === 'active' && s.tier === null
   if (f === 't4_no_quote') return s.tier === 4 && s.tier4_amount_cents === null
   if (f === 'shipped_no_mode')
@@ -110,17 +121,19 @@ function previewFromIntake(raw: string | null): IntakePreview | null {
 }
 
 const STATUS_ORDER: Record<SessionStatus, number> = {
+  draft: -1,
   triage: 0,
   active: 1,
-  draft: 2,
   shipped: 3,
   rejected: 4,
 }
 
 /**
  * Inbox sort: overdue-SLA rows first (regardless of status), then status
- * priority (triage → active → draft → shipped → rejected), then newest
- * updated_at. The SLA-first tier exists so Marc never opens the inbox to a
+ * priority (new/draft → triage → active → shipped → rejected), then newest
+ * updated_at. New requests rank above everything else that isn't overdue: an
+ * ACTIVE build last touched 8 days ago used to sit over a fresh request with
+ * a 72 h clock. Among new requests the oldest comes first (closest deadline). The SLA-first tier exists so Marc never opens the inbox to a
  * triage row that aged past 72h sitting below an active one. computeSla
  * only marks `active` for triage/draft anyway, so this doesn't reshuffle
  * shipped/rejected.
@@ -134,6 +147,7 @@ function sortInboxRows(rows: SessionRow[]): SessionRow[] {
     if (aOverdue !== bOverdue) return bOverdue - aOverdue
     const ds = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
     if (ds !== 0) return ds
+    if (a.status === 'draft') return a.created_at - b.created_at
     return b.updated_at - a.updated_at
   })
 }
@@ -167,8 +181,9 @@ function AdminCard({
               <span
                 className={`me-portal__sla mono${sla.overdue ? ' me-portal__sla--overdue' : ''}`}
               >
-                {copy.slaDueLabel}{' '}
-                {sla.overdue ? copy.slaOverdue : formatRelativeWindow(sla.msLeft, lang)}
+                {sla.overdue ? copy.slaOverdue : copy.slaDueLabel}{' '}
+                {formatDueDate(sla.deadline, lang)}
+                {!sla.overdue && ` · ${copy.slaLeft(hoursLeft(sla.msLeft))}`}
               </span>
             )}
           </div>
@@ -178,7 +193,7 @@ function AdminCard({
           <span
             className={`session-frame__status-pill session-frame__status-pill--${session.status}`}
           >
-            {session.status}
+            {STATUS_LABEL[lang][session.status]}
           </span>
           <span className="me-portal__open mono">{copy.open}</span>
         </div>
@@ -339,6 +354,13 @@ export function AdminInbox({ lang }: { lang: Lang }) {
                     label={t.filterAll}
                     n={sessions.length}
                     onClick={() => setAttentionFilter('all')}
+                  />
+                  <AttentionPill
+                    active={attentionFilter === 'new_to_answer'}
+                    label={t.filterNew}
+                    n={bucketCount('new_to_answer')}
+                    onClick={() => setAttentionFilter('new_to_answer')}
+                    tone="urgent"
                   />
                   <AttentionPill
                     active={attentionFilter === 'active_no_tier'}

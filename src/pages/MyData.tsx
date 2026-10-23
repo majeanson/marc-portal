@@ -85,7 +85,7 @@ const COPY = {
     privacyLink: 'Lire la politique de confidentialité ↗',
     backToMe: '← Retour à mon espace',
     statusNames: {
-      draft: 'brouillon',
+      draft: 'reçue',
       triage: 'en triage',
       active: 'en cours',
       shipped: 'livré',
@@ -128,7 +128,7 @@ const COPY = {
     privacyLink: 'Read the privacy policy ↗',
     backToMe: '← Back to my space',
     statusNames: {
-      draft: 'draft',
+      draft: 'received',
       triage: 'in triage',
       active: 'in progress',
       shipped: 'shipped',

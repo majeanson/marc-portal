@@ -11,6 +11,7 @@ import { DICT, type Lang } from '../i18n'
 import { formatDate } from '../lib/format'
 import { listPublicAdvancements, type PublicAdvancementRow } from '../lib/advancementsApi'
 import { listPublicVouches, type PublicVouch, type VouchRelationship } from '../lib/vouchesApi'
+import { listPublicProjects } from '../lib/sessionsApi'
 import { usePageMeta } from '../lib/usePageMeta'
 
 /**
@@ -32,7 +33,28 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
   // for most fresh projects).
   const [vouches, setVouches] = useState<PublicVouch[]>([])
 
-  usePageMeta({ title: `${t.heading} — Marc`, lang })
+  // The project's own name, from the public gallery feed (no extra endpoint:
+  // a shared link for Babillard should say Babillard in the tab and heading).
+  const [projectName, setProjectName] = useState<string | null>(null)
+  useEffect(() => {
+    if (!id) return
+    let cancelled = false
+    listPublicProjects()
+      .then((r) => {
+        if (cancelled) return
+        const p = r.projects.find((x) => x.id === id)
+        setProjectName((lang === 'en' ? (p?.titleEn ?? p?.title) : p?.title) ?? null)
+      })
+      .catch(() => {
+        // Name is garnish: without it the page keeps its generic heading.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [id, lang])
+
+  const pageTitle = projectName ? t.titleFor(projectName) : t.heading
+  usePageMeta({ title: `${pageTitle} — Marc`, lang })
 
   // Hoisted so the error state's retry button re-runs the same fetch.
   const load = useCallback(() => {
@@ -81,7 +103,7 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
                 <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.public-advancements']}>
                   {t.heading}
                 </SectionEyebrow>
-                <h1 className="session-frame__title">{t.heading}</h1>
+                <h1 className="session-frame__title">{pageTitle}</h1>
                 <p className="field__hint">{t.subtitle}</p>
               </div>
               {id && (
@@ -171,7 +193,12 @@ export function PublicAdvancements({ lang }: { lang: Lang }) {
             )}
             {items && items.length > 0 && <TimeTravelScrubber advancements={items} lang={lang} />}
 
-            {id && <ShareTestimonials lang={lang} sessionId={id} vouches={vouches} />}
+            {/* Hidden until there is a real testimonial: the empty state advertised
+                the gap on every project. The write-one CTA lives with the list and
+                comes back with the first vouch (/vouch stays reachable). */}
+            {id && vouches.length > 0 && (
+              <ShareTestimonials lang={lang} sessionId={id} vouches={vouches} />
+            )}
           </div>
         </article>
       </main>

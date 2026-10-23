@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../../i18n'
 import { DICT } from '../../i18n'
@@ -43,6 +43,19 @@ export function Confirmation({
 }) {
   const t = DICT[lang].intake.confirmation
   const sessionHref = sessionId ? `${lang === 'en' ? '/en' : ''}/session/${sessionId}` : null
+
+  // Soumettre is at the foot of a long form, so the step swap leaves the page
+  // scrolled at the footer; on a phone the first thing seen was « Carte du
+  // site », not « Merci, c'est reçu ». Bring the card into view and hand the
+  // heading focus so screen readers announce it too. preventScroll on focus:
+  // scrollIntoView already moved us, and focus() would second-guess it.
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    const h = headingRef.current
+    if (!h) return
+    h.scrollIntoView?.({ block: 'start' })
+    h.focus({ preventScroll: true })
+  }, [])
 
   const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const onResendClick = async () => {
@@ -113,7 +126,7 @@ export function Confirmation({
                 letterSpacing="5"
                 fill="currentColor"
               >
-                MARC · PORTAL
+                MARC.PORTAL
               </text>
             </g>
           </svg>
@@ -122,7 +135,9 @@ export function Confirmation({
       <SectionEyebrow lang={lang} feature="intake">
         {waitlist ? t.eyebrowWaitlist : t.eyebrowAccepted}
       </SectionEyebrow>
-      <h2>{waitlist ? t.titleWaitlist : t.titleAccepted}</h2>
+      <h2 ref={headingRef} tabIndex={-1}>
+        {waitlist ? t.titleWaitlist : t.titleAccepted}
+      </h2>
       <p>{waitlist ? t.bodyWaitlist : t.bodyAccepted}</p>
 
       <div className="confirmation__sla">

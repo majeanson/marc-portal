@@ -1,5 +1,13 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { computeSla, formatDate, formatDateTime, formatRelativeWindow, SLA_HOURS } from './format'
+import {
+  computeSla,
+  formatDate,
+  formatDateTime,
+  formatDueDate,
+  formatRelativeWindow,
+  hoursLeft,
+  SLA_HOURS,
+} from './format'
 
 describe('formatDate', () => {
   it('returns empty string for null/undefined/empty', () => {
@@ -119,5 +127,19 @@ describe('formatRelativeWindow', () => {
   it('formats negative values as past', () => {
     const out = formatRelativeWindow(-5 * 3_600_000, 'en')
     expect(out).toMatch(/ago|hour/i)
+  })
+})
+
+describe('formatDueDate + hoursLeft (operator view of the 72 h clock)', () => {
+  it('shows weekday, day and month, not a countdown', () => {
+    const deadline = Math.floor(new Date('2026-10-26T15:00:00Z').getTime() / 1000)
+    const fr = formatDueDate(deadline, 'fr')
+    expect(fr).toMatch(/26/)
+    expect(fr).toMatch(/oct/i)
+    expect(formatDueDate(deadline, 'en')).toMatch(/Oct/)
+  })
+  it('floors to whole hours and never goes negative', () => {
+    expect(hoursLeft(70.9 * 3_600_000)).toBe(70)
+    expect(hoursLeft(-5 * 3_600_000)).toBe(0)
   })
 })

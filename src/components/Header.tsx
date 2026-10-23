@@ -31,8 +31,10 @@ const NAV_LINKS = [
  * variant:
  *   'full'    — default. Used on home + every marketing-style page (handoff,
  *               vouches, tier0, etc.).
- *   'session' — adds a single "← Mes sessions" back link next to the brand
- *               so the session detail page reads as a product surface.
+ *   'session' — adds the sticky session tab bar under the bar. No back link
+ *               here: the page carries its own, and the auth link already
+ *               leads to /me. A third one slid under the search button at
+ *               375px ("← Mes s🔍Mes sessions").
  *
  * The bar itself stays sparse by design: brand, search, one auth entry, and
  * a Menu disclosure. Everything secondary (section anchors, sign-out, the
@@ -91,23 +93,10 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
           <Link
             to={lang === 'fr' ? '/' : '/en'}
             className="brand"
-            aria-label="Marc Portal — accueil"
+            aria-label={lang === 'fr' ? 'marc.portal, accueil' : 'marc.portal, home'}
           >
             marc<span className="dot">.</span>portal
           </Link>
-          {variant === 'session' && (
-            <nav
-              className="site-header__sections site-header__sections--session"
-              aria-label={t.nav.mySessions}
-            >
-              <Link
-                to={sessionsHref}
-                className="site-header__section-link site-header__section-link--back"
-              >
-                ← {t.nav.mySessions}
-              </Link>
-            </nav>
-          )}
           <div className="site-header__right">
             <SiteSearch lang={lang} />
             {!loading && (
