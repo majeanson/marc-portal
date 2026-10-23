@@ -54,7 +54,7 @@
       "full": "/atelier/full/phone/au-revoir.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 956,
+      "fullH": 955,
       "cropped": true
     },
     {
@@ -126,7 +126,7 @@
       "full": "/atelier/full/phone/root.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 13497,
+      "fullH": 13644,
       "cropped": true
     },
     {
@@ -144,7 +144,7 @@
       "full": "/atelier/full/phone/en-goodbye.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 956,
+      "fullH": 955,
       "cropped": true
     },
     {
@@ -216,7 +216,7 @@
       "full": "/atelier/full/phone/en.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 13025,
+      "fullH": 13118,
       "cropped": true
     },
     {
@@ -234,7 +234,7 @@
       "full": "/atelier/full/phone/tier-0.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6761,
+      "fullH": 6686,
       "cropped": true
     },
     {
@@ -252,7 +252,7 @@
       "full": "/atelier/full/phone/en-tier-0.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6491,
+      "fullH": 6350,
       "cropped": true
     },
     {
@@ -342,7 +342,7 @@
       "full": "/atelier/full/phone/projects.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 3118,
+      "fullH": 3057,
       "cropped": true
     },
     {
@@ -360,7 +360,7 @@
       "full": "/atelier/full/phone/projects-empty.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 1973,
+      "fullH": 1946,
       "cropped": true
     },
     {
@@ -378,7 +378,7 @@
       "full": "/atelier/full/phone/projects-error.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 6539,
+      "fullH": 6416,
       "cropped": true
     },
     {
@@ -396,7 +396,7 @@
       "full": "/atelier/full/phone/en-projects.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 3098,
+      "fullH": 3064,
       "cropped": true
     },
     {
@@ -954,7 +954,7 @@
       "full": "/atelier/full/narrow/root.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11531,
+      "fullH": 11595,
       "cropped": true
     },
     {
@@ -1044,7 +1044,7 @@
       "full": "/atelier/full/narrow/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11279,
+      "fullH": 11342,
       "cropped": true
     },
     {
@@ -1062,7 +1062,7 @@
       "full": "/atelier/full/narrow/tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5485,
+      "fullH": 5411,
       "cropped": true
     },
     {
@@ -1080,7 +1080,7 @@
       "full": "/atelier/full/narrow/en-tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5258,
+      "fullH": 5184,
       "cropped": true
     },
     {
@@ -1206,7 +1206,7 @@
       "full": "/atelier/full/narrow/projects-error.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4297,
+      "fullH": 4259,
       "cropped": true
     },
     {
@@ -1782,7 +1782,7 @@
       "full": "/atelier/full/wide/root.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11687,
+      "fullH": 11750,
       "cropped": true
     },
     {
@@ -1872,7 +1872,7 @@
       "full": "/atelier/full/wide/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11434,
+      "fullH": 11498,
       "cropped": true
     },
     {
@@ -1890,7 +1890,7 @@
       "full": "/atelier/full/wide/tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5485,
+      "fullH": 5411,
       "cropped": true
     },
     {
@@ -1908,7 +1908,7 @@
       "full": "/atelier/full/wide/en-tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5258,
+      "fullH": 5184,
       "cropped": true
     },
     {
@@ -2034,7 +2034,7 @@
       "full": "/atelier/full/wide/projects-error.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4297,
+      "fullH": 4259,
       "cropped": true
     },
     {
@@ -2610,7 +2610,7 @@
       "full": "/atelier/full/dark/root.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11687,
+      "fullH": 11750,
       "cropped": true
     },
     {
@@ -2700,7 +2700,7 @@
       "full": "/atelier/full/dark/en.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 11434,
+      "fullH": 11498,
       "cropped": true
     },
     {
@@ -2718,7 +2718,7 @@
       "full": "/atelier/full/dark/tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5485,
+      "fullH": 5411,
       "cropped": true
     },
     {
@@ -2736,7 +2736,7 @@
       "full": "/atelier/full/dark/en-tier-0.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 5258,
+      "fullH": 5184,
       "cropped": true
     },
     {
