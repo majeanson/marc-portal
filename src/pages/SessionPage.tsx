@@ -67,6 +67,7 @@ import { HANDOFF_MODE_KEY, HandoffPreference } from '../components/session/Hando
 import { Tier3SplitInput } from '../components/session/Tier3SplitInput'
 import { Tier4AmountInput } from '../components/session/Tier4AmountInput'
 import { usePageMeta } from '../lib/usePageMeta'
+import { requestTitle } from '../lib/requestTitle'
 import { STATUS_LABEL } from '../lib/statusLabel'
 
 // Excalidraw is ~600 KB — the compose-box sketch surface stays behind
@@ -568,7 +569,10 @@ export function SessionPage({ lang }: { lang: Lang }) {
     }
   }, [id, navigate, langPrefix])
 
-  usePageMeta({ title: `${t.title} — Marc`, lang })
+  usePageMeta({
+    title: `${requestTitle(session?.intake_json ?? null, lang) ?? t.title} — Marc`,
+    lang,
+  })
 
   // Mark this session as seen (clears the /me NEW badge) any time we have a
   // fresh row in hand. Pure localStorage write — no React state mutation, so
@@ -1202,7 +1206,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     ? `${localized(getSchemaForType(parsed.type).title, lang)} · ${STATUS_LABEL[lang][session.status]}`
                     : `${t.eyebrow} · ${STATUS_LABEL[lang][session.status]}`
                 }
-                title={t.title}
+                title={requestTitle(session.intake_json, lang) ?? t.title}
                 idTag={session.id.slice(0, 8)}
                 meta={
                   <>
@@ -1432,6 +1436,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                           submittedAt={parsed.submittedAt}
                           editable={editing}
                           editableType={editing}
+                          forAdmin={isAdmin}
                           typeChangeConfirm={t.typeChangeWarn}
                           requiredEmptyConfirm={t.requiredEmptyConfirm}
                           onChange={onIntakeChange}
