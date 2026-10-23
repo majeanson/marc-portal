@@ -429,8 +429,6 @@
     against the weight note below. Needs a real-browser pass before touching.
   - **Gallery thumbnails in the wrong language** (#7): the builds ship their own
     UI language; needs re-shot FR thumbnails or a per-build locale param.
-  - **Home weight: two live iframes** (weight note): a static thumbnail that
-    swaps to the live build on tap. Pairs with the item above.
   - **Repeated « ce que je fais / je fais pas »** (#4) and the **tall empty
     « Ton projet pourrait être ici » card** (#10): layout/editorial calls, not
     defects.

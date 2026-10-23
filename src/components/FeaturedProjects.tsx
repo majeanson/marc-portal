@@ -196,6 +196,7 @@ function FeaturedCard({
           sessionId={project.id}
           lang={lang}
           previewViewport={project.currentBuild?.previewViewport ?? null}
+          live={false}
         />
         <div className="project-card__head">
           <span className="project-card__date mono">{formatDate(project.showcasedAt, lang)}</span>
