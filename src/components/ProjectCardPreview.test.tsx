@@ -28,12 +28,7 @@ describe('ProjectCardPreview', () => {
 
   it('keeps the OG card and never mounts the iframe when live is false', () => {
     const { container } = render(
-      <ProjectCardPreview
-        buildHref="about:blank"
-        title="App"
-        sessionId="abc12345"
-        live={false}
-      />,
+      <ProjectCardPreview buildHref="about:blank" title="App" sessionId="abc12345" live={false} />,
     )
     expect(container.querySelector('iframe')).toBeNull()
     expect(container.querySelector('img.project-card__preview-og')).not.toBeNull()

@@ -55,7 +55,7 @@ Server compares header to cookie (`verifyCsrf`).
   remember to check. State-changing `/api/*` requests fail with 403 unless
   they appear in `CSRF_EXEMPT_PATHS`. Current exempt set: `auth/logout`,
   `auth/request-link`, `admin/digest`, `payments/webhook` (Stripe-signed),
-  `vouches` (anon submission, IP-rate-limited), `intake/transcribe` (same).
+  `vouches` (anon submission, IP-rate-limited), `questions` (same, stored as an `admin_alerts` row), `intake/transcribe` (same).
   **Adding a new POST endpoint that needs no cookie? Add it to the exempt
   set explicitly — don't try to bypass at the handler.**
 - Convenience helpers: `requireSignedIn(request, secret)` returns `email | Response`

@@ -49,6 +49,8 @@ const urls = [
   urlEntry('/en/map'),
   urlEntry('/vouches'),
   urlEntry('/en/vouches'),
+  urlEntry('/question'),
+  urlEntry('/en/question'),
   urlEntry('/vouch'),
   urlEntry('/en/vouch'),
 ]

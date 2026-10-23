@@ -420,9 +420,6 @@
   real sheet ever exists.
 - ⏭ **P3.24** — stranger-review items left open (2026-10-23).
   Decided not to do now, each for a reason:
-  - **Contact needs an account** (friction #2): anonymous steps 1-4 or a
-    `pose une question` path is a product decision, and the account step feeds
-    the magic-link flow. Re-open when a visitor actually asks for a lighter door.
   - **Scroll-reveal blank around project cards** (#3): the gap is the live-build
     iframe loading under an idle placeholder, not the ink-in CSS. A bigger
     `rootMargin` in `ProjectCardPreview` loads more iframes up front and works

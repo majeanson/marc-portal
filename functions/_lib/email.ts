@@ -51,6 +51,9 @@ interface ResendPayload {
   /** Optional per-send headers passed straight to Resend. Used for
    *  List-Unsubscribe + List-Unsubscribe-Post (RFC 8058 one-click). */
   headers?: Record<string, string>
+  /** Where « Répondre » goes. Set when the mail is about a third party (a
+   *  stranger's question) so the operator answers them, not noreply@. */
+  reply_to?: string
 }
 
 /** Subset of the worker Env that every send-site needs. Pulled here so
@@ -1107,6 +1110,39 @@ export async function sendNewVouchNotification(
     signoff: 'system',
   })
   return send(env, { from: RESEND_FROM, to: marcEmail, subject, html, text }, origin)
+}
+
+// =============================================================================
+// Anonymous question (admin-side)
+// =============================================================================
+
+export async function sendVisitorQuestionNotification(
+  env: EmailEnv,
+  marcEmail: string,
+  visitorEmail: string,
+  question: string,
+  origin: string,
+  lang: Lang,
+): Promise<SendResult> {
+  // Same lock-screen rule as session messages: no address in the subject.
+  const subject = lang === 'fr' ? 'Une question est arrivée' : 'A question came in'
+  const p1 =
+    lang === 'fr'
+      ? `<strong>${escapeHtml(visitorEmail)}</strong> te pose une question, sans avoir ouvert de demande. Réponds directement à ce courriel.`
+      : `<strong>${escapeHtml(visitorEmail)}</strong> has a question and hasn't opened a request. Just reply to this email.`
+  const { html, text } = renderEmail(marcEmail, origin, {
+    lang,
+    eyebrow: lang === 'fr' ? 'question · visiteur' : 'question · visitor',
+    headline: lang === 'fr' ? 'Quelqu’un voudrait savoir' : 'Someone would like to know',
+    paragraphs: [p1],
+    quote: clip(question, 1500),
+    signoff: 'system',
+  })
+  return send(
+    env,
+    { from: RESEND_FROM, to: marcEmail, subject, html, text, reply_to: visitorEmail },
+    origin,
+  )
 }
 
 // =============================================================================

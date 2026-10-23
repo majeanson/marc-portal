@@ -525,8 +525,10 @@ const FR = {
   footer: {
     contact: {
       pre: 'Contact : ',
-      link: 'démarre une session',
-      post: ' et on en parle là.',
+      link: 'pose une question',
+      mid: ' ou ',
+      link2: 'démarre une demande',
+      post: '.',
     },
     share: {
       pre: 'Partage marc.portal',
@@ -1591,8 +1593,10 @@ const EN: Copy = {
   footer: {
     contact: {
       pre: 'Contact: ',
-      link: 'start a session',
-      post: ' and we’ll talk it through there.',
+      link: 'ask a question',
+      mid: ' or ',
+      link2: 'start a request',
+      post: '.',
     },
     share: {
       pre: 'Share marc.portal',
