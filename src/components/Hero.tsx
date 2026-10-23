@@ -71,6 +71,8 @@ export function Hero({ lang }: { lang: Lang }) {
           <span className="hero__closer">{t.closer}</span>
         </p>
 
+        <p className="hero__who">{t.who}</p>
+
         <div className="hero__actions">
           <Link className="hero__cta hero__cta--primary" to={intakeHref}>
             {ctaLabel}

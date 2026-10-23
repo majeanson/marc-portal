@@ -52,7 +52,15 @@ export function Projects({ lang }: { lang: Lang }) {
     ? (searchParams.get('status') as StatusFilter)
     : null
 
-  usePageMeta({ title: `${t.heading} — Marc`, lang })
+  // « Projets en cours » over a wall of SHIPPED cards read as a mistake. Name
+  // the page after what's actually on it; before the data lands, stay neutral.
+  const heading = !projects
+    ? t.headingAll
+    : projects.some((p) => p.status === 'active')
+      ? t.heading
+      : t.headingShipped
+
+  usePageMeta({ title: `${heading} — Marc`, lang })
 
   // Hoisted so the error state's retry button re-runs the same fetch.
   const load = useCallback(() => {
@@ -116,13 +124,14 @@ export function Projects({ lang }: { lang: Lang }) {
               <SectionEyebrow lang={lang} feature={PAGE_FEATURE['page.projects']}>
                 {t.eyebrow}
               </SectionEyebrow>
-              <h1 className="projects__title">{t.heading}</h1>
+              <h1 className="projects__title">{heading}</h1>
               <p className="projects__intro">{t.intro}</p>
             </PageMast>
 
             {projects && projects.length > 0 && (
               <ProjectsFilterBar
                 lang={lang}
+                projects={projects}
                 tier={tier}
                 status={status}
                 onSetFilter={setFilter}
@@ -179,6 +188,7 @@ export function Projects({ lang }: { lang: Lang }) {
 
 function ProjectsFilterBar({
   lang,
+  projects,
   tier,
   status,
   onSetFilter,
@@ -186,6 +196,7 @@ function ProjectsFilterBar({
   hasFilter,
 }: {
   lang: Lang
+  projects: PublicProject[]
   tier: TierFilter | null
   status: StatusFilter | null
   onSetFilter: (k: 'tier' | 'status', v: string | null) => void
@@ -193,6 +204,13 @@ function ProjectsFilterBar({
   hasFilter: boolean
 }) {
   const tf = DICT[lang].projectsFilter
+  // Only offer statuses that have cards (with the count), plus the selected
+  // one so a deep link to an empty status can still be cleared. Four of six
+  // chips used to lead to « Aucun projet ne correspond ». With fewer than two
+  // statuses present the row filters nothing, so it goes away.
+  const statusCount = (sv: StatusFilter) => projects.filter((p) => p.status === sv).length
+  const statusChips = STATUS_VALUES.filter((sv) => statusCount(sv) > 0 || status === sv)
+  const showStatusRow = statusChips.length >= 2 || status !== null
   return (
     <div
       className="projects-filter"
@@ -223,30 +241,32 @@ function ProjectsFilterBar({
           ))}
         </div>
       </div>
-      <div className="projects-filter__row">
-        <span className="projects-filter__label mono">{tf.statusLabel}</span>
-        <div className="projects-filter__chips" role="group" aria-label={tf.statusLabel}>
-          <button
-            type="button"
-            className={`projects-filter__chip${status === null ? ' is-active' : ''}`}
-            onClick={() => onSetFilter('status', null)}
-            aria-pressed={status === null}
-          >
-            {tf.all}
-          </button>
-          {STATUS_VALUES.map((sv) => (
+      {showStatusRow && (
+        <div className="projects-filter__row">
+          <span className="projects-filter__label mono">{tf.statusLabel}</span>
+          <div className="projects-filter__chips" role="group" aria-label={tf.statusLabel}>
             <button
-              key={sv}
               type="button"
-              className={`projects-filter__chip projects-filter__chip--status projects-filter__chip--status-${sv}${status === sv ? ' is-active' : ''}`}
-              onClick={() => onSetFilter('status', status === sv ? null : sv)}
-              aria-pressed={status === sv}
+              className={`projects-filter__chip${status === null ? ' is-active' : ''}`}
+              onClick={() => onSetFilter('status', null)}
+              aria-pressed={status === null}
             >
-              {tf.statusLabels[sv]}
+              {tf.all}
             </button>
-          ))}
+            {statusChips.map((sv) => (
+              <button
+                key={sv}
+                type="button"
+                className={`projects-filter__chip projects-filter__chip--status projects-filter__chip--status-${sv}${status === sv ? ' is-active' : ''}`}
+                onClick={() => onSetFilter('status', status === sv ? null : sv)}
+                aria-pressed={status === sv}
+              >
+                {tf.statusLabels[sv]} {statusCount(sv)}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       {hasFilter && (
         <button type="button" className="projects-filter__clear mono" onClick={onClear}>
           {tf.clear} ✕

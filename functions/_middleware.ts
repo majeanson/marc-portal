@@ -209,10 +209,46 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
   // for /share/:id (or /en/share/:id) we point at the dynamic /og/share/:id
   // endpoint so the social card reflects the specific project. Bot scrapers
   // never run JS, so this rewrite is the only way they see the right card.
-  return rewriteOgTags(response, url)
+  return rewriteOgTags(response, url, await shareProjectTitle(ctx.env.DB, url.pathname))
 }
 
-function rewriteOgTags(response: Response, url: URL): Response {
+/** Showcase title for /share/:id, so the tab and the link preview say
+ *  « Babillard » instead of the generic « Avancées du build ». Bot scrapers
+ *  never run the SPA, so this has to happen at the edge, like the OG image.
+ *  Null for any other path, an unknown/unshowcased id, or a failed lookup:
+ *  the preview just stays generic. The catch is deliberate and narrow, a
+ *  title is not worth failing a page load over (and a missing D1 on a
+ *  pre-migration env is already handled above). */
+async function shareProjectTitle(
+  db: D1Database | undefined,
+  path: string,
+): Promise<{
+  fr: string
+  en: string
+} | null> {
+  const m = /^\/(?:en\/)?share\/([A-Za-z0-9_-]{6,})\/?$/.exec(path)
+  if (!m || !db) return null
+  try {
+    const row = await db
+      .prepare(
+        `SELECT showcase_title, showcase_title_en FROM sessions
+          WHERE id = ? AND showcased_at IS NOT NULL AND deleted_at IS NULL`,
+      )
+      .bind(m[1])
+      .first<{ showcase_title: string | null; showcase_title_en: string | null }>()
+    const fr = row?.showcase_title?.trim()
+    if (!fr) return null
+    return { fr, en: row?.showcase_title_en?.trim() || fr }
+  } catch {
+    return null
+  }
+}
+
+function rewriteOgTags(
+  response: Response,
+  url: URL,
+  shareTitle: { fr: string; en: string } | null,
+): Response {
   const contentType = response.headers.get('content-type') ?? ''
   if (!contentType.includes('text/html')) return response
 
@@ -257,6 +293,17 @@ function rewriteOgTags(response: Response, url: URL): Response {
           "Soir et fin de semaine, j'aide les gens à régler des problèmes du quotidien avec des petits logiciels.",
         imageAlt: 'marc.portal — Dev québécois. Job de jour. Le soir, j’aide.',
       }
+
+  if (shareMatch && shareTitle) {
+    const name = isEn ? shareTitle.en : shareTitle.fr
+    const full = isEn ? `${name}: the project story` : `${name} — l'histoire du projet`
+    ogText.title = full
+    ogText.twTitle = full
+    ogText.description = isEn
+      ? 'How this project was built, step by step, with a live build you can open.'
+      : 'Comment ce projet a été bâti, étape par étape, avec un vrai build à ouvrir.'
+    ogText.twDescription = ogText.description
+  }
 
   if (shareMatch) {
     const sessionId = shareMatch[1]
@@ -328,6 +375,11 @@ function rewriteOgTags(response: Response, url: URL): Response {
     .on('meta[name="twitter:description"]', {
       element(el) {
         el.setAttribute('content', ogText.twDescription)
+      },
+    })
+    .on('title', {
+      element(el) {
+        if (shareMatch && shareTitle) el.setInnerContent(ogText.title)
       },
     })
     .on('meta[property="og:locale"]', {

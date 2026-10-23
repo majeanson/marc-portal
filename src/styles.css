@@ -16238,3 +16238,12 @@ a.feature-dot:focus-visible {
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* One-line who / what / price under the hero manifesto. */
+.hero__who {
+  max-width: 52ch;
+  margin: 18px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-mid);
+}

@@ -76,6 +76,9 @@ const FR = {
     // on "Raconte-moi ça." before reaching the CTA.
     body: "Une tâche ennuyeuse qui revient chaque semaine, pas un enjeu national, mais c'est assez agaçant pour mériter mieux.",
     closer: 'Raconte-moi la tienne.',
+    // The one plain sentence a stranger needs above the fold: who, what, price.
+    // The tiers used to sit ~8 screens down.
+    who: 'Je suis Marc, dev. Je te bâtis le petit outil qui règle ça, à partir de 750 $, ou je te montre comment le faire toi-même, gratuitement.',
     cta: 'Décris ton problème →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
     ctaLoggedIn: 'Démarrer une nouvelle demande →',
@@ -711,8 +714,9 @@ const FR = {
 
   sessionAdvancements: {
     heading: 'Avancées du build',
+    titleFor: (name: string) => `${name} : l’histoire du projet`,
     subtitle:
-      'Étapes du build avec un lien vers le déploiement Cloudflare correspondant. Chaque entrée est un build que tu peux ouvrir.',
+      'Les étapes de ce projet, de la première démo à aujourd’hui. Chaque entrée est un vrai build que tu peux ouvrir et essayer.',
     loading: 'Chargement…',
     empty: 'Aucune avancée publiée pour l’instant.',
     // Distinct from `empty` — a fetch failure isn't "nothing posted yet",
@@ -796,9 +800,12 @@ const FR = {
 
   projects: {
     eyebrow: 'projets',
+    // « en cours » is only true while something is in progress; the page picks
+    // the heading from the data (see Projects.tsx).
     heading: 'Projets en cours',
-    intro:
-      'Sessions que je publie au public, chacune un projet vivant, avec son dernier build accessible.',
+    headingShipped: 'Projets livrés',
+    headingAll: 'Projets',
+    intro: 'Les projets que je publie, chacun bien vivant, avec son dernier build accessible.',
     loading: 'Chargement…',
     empty: 'Rien de publié pour le moment. Reviens bientôt.',
     error: 'Impossible de charger les projets.',
@@ -1147,6 +1154,7 @@ const EN: Copy = {
   hero: {
     body: "You've got a thing that nags you every week. Not the end of the world, but stubborn enough to deserve fixing.",
     closer: 'Tell me about it.',
+    who: 'I’m Marc, a developer. I build the small tool that fixes it, from $750, or I show you how to do it yourself, for free.',
     cta: 'Open the form →',
     ctaWaitlist: 'Join the waitlist →',
     ctaLoggedIn: 'Tell me about your problem →',
@@ -1772,8 +1780,9 @@ const EN: Copy = {
 
   sessionAdvancements: {
     heading: 'Build advancements',
+    titleFor: (name: string) => `${name}: the project story`,
     subtitle:
-      'Build milestones with a link to the matching Cloudflare deployment. Each entry is a build you can open.',
+      'The steps of this project, from the first demo to today. Each entry is a real build you can open and try.',
     loading: 'Loading…',
     empty: 'No advancements posted yet.',
     loadError: "Couldn't load the advancements.",
@@ -1855,8 +1864,10 @@ const EN: Copy = {
   projects: {
     eyebrow: 'projects',
     heading: 'Projects in flight',
+    headingShipped: 'Shipped projects',
+    headingAll: 'Projects',
     intro:
-      'Sessions I’m publishing to the public, each a living project with its latest build open for inspection.',
+      'The projects I’m publishing, each one alive, with its latest build open for inspection.',
     loading: 'Loading…',
     empty: 'Nothing published yet. Check back soon.',
     error: 'Failed to load projects.',
