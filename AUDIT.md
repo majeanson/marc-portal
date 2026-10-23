@@ -422,15 +422,11 @@
   Decided not to do now, each for a reason:
   - **Scroll-reveal blank around project cards** (#3): the gap is the live-build
     iframe loading under an idle placeholder, not the ink-in CSS. A bigger
-    `rootMargin` in `ProjectCardPreview` loads more iframes up front and works
-    against the weight note below. Needs a real-browser pass before touching.
+    `rootMargin` in `ProjectCardPreview` loads more iframes up front, which costs
+    weight on /projects. Needs a real-browser pass before touching. (The home
+    page no longer mounts live frames, so it is unaffected.)
   - **Gallery thumbnails in the wrong language** (#7): the builds ship their own
     UI language; needs re-shot FR thumbnails or a per-build locale param.
-  - **Repeated « ce que je fais / je fais pas »** (#4) and the **tall empty
-    « Ton projet pourrait être ici » card** (#10): layout/editorial calls, not
-    defects.
-  - **Plan names Watch / Care in English on the FR `/handoff`: they are the
-    product names used in pricing and Stripe; renaming is Marc's call.
 
 ---
 
