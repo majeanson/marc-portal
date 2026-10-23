@@ -670,14 +670,6 @@ const FR = {
       back: '← Changer de type',
       continue: 'Soumettre →',
       needsInput: 'Écris quelques mots, fais un croquis ou laisse une note vocale pour soumettre.',
-      handoffMode: {
-        label: 'Préférence de gestion (optionnel)',
-        hint: "À la livraison, qui détient les clés ? Par défaut je m'en occupe (forfait annuel), ce qui t'évite de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
-        learnMore: 'Voir comment ça finit →',
-        optionJe: "Je m'en occupe : je garde les clés (forfait annuel, mode recommandé)",
-        optionTout: 'Tout à toi : je gère DNS, Cloudflare, Resend moi-même',
-        optionParle: 'On en parle plus tard',
-      },
     },
     confirmation: {
       eyebrowAccepted: 'reçu',
@@ -1737,14 +1729,6 @@ const EN: Copy = {
       back: '← Change type',
       continue: 'Submit →',
       needsInput: 'Write a few words, sketch it, or leave a voice note to submit.',
-      handoffMode: {
-        label: 'Management preference (optional)',
-        hint: "At delivery, who holds the keys? By default Marc handles it (annual plan), which saves you from managing DNS, Cloudflare, Resend yourself. Can change later; 'All yours' requires an explicit confirmation at delivery.",
-        learnMore: 'See how it ends →',
-        optionJe: 'I handle it: Marc keeps the keys (annual plan, recommended)',
-        optionTout: 'All yours: I manage DNS, Cloudflare, Resend myself',
-        optionParle: "Let's talk later",
-      },
     },
     confirmation: {
       eyebrowAccepted: 'received',

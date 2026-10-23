@@ -63,6 +63,7 @@ import {
   CommunityDiscountFrozenError,
   CommunityDiscountToggle,
 } from '../components/session/CommunityDiscountToggle'
+import { HANDOFF_MODE_KEY, HandoffPreference } from '../components/session/HandoffPreference'
 import { Tier3SplitInput } from '../components/session/Tier3SplitInput'
 import { Tier4AmountInput } from '../components/session/Tier4AmountInput'
 import { usePageMeta } from '../lib/usePageMeta'
@@ -1269,6 +1270,23 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     isAdmin={isAdmin}
                     lang={lang}
                   />
+
+                  {/* Hosting preference: asked once I've said yes (status active),
+                      not in the intake form. Visitors only; the operator reads the
+                      answer in the intake recap. */}
+                  {!isAdmin && parsed && canEditIntake && session.status === 'active' && (
+                    <HandoffPreference
+                      lang={lang}
+                      value={parsed.formData[HANDOFF_MODE_KEY]}
+                      busy={saving}
+                      onPick={(mode) =>
+                        void onIntakeChange({
+                          account: parsed.account,
+                          values: { ...parsed.formData, [HANDOFF_MODE_KEY]: mode },
+                        })
+                      }
+                    />
+                  )}
 
                   {/* The generous no — a rejected session is not a dead end. */}
                   {session.status === 'rejected' && (
