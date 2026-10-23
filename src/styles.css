@@ -16222,3 +16222,19 @@ a.feature-dot:focus-visible {
   margin: 0;
   white-space: pre-wrap;
 }
+
+/* Admin one-tap triage (oui / non / raconte-moi plus) above the composer. */
+.thread__quick {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 12px;
+}
+.thread__quick-label {
+  font-size: 12px;
+  color: var(--text-mid);
+}
+.thread__quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

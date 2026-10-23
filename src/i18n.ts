@@ -832,7 +832,8 @@ const FR = {
     taglineEnPlaceholder: 'Truck voice notes, a draft invoice by Sunday morning.',
     enHint: 'La galerie /en lit ces champs. Vides, elle retombe sur le français.',
     tierLabel: 'Niveau',
-    tierHint: 'Calibre la session par rapport à la grille de prix publique.',
+    tierHint:
+      'Étiquette de la carte dans la galerie publique. Ne change aucun prix: le Niveau qui pilote le bouton « Payer » est dans « Niveau et tarification », plus haut.',
     tierOptionNone: 'Non classé',
     tierOption0: 'Niveau 0 · auto-service',
     tierOption1: 'Niveau 1 · 750 $',
@@ -1889,7 +1890,8 @@ const EN: Copy = {
     taglineEnPlaceholder: 'Truck voice notes, a draft invoice by Sunday morning.',
     enHint: 'The /en gallery reads these. Left empty, it falls back to the French.',
     tierLabel: 'Tier',
-    tierHint: 'Position the session against the public pricing tiers.',
+    tierHint:
+      'Label on the public gallery card. Changes no price: the tier that drives the "Pay" button is under "Tier & pricing", above.',
     tierOptionNone: 'Unclassified',
     tierOption0: 'Tier 0 · self-service',
     tierOption1: 'Tier 1 · $750',
