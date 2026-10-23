@@ -434,9 +434,6 @@
   - **Repeated « ce que je fais / je fais pas »** (#4) and the **tall empty
     « Ton projet pourrait être ici » card** (#10): layout/editorial calls, not
     defects.
-  - **Activity log has only « Créée »** (admin #8): needs a `submitted` event
-    recorded server-side at Soumettre; the session row has no such timestamp
-    today, so it is a small migration plus a log write, not a copy fix.
   - **Plan names Watch / Care in English on the FR `/handoff`: they are the
     product names used in pricing and Stripe; renaming is Marc's call.
 
