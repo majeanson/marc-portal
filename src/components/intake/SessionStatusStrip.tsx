@@ -4,7 +4,8 @@ import type { SessionStatus } from '../../lib/sessionsApi'
 const COPY = {
   fr: {
     label: 'Étape de la session',
-    draft: 'Brouillon',
+    // « Reçue », pas « Brouillon »: see lib/statusLabel.ts.
+    draft: 'Reçue',
     triage: 'Triage',
     active: 'En cours',
     shipped: 'Livré',
@@ -12,7 +13,7 @@ const COPY = {
   },
   en: {
     label: 'Session stage',
-    draft: 'Draft',
+    draft: 'Received',
     triage: 'Triage',
     active: 'In progress',
     shipped: 'Shipped',

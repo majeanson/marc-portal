@@ -69,11 +69,11 @@ const COPY = {
     statsTotal: 'session(s)',
     statsActive: 'en cours',
     statsTriage: 'en triage',
-    statsDraft: 'brouillon',
+    statsDraft: 'reçue',
     statsShipped: 'livrée',
     statsRejected: 'refusée',
     statusNames: {
-      draft: 'brouillon',
+      draft: 'reçue',
       triage: 'en triage',
       // « en cours », pas « active » : c'est le mot que toutes les autres
       // surfaces client emploient pour cet état (SessionStatusStrip,
@@ -86,7 +86,7 @@ const COPY = {
     searchPlaceholder: 'Filtrer par mot-clé…',
     filterAll: 'Toutes',
     noMatches: 'Aucune session ne correspond.',
-    slaDueLabel: 'Réponse de Marc',
+    slaDueLabel: 'Je te réponds',
     slaOverdue: 'En retard',
     deleteHeading: 'Supprimer mon compte et toutes mes données',
     deleteBody:
@@ -176,11 +176,11 @@ const COPY = {
     statsTotal: 'session(s)',
     statsActive: 'active',
     statsTriage: 'in triage',
-    statsDraft: 'draft',
+    statsDraft: 'received',
     statsShipped: 'shipped',
     statsRejected: 'declined',
     statusNames: {
-      draft: 'draft',
+      draft: 'received',
       triage: 'in triage',
       active: 'active',
       shipped: 'shipped',
@@ -192,7 +192,7 @@ const COPY = {
     searchPlaceholder: 'Filter by keyword…',
     filterAll: 'All',
     noMatches: 'No sessions match.',
-    slaDueLabel: "Marc's reply",
+    slaDueLabel: 'I reply',
     slaOverdue: 'Overdue',
     deleteHeading: 'Delete my account and all my data',
     deleteBody:

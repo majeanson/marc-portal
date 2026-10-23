@@ -53,3 +53,27 @@ describe('Confirmation resend feedback', () => {
     await waitFor(() => expect(screen.getByText(/didn't send/i)).toBeInTheDocument())
   })
 })
+
+describe('Confirmation arrival', () => {
+  it('moves focus to the heading and scrolls it into view after Soumettre', () => {
+    const scroll = vi.fn()
+    Element.prototype.scrollIntoView = scroll
+    render(
+      <MemoryRouter>
+        <Confirmation {...baseProps} magicLinkSent={false} />
+      </MemoryRouter>,
+    )
+    const h = screen.getByRole('heading', { level: 2, name: /received/i })
+    expect(document.activeElement).toBe(h)
+    expect(scroll).toHaveBeenCalled()
+  })
+
+  it('states the 72 h promise once', () => {
+    render(
+      <MemoryRouter>
+        <Confirmation {...baseProps} magicLinkSent={false} />
+      </MemoryRouter>,
+    )
+    expect(screen.getAllByText(/72 ?h/)).toHaveLength(1)
+  })
+})

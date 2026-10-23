@@ -60,6 +60,7 @@ import {
 import { Tier3SplitInput } from '../components/session/Tier3SplitInput'
 import { Tier4AmountInput } from '../components/session/Tier4AmountInput'
 import { usePageMeta } from '../lib/usePageMeta'
+import { STATUS_LABEL } from '../lib/statusLabel'
 
 // Excalidraw is ~600 KB — the compose-box sketch surface stays behind
 // React.lazy so a thread the visitor never sketches into doesn't pay for it.
@@ -158,6 +159,9 @@ const COPY = {
     notFound: 'Session introuvable.',
     forbidden: 'Tu n’as pas accès à cette session.',
     threadHeading: 'Discussion',
+    firstMsg: 'Ta demande',
+    firstMsgAdmin: 'Sa demande',
+    noneAdmin: 'Aucun message pour l’instant.',
     arcPinnedHeading: 'Le croquis de départ',
     arcShippedHeading: 'Du croquis au livré',
     arcSketchLabel: 'Le croquis',
@@ -187,7 +191,7 @@ const COPY = {
     declineNoteSave: 'Enregistrer la note',
     declineNoteSaving: 'Enregistrement…',
     declineNoteError: 'L’enregistrement de la note a pas passé. Réessaie.',
-    none: 'Marc répond en moins de 72h. Laisse-lui un mot ici dès que tu en as un.',
+    none: 'Je te réponds en 72 h. Laisse-moi un mot ici dès que tu en as un.',
     placeholder: 'Écris un message…',
     sending: 'Envoi…',
     send: 'Envoyer',
@@ -255,7 +259,7 @@ const COPY = {
     timelineStatus: (from: string, to: string, by: string, d: string) =>
       `${from} → ${to} · par ${by} · ${d}`,
     timelineEmpty: 'Aucun changement de statut pour l’instant.',
-    slaPrefix: 'Réponse de Marc',
+    slaPrefix: 'Je te réponds',
     slaOverdue: 'En retard',
     attachLabel: 'Joindre un fichier',
     attaching: 'Téléversement…',
@@ -271,6 +275,9 @@ const COPY = {
     notFound: 'Session not found.',
     forbidden: "You don't have access to this session.",
     threadHeading: 'Thread',
+    firstMsg: 'Your request',
+    firstMsgAdmin: 'Their request',
+    noneAdmin: 'No messages yet.',
     arcPinnedHeading: 'The starting sketch',
     arcShippedHeading: 'From sketch to shipped',
     arcSketchLabel: 'The sketch',
@@ -299,7 +306,7 @@ const COPY = {
     declineNoteSave: 'Save the note',
     declineNoteSaving: 'Saving…',
     declineNoteError: "The note didn't save. Try again.",
-    none: 'Marc replies within 72h. Drop him a note here whenever you have one.',
+    none: 'I reply within 72 h. Drop me a note here whenever you have one.',
     placeholder: 'Write a message…',
     sending: 'Sending…',
     send: 'Send',
@@ -364,7 +371,7 @@ const COPY = {
     timelineStatus: (from: string, to: string, by: string, d: string) =>
       `${from} → ${to} · by ${by} · ${d}`,
     timelineEmpty: 'No status changes yet.',
-    slaPrefix: "Marc's reply",
+    slaPrefix: 'I reply',
     slaOverdue: 'Overdue',
     attachLabel: 'Attach file',
     attaching: 'Uploading…',
@@ -1120,8 +1127,8 @@ export function SessionPage({ lang }: { lang: Lang }) {
                 feature={PAGE_FEATURE['page.session-page']}
                 eyebrow={
                   parsed
-                    ? `${localized(getSchemaForType(parsed.type).title, lang)} · ${session.status}`
-                    : `${t.eyebrow} · ${session.status}`
+                    ? `${localized(getSchemaForType(parsed.type).title, lang)} · ${STATUS_LABEL[lang][session.status]}`
+                    : `${t.eyebrow} · ${STATUS_LABEL[lang][session.status]}`
                 }
                 title={t.title}
                 idTag={session.id.slice(0, 8)}
@@ -1130,7 +1137,7 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     <span
                       className={`session-frame__status-pill session-frame__status-pill--${session.status}`}
                     >
-                      {session.status}
+                      {STATUS_LABEL[lang][session.status]}
                     </span>
                     {slaPill}
                     {currentBuild &&
@@ -1488,10 +1495,32 @@ export function SessionPage({ lang }: { lang: Lang }) {
                     className="surface intake__step session-frame__panel"
                   >
                     <h2>{t.threadHeading}</h2>
-                    {threadItems.length === 0 ? (
-                      <p className="thread__empty">{t.none}</p>
-                    ) : (
+                    {(parsed || threadItems.length > 0) && (
                       <ul className="thread">
+                        {/* The submitted answers open the conversation, so the
+                            client sees their request where the reply will
+                            land instead of an empty thread. */}
+                        {parsed && (
+                          <li className="thread__msg thread__msg--visitor thread__msg--first">
+                            <div className="thread__head mono">
+                              {isAdmin ? t.firstMsgAdmin : t.firstMsg} ·{' '}
+                              {formatDateTime(session.created_at, lang)}
+                            </div>
+                            <dl className="thread__answers">
+                              {getSchemaForType(parsed.type).fields.map((field) => {
+                                const v = parsed.formData[field.id]
+                                if (!v) return null
+                                const opt = field.options?.find((o) => o.value === v)
+                                return (
+                                  <div key={field.id}>
+                                    <dt>{localized(field.label, lang)}</dt>
+                                    <dd>{opt ? localized(opt.label, lang) : v}</dd>
+                                  </div>
+                                )
+                              })}
+                            </dl>
+                          </li>
+                        )}
                         {threadItems.map((item) => {
                           if (item.kind === 'message') {
                             const m = item.msg
@@ -1560,6 +1589,9 @@ export function SessionPage({ lang }: { lang: Lang }) {
                           )
                         })}
                       </ul>
+                    )}
+                    {threadItems.length === 0 && (
+                      <p className="thread__empty">{isAdmin ? t.noneAdmin : t.none}</p>
                     )}
 
                     <form onSubmit={onSend} className="thread__form">

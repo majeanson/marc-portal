@@ -95,9 +95,9 @@ function Frame({
 const COPY = {
   fr: {
     triagePlain:
-      'Marc lit ton intake et te répond — oui, non, ou « raconte-moi plus » — par courriel et dans le fil.',
+      'Je lis ta demande et je te réponds, par courriel et dans le fil : oui, non, ou « raconte-moi plus ».',
     triageWithSla: (w: string) =>
-      `Marc répond ${w} — oui, non, ou « raconte-moi plus ». Tu reçois aussi un courriel quand c’est posté.`,
+      `Je te réponds ${w} : oui, non, ou « raconte-moi plus ». Tu reçois aussi un courriel quand c’est posté.`,
     slaOverdue: 'bientôt (un peu en retard)',
     rejected:
       'Marc a refusé cette session — la raison est dans le fil. Tu peux ouvrir une nouvelle proposition à tout moment.',
@@ -125,9 +125,9 @@ const COPY = {
   },
   en: {
     triagePlain:
-      "Marc is reading your intake and will reply — yes, no, or 'tell me more' — by email and in the thread.",
+      "I'm reading your request and will reply by email and in the thread: yes, no, or 'tell me more'.",
     triageWithSla: (w: string) =>
-      `Marc replies ${w} — yes, no, or 'tell me more'. You'll also get an email when it's posted.`,
+      `I reply ${w}: yes, no, or 'tell me more'. You'll also get an email when it's posted.`,
     slaOverdue: 'soon (a bit overdue)',
     rejected:
       'Marc declined this session — the reason is in the thread. You can open a new proposal anytime.',

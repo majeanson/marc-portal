@@ -5,7 +5,7 @@ import { SessionStatusStrip } from './SessionStatusStrip'
 describe('SessionStatusStrip read mode', () => {
   it('renders the four flow steps and no rejected pill on a normal status', () => {
     render(<SessionStatusStrip lang="en" status="active" />)
-    expect(screen.getByText(/Draft/)).toBeInTheDocument()
+    expect(screen.getByText(/Received/)).toBeInTheDocument()
     expect(screen.getByText(/Triage/)).toBeInTheDocument()
     expect(screen.getByText(/In progress/)).toBeInTheDocument()
     expect(screen.getByText(/Shipped/)).toBeInTheDocument()
@@ -77,5 +77,17 @@ describe('SessionStatusStrip busy guard', () => {
     render(<SessionStatusStrip lang="en" status="triage" onPick={onPick} />)
     fireEvent.click(screen.getByRole('button', { name: /In progress/i }))
     expect(onPick).toHaveBeenCalledWith('active')
+  })
+})
+
+describe('SessionStatusStrip draft label', () => {
+  it('calls a submitted request « Reçue » / Received, never Brouillon / Draft', () => {
+    const { unmount } = render(<SessionStatusStrip lang="fr" status="draft" />)
+    expect(screen.getByText(/Reçue/)).toBeTruthy()
+    expect(screen.queryByText(/Brouillon/)).toBeNull()
+    unmount()
+    render(<SessionStatusStrip lang="en" status="draft" />)
+    expect(screen.getByText(/Received/)).toBeTruthy()
+    expect(screen.queryByText(/Draft/)).toBeNull()
   })
 })

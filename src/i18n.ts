@@ -681,11 +681,10 @@ const FR = {
       eyebrowWaitlist: "reçu · liste d'attente",
       titleAccepted: "Merci, c'est reçu.",
       titleWaitlist: "Merci, tu es sur la liste d'attente.",
-      bodyAccepted:
-        "Je lis chaque formulaire moi-même. Pas d'IA entre toi et moi. Tu auras une réponse honnête en 72 h, par courriel : oui, non, ou « raconte-moi plus ».",
+      bodyAccepted: "Je lis chaque formulaire moi-même. Pas d'IA entre toi et moi.",
       bodyWaitlist:
         'Mes deux projets actifs sont pleins en ce moment, c’est mon plafond pour protéger ma famille. Ta proposition est sauvegardée et garde sa place dans la file. Je t’écris dès qu’un projet se libère, en général quelques semaines.',
-      sla: 'Réponse honnête en 72 h : oui, non, ou « raconte-moi plus ».',
+      sla: 'Je te réponds en 72 h, par courriel : oui, non, ou « raconte-moi plus ».',
       summaryTitle: "Ce que tu m'as envoyé",
       summaryEmail: 'Courriel',
       summaryName: 'Prénom',
@@ -1744,11 +1743,10 @@ const EN: Copy = {
       eyebrowWaitlist: 'received · waitlist',
       titleAccepted: "Thanks, it's received.",
       titleWaitlist: "Thanks, you're on the waitlist.",
-      bodyAccepted:
-        "I read every form myself. No AI between you and me. You'll get an honest reply in 72h, by email: yes, no, or 'tell me more.'",
+      bodyAccepted: 'I read every form myself. No AI between you and me.',
       bodyWaitlist:
         "Both my build slots are full right now, which is my cap, to protect my family time. Your proposal is saved and holds its place in the queue. I'll write as soon as a build wraps up, usually a few weeks.",
-      sla: "Honest reply in 72h: yes, no, or 'tell me more.'",
+      sla: "I reply within 72 h, by email: yes, no, or 'tell me more.'",
       summaryTitle: 'What you sent me',
       summaryEmail: 'Email',
       summaryName: 'First name',
