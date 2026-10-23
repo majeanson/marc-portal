@@ -247,7 +247,7 @@ export const trackB: Track = {
     {
       id: 'B-06',
       num: '6',
-      title: { fr: 'Tier assigné', en: 'Tier assigned' },
+      title: { fr: 'Niveau assigné', en: 'Tier assigned' },
       time: 'notif',
       summary: {
         fr: 'Opérateur triage → tier choisi (0/1/2/3) → courriel « j’embarque » avec bouton payer.',
@@ -262,7 +262,7 @@ export const trackB: Track = {
           'Admin assigne le tier dans /admin/inbox/<id>',
           'Webhook interne → sendTierAssignedNotification(...)',
           'Le tier-0 redirige vers un patron/template, pas de paiement',
-          'Tier 1/2/3 → bouton Stripe Checkout actif sur la page de session',
+          'Niveau 1/2/3 → bouton Stripe Checkout actif sur la page de session',
         ],
         en: [
           'Admin assigns tier in /admin/inbox/<id>',
@@ -273,7 +273,7 @@ export const trackB: Track = {
       },
       gotcha: {
         fr: [
-          'Tier 3 (devis) demande un montant CAD cents — sans ça, le courriel sort sans le montant et a l’air bâclé.',
+          'Niveau 3 (devis) demande un montant CAD cents — sans ça, le courriel sort sans le montant et a l’air bâclé.',
           'Si Resend down quand tu assignes, l’UI réussit mais le visiteur ne reçoit rien. Vérifie /admin/inbox 5 min plus tard.',
         ],
         en: [
@@ -282,7 +282,7 @@ export const trackB: Track = {
         ],
       },
       verify: {
-        fr: 'Assigne Tier 1 sur un intake test, vérifie le courriel reçu et le bouton actif sur la session.',
+        fr: 'Assigne Niveau 1 sur un intake test, vérifie le courriel reçu et le bouton actif sur la session.',
         en: 'Assign Tier 1 on a test intake, verify the email landed and the button is live on the session.',
       },
       dependsOn: 'A-08',
@@ -304,8 +304,8 @@ export const trackB: Track = {
         fr: [
           'POST /api/payments/create-checkout → URL Stripe',
           'Webhook → POST /api/payments/webhook (signature vérifiée)',
-          'Webhook met à jour session.status → active (ou awaiting_deposit pour Tier 2)',
-          'Tier 2 : 50 % dépôt maintenant, 50 % à la livraison',
+          'Webhook met à jour session.status → active (ou awaiting_deposit pour Niveau 2)',
+          'Niveau 2 : 50 % dépôt maintenant, 50 % à la livraison',
         ],
         en: [
           'POST /api/payments/create-checkout → Stripe URL',

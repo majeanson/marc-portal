@@ -3,9 +3,10 @@ import { DICT } from '../../i18n'
 import { SectionEyebrow } from '../SectionEyebrow'
 import { SCHEMAS } from '../../lib/intakeSchemas'
 import type { ProblemType } from '../../lib/intakeSchemas'
-import { localized } from '../../lib/intakeSchemas'
+import { localized, TYPE_SHORT } from '../../lib/intakeSchemas'
 
-const TYPES: ProblemType[] = ['paperasse', 'suivi', 'coordination', 'autre', 'rescue']
+// « Autre » last: a catch-all listed before « Réparer » read as the second choice.
+const TYPES: ProblemType[] = ['paperasse', 'suivi', 'coordination', 'rescue', 'autre']
 
 export function TypePicker({
   lang,
@@ -35,7 +36,7 @@ export function TypePicker({
               className={`surface type-card${isSelected ? ' type-card--selected' : ''}`}
               onClick={() => onPick(type)}
             >
-              <div className="type-card__name mono">{type}</div>
+              <div className="type-card__name mono">{localized(TYPE_SHORT[type], lang)}</div>
               <h3>{localized(schema.title, lang)}</h3>
               <p>{localized(schema.description, lang)}</p>
             </button>

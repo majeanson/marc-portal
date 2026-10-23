@@ -27,6 +27,15 @@ export interface IntakeSchema {
   fields: FieldDef[]
 }
 
+/** One-word eyebrow on each type card in the picker. */
+export const TYPE_SHORT: Record<ProblemType, { fr: string; en: string }> = {
+  paperasse: { fr: 'Paperasse', en: 'Paperwork' },
+  suivi: { fr: 'Suivi', en: 'Tracking' },
+  coordination: { fr: 'Coordination', en: 'Coordination' },
+  rescue: { fr: 'Réparation', en: 'Repair' },
+  autre: { fr: 'Autre', en: 'Other' },
+}
+
 const TYPE_TITLES: Record<ProblemType, { fr: string; en: string }> = {
   paperasse: {
     fr: 'Paperasse à automatiser',
@@ -64,7 +73,7 @@ const TYPE_DESCRIPTIONS: Record<ProblemType, { fr: string; en: string }> = {
     en: 'For when several people need to know who does what, when: team, volunteers, neighbourhood, committee.',
   },
   autre: {
-    fr: 'Si rien des autres types ne colle. Marc lit chaque formulaire lui-même et te répondra honnêtement.',
+    fr: 'Si rien des autres types ne colle. Je lis chaque formulaire moi-même et je te réponds honnêtement.',
     en: 'If none of the other types fit. Marc reads every form himself and will reply honestly.',
   },
   rescue: {
@@ -79,7 +88,7 @@ const PAPERASSE_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: "Qu'est-ce que tu reconstruis chaque semaine (ou chaque mois)?",
+      fr: "Qu'est-ce que tu reconstruis chaque semaine (ou chaque mois) ?",
       en: 'What do you reconstruct every week (or every month)?',
     },
     placeholder: {
@@ -91,7 +100,7 @@ const PAPERASSE_FIELDS: FieldDef[] = [
     id: 'currentMethod',
     type: 'radio',
     label: {
-      fr: "Comment tu fais ça aujourd'hui?",
+      fr: "Comment tu fais ça aujourd'hui ?",
       en: 'How do you do it today?',
     },
     options: [
@@ -104,7 +113,7 @@ const PAPERASSE_FIELDS: FieldDef[] = [
   {
     id: 'frequency',
     type: 'select',
-    label: { fr: 'À quelle fréquence?', en: 'How often?' },
+    label: { fr: 'À quelle fréquence ?', en: 'How often?' },
     options: [
       { value: 'daily', label: { fr: 'Tous les jours', en: 'Every day' } },
       { value: 'weekly', label: { fr: 'Chaque semaine', en: 'Every week' } },
@@ -117,7 +126,7 @@ const PAPERASSE_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: 'Le moment qui te fait dire « il faut que ça change »?',
+      fr: 'Le moment qui te fait dire « il faut que ça change » ?',
       en: "The moment that makes you say 'this has to change'?",
     },
     placeholder: {
@@ -130,7 +139,7 @@ const PAPERASSE_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: "À quoi ça ressemblerait, l'idéal? (en une phrase)",
+      fr: "À quoi ça ressemblerait, l'idéal ? (en une phrase)",
       en: 'What would the ideal look like? (in one sentence)',
     },
     placeholder: {
@@ -150,7 +159,7 @@ const SUIVI_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: "Qu'est-ce que tu suis exactement?",
+      fr: "Qu'est-ce que tu suis exactement ?",
       en: 'What exactly are you tracking?',
     },
     placeholder: {
@@ -161,7 +170,7 @@ const SUIVI_FIELDS: FieldDef[] = [
   {
     id: 'recordCount',
     type: 'select',
-    label: { fr: "Combien d'entrées environ?", en: 'How many entries roughly?' },
+    label: { fr: "Combien d'entrées environ ?", en: 'How many entries roughly?' },
     options: [
       { value: 'tens', label: { fr: 'Quelques dizaines', en: 'A few dozen' } },
       { value: 'hundreds', label: { fr: 'Quelques centaines', en: 'A few hundred' } },
@@ -174,7 +183,7 @@ const SUIVI_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 2,
     label: {
-      fr: "Où sont les données aujourd'hui?",
+      fr: "Où sont les données aujourd'hui ?",
       en: 'Where is the data today?',
     },
     placeholder: {
@@ -187,7 +196,7 @@ const SUIVI_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: "Qu'est-ce qui ne marche plus?",
+      fr: "Qu'est-ce qui ne marche plus ?",
       en: "What isn't working anymore?",
     },
     placeholder: {
@@ -200,11 +209,11 @@ const SUIVI_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: "À quoi ça ressemblerait, l'idéal? (en une phrase)",
+      fr: "À quoi ça ressemblerait, l'idéal ? (en une phrase)",
       en: 'What would the ideal look like? (in one sentence)',
     },
     placeholder: {
-      fr: 'Ex : tout le monde voit la même chose en temps réel, je peux répondre « où on est rendu? » en 5 secondes, plus jamais perdre une info...',
+      fr: 'Ex : tout le monde voit la même chose en temps réel, je peux répondre « où on est rendu ? » en 5 secondes, plus jamais perdre une info...',
       en: "Ex: everyone sees the same thing in real time, I can answer 'where are we at?' in 5 seconds, never losing info again...",
     },
   },
@@ -216,7 +225,7 @@ const COORDINATION_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: "Qu'est-ce qui doit être coordonné?",
+      fr: "Qu'est-ce qui doit être coordonné ?",
       en: 'What needs to be coordinated?',
     },
     placeholder: {
@@ -227,7 +236,7 @@ const COORDINATION_FIELDS: FieldDef[] = [
   {
     id: 'groupSize',
     type: 'select',
-    label: { fr: 'Combien de personnes impliquées?', en: 'How many people involved?' },
+    label: { fr: 'Combien de personnes impliquées ?', en: 'How many people involved?' },
     options: [
       { value: 'few', label: { fr: '2 à 5', en: '2 to 5' } },
       { value: 'small', label: { fr: '6 à 15', en: '6 to 15' } },
@@ -240,7 +249,7 @@ const COORDINATION_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 2,
     label: {
-      fr: "Comment ça se décide aujourd'hui? (groupe Facebook, texto, en personne...)",
+      fr: "Comment ça se décide aujourd'hui ? (groupe Facebook, texto, en personne...)",
       en: 'How is it decided today? (Facebook group, texting, in person...)',
     },
     placeholder: {
@@ -251,7 +260,7 @@ const COORDINATION_FIELDS: FieldDef[] = [
   {
     id: 'frequency',
     type: 'select',
-    label: { fr: 'À quelle fréquence ça revient?', en: 'How often does it come up?' },
+    label: { fr: 'À quelle fréquence ça revient ?', en: 'How often does it come up?' },
     options: [
       { value: 'weekly', label: { fr: 'Chaque semaine', en: 'Every week' } },
       { value: 'monthly', label: { fr: 'Chaque mois', en: 'Every month' } },
@@ -264,7 +273,7 @@ const COORDINATION_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: "À quoi ça ressemblerait, l'idéal? (en une phrase)",
+      fr: "À quoi ça ressemblerait, l'idéal ? (en une phrase)",
       en: 'What would the ideal look like? (in one sentence)',
     },
     placeholder: {
@@ -293,7 +302,7 @@ const AUTRE_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 2,
     label: {
-      fr: "Qui ressent le problème? Toi seulement, ou d'autres aussi?",
+      fr: "Qui ressent le problème ? Toi seulement, ou d'autres aussi ?",
       en: 'Who feels the problem? Just you, or others too?',
     },
     placeholder: {
@@ -306,7 +315,7 @@ const AUTRE_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: "Qu'est-ce que tu as déjà essayé?",
+      fr: "Qu'est-ce que tu as déjà essayé ?",
       en: 'What have you already tried?',
     },
     placeholder: {
@@ -326,7 +335,7 @@ const RESCUE_FIELDS: FieldDef[] = [
     id: 'rescueKind',
     type: 'radio',
     label: {
-      fr: "C'est quoi, au juste?",
+      fr: "C'est quoi, au juste ?",
       en: 'What is it, exactly?',
     },
     options: [
@@ -354,7 +363,7 @@ const RESCUE_FIELDS: FieldDef[] = [
     id: 'builtWith',
     type: 'text',
     label: {
-      fr: "C'est bâti avec quoi, autant que tu saches?",
+      fr: "C'est bâti avec quoi, autant que tu saches ?",
       en: "What's it built with, as far as you know?",
     },
     placeholder: {
@@ -362,7 +371,7 @@ const RESCUE_FIELDS: FieldDef[] = [
       en: 'Ex: Lovable, Bolt, Bubble... or React, an old WordPress, PHP from 2015.',
     },
     hint: {
-      fr: "Pas sûr? Nomme juste l'outil que tu as utilisé, ou écris « aucune idée ».",
+      fr: "Pas sûr ? Nomme juste l'outil que tu as utilisé, ou écris « aucune idée ».",
       en: "Not sure? Just name the tool you used, or write 'no idea.'",
     },
   },
@@ -371,7 +380,7 @@ const RESCUE_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: 'Où ça vit, et comment je fais pour entrer?',
+      fr: 'Où ça vit, et comment je fais pour entrer ?',
       en: 'Where does it live, and how do I get in?',
     },
     placeholder: {
@@ -384,7 +393,7 @@ const RESCUE_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: "Qu'est-ce qui ne marche pas, ou qui manque?",
+      fr: "Qu'est-ce qui ne marche pas, ou qui manque ?",
       en: "What's broken, or what's missing?",
     },
     placeholder: {
@@ -396,7 +405,7 @@ const RESCUE_FIELDS: FieldDef[] = [
     id: 'inUse',
     type: 'select',
     label: {
-      fr: "Est-ce que quelqu'un l'utilise en ce moment?",
+      fr: "Est-ce que quelqu'un l'utilise en ce moment ?",
       en: 'Is anyone using it right now?',
     },
     options: [
@@ -426,7 +435,7 @@ const RESCUE_FIELDS: FieldDef[] = [
     type: 'textarea',
     rows: 3,
     label: {
-      fr: '« Réparé », ça ressemble à quoi? (en une phrase)',
+      fr: '« Réparé », ça ressemble à quoi ? (en une phrase)',
       en: "What does 'fixed' look like? (in one sentence)",
     },
     placeholder: {

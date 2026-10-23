@@ -93,7 +93,7 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
           <Link
             to={lang === 'fr' ? '/' : '/en'}
             className="brand"
-            aria-label="Marc Portal — accueil"
+            aria-label={lang === 'fr' ? 'marc.portal, accueil' : 'marc.portal, home'}
           >
             marc<span className="dot">.</span>portal
           </Link>

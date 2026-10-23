@@ -218,7 +218,7 @@ function ProjectsFilterBar({
               onClick={() => onSetFilter('tier', tier === tv ? null : tv)}
               aria-pressed={tier === tv}
             >
-              T{tv}
+              {tv}
             </button>
           ))}
         </div>

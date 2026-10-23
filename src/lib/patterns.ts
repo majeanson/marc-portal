@@ -76,7 +76,7 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'You want to know how many hours your 2 employees worked this week without paying for software.',
     },
     recipe: {
-      fr: "Un Google Sheets : colonne A = date, B = employé, C = heures, D = chantier. Chaque employé écrit ses heures lui-même chaque jour. Total automatique en bas avec SUM. Si tu as 4+ employés, là c'est Tier 2 et ça vaut la peine.",
+      fr: "Un Google Sheets : colonne A = date, B = employé, C = heures, D = chantier. Chaque employé écrit ses heures lui-même chaque jour. Total automatique en bas avec SUM. Si tu as 4+ employés, là c'est Niveau 2 et ça vaut la peine.",
       en: "A Google Sheets: column A = date, B = employee, C = hours, D = job site. Each employee writes their own hours daily. Auto-total at the bottom with SUM. If you have 4+ employees, that's Tier 2 and worth investing in.",
     },
   },
@@ -218,7 +218,7 @@ export const PATTERNS: SelfServicePattern[] = [
       en: 'You volunteer for your neighborhood association. You want to send a monthly newsletter to 80 neighbors without paying for an email service.',
     },
     recipe: {
-      fr: "Brevo (anciennement Sendinblue, gratuit jusqu'à 300 envois/jour). Importe ta liste, écris ton bulletin dans l'éditeur, envoie. Tu vois qui ouvre, qui clique. Si ta liste grossit au-delà de 500 personnes, là on en reparle — c'est rendu Tier 1.",
+      fr: "Brevo (anciennement Sendinblue, gratuit jusqu'à 300 envois/jour). Importe ta liste, écris ton bulletin dans l'éditeur, envoie. Tu vois qui ouvre, qui clique. Si ta liste grossit au-delà de 500 personnes, là on en reparle — c'est rendu Niveau 1.",
       en: "Brevo (formerly Sendinblue, free up to 300 sends/day). Import your list, write the newsletter in the editor, send. See who opens, who clicks. If your list grows past 500 people, then come back — that's Tier 1.",
     },
     template: {

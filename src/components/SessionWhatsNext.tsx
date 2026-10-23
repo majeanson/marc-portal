@@ -100,28 +100,28 @@ const COPY = {
       `Je te réponds ${w} : oui, non, ou « raconte-moi plus ». Tu reçois aussi un courriel quand c’est posté.`,
     slaOverdue: 'bientôt (un peu en retard)',
     rejected:
-      'Marc a refusé cette session — la raison est dans le fil. Tu peux ouvrir une nouvelle proposition à tout moment.',
+      'J’ai dit non à cette demande, et la raison est dans le fil. Tu peux m’en envoyer une nouvelle quand tu veux.',
     shippedAllYoursAcked:
-      'Projet livré. Tu as confirmé « Tout à toi » — Marc te transfère les comptes. Tu peux toujours activer le mode dépositaire plus tard si besoin.',
+      'Projet livré. Tu as confirmé « Tout à toi » : je te transfère les comptes. Tu peux toujours activer le mode dépositaire plus tard si besoin.',
     shippedCustodianActive:
-      'Projet livré. Mode dépositaire actif — Marc opère le site. Gérer l’abonnement via le portail Stripe ci-dessous.',
+      'Projet livré. Mode dépositaire actif: j’opère le site. Gère l’abonnement via le portail Stripe ci-dessous.',
     shippedCustodianPastDue:
       'Projet livré. Mode dépositaire actif mais Stripe n’a pas pu débiter ta carte — mets à jour le paiement via le portail Stripe ci-dessous avant la fin de la période de grâce.',
     activeNoTier:
-      'Marc a accepté ton projet et le dimensionne. Tu verras le prix et le bouton « Payer » ici quand c’est prêt — par courriel aussi.',
+      'J’ai accepté ton projet et je le dimensionne. Tu verras le prix et le bouton « Payer » ici quand c’est prêt, et par courriel aussi.',
     activeTier0:
-      'Marc t’a redirigé vers un patron / template (Tier 0). Détails dans le fil ci-dessous — pas de paiement à faire.',
-    activeLoading: 'Marc a accepté ton projet. Chargement des détails de paiement…',
+      'Je t’ai redirigé vers un patron ou un gabarit (Niveau 0). Les détails sont dans le fil ci-dessous, et il n’y a rien à payer.',
+    activeLoading: 'J’ai accepté ton projet. Chargement des détails de paiement…',
     activeQuotePending:
-      'Marc a accepté ton projet en Tier 4 — il poste le devis dans le fil ci-dessous (et te ping par courriel) sous 72 h.',
+      'J’ai accepté ton projet en Niveau 4. Je poste le devis dans le fil ci-dessous (et je t’écris par courriel) sous 72 h.',
     activeUnpaid: (of: number) =>
       of > 1
-        ? 'Marc a accepté ton projet. Paie le premier versement ci-dessous pour démarrer.'
-        : 'Marc a accepté ton projet. Paie ci-dessous pour démarrer.',
+        ? 'J’ai accepté ton projet. Paie le premier versement ci-dessous pour démarrer.'
+        : 'J’ai accepté ton projet. Paie ci-dessous pour démarrer.',
     activePartlyPaid: (paid: number, of: number) =>
-      `Versement ${paid} sur ${of} payé — Marc avance le build. Le prochain est disponible ci-dessous quand tu veux.`,
+      `Versement ${paid} sur ${of} payé, j’avance le build. Le prochain est disponible ci-dessous quand tu veux.`,
     activePaid:
-      'Projet entièrement payé. Marc finalise. La livraison arrive — tu seras notifié par courriel.',
+      'Projet entièrement payé. Je finalise. La livraison s’en vient, et je t’écris par courriel.',
   },
   en: {
     triagePlain:
@@ -134,23 +134,22 @@ const COPY = {
     shippedAllYoursAcked:
       'Project shipped. You confirmed "All yours" — Marc is transferring the accounts. You can still activate custodian mode later if needed.',
     shippedCustodianActive:
-      'Project shipped. Custodian mode active — Marc is operating the site. Manage the subscription via the Stripe portal below.',
+      'Project shipped. Custodian mode is active: I operate the site. Manage the subscription via the Stripe portal below.',
     shippedCustodianPastDue:
       "Project shipped. Custodian mode active but Stripe couldn't charge your card — update the payment via the Stripe portal below before the grace period ends.",
     activeNoTier:
-      "Marc accepted your project and is sizing it. You'll see the price and a Pay button here when he's done — by email too.",
+      "I accepted your project and I'm sizing it. You'll see the price and a Pay button here when it's ready, and by email too.",
     activeTier0:
-      'Marc redirected you to a pattern/template (Tier 0). Details in the thread — no payment due.',
-    activeLoading: 'Marc accepted your project. Loading payment details…',
+      'I pointed you to a pattern or template (Tier 0). Details are in the thread below, and nothing is due.',
+    activeLoading: 'I accepted your project. Loading payment details…',
     activeQuotePending:
-      'Marc accepted your Tier 4 project — he posts the quote in the thread below (and emails you) within 72h.',
+      'I accepted your Tier 4 project. I post the quote in the thread below (and email you) within 72 h.',
     activeUnpaid: (of: number) =>
       of > 1
-        ? 'Marc accepted your project. Pay the first installment below to start the build.'
-        : 'Marc accepted your project. Pay below to start the build.',
+        ? 'I accepted your project. Pay the first installment below to start the build.'
+        : 'I accepted your project. Pay below to start the build.',
     activePartlyPaid: (paid: number, of: number) =>
-      `Installment ${paid} of ${of} paid — Marc is building. The next one is live below when you're ready.`,
-    activePaid:
-      "Project fully paid. Marc is wrapping up. Delivery is coming — you'll be notified by email.",
+      `Installment ${paid} of ${of} paid, I'm building. The next one is live below when you're ready.`,
+    activePaid: "Project fully paid. I'm wrapping up. Delivery is coming, and I'll email you.",
   },
 } as const

@@ -49,7 +49,7 @@ const FR = {
     menu: 'Menu',
     signIn: 'Connexion',
     signOut: 'Déconnexion',
-    mySessions: 'Mes sessions',
+    mySessions: 'Mes demandes',
     adminConsole: 'Console',
     viewAsUser: 'Voir comme visiteur',
     exitPreview: 'Quitter aperçu',
@@ -78,8 +78,8 @@ const FR = {
     closer: 'Raconte-moi la tienne.',
     cta: 'Décris ton problème →',
     ctaWaitlist: 'Rejoindre la liste d’attente →',
-    ctaLoggedIn: 'Démarrer une nouvelle proposition →',
-    mySessionsLink: 'Voir mes sessions',
+    ctaLoggedIn: 'Démarrer une nouvelle demande →',
+    mySessionsLink: 'Voir mes demandes',
     // Live count of open build slots (the cap is 2). Loading state shows the
     // neutral label until /api/capacity answers, so the pill never flashes a
     // wrong number.
@@ -331,11 +331,11 @@ const FR = {
   },
 
   cta: {
-    eyebrow: 'prêt?',
+    eyebrow: 'prêt ?',
     title: 'Décris ton problème',
     body: "Compte gratuit. Aucun call. Je lis chaque formulaire moi-même et je te réponds en 72 h. Oui, non, « j'ai plus de questions » ou « raconte-moi plus ».",
     button: 'Crée ton compte et décris ton problème →',
-    buttonLoggedIn: 'Démarrer une nouvelle proposition →',
+    buttonLoggedIn: 'Démarrer une nouvelle demande →',
     micro:
       'Si je suis plein, tu peux quand même créer un compte et te mettre sur la liste d’attente.',
   },
@@ -366,7 +366,7 @@ const FR = {
     eyebrow: 'sur un napperon',
     title: 'Dessine-moi le problème',
     instruction: "Une boîte, deux flèches, un mot, n'importe quoi qui aide à comprendre.",
-    descLabel: 'En une phrase, c’est quoi?',
+    descLabel: 'En une phrase, c’est quoi ?',
     descPlaceholder: 'Ex. « Mon café veut savoir qui prend quels quarts. »',
     loadingCanvas: 'Chargement du tableau blanc…',
     homeTeaser: 'Tu préfères dessiner ? Le napperon est dans le formulaire →',
@@ -478,7 +478,7 @@ const FR = {
     slugs: ['price', 'diy-ai', 'timeline', 'result', 'unclear', 'ownership', 'bring-own'] as const,
     items: [
       {
-        q: 'Le prix annoncé, c’est vraiment ça?',
+        q: 'Le prix annoncé, c’est vraiment ça ?',
         a: 'Oui. Le Niveau 0 est à 0 $ et sert à se voir si on est compatibles. Les niveaux 1 à 3 ont un prix forfaitaire avant de commencer, et on ne sort pas du forfait sans en reparler ensemble. Pas de facture surprise. Le reçu officiel vient de Stripe : c’est normal, c’est mon processeur de paiement.',
       },
       {
@@ -486,23 +486,23 @@ const FR = {
         a: 'Pour un problème de Niveau 0, probablement que oui, et je te pointe vers un outil ou un template gratuitement. C’est exactement à ça que sert le Niveau 0.</p><p>Pour le reste, construire n’a jamais été la partie difficile. Un générateur IA a besoin que tu saches exactement quoi lui demander, et la plupart des gens ne le savent pas encore. Il te sort une démo rapide, puis te laisse pris avec le login qui marche à moitié, les données qui se perdent, l’hébergement, le nom de domaine. Ce que tu paies, c’est un prix fixe, un outil qui tient le coup pour de vrai, et un nom responsable quand quelque chose brise des mois plus tard. Déjà pris avec une app IA à moitié faite ? Ça, c’est un <a href="/intake">sauvetage</a> : je regarde ce qui cloche et je te dis franchement si ça se répare. Si ton idée est assez petite pour que rien de ça ne te dérange, prends le générateur, je te le dirai franchement.',
       },
       {
-        q: 'Et si ça prend plus de temps que prévu?',
+        q: 'Et si ça prend plus de temps que prévu ?',
         a: 'Si je dépasse, c’est sur moi : la même règle qui vit sous la grille de prix. Si la portée change en cours de route (tu ajoutes des choses), on s’arrête, on regarde, et on décide ensemble : ajuster le devis ou couper.',
       },
       {
-        q: 'Et si je n’aime pas le résultat?',
+        q: 'Et si je n’aime pas le résultat ?',
         a: 'Tu vois une démo testable à chaque étape, pas juste à la fin. Si à mi-chemin tu réalises que ça ne convient pas, on arrête. Je facture le travail fait à ce jour, pas un cent de plus. Aucun engagement à finir.',
       },
       {
-        q: 'Je ne sais pas exactement ce que je veux. C’est ok?',
+        q: 'Je ne sais pas exactement ce que je veux. C’est ok ?',
         a: 'C’est même attendu. Décris comme il te vient, dans tes mots, sans te filtrer. Si ça sonne trop petit, trop bizarre, ou pas assez « professionnel », écris-le pareil. C’est moi qui décide ce qui rentre. Mon job c’est de poser les bonnes questions et de te montrer une version concrète sur laquelle tu peux réagir.',
       },
       {
-        q: 'À qui appartient le code à la fin?',
+        q: 'À qui appartient le code à la fin ?',
         a: 'À toi, dans tous les cas. Deux modes : « Tout à toi » (tu détiens repo, domaine et comptes dès le jour 1) ou « Je m’en occupe » (je suis dépositaire des clés, transférables sur demande, sans frais, en environ une semaine). Aucun des deux ne te coince. <a href="/handoff">Voir comment ça finit →</a>',
       },
       {
-        q: 'Je peux apporter mes propres designs ou maquettes?',
+        q: 'Je peux apporter mes propres designs ou maquettes ?',
         a: 'Avec plaisir. Figma, Sketch, dessin sur napperon, tout est bienvenu. Sinon, je propose une direction visuelle simple et on l’ajuste ensemble.',
       },
     ],
@@ -582,7 +582,7 @@ const FR = {
     eyebrow: 'Niveau 0 · auto-service · gratuit',
     title: 'Ton problème est trop petit pour engager un dev. Voici comment le régler toi-même',
     intro:
-      "Pas de honte. Si ton budget est sous 750 $ et que ton problème entre dans une de ces 4 catégories, voici la recette. Tu n'as rien à acheter et tu n'as pas besoin de moi.",
+      "Pas de honte. Si ton budget est sous 750 $ et que ton problème ressemble à l'un de ces cas, voici la recette. Tu n'as rien à acheter et tu n'as pas besoin de moi.",
     problemLabel: 'Le problème',
     recipeLabel: 'La recette',
     growBack:
@@ -605,7 +605,7 @@ const FR = {
     },
     draftPrompt: {
       title: 'Un brouillon est sauvegardé',
-      body: 'Tu as commencé un intake sur cet appareil. Tu peux reprendre où tu étais ou repartir de zéro.',
+      body: 'Tu as commencé une demande sur cet appareil. Tu peux reprendre où tu étais ou repartir de zéro.',
       continueBtn: 'Reprendre le brouillon',
       freshBtn: 'Recommencer à zéro',
       summary: (savedAt: string) => `Dernière modification : ${savedAt}.`,
@@ -636,7 +636,7 @@ const FR = {
       emailLabel: 'Courriel',
       nameLabel: 'Ton prénom (optionnel)',
       namePlaceholder: 'Marie',
-      hint: 'Marc lit chaque formulaire lui-même. Aucun spam, aucune revente.',
+      hint: 'Je lis chaque formulaire moi-même. Aucun spam, aucune revente.',
       autosaveNote: '✓ Pas de pression, ton brouillon t’attend si tu reviens.',
       // Honest fallback when the browser blocks localStorage (navigation
       // privée, stockage bloqué) : promettre un brouillon qui ne peut pas
@@ -656,8 +656,8 @@ const FR = {
     },
     typePicker: {
       eyebrow: 'quel genre de problème',
-      title: 'Quel genre de problème?',
-      body: 'Choisis celui qui se rapproche le plus. Si rien ne colle, prends « autre » : Marc va le lire et le rediriger au besoin.',
+      title: 'Quel genre de problème ?',
+      body: 'Choisis celui qui se rapproche le plus. Si rien ne colle, prends « autre » : je vais le lire et te rediriger au besoin.',
     },
     form: {
       eyebrow: 'le détail',
@@ -669,9 +669,9 @@ const FR = {
       needsInput: 'Écris quelques mots, fais un croquis ou laisse une note vocale pour soumettre.',
       handoffMode: {
         label: 'Préférence de gestion (optionnel)',
-        hint: "À la livraison, qui détient les clés? Par défaut Marc s'en occupe (forfait annuel), ce qui t'évite de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
+        hint: "À la livraison, qui détient les clés ? Par défaut je m'en occupe (forfait annuel), ce qui t'évite de gérer DNS, Cloudflare, Resend toi-même. Modifiable plus tard ; « Tout à toi » demande une confirmation explicite à la livraison.",
         learnMore: 'Voir comment ça finit →',
-        optionJe: "Je m'en occupe : Marc garde les clés (forfait annuel, mode recommandé)",
+        optionJe: "Je m'en occupe : je garde les clés (forfait annuel, mode recommandé)",
         optionTout: 'Tout à toi : je gère DNS, Cloudflare, Resend moi-même',
         optionParle: 'On en parle plus tard',
       },
@@ -683,7 +683,7 @@ const FR = {
       titleWaitlist: "Merci, tu es sur la liste d'attente.",
       bodyAccepted: "Je lis chaque formulaire moi-même. Pas d'IA entre toi et moi.",
       bodyWaitlist:
-        'Mes deux projets actifs sont pleins en ce moment, c’est mon plafond pour protéger ma famille. Ta proposition est sauvegardée et garde sa place dans la file. Je t’écris dès qu’un projet se libère, en général quelques semaines.',
+        'Mes deux projets actifs sont pleins en ce moment, c’est mon plafond pour protéger ma famille. Ta demande est sauvegardée et garde sa place dans la file. Je t’écris dès qu’un projet se libère, en général quelques semaines.',
       sla: 'Je te réponds en 72 h, par courriel : oui, non, ou « raconte-moi plus ».',
       summaryTitle: "Ce que tu m'as envoyé",
       summaryEmail: 'Courriel',
@@ -694,9 +694,9 @@ const FR = {
       startOver: 'Recommencer un nouveau formulaire',
       submitting: 'Envoi en cours…',
       submitError:
-        'Hmm, problème de connexion en envoyant ton intake. Ton brouillon est sauvegardé, réessaie dans un instant.',
+        'Hmm, problème de connexion en envoyant ta demande. Ton brouillon est sauvegardé, réessaie dans un instant.',
       sessionLinkLabel: 'Voir ta session →',
-      sessionLinkHint: 'Ta proposition est enregistrée. Tu peux la suivre et y répondre ici.',
+      sessionLinkHint: 'Ta demande est enregistrée. Tu peux la suivre et y répondre ici.',
       sessionEditHint:
         'Tu peux modifier tes réponses à tout moment depuis ton portail (« Mes sessions »).',
       magicLinkSentTitle: 'Vérifie ton courriel pour finaliser',
@@ -789,8 +789,7 @@ const FR = {
       heading: 'Mots de gens qui ont touché ce projet',
       empty: 'Pas encore de témoignages pour ce projet.',
       ctaTitle: 'Tu as touché à ce projet ?',
-      ctaBody:
-        'Si Marc t’a aidé sur ce projet précis, dis-le en quelques phrases, ça paraîtra ici.',
+      ctaBody: 'Si je t’ai aidé sur ce projet précis, dis-le en quelques phrases, ça paraîtra ici.',
       ctaButton: 'Écrire un témoignage →',
     },
   },
@@ -814,7 +813,7 @@ const FR = {
     placeholderHeading: 'Une place t’attend',
     placeholderIntro: 'Peu importe le niveau, un point de départ.',
     placeholderT0Cta: 'Voir Niveau 0 →',
-    placeholderIntakeCta: "Démarrer l'intake →",
+    placeholderIntakeCta: 'Démarrer ma demande →',
   },
 
   showcaseAdmin: {
@@ -839,7 +838,7 @@ const FR = {
     tierOption1: 'Niveau 1 · 750 $',
     tierOption2: 'Niveau 2 · 1 800 $',
     tierOption3: 'Niveau 3 · 3 600 $',
-    tierOption4: 'Niveau 4 · sur devis',
+    tierOption4: 'Niveau 4 · 7 500 $+',
     save: 'Enregistrer',
     saving: 'Enregistrement…',
     saveError: 'Échec, réessaie.',
@@ -870,7 +869,7 @@ const FR = {
     warnings: {
       noTitle: 'Pas de titre',
       noTagline: 'Pas de sous-titre',
-      noTier: 'Pas de tier',
+      noTier: 'Pas de niveau',
       titleLong: 'Titre long (>60 car.)',
     },
   },
@@ -1127,7 +1126,7 @@ const EN: Copy = {
     menu: 'Menu',
     signIn: 'Sign in',
     signOut: 'Sign out',
-    mySessions: 'My sessions',
+    mySessions: 'My requests',
     adminConsole: 'Console',
     viewAsUser: 'View as user',
     exitPreview: 'Exit preview',
@@ -1150,8 +1149,8 @@ const EN: Copy = {
     closer: 'Tell me about it.',
     cta: 'Open the form →',
     ctaWaitlist: 'Join the waitlist →',
-    ctaLoggedIn: 'Start a new proposal →',
-    mySessionsLink: 'View my sessions',
+    ctaLoggedIn: 'Tell me about your problem →',
+    mySessionsLink: 'View my requests',
     // Live count of open build slots (the cap is 2). Loading state shows the
     // neutral label until /api/capacity answers, so the pill never flashes a
     // wrong number.
@@ -1403,7 +1402,7 @@ const EN: Copy = {
     title: 'Describe your problem',
     body: "Free account. No call. I read every form myself and reply within 72h: yes, no, or 'tell me more.'",
     button: 'Create your account and describe your problem →',
-    buttonLoggedIn: 'Start a new proposal →',
+    buttonLoggedIn: 'Tell me about your problem →',
     micro: "If I'm full, you can still create an account and join the waitlist.",
   },
 
@@ -1495,7 +1494,7 @@ const EN: Copy = {
       voiceHide: 'Hide the voice note',
       voiceRemove: 'Remove the voice note',
       voiceConsent:
-        'Uses your microphone. The clip is transcribed on Cloudflare and immediately discarded. Only the text below is kept with your intake.',
+        'Uses your microphone. The clip is transcribed on Cloudflare and immediately discarded. Only the text below is kept with your request.',
       voiceUse: 'Transcribe it',
       title: 'Say the problem out loud',
       transcriptLabel: 'What I heard (edit if needed)',
@@ -1650,7 +1649,7 @@ const EN: Copy = {
     eyebrow: 'Tier 0 · self-service · free',
     title: "Your problem is too small to hire a dev. Here's how to handle it yourself",
     intro:
-      "No shame. If your budget is under $750 and your problem fits one of these 4 categories, here's the recipe. You don't need to buy anything and you don't need me.",
+      "No shame. If your budget is under $750 and your problem looks like one of these cases, here's the recipe. You don't need to buy anything and you don't need me.",
     problemLabel: 'The problem',
     recipeLabel: 'The recipe',
     growBack:
@@ -1673,7 +1672,7 @@ const EN: Copy = {
     },
     draftPrompt: {
       title: 'A draft is saved',
-      body: 'You started an intake on this device. Pick up where you left off, or start over.',
+      body: 'You started a request on this device. Pick up where you left off, or start over.',
       continueBtn: 'Continue draft',
       freshBtn: 'Start fresh',
       summary: (savedAt: string) => `Last edited: ${savedAt}.`,
@@ -1714,7 +1713,7 @@ const EN: Copy = {
       signedInAsEyebrow: 'signed-in account',
       signedInAsTitle: 'Signed in as',
       signedInAsBody:
-        "This proposal will be tied to your account. You'll be able to reopen and edit it in your sessions.",
+        "This request will be tied to your account. You'll be able to reopen and edit it in your requests.",
       signedInAsCta: 'Continue with this account →',
       signedInAsSwitch: 'Use a different email',
     },
@@ -1746,7 +1745,7 @@ const EN: Copy = {
       titleWaitlist: "Thanks, you're on the waitlist.",
       bodyAccepted: 'I read every form myself. No AI between you and me.',
       bodyWaitlist:
-        "Both my build slots are full right now, which is my cap, to protect my family time. Your proposal is saved and holds its place in the queue. I'll write as soon as a build wraps up, usually a few weeks.",
+        "Both my build slots are full right now, which is my cap, to protect my family time. Your request is saved and holds its place in the queue. I'll write as soon as a build wraps up, usually a few weeks.",
       sla: "I reply within 72 h, by email: yes, no, or 'tell me more.'",
       summaryTitle: 'What you sent me',
       summaryEmail: 'Email',
@@ -1757,9 +1756,9 @@ const EN: Copy = {
       startOver: 'Start a new form',
       submitting: 'Sending…',
       submitError:
-        'Connection hiccup while sending your intake. Your draft is saved, try again in a moment.',
+        'Connection hiccup while sending your request. Your draft is saved, try again in a moment.',
       sessionLinkLabel: 'See your session →',
-      sessionLinkHint: 'Your proposal is saved. You can follow it and reply here.',
+      sessionLinkHint: 'Your request is saved. You can follow it and reply here.',
       sessionEditHint: 'You can edit your answers anytime from your portal ("My sessions").',
       magicLinkSentTitle: 'Check your email to finish',
       magicLinkSentBody: (email: string) =>
@@ -1872,7 +1871,7 @@ const EN: Copy = {
     placeholderHeading: 'A slot is waiting',
     placeholderIntro: 'At any tier, a starting line.',
     placeholderT0Cta: 'Browse Tier 0 →',
-    placeholderIntakeCta: 'Start the intake →',
+    placeholderIntakeCta: 'Start my request →',
   },
 
   showcaseAdmin: {
@@ -1897,7 +1896,7 @@ const EN: Copy = {
     tierOption1: 'Tier 1 · $750',
     tierOption2: 'Tier 2 · $1,800',
     tierOption3: 'Tier 3 · $3,600',
-    tierOption4: 'Tier 4 · quoted',
+    tierOption4: 'Tier 4 · $7,500+',
     save: 'Save',
     saving: 'Saving…',
     saveError: 'Failed, try again.',

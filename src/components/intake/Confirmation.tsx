@@ -126,7 +126,7 @@ export function Confirmation({
                 letterSpacing="5"
                 fill="currentColor"
               >
-                MARC · PORTAL
+                MARC.PORTAL
               </text>
             </g>
           </svg>

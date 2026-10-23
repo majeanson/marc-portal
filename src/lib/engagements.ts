@@ -67,8 +67,8 @@ const TREMBLAY_LANDSCAPING: Engagement = {
       type: 'system',
       author: 'system',
       body: {
-        fr: 'Formulaire reçu — Marc lit dans les 72 h.',
-        en: 'Form received — Marc reads within 72h.',
+        fr: 'Formulaire reçu. Je le lis dans les 72 h.',
+        en: 'Form received. I read it within 72 h.',
       },
     },
     {
@@ -87,7 +87,7 @@ const TREMBLAY_LANDSCAPING: Engagement = {
       type: 'decision',
       author: 'marc',
       body: {
-        fr: "Oui, je peux faire ça. Scoping comme Tier 2 (~$1800). Inclus : (1) liste de 40 clients avec dernière visite, (2) déclencheur 'visite faite → brouillon de facture en attente', (3) export TPS/TVQ-ready. Hors scope : portail client, paiements en ligne. Réponds 'go' pour confirmer; je commence lundi.",
+        fr: "Oui, je peux faire ça. Scoping comme Niveau 2 (~$1800). Inclus : (1) liste de 40 clients avec dernière visite, (2) déclencheur 'visite faite → brouillon de facture en attente', (3) export TPS/TVQ-ready. Hors scope : portail client, paiements en ligne. Réponds 'go' pour confirmer; je commence lundi.",
         en: "Yes, I can do this. Scoping as Tier 2 (~$1800). Included: (1) 40-client list with last-visit date, (2) trigger 'visit done → draft invoice queued', (3) GST/QST-ready export. Out of scope: client portal, online payments. Reply 'go' to confirm; I start Monday.",
       },
     },
