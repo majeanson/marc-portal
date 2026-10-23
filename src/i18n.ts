@@ -1021,7 +1021,7 @@ const FR = {
             duration: 'à toi de choisir',
             where: 'page Mon compte',
             title: 'Handoff ou mode Dépositaire',
-            body: 'Tu prends tout à ton nom (repo, domaine, comptes) OU tu me laisses garder les clés : Watch (120 $/an) ou Care (400 $/an, avec 2 h/an de retouches). Annulable n’importe quand, avec bascule automatique vers « Tout à toi ».',
+            body: 'Tu prends tout à ton nom (repo, domaine, comptes) OU tu me laisses garder les clés : Veille (120 $/an) ou Entretien (400 $/an, avec 2 h/an de retouches). Annulable n’importe quand, avec bascule automatique vers « Tout à toi ».',
           },
         ],
       },

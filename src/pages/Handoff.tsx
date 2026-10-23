@@ -40,11 +40,11 @@ const COPY = {
             'Je détiens repo, domaine et comptes en mon nom (en dépositaire)',
             'Je gère DNS, renouvellements de domaine, certificats, mises à jour de sécurité',
             'Resend (SPF, DKIM, DMARC), Cloudflare Pages, exports D1 : à mon nom, sous ma responsabilité',
-            'Deux forfaits annuels : Watch (surveillance, correctifs de sécurité, mises à jour des dépendances) ou Care (tout Watch, plus 2 h/an de retouches et la file prioritaire)',
+            'Deux forfaits annuels : Veille (surveillance, correctifs de sécurité, mises à jour des dépendances) ou Entretien (tout Veille, plus 2 h/an de retouches et la file prioritaire)',
             'Les changements plus gros : 75 $/h, seulement après ton OK',
             'Renouvellement annuel ; si non renouvelé, bascule automatique vers « Tout à toi »',
           ],
-          cost: 'Watch 120 $/an · Care 400 $/an (domaine + ops inclus)',
+          cost: 'Veille 120 $/an · Entretien 400 $/an (domaine + ops inclus)',
           autonomy:
             "Tu peux basculer vers « Tout à toi » n'importe quand, gratuit, en environ une semaine. Aucun frais de sortie, aucune question.",
         },
@@ -153,7 +153,7 @@ const COPY = {
         },
         {
           q: 'Les forfaits annuels couvrent quoi exactement?',
-          a: 'Ça dépend du forfait. Watch (120 $/an) couvre le coût du domaine (~15 $/an, au prix coûtant), le monitoring de santé du site, les correctifs de sécurité et les mises à jour des dépendances. Care (400 $/an) ajoute 2 heures de petites retouches par année (changer un texte, ajuster une couleur, ajouter un champ simple) et la file prioritaire. Au-delà, je facture 75 $/h — on en parle avant, jamais de surprise.',
+          a: 'Ça dépend du forfait. Veille (120 $/an) couvre le coût du domaine (~15 $/an, au prix coûtant), le monitoring de santé du site, les correctifs de sécurité et les mises à jour des dépendances. Entretien (400 $/an) ajoute 2 heures de petites retouches par année (changer un texte, ajuster une couleur, ajouter un champ simple) et la file prioritaire. Au-delà, je facture 75 $/h — on en parle avant, jamais de surprise.',
         },
         {
           q: 'Est-ce que je peux changer de mode plus tard?',

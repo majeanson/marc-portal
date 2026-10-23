@@ -62,15 +62,15 @@ const COPY = {
     custodianEnded: 'terminé',
     custodianDetailsLink: 'Voir les détails ↗',
     custodianPitch:
-      'Mode par défaut à la livraison. Je garde les clés (repo, domaine, Cloudflare, Resend) et je garde le site en ligne. Deux forfaits annuels : Watch (120 $/an — surveillance, correctifs de sécurité, mises à jour des dépendances) ou Care (400 $/an — tout Watch, plus 2 h/an de retouches et la file prioritaire). Les changements plus gros se facturent à 75 $/h. Annulable à tout moment — bascule automatique vers « Tout à toi ».',
+      'Mode par défaut à la livraison. Je garde les clés (repo, domaine, Cloudflare, Resend) et je garde le site en ligne. Deux forfaits annuels : Veille (120 $/an — surveillance, correctifs de sécurité, mises à jour des dépendances) ou Entretien (400 $/an — tout Veille, plus 2 h/an de retouches et la file prioritaire). Les changements plus gros se facturent à 75 $/h. Annulable à tout moment — bascule automatique vers « Tout à toi ».',
     custodianActiveBody:
       'Je détiens repo, domaine et comptes en mon nom. Renouvellement annuel automatique. Tu peux annuler ou modifier le mode de paiement via le portail Stripe.',
     custodianPastDueBody:
       'Stripe n’a pas réussi à débiter ta carte. Mets à jour le mode de paiement avant la fin de la période de grâce, sinon ton mode bascule automatiquement vers « Tout à toi ».',
     custodianEndedBody:
       'Ton abonnement dépositaire a pris fin. Tu es maintenant en mode « Tout à toi » — tout est à ton nom. Tu peux reprendre un forfait à tout moment.',
-    payWatch: 'Activer Watch (120 $/an) →',
-    payCare: 'Activer Care (400 $/an) →',
+    payWatch: 'Activer Veille (120 $/an) →',
+    payCare: 'Activer Entretien (400 $/an) →',
     manageSub: 'Gérer l’abonnement ↗',
     manageSubPastDue: 'Mettre à jour le paiement ↗',
 

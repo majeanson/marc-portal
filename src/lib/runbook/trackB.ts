@@ -422,7 +422,7 @@ export const trackB: Track = {
       title: { fr: 'Décision Custodian vs Tout à toi', en: 'Custodian vs All-yours' },
       time: 'à la livraison',
       summary: {
-        fr: 'Visiteur choisit : « je te paie pour gérer » (Watch ou Care) ou « je reprends tout ».',
+        fr: 'Visiteur choisit : « je te paie pour gérer » (Veille ou Entretien) ou « je reprends tout ».',
         en: 'Visitor chooses: “I pay you to handle it” (Watch or Care) or “I take everything back”.',
       },
       why: {
@@ -431,7 +431,7 @@ export const trackB: Track = {
       },
       how: {
         fr: [
-          'Visiteur clique « Watch » ou « Care » → abonnement Stripe annuel récurrent',
+          'Visiteur clique « Veille » ou « Entretien » → abonnement Stripe annuel récurrent',
           '« Tout à toi » → checklist technique à cocher (5 cases) + confirmation',
           'Si Tout à toi : opérateur transfère via /handoff/checklist',
         ],
