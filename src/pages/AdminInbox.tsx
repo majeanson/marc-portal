@@ -5,7 +5,8 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { useAuth } from '../lib/authContext'
 import { listSessions, type SessionRow, type SessionStatus } from '../lib/sessionsApi'
-import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
+import { type ProblemType } from '../lib/intakeSchemas'
+import { requestTitle } from '../lib/requestTitle'
 import { computeSla, formatDate, formatDateTime, formatDueDate, hoursLeft } from '../lib/format'
 import { STATUS_LABEL } from '../lib/statusLabel'
 import { Surface } from '../components/Surface'
@@ -164,7 +165,7 @@ function AdminCard({
   copy: (typeof COPY)[Lang]
 }) {
   const preview = previewFromIntake(session.intake_json)
-  const title = preview ? localized(getSchemaForType(preview.type).title, lang) : copy.untitled
+  const title = requestTitle(session.intake_json, lang) ?? copy.untitled
   const submittedAt = preview?.submittedAt ? formatDate(preview.submittedAt, lang) : null
   const sla = computeSla(session)
   const href = `${langPrefix}/session/${session.id}`

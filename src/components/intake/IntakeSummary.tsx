@@ -21,6 +21,7 @@ export function IntakeSummary({
   submittedAt,
   editable = false,
   editableType = false,
+  forAdmin = false,
   typeChangeConfirm,
   requiredEmptyConfirm,
   onChange,
@@ -33,6 +34,8 @@ export function IntakeSummary({
   editable?: boolean
   /** When true (and editable), allow type to be changed via a select. */
   editableType?: boolean
+  /** The operator reads this too; the “you sent me” wording is the client's voice. */
+  forAdmin?: boolean
   /** confirm() string shown before applying a type change. Required if editableType. */
   typeChangeConfirm?: string
   /** confirm() string shown before clearing a required field. */
@@ -55,7 +58,7 @@ export function IntakeSummary({
 
   return (
     <>
-      <h3 style={{ marginBottom: 12 }}>{t.summaryTitle}</h3>
+      <h3 style={{ marginBottom: 12 }}>{forAdmin ? t.summaryTitleAdmin : t.summaryTitle}</h3>
       <dl className="surface summary">
         <dt>{t.summaryEmail}</dt>
         <dd className="mono">{account.email}</dd>
@@ -99,7 +102,9 @@ export function IntakeSummary({
         <dd>{formatDate(submittedAt, lang)}</dd>
       </dl>
 
-      <h3 style={{ marginTop: 24, marginBottom: 12 }}>{t.summaryAnswers}</h3>
+      <h3 style={{ marginTop: 24, marginBottom: 12 }}>
+        {forAdmin ? t.summaryAnswersAdmin : t.summaryAnswers}
+      </h3>
       <dl className="surface summary">
         {schema.fields.map((field) => {
           const v = values[field.id] ?? ''

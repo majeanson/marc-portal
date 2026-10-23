@@ -18,6 +18,7 @@ import { clearDraft, loadDraftWithTTL } from '../lib/draft'
 import { markJustErased } from '../lib/erasureFlag'
 import { PENDING_INTAKE_KEY, type PendingIntake } from './Intake'
 import { getSchemaForType, localized, type ProblemType } from '../lib/intakeSchemas'
+import { requestTitle } from '../lib/requestTitle'
 import { computeSla, formatDate, formatRelativeWindow } from '../lib/format'
 import { isUnread, seedIfMissing } from '../lib/unread'
 import { PaymentActions } from '../components/PaymentActions'
@@ -59,7 +60,7 @@ const COPY = {
     newBtn: 'Nouvelle demande',
     loadError: 'Impossible de charger tes demandes.',
     retry: 'Réessayer',
-    finalizing: 'Finalisation de ton intake…',
+    finalizing: 'Finalisation de ta demande…',
     statusLabel: 'Statut',
     openBtn: 'Ouvrir →',
     logout: 'Se déconnecter',
@@ -86,6 +87,8 @@ const COPY = {
     searchPlaceholder: 'Filtrer par mot-clé…',
     filterAll: 'Toutes',
     noMatches: 'Aucune demande ne correspond.',
+    showClosed: (n: number) => `Voir les ${n} autres (livrées ou fermées)`,
+    hideClosed: 'Replier les demandes fermées',
     slaDueLabel: 'Je te réponds',
     slaOverdue: 'En retard',
     deleteHeading: 'Supprimer mon compte et toutes mes données',
@@ -166,7 +169,7 @@ const COPY = {
     newBtn: 'New proposal',
     loadError: 'Could not load your requests.',
     retry: 'Retry',
-    finalizing: 'Finalizing your intake…',
+    finalizing: 'Finalizing your request…',
     statusLabel: 'Status',
     openBtn: 'Open →',
     logout: 'Sign out',
@@ -192,6 +195,8 @@ const COPY = {
     searchPlaceholder: 'Filter by keyword…',
     filterAll: 'All',
     noMatches: 'No requests match.',
+    showClosed: (n: number) => `Show the other ${n} (delivered or closed)`,
+    hideClosed: 'Collapse closed requests',
     slaDueLabel: 'I reply',
     slaOverdue: 'Overdue',
     deleteHeading: 'Delete my account and all my data',
@@ -277,6 +282,7 @@ export function MePortal({ lang }: { lang: Lang }) {
   )
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<SessionStatus | 'all'>('all')
+  const [showAllClosed, setShowAllClosed] = useState(false)
   const [deleteState, setDeleteState] = useState<'idle' | 'confirming' | 'deleting' | 'error'>(
     'idle',
   )
@@ -459,6 +465,22 @@ export function MePortal({ lang }: { lang: Lang }) {
   const counts = countByStatus(sessions ?? [])
   const total = sessions?.length ?? 0
   const filtered = filterSessions(sessions ?? [], query, statusFilter, lang)
+  // Twelve cards on a phone buries the one that needs attention. On the
+  // unfiltered list, keep every open request plus the three most recent closed
+  // ones; any filter or search shows everything it matches.
+  const isClosed = (s: SessionRow) => s.status === 'shipped' || s.status === 'rejected'
+  const collapsing = statusFilter === 'all' && query.trim() === '' && !showAllClosed
+  let shown = filtered
+  let hiddenClosed = 0
+  if (collapsing) {
+    let keptClosed = 0
+    shown = filtered.filter((s) => {
+      if (!isClosed(s)) return true
+      keptClosed += 1
+      return keptClosed <= 3
+    })
+    hiddenClosed = filtered.length - shown.length
+  }
 
   const privacyHref = lang === 'fr' ? '/confidentialite' : '/en/privacy'
 
@@ -621,7 +643,7 @@ export function MePortal({ lang }: { lang: Lang }) {
                 <p className="me-portal__no-matches">{t.noMatches}</p>
               ) : (
                 <ul className="me-portal__cards">
-                  {filtered.map((s) => (
+                  {shown.map((s) => (
                     <SessionCard
                       key={s.id}
                       session={s}
@@ -632,6 +654,20 @@ export function MePortal({ lang }: { lang: Lang }) {
                     />
                   ))}
                 </ul>
+              )}
+              {(hiddenClosed > 0 ||
+                (showAllClosed &&
+                  statusFilter === 'all' &&
+                  query.trim() === '' &&
+                  filtered.filter(isClosed).length > 3)) && (
+                <button
+                  type="button"
+                  className="link-btn mono"
+                  onClick={() => setShowAllClosed((v) => !v)}
+                  aria-expanded={showAllClosed}
+                >
+                  {showAllClosed ? t.hideClosed : t.showClosed(hiddenClosed)}
+                </button>
               )}
             </>
           )}
@@ -768,7 +804,7 @@ function SessionCard({
   justPaidPaymentId: string | null
 }) {
   const preview = previewFromIntake(session.intake_json)
-  const title = preview ? localized(getSchemaForType(preview.type).title, lang) : copy.untitled
+  const title = requestTitle(session.intake_json, lang) ?? copy.untitled
   const submittedAt = preview?.submittedAt ? formatDate(preview.submittedAt, lang) : null
   const href = `${langPrefix}/session/${session.id}`
   const statusLabel = copy.statusNames[session.status] ?? session.status

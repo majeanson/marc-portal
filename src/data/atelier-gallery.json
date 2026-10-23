@@ -306,7 +306,7 @@
       "full": "/atelier/full/phone/parcours.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 5852,
+      "fullH": 5922,
       "cropped": true
     },
     {
@@ -324,7 +324,7 @@
       "full": "/atelier/full/phone/en-journey.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 5676,
+      "fullH": 5722,
       "cropped": true
     },
     {
@@ -522,7 +522,7 @@
       "full": "/atelier/full/phone/handoff.png",
       "thumbW": 390,
       "thumbH": 624,
-      "fullH": 5900,
+      "fullH": 5879,
       "cropped": true
     },
     {
@@ -1134,7 +1134,7 @@
       "full": "/atelier/full/narrow/parcours.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4348,
+      "fullH": 4372,
       "cropped": true
     },
     {
@@ -1152,7 +1152,7 @@
       "full": "/atelier/full/narrow/en-journey.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4187,
+      "fullH": 4234,
       "cropped": true
     },
     {
@@ -1350,7 +1350,7 @@
       "full": "/atelier/full/narrow/handoff.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4198,
+      "fullH": 4177,
       "cropped": true
     },
     {
@@ -1962,7 +1962,7 @@
       "full": "/atelier/full/wide/parcours.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4373,
+      "fullH": 4396,
       "cropped": true
     },
     {
@@ -1980,7 +1980,7 @@
       "full": "/atelier/full/wide/en-journey.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4212,
+      "fullH": 4258,
       "cropped": true
     },
     {
@@ -2178,7 +2178,7 @@
       "full": "/atelier/full/wide/handoff.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4198,
+      "fullH": 4177,
       "cropped": true
     },
     {
@@ -2790,7 +2790,7 @@
       "full": "/atelier/full/dark/parcours.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4373,
+      "fullH": 4396,
       "cropped": true
     },
     {
@@ -2808,7 +2808,7 @@
       "full": "/atelier/full/dark/en-journey.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4212,
+      "fullH": 4258,
       "cropped": true
     },
     {
@@ -2934,7 +2934,7 @@
       "full": "/atelier/full/dark/handoff.png",
       "thumbW": 600,
       "thumbH": 960,
-      "fullH": 4198,
+      "fullH": 4177,
       "cropped": true
     },
     {

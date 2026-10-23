@@ -86,7 +86,8 @@ const FR = {
     // Live count of open build slots (the cap is 2). Loading state shows the
     // neutral label until /api/capacity answers, so the pill never flashes a
     // wrong number.
-    slotOpen: (n: number) => (n > 1 ? `${n} places ouvertes` : '1 place ouverte'),
+    slotOpen: (n: number) =>
+      (n > 1 ? `${n} places ouvertes` : '1 place ouverte') + ' pour l’instant',
     slotOpenLoading: 'Ouvert aux projets',
     slotFull: 'plein, liste d’attente ouverte',
   },
@@ -681,11 +682,13 @@ const FR = {
         'Mes deux projets actifs sont pleins en ce moment, c’est mon plafond pour protéger ma famille. Ta demande est sauvegardée et garde sa place dans la file. Je t’écris dès qu’un projet se libère, en général quelques semaines.',
       sla: 'Je te réponds en 72 h, par courriel : oui, non, ou « raconte-moi plus ».',
       summaryTitle: "Ce que tu m'as envoyé",
+      summaryTitleAdmin: 'Ce que le client a envoyé',
       summaryEmail: 'Courriel',
       summaryName: 'Prénom',
       summaryType: 'Type de problème',
       summarySubmittedAt: 'Soumis le',
       summaryAnswers: 'Tes réponses',
+      summaryAnswersAdmin: 'Ses réponses',
       startOver: 'Recommencer un nouveau formulaire',
       submitting: 'Envoi en cours…',
       submitError:
@@ -915,7 +918,7 @@ const FR = {
             duration: '5–10 min',
             where: 'portail',
             title: 'Tu décris ton problème',
-            body: 'Formulaire guidé. Pas un call. Sauvegarde automatique : tu pars manger, tu reviens, ton brouillon est là. Tu peux même dessiner un croquis si les mots manquent.',
+            body: 'Formulaire guidé : ton prénom et ton courriel d’abord, puis ton problème. Pas un call. Sauvegarde automatique : tu pars manger, tu reviens, ton brouillon est là. Tu peux même dessiner un croquis si les mots manquent.',
           },
           {
             num: '03',
@@ -923,7 +926,7 @@ const FR = {
             duration: '1 clic',
             where: 'ton courriel',
             title: 'Le lien de connexion arrive dans ta boîte',
-            body: 'Aucun mot de passe à inventer. Le lien crée ton compte gratuit en un clic et te ramène au bon endroit.',
+            body: 'Après « Soumettre ». Aucun mot de passe à inventer : le lien crée ton compte gratuit en un clic et te ramène au bon endroit.',
           },
         ],
       },
@@ -1154,7 +1157,7 @@ const EN: Copy = {
     // Live count of open build slots (the cap is 2). Loading state shows the
     // neutral label until /api/capacity answers, so the pill never flashes a
     // wrong number.
-    slotOpen: (n: number) => (n > 1 ? `${n} slots open` : '1 slot open'),
+    slotOpen: (n: number) => (n > 1 ? `${n} slots open` : '1 slot open') + ' right now',
     slotOpenLoading: 'Open for projects',
     slotFull: 'currently full, waitlist open',
   },
@@ -1740,11 +1743,13 @@ const EN: Copy = {
         "Both my build slots are full right now, which is my cap, to protect my family time. Your request is saved and holds its place in the queue. I'll write as soon as a build wraps up, usually a few weeks.",
       sla: "I reply within 72 h, by email: yes, no, or 'tell me more.'",
       summaryTitle: 'What you sent me',
+      summaryTitleAdmin: 'What the client sent',
       summaryEmail: 'Email',
       summaryName: 'First name',
       summaryType: 'Problem type',
       summarySubmittedAt: 'Submitted on',
       summaryAnswers: 'Your answers',
+      summaryAnswersAdmin: 'Their answers',
       startOver: 'Start a new form',
       submitting: 'Sending…',
       submitError:
@@ -1968,7 +1973,7 @@ const EN: Copy = {
             duration: '5–10 min',
             where: 'portal',
             title: 'You describe your problem',
-            body: 'Guided form. Not a call. Auto-save: eat dinner, come back, your draft is right where you left it. You can even sketch a napkin if words fall short.',
+            body: 'Guided form: your first name and email first, then your problem. Not a call. Auto-save: eat dinner, come back, your draft is right where you left it. You can even sketch a napkin if words fall short.',
           },
           {
             num: '03',
@@ -1976,7 +1981,7 @@ const EN: Copy = {
             duration: '1 click',
             where: 'your inbox',
             title: 'A sign-in link lands in your inbox',
-            body: 'No password to invent. The link creates your free account in one click and drops you back where you were.',
+            body: 'After you hit Submit. No password to invent: the link creates your free account in one click and drops you back where you were.',
           },
         ],
       },

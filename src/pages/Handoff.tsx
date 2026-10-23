@@ -52,7 +52,7 @@ const COPY = {
           name: 'Tout à toi',
           id: 'tout-a-toi',
           eyebrow: 'à la place du dépositaire',
-          lead: 'Tu reprends tout à ton nom à la livraison. Pour visiteurs déjà à l’aise avec leur stack.',
+          lead: 'Tu reprends tout à ton nom à la livraison. Pour les gens déjà à l’aise avec leur stack.',
           bullets: [
             'Le repo GitHub passe sous ton compte (ou celui de ton entreprise)',
             'Le domaine est enregistré à ton nom chez le registrar de ton choix',
@@ -70,7 +70,7 @@ const COPY = {
             'Rotation des clés API et secrets HMAC',
             'Admin GitHub (collaborateurs, branches, déploiements)',
           ],
-          cost: 'Gratuit. Réservé aux visiteurs autonomes côté ops.',
+          cost: 'Gratuit. Réservé aux gens autonomes côté ops.',
           autonomy:
             "Tu peux migrer ou tout reprendre à n'importe quel moment, sans question. Rien à dénouer.",
         },
@@ -208,7 +208,7 @@ const COPY = {
           name: 'All yours',
           id: 'all-yours',
           eyebrow: 'opt out of custodian',
-          lead: 'You take everything at delivery. For visitors already comfortable with their stack.',
+          lead: 'You take everything at delivery. For people already comfortable with their stack.',
           bullets: [
             "The GitHub repo moves under your account (or your company's)",
             'The domain is registered in your name at the registrar of your choice',
@@ -226,7 +226,7 @@ const COPY = {
             'Rotating API keys and HMAC secrets',
             'GitHub admin (collaborators, branches, deploys)',
           ],
-          cost: 'Free. For visitors who already own the ops stack.',
+          cost: 'Free. For people who already own the ops stack.',
           autonomy:
             'You can migrate or take everything over at any time, no questions asked. Nothing to untangle.',
         },

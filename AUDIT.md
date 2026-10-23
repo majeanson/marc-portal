@@ -410,14 +410,35 @@
   under `features/` would touch `lac.config.json` plus possibly hardcoded
   paths in `lac-mcp` tools that read these. The noise is real but contained;
   most ignore globs (.eslintignore, glob includes) can be tuned cheaper.
-- ⏭ **P3.23** — `/tier-0` "Modèle Google Sheets (à dupliquer)" links.
+- ✅ **P3.23** — `/tier-0` "Modèle Google Sheets (à dupliquer)" links.
   **Deferred (2026-10-23, stranger review).** Both links pointed at the generic
   Sheets home (`…/spreadsheets/u/0/?tgif=d`), so the one promise a Niveau 0
   visitor acts on failed. The `template` entries were removed from
   `src/lib/patterns.ts` (snow-rotation, potluck); the written recipe stays.
-  Re-open when two real sheets are published: add `template: { label, href }`
-  back with a `…/copy` URL so « dupliquer » is one click. Interim mitigation:
-  no link at all rather than a link that lands on the wrong page.
+  **Closed (2026-10-23, Marc):** no sheets will be published; the written recipe
+  is the deliverable. The `template` field stays optional in `patterns.ts` if a
+  real sheet ever exists.
+- ⏭ **P3.24** — stranger-review items left open (2026-10-23).
+  Decided not to do now, each for a reason:
+  - **Contact needs an account** (friction #2): anonymous steps 1-4 or a
+    `pose une question` path is a product decision, and the account step feeds
+    the magic-link flow. Re-open when a visitor actually asks for a lighter door.
+  - **Scroll-reveal blank around project cards** (#3): the gap is the live-build
+    iframe loading under an idle placeholder, not the ink-in CSS. A bigger
+    `rootMargin` in `ProjectCardPreview` loads more iframes up front and works
+    against the weight note below. Needs a real-browser pass before touching.
+  - **Gallery thumbnails in the wrong language** (#7): the builds ship their own
+    UI language; needs re-shot FR thumbnails or a per-build locale param.
+  - **Home weight: two live iframes** (weight note): a static thumbnail that
+    swaps to the live build on tap. Pairs with the item above.
+  - **Repeated « ce que je fais / je fais pas »** (#4) and the **tall empty
+    « Ton projet pourrait être ici » card** (#10): layout/editorial calls, not
+    defects.
+  - **Activity log has only « Créée »** (admin #8): needs a `submitted` event
+    recorded server-side at Soumettre; the session row has no such timestamp
+    today, so it is a small migration plus a log write, not a copy fix.
+  - **Plan names Watch / Care in English on the FR `/handoff`: they are the
+    product names used in pricing and Stripe; renaming is Marc's call.
 
 ---
 
