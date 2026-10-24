@@ -133,6 +133,7 @@ const Projects = lazyPage(() => import('./pages/Projects').then((m) => ({ defaul
 const Journey = lazyPage(() => import('./pages/Journey').then((m) => ({ default: m.Journey })))
 const Vouches = lazyPage(() => import('./pages/Vouches').then((m) => ({ default: m.Vouches })))
 const Vouch = lazyPage(() => import('./pages/Vouch').then((m) => ({ default: m.Vouch })))
+const Question = lazyPage(() => import('./pages/Question').then((m) => ({ default: m.Question })))
 const MyData = lazyPage(() => import('./pages/MyData').then((m) => ({ default: m.MyData })))
 const AdminVouches = lazyPage(() =>
   import('./pages/AdminVouches').then((m) => ({ default: m.AdminVouches })),
@@ -566,6 +567,22 @@ export const router = createBrowserRouter(
         element={
           <L>
             <Vouches lang="en" />
+          </L>
+        }
+      />
+      <Route
+        path="/question"
+        element={
+          <L>
+            <Question lang="fr" />
+          </L>
+        }
+      />
+      <Route
+        path="/en/question"
+        element={
+          <L>
+            <Question lang="en" />
           </L>
         }
       />

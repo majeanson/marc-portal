@@ -159,9 +159,7 @@ function InviteCard({ lang, href }: { lang: Lang; href: string }) {
         <span className="featured-projects__invite-mark mono" aria-hidden="true">
           +
         </span>
-        <span className="featured-projects__invite-eyebrow mono">{t.eyebrow}</span>
         <h3 className="featured-projects__invite-title">{t.title}</h3>
-        <p className="featured-projects__invite-body">{t.body}</p>
         <span className="featured-projects__invite-cta mono">{t.cta}</span>
       </Link>
     </li>
@@ -196,6 +194,7 @@ function FeaturedCard({
           sessionId={project.id}
           lang={lang}
           previewViewport={project.currentBuild?.previewViewport ?? null}
+          live={false}
         />
         <div className="project-card__head">
           <span className="project-card__date mono">{formatDate(project.showcasedAt, lang)}</span>

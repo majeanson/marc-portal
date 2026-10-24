@@ -278,7 +278,7 @@ const COPY = {
     withdrawError: 'Le retrait a pas passé. Réessaie.',
     withdrawn: 'Session retirée.',
     timelineHeading: 'Activité',
-    timelineCreated: (d: string) => `Créée le ${d}`,
+    timelineCreated: (d: string) => `Demande envoyée le ${d}`,
     timelineStatus: (from: string, to: string, by: string, d: string) =>
       `${from} → ${to} · par ${by} · ${d}`,
     timelineEmpty: 'Aucun changement de statut pour l’instant.',
@@ -401,7 +401,7 @@ const COPY = {
     withdrawError: "The withdraw didn't go through. Try again.",
     withdrawn: 'Session withdrawn.',
     timelineHeading: 'Activity',
-    timelineCreated: (d: string) => `Created on ${d}`,
+    timelineCreated: (d: string) => `Request submitted on ${d}`,
     timelineStatus: (from: string, to: string, by: string, d: string) =>
       `${from} → ${to} · by ${by} · ${d}`,
     timelineEmpty: 'No status changes yet.',

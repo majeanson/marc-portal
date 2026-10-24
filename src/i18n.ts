@@ -142,13 +142,11 @@ const FR = {
     galleryCard: {
       eyebrow: 'envie de tout voir ?',
       title: 'La galerie complète, tous les projets',
-      body: 'Au-delà des trois cartes ci-dessus, la galerie filtre par tier et par statut. Chaque carte ouvre le détail du projet avec le dernier build en direct.',
+      body: 'Au-delà des trois cartes ci-dessus, la galerie filtre par niveau et par statut. Chaque carte ouvre le détail du projet avec le dernier build en direct.',
       cta: 'Voir tous les projets →',
     },
     inviteCard: {
-      eyebrow: 'la place est libre',
       title: 'Ton projet pourrait être ici',
-      body: 'Cette carte attend un vrai projet. Le tien, peut-être. Décris ton idée et on regarde ça ensemble.',
       cta: 'Lance ton projet →',
     },
     loading: 'Chargement…',
@@ -205,7 +203,7 @@ const FR = {
   bringAnything: {
     eyebrow: 'aucune idée trop petite',
     title: 'Apporte-moi n’importe quoi',
-    body: 'Je veux que toutes les idées arrivent dans ma boîte : petites, bizarres, à moitié formées, peu importe. Mon job, c’est de filtrer. Le tien, c’est juste de décrire ce qui te trotte dans la tête.',
+    body: 'Petites, bizarres, à moitié formées : envoie-les toutes. Le tri, c’est mon job. Le tien, c’est de décrire ce qui te trotte dans la tête.',
     examplesTitle: "Genre d'idées que je prends",
     scrollHint: 'glisse pour en voir plus →',
     exampleGroups: [
@@ -256,7 +254,7 @@ const FR = {
       },
     ],
     reassure:
-      'Si c’est trop petit pour mes prix, je te montre comment le faire toi-même (Niveau 0, gratuit). Trop gros ou entre les deux, on en parle et je triage. Dans tous les cas, je veux le voir avant de décider.',
+      'Trop petit pour mes prix ? Je te montre comment le faire toi-même (Niveau 0, gratuit). Le reste, on en parle.',
     cta: 'Décris ton idée →',
   },
 
@@ -525,8 +523,10 @@ const FR = {
   footer: {
     contact: {
       pre: 'Contact : ',
-      link: 'démarre une session',
-      post: ' et on en parle là.',
+      link: 'pose une question',
+      mid: ' ou ',
+      link2: 'démarre une demande',
+      post: '.',
     },
     share: {
       pre: 'Partage marc.portal',
@@ -1021,7 +1021,7 @@ const FR = {
             duration: 'à toi de choisir',
             where: 'page Mon compte',
             title: 'Handoff ou mode Dépositaire',
-            body: 'Tu prends tout à ton nom (repo, domaine, comptes) OU tu me laisses garder les clés : Watch (120 $/an) ou Care (400 $/an, avec 2 h/an de retouches). Annulable n’importe quand, avec bascule automatique vers « Tout à toi ».',
+            body: 'Tu prends tout à ton nom (repo, domaine, comptes) OU tu me laisses garder les clés : Veille (120 $/an) ou Entretien (400 $/an, avec 2 h/an de retouches). Annulable n’importe quand, avec bascule automatique vers « Tout à toi ».',
           },
         ],
       },
@@ -1213,9 +1213,7 @@ const EN: Copy = {
       cta: 'See all projects →',
     },
     inviteCard: {
-      eyebrow: 'this spot is open',
       title: 'Your project could be here',
-      body: 'This card is waiting on a real build. Maybe yours. Tell me your idea and we look at it together.',
       cta: 'Start your project →',
     },
     loading: 'Loading…',
@@ -1272,7 +1270,7 @@ const EN: Copy = {
   bringAnything: {
     eyebrow: 'no idea too small',
     title: 'Bring me anything',
-    body: "I want every idea to land in my inbox: small, weird, half-formed, doesn't matter. My job is to filter. Yours is just to describe whatever's been rattling around in your head.",
+    body: 'Small, weird, half-formed: send them all. Sorting is my job. Yours is describing what’s been rattling around in your head.',
     examplesTitle: 'The kind of ideas I take',
     scrollHint: 'drag to see more →',
     exampleGroups: [
@@ -1323,7 +1321,7 @@ const EN: Copy = {
       },
     ],
     reassure:
-      "If it's too small for my pricing, I'll show you how to do it yourself (Tier 0, free). Too big or somewhere in between, we talk it through and I triage. Either way, I want to see it before I decide.",
+      'Too small for my pricing? I’ll show you how to do it yourself (Tier 0, free). Anything else, we talk it through.',
     cta: 'Describe your idea →',
   },
 
@@ -1591,8 +1589,10 @@ const EN: Copy = {
   footer: {
     contact: {
       pre: 'Contact: ',
-      link: 'start a session',
-      post: ' and we’ll talk it through there.',
+      link: 'ask a question',
+      mid: ' or ',
+      link2: 'start a request',
+      post: '.',
     },
     share: {
       pre: 'Share marc.portal',

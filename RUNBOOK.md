@@ -2053,6 +2053,25 @@ there's still headroom.
 org slug, in `wrangler.toml [vars]`) are both set and the digest cron is
 running. It piggybacks the daily digest — no separate schedule.
 
+## 26. A question arrived (`kind = visitor-question`)
+
+**Symptom:** the daily digest lists an alert whose body starts with an email
+address, or `admin_alerts` has an unresolved row with
+`kind = 'visitor-question'`.
+
+**What it means:** someone used « pose une question » (`/question`) and the
+email to you either did not arrive or has not been answered. The row is written
+before the email is attempted, so a Resend outage cannot lose a question. The
+body is `<their address>: <question>`.
+
+**Fix:** answer from your inbox (the notification carries Reply-To = the
+visitor), or write to the address in the alert. Then resolve it:
+`UPDATE admin_alerts SET resolved_at = unixepoch() WHERE id = '...';`
+
+**Abuse:** the endpoint is CSRF-exempt by design (no account), bounded by 2/h
+per address and 5/h per IP. A flood shows up as a run of rows from one IP's
+addresses; tighten the limits in `functions/api/questions.ts`.
+
 ## 25. Showcase build unreachable (digest "builds injoignables" section)
 
 **Symptom:** the daily digest email has a "Builds du showcase injoignables"

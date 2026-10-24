@@ -81,18 +81,22 @@ export function Footer({ lang }: { lang: Lang }) {
   const mapHref = lang === 'fr' ? '/carte' : '/en/map'
   const mapLabel = lang === 'fr' ? 'Carte du site' : 'Site map'
   const intakeHref = lang === 'fr' ? '/intake' : '/en/intake'
+  const questionHref = lang === 'fr' ? '/question' : '/en/question'
   return (
     <footer className="site-footer">
       <div className="site-footer__flourish" aria-hidden="true" />
       <div className="site-footer__inner">
         <StudioSign lang={lang} />
-        {/* "Contact" routes to the session intake, not a mailbox — a started
-            session is the only channel Marc reads. The link carries the
-            sentence so the reader can't miss where to go. */}
+        {/* "Contact" has two doors and no mailbox: a one-off question (no
+            account, answered by email) and a request (the real channel). */}
         <p className="site-footer__line">
           {t.contact.pre}
-          <Link to={intakeHref} className="site-footer__contact-link">
+          <Link to={questionHref} className="site-footer__contact-link">
             {t.contact.link}
+          </Link>
+          {t.contact.mid}
+          <Link to={intakeHref} className="site-footer__contact-link">
+            {t.contact.link2}
           </Link>
           {t.contact.post}
         </p>
