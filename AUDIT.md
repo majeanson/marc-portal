@@ -420,13 +420,17 @@
   real sheet ever exists.
 - ⏭ **P3.24** — stranger-review items left open (2026-10-23).
   Decided not to do now, each for a reason:
-  - **Scroll-reveal blank around project cards** (#3): the gap is the live-build
-    iframe loading under an idle placeholder, not the ink-in CSS. A bigger
-    `rootMargin` in `ProjectCardPreview` loads more iframes up front, which costs
-    weight on /projects. Needs a real-browser pass before touching. (The home
-    page no longer mounts live frames, so it is unaffected.)
-  - **Gallery thumbnails in the wrong language** (#7): the builds ship their own
-    UI language; needs re-shot FR thumbnails or a per-build locale param.
+  - **Scroll-reveal blank around project cards** (#3): ✅ the home reveal now
+    finishes at `entry 55%` (was `cover 22%`) and no longer includes the featured
+    cards, which are a static image since the home stopped mounting live frames.
+    On /projects the idle box is the lazy OG image, not a reveal; a bigger
+    `rootMargin` there would load more iframes up front, so it is left alone
+    until someone profiles it in a real browser.
+  - **Gallery thumbnails in the wrong language** (#7): the OG layer already
+    follows the page language (`?lang=en`). The English text is the live iframe,
+    which is a separate app with its own UI language, and no build is known to
+    read a locale param. Re-opens when a build exposes one (then append it in
+    `ProjectCardPreview`) or when FR thumbnails are re-shot.
 
 ---
 
