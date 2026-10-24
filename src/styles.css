@@ -8315,11 +8315,16 @@ button.intake__progress-step:disabled {
     .home .step--editorial,
     .home .tier--menu,
     .home .vibe__col,
-    .home .featured-projects__grid > li,
     .home .about__layout--editorial > * {
       animation: editorial-rise linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 22%;
+      /* Done by the time the block is a third in: a normal-speed scroll
+         never sees an empty viewport, and the last step of a list is not
+         still faded when it reaches the middle of the screen (stranger
+         review #3). The featured cards are not in this list: fading a card
+         over a live frame that is still booting only stretched the blank
+         gap, so they sit on the page at full opacity. */
+      animation-range: entry 0% entry 55%;
     }
   }
 }
