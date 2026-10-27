@@ -35,7 +35,6 @@ export function ProjectCardPreview({
   sessionId,
   lang,
   previewViewport,
-  live = true,
 }: {
   buildHref: string | null
   title: string
@@ -45,12 +44,6 @@ export function ProjectCardPreview({
    * the 16:10 slot — phone-first builds (Ashwake, Dungeon Depths) look like
    * themselves instead of a stretched desktop viewport. */
   previewViewport?: 'phone' | null
-  /** false keeps the OG card only and never mounts the iframe. The home page
-   * shows three of these above the fold-adjacent sections; each live build
-   * is a full app boot (the stranger review measured ~1.4 MB and the slowest
-   * DOMContentLoaded on the site), while /projects is where the live frames
-   * earn their cost. */
-  live?: boolean
 }) {
   const isPhone = previewViewport === 'phone'
   const ref = useRef<HTMLDivElement>(null)
@@ -64,7 +57,7 @@ export function ProjectCardPreview({
   const ogSrc = sessionId ? `/og/share/${sessionId}${lang === 'en' ? '?lang=en' : ''}` : null
 
   useEffect(() => {
-    if (!live || !buildHref || !hasIO) return
+    if (!buildHref || !hasIO) return
     const el = ref.current
     if (!el) return
     const io = new IntersectionObserver(
@@ -81,7 +74,7 @@ export function ProjectCardPreview({
     )
     io.observe(el)
     return () => io.disconnect()
-  }, [buildHref, hasIO, live])
+  }, [buildHref, hasIO])
 
   // Keep the scale vars in sync with the card width. The desktop iframe
   // renders at a fixed 1280×800 and fills the 16:10 box by width; the phone
@@ -102,12 +95,12 @@ export function ProjectCardPreview({
   }, [])
 
   useEffect(() => {
-    if (!live || !visible || !buildHref) return
+    if (!visible || !buildHref) return
     const tid = window.setTimeout(() => {
       setOutcome((prev) => (prev === null ? 'timeout' : prev))
     }, LOAD_TIMEOUT_MS)
     return () => window.clearTimeout(tid)
-  }, [visible, buildHref, live])
+  }, [visible, buildHref])
 
   // No buildHref: collapse to text-only. The OG card used to render as a
   // bottom-layer placeholder, but for any card whose build wasn't deployed
@@ -118,7 +111,7 @@ export function ProjectCardPreview({
   // build still get the OG → iframe layered preview below.
   if (!buildHref) return null
 
-  const isLoading = live && visible && !!buildHref && outcome === null
+  const isLoading = visible && !!buildHref && outcome === null
   const isLoaded = outcome === 'loaded'
   // Both failure flavours read as 'errored' to the CSS (OG layer showing);
   // only the mount condition below distinguishes them.
@@ -150,7 +143,7 @@ export function ProjectCardPreview({
           decoding="async"
         />
       )}
-      {live && visible && buildHref && outcome !== 'errored' && (
+      {visible && buildHref && outcome !== 'errored' && (
         <iframe
           className={`project-card__preview-frame${isPhone ? ' project-card__preview-frame--phone' : ''}${isLoaded ? ' is-loaded' : ''}`}
           src={buildHref}

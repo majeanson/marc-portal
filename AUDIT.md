@@ -423,10 +423,14 @@
   - **Scroll-reveal blank around project cards** (#3): the gap is the live-build
     iframe loading under an idle placeholder, not the ink-in CSS. A bigger
     `rootMargin` in `ProjectCardPreview` loads more iframes up front, which costs
-    weight on /projects. Needs a real-browser pass before touching. (The home
-    page no longer mounts live frames, so it is unaffected.)
+    weight on /projects. Needs a real-browser pass before touching.
   - **Gallery thumbnails in the wrong language** (#7): the builds ship their own
     UI language; needs re-shot FR thumbnails or a per-build locale param.
+  - **Home weight: live frames on the home** (weight note): the OG-only
+    version shipped 2026-10-23 (1570bc7) was reverted on 2026-10-27 because
+    Marc prefers the live builds on the home. The cost (one app boot per
+    featured card) is accepted; a thumbnail-that-swaps-on-tap stays an option
+    if Lighthouse or a visitor complains.
 
 ---
 
