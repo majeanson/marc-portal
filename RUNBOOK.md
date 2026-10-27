@@ -1239,6 +1239,19 @@ nothing arrives:
   appears when the last verified event is older than 48 h (`system_kv`
   `last_resend_event_at`, falling back to `MAX(email_events.received_at)`). A
   quiet week with no sends also trips it; check Sentry first.
+- **Silent, but Sentry is empty and every send shows `delivered` in Resend.**
+  The endpoint is probably subscribed to `email.bounced` + `email.complained`
+  only. Clean mail then produces no events at all, and the digest reads that
+  as a dead webhook. `email.delivered` is the heartbeat: the daily digest
+  send alone gives one event per day. On 2026-10-27 the enabled endpoint
+  (created 2026-10-15) had dropped `delivered`; the original May endpoint
+  still had it but was disabled after the October 401 streak. Fix: Resend
+  Dashboard → Webhooks → the enabled endpoint → add `email.delivered`
+  (or `PATCH /webhooks/:id` with the three events). Confirm with any real
+  send (a magic link to yourself works) and check `system_kv`
+  `last_resend_event_at` moved. Only ONE endpoint may be enabled: two
+  enabled endpoints on the same URL double-deliver, and only one matches
+  the deployed secret, so the other 401s into Sentry.
 - **Other senders share this webhook.** One Resend account serves Babillard
   too (`babillard@marcportal.com`), but there is one webhook. Decision
   (2026-10-23): events whose `from` is not a portal sender are acknowledged
