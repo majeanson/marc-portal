@@ -186,17 +186,43 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   if (!verifyMagicBytesBuffer(file.type, bytes)) {
     return unsupportedMediaType('file contents do not match declared type')
   }
+  // What actually lands in R2. A sketch may be rewritten below (unsafe embeds
+  // stripped), which shrinks it — the serve handler reads this stored size for
+  // Content-Length/Range, so the two must move together, not from file.size.
+  let storedBody: ArrayBuffer = buffer
+  let storedSize = file.size
   if (kind === 'sketch') {
     // A sketch must be a JSON object carrying an `elements` array — the
     // shape SketchCanvas / NapkinReplay hydrate from. Anything else is a
     // malformed or hostile payload.
+    let parsed: { elements: unknown[] }
     try {
-      const parsed = JSON.parse(new TextDecoder().decode(bytes)) as { elements?: unknown }
-      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.elements)) {
+      const raw = JSON.parse(new TextDecoder().decode(bytes)) as { elements?: unknown }
+      if (!raw || typeof raw !== 'object' || !Array.isArray(raw.elements)) {
         return badRequest('sketch must be a JSON scene with an elements array')
       }
+      parsed = raw as { elements: unknown[] }
     } catch {
       return badRequest('sketch is not valid JSON')
+    }
+    // Defense-in-depth: this visitor-authored scene later hydrates inside
+    // Marc's authenticated admin view (SketchCanvas / NapkinReplay). Excalidraw's
+    // `embeddable`/`iframe` elements mount an <iframe> — the one spot where
+    // attacker-authored content would render in the privileged session. Drop
+    // them before store so nothing downstream has to remember to. (Security
+    // audit F2.)
+    const kept = parsed.elements.filter(
+      (el) =>
+        !el ||
+        typeof el !== 'object' ||
+        ((el as { type?: unknown }).type !== 'embeddable' &&
+          (el as { type?: unknown }).type !== 'iframe'),
+    )
+    if (kept.length !== parsed.elements.length) {
+      parsed.elements = kept
+      const rewritten = new TextEncoder().encode(JSON.stringify(parsed))
+      storedBody = rewritten.buffer.slice(0, rewritten.byteLength) as ArrayBuffer
+      storedSize = rewritten.byteLength
     }
   }
   let transcript: string | null = null
@@ -205,10 +231,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     // off, or Whisper hiccup) still leaves a playable voice note.
     transcript = await transcribeAudio(env, buffer)
   }
-  const r2Body: ArrayBuffer = buffer
-
   // Stream/put to R2.
-  await env.MEDIA.put(r2Key, r2Body, {
+  await env.MEDIA.put(r2Key, storedBody, {
     httpMetadata: { contentType: file.type },
   })
 
@@ -219,7 +243,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
           r2_key, created_at, kind, transcript)
        VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-      .bind(attachmentId, id, email, filename, file.type, file.size, r2Key, now, kind, transcript)
+      .bind(attachmentId, id, email, filename, file.type, storedSize, r2Key, now, kind, transcript)
       .run()
   } catch (err) {
     // Roll back the R2 object so we don't leak orphans on DB write failures.
@@ -249,7 +273,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     uploaded_by: email,
     filename,
     content_type: file.type,
-    size: file.size,
+    size: storedSize,
     r2_key: r2Key,
     created_at: now,
     kind,

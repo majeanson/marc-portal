@@ -254,6 +254,32 @@ describe('POST /api/sessions/:id/attachments (upload)', () => {
     expect(body.attachment.kind).toBe('sketch')
   })
 
+  it('strips embeddable/iframe elements from a sketch before storing (audit F2)', async () => {
+    // A visitor-authored scene that smuggles in Excalidraw embeds. These
+    // render as <iframe> inside Marc's authenticated admin view, so they must
+    // never reach R2. The drawing itself (the rectangle) survives.
+    const scene = {
+      elements: [
+        { type: 'rectangle', id: 'keep' },
+        { type: 'embeddable', id: 'evil', link: 'https://evil.test' },
+        { type: 'iframe', id: 'evil2' },
+      ],
+    }
+    const bytes = new TextEncoder().encode(JSON.stringify(scene))
+    const res = await post(fileLike({ name: 'scene', type: EXCALIDRAW_CONTENT_TYPE, bytes }))
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { attachment: { r2_key: string; size: number } }
+    const stored = (await media.get(body.attachment.r2_key)) as unknown as { body: ArrayBuffer }
+    const storedBytes = new Uint8Array(stored.body)
+    const parsed = JSON.parse(new TextDecoder().decode(storedBytes)) as {
+      elements: Array<{ type: string }>
+    }
+    expect(parsed.elements.map((e) => e.type)).toEqual(['rectangle'])
+    // The row's size must track the rewritten bytes — the serve handler reads
+    // it verbatim for Content-Length/Range.
+    expect(body.attachment.size).toBe(storedBytes.byteLength)
+  })
+
   it('400s on a sketch that is not JSON', async () => {
     const bytes = new TextEncoder().encode('not json at all')
     const res = await post(fileLike({ name: 'scene', type: EXCALIDRAW_CONTENT_TYPE, bytes }))
