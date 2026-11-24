@@ -44,7 +44,7 @@
 // by prerender — a slower-but-correct SPA homepage beats a failed deploy.
 
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import Beasties from 'beasties'
 import { chromium } from 'playwright'
@@ -251,12 +251,42 @@ async function snapshot(browser, url, { waitFor, projectsPayload }) {
 }
 
 /** Write `html` to `out` atomically — a temp file renamed into place, so a
- *  crash mid-write can never leave a half-written HTML file in dist/. */
+ *  crash mid-write can never leave a half-written HTML file in dist/.
+ *
+ *  Windows (the CI e2e runner) throws EPERM/EACCES/EBUSY on rename-over-existing
+ *  when a scanner or file watcher is briefly holding the destination handle.
+ *  That is a transient lock, not a corrupt build — but an unretried throw here
+ *  bubbles to the fail-soft in snapshot() and leaves the PLAIN Vite shell in
+ *  dist, which renders different page heights and flaked the visual-regression
+ *  gate (projects-error.png, a11y) with no real change. Retry the rename
+ *  briefly; if the lock never clears, write directly — non-atomic but correct,
+ *  which beats silently shipping the stale shell. A genuine (non-lock) error
+ *  still throws, so a real failure keeps fail-softing as before. */
 function writeAtomic(out, html) {
   mkdirSync(join(out, '..'), { recursive: true })
   const tmp = out + '.tmp'
   writeFileSync(tmp, html, 'utf8')
-  renameSync(tmp, out)
+  const transient = new Set(['EPERM', 'EACCES', 'EBUSY'])
+  for (let attempt = 0; ; attempt++) {
+    try {
+      renameSync(tmp, out)
+      return
+    } catch (err) {
+      if (!transient.has(err?.code)) throw err
+      if (attempt >= 9) {
+        writeFileSync(out, html, 'utf8')
+        rmSync(tmp, { force: true })
+        return
+      }
+      sleepSync(100) // let the scanner/watcher release the handle, then retry
+    }
+  }
+}
+
+/** Block the thread for `ms`. This is a build script with no event loop to keep
+ *  responsive, so a synchronous wait between Windows rename retries is fine. */
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 }
 
 /** sha256-… for every inline, executable `<script>` in `html`. The strict
