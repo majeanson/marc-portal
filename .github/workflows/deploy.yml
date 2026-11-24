@@ -11,7 +11,12 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # Pinned to 24.04: GitHub moved `ubuntu-latest` to 26.04, which the pinned
+    # Playwright (1.60) can't install Chromium on — it errors with "does not
+    # support chromium on ubuntu26.04-x64" and fails the job before deploy. The
+    # prerender step below needs Chromium, so pin the image until Playwright is
+    # bumped past its 26.04 support gate.
+    runs-on: ubuntu-24.04
     permissions:
       contents: write # write so the auto-stamp step can push back
       deployments: write
