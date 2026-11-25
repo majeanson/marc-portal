@@ -33,13 +33,7 @@ import type { Bi } from './map/types'
  * itself.
  */
 export type FeatureId =
-  | 'intake'
-  | 'conversation'
-  | 'iterative'
-  | 'pricing'
-  | 'keys'
-  | 'shipped'
-  | 'meta'
+  'intake' | 'conversation' | 'iterative' | 'pricing' | 'keys' | 'shipped' | 'meta'
 
 /** The six PRODUCT features — everything except `meta`. Used by surfaces
  *  that should only ever show the sellable features: the Vision bubbles

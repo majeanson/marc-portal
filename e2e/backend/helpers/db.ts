@@ -266,8 +266,7 @@ export function readPayment(paymentId: string): PaymentRow | undefined {
   const db = openD1()
   try {
     return db.prepare(`SELECT ${PAYMENT_COLS} FROM payments WHERE id = ?`).get(paymentId) as
-      | PaymentRow
-      | undefined
+      PaymentRow | undefined
   } finally {
     db.close()
   }
@@ -496,8 +495,7 @@ export function readStatusHistory(sessionId: string): Array<{
   const db = openD1()
   try {
     const row = db.prepare(`SELECT status_history FROM sessions WHERE id = ?`).get(sessionId) as
-      | { status_history: string | null }
-      | undefined
+      { status_history: string | null } | undefined
     if (!row?.status_history) return []
     try {
       return JSON.parse(row.status_history)

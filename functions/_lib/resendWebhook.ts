@@ -31,14 +31,10 @@ export interface ResendWebhookContext {
  *  401'd for 8 days and "signature mismatch" could not tell a rotated secret
  *  from a stale clock from a mangled secret. */
 export type ResendVerifyFailure =
-  | 'missing_headers'
-  | 'stale_timestamp'
-  | 'bad_secret_format'
-  | 'no_matching_signature'
+  'missing_headers' | 'stale_timestamp' | 'bad_secret_format' | 'no_matching_signature'
 
 export type ResendVerifyResult =
-  | { ok: true; ctx: ResendWebhookContext }
-  | { ok: false; reason: ResendVerifyFailure }
+  { ok: true; ctx: ResendWebhookContext } | { ok: false; reason: ResendVerifyFailure }
 
 /**
  * Verify a Resend webhook signature against the configured secret. Returns

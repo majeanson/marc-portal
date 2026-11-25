@@ -86,11 +86,7 @@ export const OUTBOX_MAX_ATTEMPTS = 5
 /** Outbox kinds — one label per durable send-site. Used for triage queries
  *  ("which template failed?") and for the digest summary. Not a foreign key. */
 export type OutboxKind =
-  | 'tier-assigned'
-  | 'refund-notice'
-  | 'installment-cleared'
-  | 'status-change'
-  | 'withdrawal-visitor'
+  'tier-assigned' | 'refund-notice' | 'installment-cleared' | 'status-change' | 'withdrawal-visitor'
 
 /**
  * Internal send primitive. Every public function in this file funnels

@@ -54,10 +54,7 @@ interface NapkinSectionProps {
 }
 
 type EditState =
-  | { kind: 'idle' }
-  | { kind: 'editing' }
-  | { kind: 'saving' }
-  | { kind: 'error'; message: string }
+  { kind: 'idle' } | { kind: 'editing' } | { kind: 'saving' } | { kind: 'error'; message: string }
 
 /** The napkin PNG, with a graceful fallback when the image can't load. The
  *  src is usually an /api/.../attachments/:id URL backed by R2; if the R2

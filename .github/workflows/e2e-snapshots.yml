@@ -30,12 +30,12 @@ jobs:
       # actions: write — needed for the `gh workflow run` trigger step below.
       actions: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         # Full history so `git pull --rebase` before the commit-back push has
         # a real merge base to rebase onto (a shallow clone can't).
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
