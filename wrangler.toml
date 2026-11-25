@@ -38,7 +38,7 @@ migrations_dir = "functions/db/migrations"
 [[r2_buckets]]
 binding = "MEDIA"
 bucket_name = "marc-portal-media"
-preview_bucket_name = "marc-portal-media"
+preview_bucket_name = "marc-portal-media-preview"
 
 # Workers AI (feat-message-media). Cloudflare's in-network inference, used to
 # transcribe voice notes with Whisper (functions/_lib/transcribe.ts). The
