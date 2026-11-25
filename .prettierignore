@@ -13,3 +13,5 @@ public/fonts/webfonts.css
 # Synced from DevHub kit/ (devhub/kit/kit.json): edited there, not here.
 scripts/verify-deploy.mjs
 .github/actions/setup/action.yml
+.github/dependabot.yml
+.github/workflows/scheduled-red.yml
