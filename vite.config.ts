@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import checker from 'vite-plugin-checker'
 
@@ -21,6 +21,31 @@ const commitDate = readGit(
   new Date().toISOString(),
 )
 
+// /version.json: the commit this bundle was built from, so DevHub can tell
+// whether production serves the last deploy. A 'post' hook, and the last
+// plugin, so it runs after anything that lists the bundle (a service
+// worker's precache): the file must never be served from a cache.
+function versionJson(): Plugin {
+  return {
+    name: 'version-json',
+    apply: 'build',
+    generateBundle: {
+      order: 'post',
+      handler() {
+        let sha = process.env.GITHUB_SHA ?? ''
+        if (!sha) {
+          try {
+            sha = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
+          } catch {
+            sha = 'unknown'
+          }
+        }
+        this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ sha, builtAt: new Date().toISOString() }) })
+      },
+    },
+  }
+}
+
 export default defineConfig({
   define: {
     __COMMIT_HASH__: JSON.stringify(commitSha.slice(0, 7)),
@@ -36,6 +61,7 @@ export default defineConfig({
       },
       overlay: { initialIsOpen: false },
     }),
+    versionJson(),
   ],
   server: {
     port: 5180,
