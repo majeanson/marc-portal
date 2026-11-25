@@ -21,7 +21,7 @@ jobs:
       contents: write # write so the auto-stamp step can push back
       deployments: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         # Need history so git diff-tree in stamp-revisions.mjs can resolve the
         # commit's parent.
         with:
