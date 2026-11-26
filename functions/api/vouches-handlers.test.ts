@@ -209,14 +209,13 @@ describe('POST /api/vouches — persistence and notification', () => {
 
 describe('POST /api/vouches — rate limit', () => {
   it('429s after 3 submissions from the same email in the window', async () => {
-    let lastRes: Response | null = null
     for (let i = 0; i < 4; i++) {
       const ctx = makeCtx({ body: validBody() })
       // Reuse a single env so the rate_limit table accumulates; rebuild via
       // a shared mock by reaching into the closure.
       // Simpler: call with the same email/IP by default; per-call ctx gets a
       // *new* env. We instead loop in a single shared env below.
-      lastRes = await onRequestPostSubmit(ctx as never)
+      const lastRes = await onRequestPostSubmit(ctx as never)
       if (lastRes.status === 429) return
     }
     // If we got here without a 429, the *shared-env* approach below is the

@@ -136,7 +136,7 @@ async function send(
   const wirePayload = { ...payload, headers }
 
   // 3. Resend POST.
-  let lastError: string | null = null
+  let lastError: string
   try {
     const res = await fetch(RESEND_URL, {
       method: 'POST',

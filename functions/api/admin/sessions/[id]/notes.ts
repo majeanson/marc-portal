@@ -70,7 +70,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   if (guard instanceof Response) return guard
   const { sessionId } = guard
 
-  let row: NoteRow | null = null
+  let row: NoteRow | null
   try {
     row = await env.DB.prepare(
       `SELECT session_id, body, updated_at, updated_by

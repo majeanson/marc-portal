@@ -123,7 +123,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
   // back to their pre-fleet behavior; handlers that strictly require a
   // tenant (admin/*) call requireTenant and 500 cleanly. This keeps the
   // public site working during the migration deploy window.
-  let tenant: Tenant | null = null
+  let tenant: Tenant | null
   try {
     tenant = await resolveTenant(ctx.env.DB, host)
   } catch (err) {

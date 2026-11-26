@@ -51,7 +51,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     return serviceUnavailable('email transport not configured')
   }
 
-  let body: ReqBody = {}
+  let body: ReqBody
   try {
     body = (await ctx.request.json()) as ReqBody
   } catch {
@@ -167,7 +167,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const results: TestResult[] = []
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i]
-    let delivered = false
+    let delivered: boolean
     try {
       delivered = (await task.run()).ok
     } catch {

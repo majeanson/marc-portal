@@ -85,12 +85,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
     return fallbackRedirect(request, 'missing-id')
   }
 
-  let fields: OgFields | null = null
-  let loadErr: string | null = null
+  let fields: OgFields | null
   try {
     fields = await loadOgFields(env, id, lang)
   } catch (err) {
-    loadErr = err instanceof Error ? err.message : String(err)
+    const loadErr = err instanceof Error ? err.message : String(err)
     console.warn('og: loadSession failed', err)
     if (debug) return debugResponse({ ok: false, reason: 'load-error', error: loadErr, id })
     return fallbackRedirect(request, 'load-error')

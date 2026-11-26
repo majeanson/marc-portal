@@ -435,7 +435,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // Includes ALL live sessions (not the curated `sessions` list above),
   // because custodian state can persist after rejected/shipped — we want
   // to see every past-due regardless of session status.
-  let custodianRows: SessionRow[] = []
+  let custodianRows: SessionRow[]
   {
     const r = await env.DB.prepare(
       `SELECT ${SESSION_SELECT_COLUMNS}

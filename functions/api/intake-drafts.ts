@@ -41,7 +41,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   if (!row) return ok({ draft: null })
 
-  let parsed: unknown = null
+  let parsed: unknown
   try {
     parsed = JSON.parse(row.payload)
   } catch {

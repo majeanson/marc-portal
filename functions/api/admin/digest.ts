@@ -319,7 +319,7 @@ export const onRequestPost: PagesFunction<DigestEnv> = async ({ request, env }) 
     console.warn('digest: resend liveness check failed (continuing)', err)
   }
 
-  let rows: SessionRow[] = []
+  let rows: SessionRow[]
   try {
     const res = await env.DB.prepare(
       `SELECT id, email, intake_json, status, created_at, updated_at, deleted_at, status_history,

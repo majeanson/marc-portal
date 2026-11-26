@@ -35,6 +35,7 @@ export function resolveD1Path(): string {
   } catch (err) {
     throw new Error(
       `e2e: D1 SQLite dir not found at ${dir} — did you run \`npm run e2e:backend:setup\` first? (${(err as Error).message})`,
+      { cause: err },
     )
   }
   // Skip Miniflare's bookkeeping file (metadata.sqlite) — the real D1 file
