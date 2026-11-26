@@ -197,7 +197,11 @@ export function NapkinSection({ lang, napkin, sessionId, onReplaced }: NapkinSec
           </Btn>
         </div>
       )}
-      {edit.kind === 'error' && <p className="session-napkin__edit-error mono">{edit.message}</p>}
+      {edit.kind === 'error' && (
+        <p className="session-napkin__edit-error mono" role="alert">
+          {edit.message}
+        </p>
+      )}
     </div>
   )
 }

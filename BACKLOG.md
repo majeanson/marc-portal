@@ -189,6 +189,16 @@
   progress chips ~20px tall (WCAG 2.5.8) — use the `::before` hit-area
   technique from `.time-travel__notch`; SiteSearch close button under 24px.
   Needs baseline regen. [XC-20…32 minus 23-adjacent, XC-23/24/25/26, VF-12/13]
+  - 2026-11-26, non-visual slice shipped: ShareModal Tab trap (+ test),
+    MePortal unread badge `aria-label` bilingual via COPY,
+    EngagementStatusBar `aria-current="step"` (+ test), NapkinSection edit
+    error `role="alert"`, `/me` skeleton shimmer reduce-motion override. The
+    admin live region was skipped: no admin count auto-refreshes (AdminToday
+    reads on mount only), so there's nothing to announce yet; revisit if a
+    poll lands. **Still open (all need a baseline regen):** `--text-faint`
+    contrast swaps, night `--border`/`--border-soft` nudge, theme-toggle
+    focus-visible outline, 24px touch targets (accent swatches, intake
+    progress chips), SiteSearch close button size.
 
 - ✅ **U6 · M · manual: none** — DONE 2026-10-15. Copy + form polish. Rewrite the negation-
   anaphora on MyData and Privacy §2/§3, the em-dash-dense Privacy §2 list

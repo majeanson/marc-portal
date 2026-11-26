@@ -3400,6 +3400,11 @@ button.intake__progress-step:focus-visible {
     background-position: -200% 0;
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .me-portal__skeleton-bar {
+    animation: none;
+  }
+}
 
 .me-portal__cards {
   list-style: none;

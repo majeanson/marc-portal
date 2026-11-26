@@ -104,6 +104,7 @@ const COPY = {
     deleting: 'Suppression…',
     deleteFailed: 'La suppression a échoué — réessaie ou écris-moi.',
     unreadBadge: 'NOUVEAU',
+    unreadLabel: 'nouvelle activité',
     // Payment copy now lives in src/components/PaymentActions.tsx (which owns
     // the section UI). Only the post-payment toast copy stays here because
     // it's rendered by /me's top-level <main>, not by PaymentActions.
@@ -212,6 +213,7 @@ const COPY = {
     deleting: 'Deleting…',
     deleteFailed: 'Deletion failed — retry or write to me.',
     unreadBadge: 'NEW',
+    unreadLabel: 'new activity',
     // See FR side — payment copy lives in PaymentActions; toast copy stays.
     paymentJustReceived: 'Thanks — payment received.',
     paymentCanceled: 'Payment canceled. You can try again.',
@@ -818,7 +820,7 @@ function SessionCard({
             <span className="me-portal__id mono">{session.id.slice(0, 8)}</span>
             {submittedAt && <span className="me-portal__date">{submittedAt}</span>}
             {unread && (
-              <span className="me-portal__unread mono" aria-label="new activity">
+              <span className="me-portal__unread mono" aria-label={copy.unreadLabel}>
                 {copy.unreadBadge}
               </span>
             )}

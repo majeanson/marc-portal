@@ -337,6 +337,20 @@
       "inAdminShell": false
     },
     {
+      "path": "/question",
+      "component": "Question",
+      "lang": "fr",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
+      "path": "/en/question",
+      "component": "Question",
+      "lang": "en",
+      "dynamic": false,
+      "inAdminShell": false
+    },
+    {
       "path": "/vouch",
       "component": "Vouch",
       "lang": "fr",
@@ -752,6 +766,15 @@
       ],
       "adminOnly": false,
       "file": "functions/api/public/vouches.ts"
+    },
+    {
+      "id": "api.questions",
+      "path": "/api/questions",
+      "methods": [
+        "POST"
+      ],
+      "adminOnly": false,
+      "file": "functions/api/questions.ts"
     },
     {
       "id": "api.sessions.id",

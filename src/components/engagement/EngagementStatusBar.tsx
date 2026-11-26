@@ -19,7 +19,13 @@ export function EngagementStatusBar({ lang, stages }: { lang: Lang; stages: Stag
             ? 'current'
             : 'future'
         return (
-          <div key={stage} className={`eng-status__node eng-status__node--${mode}`}>
+          <div
+            key={stage}
+            className={`eng-status__node eng-status__node--${mode}`}
+            // The current step is otherwise conveyed by dot colour alone;
+            // same pattern as intake/SessionStatusStrip.
+            aria-current={mode === 'current' ? 'step' : undefined}
+          >
             <span className="eng-status__dot" aria-hidden="true" />
             <div className="eng-status__label mono">
               <div className="eng-status__stage">{t[stage]}</div>

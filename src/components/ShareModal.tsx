@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import type { Lang } from '../i18n'
 import { DICT } from '../i18n'
 
@@ -90,6 +90,26 @@ export function ShareModal({
     }
   }
 
+  // Minimal focus trap, same cycle as SiteSearch: the modal sits over the
+  // page with aria-modal, so Tab must wrap inside the dialog instead of
+  // walking into the (visually covered) document behind it.
+  const onDialogKeyDown = (e: ReactKeyboardEvent) => {
+    if (e.key !== 'Tab') return
+    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button, input, [tabindex]:not([tabindex="-1"])',
+    )
+    if (!focusable || focusable.length === 0) return
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault()
+      last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }
+
   return (
     <div
       className="share-modal__backdrop"
@@ -98,12 +118,14 @@ export function ShareModal({
         if (e.target === e.currentTarget) onClose()
       }}
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- a modal dialog legitimately owns its focus-trap handling */}
       <div
         ref={dialogRef}
         className="surface share-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-modal-title"
+        onKeyDown={onDialogKeyDown}
       >
         <header className="share-modal__head">
           <h2 id="share-modal-title" className="share-modal__title">
