@@ -258,7 +258,10 @@ export function SiteSearch({ lang }: { lang: Lang }) {
         ref={triggerRef}
         type="button"
         className="surface site-search__trigger"
-        aria-label={t.triggerLabel}
+        // The visible "⌘K" hint has to appear in the name too (WCAG 2.5.3,
+        // blocking since axe 4.14); aria-hidden on the hint doesn't exempt
+        // it, the rule compares against what's drawn on screen.
+        aria-label={`${t.triggerLabel}, ⌘K`}
         aria-keyshortcuts="Control+K Meta+K"
         onClick={openSearch}
       >

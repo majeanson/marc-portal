@@ -115,17 +115,18 @@ export function StudioSign({ lang }: { lang: Lang }) {
   // Verified with Playwright (see hot-path Link conversion notes).
   const homeHref = lang === 'fr' ? '/' : '/en'
 
+  // No aria-label: the two visible lines are the name, the "back to top"
+  // hint rides along as sr-only text. An aria-label of just the hint hid the
+  // studio status from screen readers and failed WCAG 2.5.3 (label in name),
+  // which axe 4.14 blocks on. A voice user saying what they see has to hit it.
   return (
-    <Link
-      className={`surface studio-sign studio-sign--${status}`}
-      to={homeHref}
-      aria-label={t.home}
-    >
+    <Link className={`surface studio-sign studio-sign--${status}`} to={homeHref}>
       <CoffeeCup steaming={status !== 'waitlist'} />
       <span className="studio-sign__text">
         <span className="studio-sign__eyebrow mono">{t.eyebrow}</span>
         <span className="studio-sign__status">{line}</span>
       </span>
+      <span className="sr-only">. {t.home}</span>
     </Link>
   )
 }

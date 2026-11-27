@@ -79,10 +79,12 @@ export function PageMast({
       <Link
         className="page-mast__folio mono"
         to={lang === 'en' ? `/en/map?feature=${feature}` : `/carte?feature=${feature}`}
+        // The visible folio leads the name (WCAG 2.5.3, label in name), the
+        // map-filter hint follows. A hint-only label failed axe 4.14.
         aria-label={
           lang === 'en'
-            ? `Filter the site map to ${FEATURES[feature].label.en}`
-            : `Filtrer la carte du site sur ${FEATURES[feature].label.fr}`
+            ? `${folio}, filter the site map to ${FEATURES[feature].label.en}`
+            : `${folio}, filtrer la carte du site sur ${FEATURES[feature].label.fr}`
         }
       >
         {folio}

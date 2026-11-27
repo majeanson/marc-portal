@@ -53,12 +53,17 @@ export function FeatureFolioLink({
     lang === 'en'
       ? `Filter the site map to ${FEATURES[feature].label.en}`
       : `Filtrer la carte du site sur ${FEATURES[feature].label.fr}`
+  // The filter hint rides along as sr-only text, not an aria-label: an
+  // aria-label replaced the visible "№ 10" in the accessible name, which
+  // fails WCAG 2.5.3 (label in name). A voice-control user saying "click
+  // numéro 10" has to hit something. axe 4.14 made that rule blocking.
   return (
-    <Link className={className} to={to} aria-label={label} data-feature={feature}>
+    <Link className={className} to={to} data-feature={feature}>
       {withDot && (
         <span className="page-folio-mark__dot" data-feature={feature} aria-hidden="true" />
       )}
       <span className="page-folio-mark__text">{children}</span>
+      <span className="sr-only">, {label}</span>
     </Link>
   )
 }

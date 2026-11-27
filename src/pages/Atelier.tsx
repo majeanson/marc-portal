@@ -361,7 +361,6 @@ export function Atelier({ lang }: { lang: Lang }) {
                     <Link
                       className="surface atelier-glyph__link"
                       to={lang === 'fr' ? `/carte?feature=${id}` : `/en/map?feature=${id}`}
-                      aria-label={t.glyphFilterAria(FEATURES[id].label[lang])}
                     >
                       <span className="atelier-glyph__tile">
                         <FeatureGlyph feature={id} />
@@ -370,6 +369,12 @@ export function Atelier({ lang }: { lang: Lang }) {
                       <span className="atelier-glyph__metaphor">{t.glyphs[id]}</span>
                       <span className="atelier-glyph__hue mono">
                         {FEATURES[id].hue} · {hexes[`--feat-${id}`] || `var(--feat-${id})`}
+                      </span>
+                      {/* Filter hint as sr-only text, not aria-label: the
+                          label used to replace the card's visible text,
+                          which fails WCAG 2.5.3 (blocking since axe 4.14). */}
+                      <span className="sr-only">
+                        , {t.glyphFilterAria(FEATURES[id].label[lang])}
                       </span>
                     </Link>
                   </li>

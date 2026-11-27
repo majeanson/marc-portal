@@ -143,7 +143,11 @@ export function Footer({ lang }: { lang: Lang }) {
             href={otherLangHref}
             onClick={(e) => onLangSwitch(e, otherLangCode)}
             className="site-footer__lang"
-            aria-label={lang === 'fr' ? 'Read this site in English' : 'Lire ce site en français'}
+            // Leads with the visible "EN"/"FR" so the name contains the label
+            // (WCAG 2.5.3, blocking since axe 4.14).
+            aria-label={
+              lang === 'fr' ? 'EN, read this site in English' : 'FR, lire ce site en français'
+            }
           >
             <svg
               className="site-footer__lang-arrow"

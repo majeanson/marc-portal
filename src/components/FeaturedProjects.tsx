@@ -187,7 +187,10 @@ function FeaturedCard({
   const cardStyle = isTransitioning ? { viewTransitionName: 'project-detail' } : undefined
   return (
     <li className="surface project-card" style={cardStyle}>
-      <Link to={shareHref} className="project-card__link" viewTransition aria-label={title}>
+      {/* No aria-label: a title-only label dropped the date, tier and build
+          text the card shows, failing WCAG 2.5.3 (axe 4.14). The content is
+          the name, same as the cards on /projets. */}
+      <Link to={shareHref} className="project-card__link" viewTransition>
         <ProjectCardPreview
           buildHref={buildHref}
           title={title}

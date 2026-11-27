@@ -57,6 +57,10 @@ const GLYPH_SIZE: Record<VisionBubble['size'], number> = {
   lg: 46,
 }
 
+// This hint always comes AFTER the visible text in a bubble's or card's
+// accessible name, never instead of it. WCAG 2.5.3 (label in name) wants what's
+// on screen inside the name, and axe 4.14 blocks on it: a card showing "01"
+// but labelled "1. …" was enough to fail.
 function openLabel(lang: Lang, featureLabel: string): string {
   return lang === 'en'
     ? `Open “${featureLabel}” — see every page and section in this colour`
@@ -133,7 +137,7 @@ export function VisionLayer({ data, lang, activeFeature, onSelectFeature }: Prop
                     open()
                   }
                 }}
-                aria-label={`${b.index}. ${label} — ${openLabel(lang, label)}`}
+                aria-label={`${b.index}. ${label}${sub ? `, ${sub}` : ''}. ${openLabel(lang, label)}`}
               >
                 <title>{tooltip === label ? label : `${label} — ${tooltip}`}</title>
                 <circle className="map-vision__bubble-bg" r={r} />
@@ -144,6 +148,10 @@ export function VisionLayer({ data, lang, activeFeature, onSelectFeature }: Prop
                 >
                   {b.index}
                 </text>
+                {/* The {' '} text nodes here and between label/sub render
+                    nothing (bare text in an SVG <g>, whitespace between flex
+                    items) but keep axe's on-screen text from gluing "4" onto
+                    the label, so it matches the aria-label word for word. */}{' '}
                 <FeatureGlyph
                   feature={b.feature}
                   className="map-vision__bubble-glyph"
@@ -154,7 +162,7 @@ export function VisionLayer({ data, lang, activeFeature, onSelectFeature }: Prop
                 />
                 <foreignObject x={-labelW / 2} y={-labelH / 2} width={labelW} height={labelH}>
                   <div className="map-vision__bubble-content">
-                    <div className="map-vision__bubble-label">{label}</div>
+                    <div className="map-vision__bubble-label">{label}</div>{' '}
                     {sub && <div className="map-vision__bubble-sub">{sub}</div>}
                   </div>
                 </foreignObject>
@@ -186,9 +194,11 @@ export function VisionLayer({ data, lang, activeFeature, onSelectFeature }: Prop
                 type="button"
                 className="map-vision__card-link"
                 onClick={() => onSelectFeature(b.feature)}
-                aria-label={`${b.index}. ${label} — ${openLabel(lang, label)}`}
               >
-                <span className="map-vision__card-index mono" aria-hidden="true">
+                {/* Name comes from the card's own text plus the sr-only hint
+                    (no aria-label): the index, label, sub and feature name
+                    are all on screen, so all of them belong in the name. */}
+                <span className="map-vision__card-index mono">
                   {String(b.index).padStart(2, '0')}
                 </span>
                 <FeatureGlyph feature={b.feature} className="map-vision__card-glyph" />
@@ -200,6 +210,7 @@ export function VisionLayer({ data, lang, activeFeature, onSelectFeature }: Prop
                 <span className="map-vision__card-chevron" aria-hidden="true">
                   →
                 </span>
+                <span className="sr-only">. {openLabel(lang, label)}</span>
               </button>
             </li>
           )
