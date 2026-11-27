@@ -60,6 +60,7 @@ const COPY = {
 
     capacityHeading: 'Capacité',
     capacityActive: 'Actif',
+    capacityOf: 'sur',
     capacityTriage: 'Triage',
     capacityNote:
       'Plafond : 2 builds actifs. Le triage n’a pas de plafond. Le serveur refuse toute promotion vers « actif » qui dépasserait deux.',
@@ -138,6 +139,7 @@ const COPY = {
 
     capacityHeading: 'Capacity',
     capacityActive: 'Active',
+    capacityOf: 'of',
     capacityTriage: 'Triage',
     capacityNote:
       'Cap: 2 active builds. Triage is uncapped. The server rejects any promotion to active that would push past two.',
@@ -384,7 +386,7 @@ function CapacityCell({
       <div className="admin-today__cap-figure">
         {n}
         {cap !== null && (
-          <span className="admin-today__cap-cap" aria-label={lang === 'en' ? 'of' : 'sur'}>
+          <span className="admin-today__cap-cap" aria-label={COPY[lang].capacityOf}>
             /{cap}
           </span>
         )}

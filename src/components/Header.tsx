@@ -90,11 +90,7 @@ export function Header({ lang, variant = 'full' }: { lang: Lang; variant?: 'full
       </a>
       <header className="site-header">
         <div className="site-header__inner">
-          <Link
-            to={lang === 'fr' ? '/' : '/en'}
-            className="brand"
-            aria-label={lang === 'fr' ? 'marc.portal, accueil' : 'marc.portal, home'}
-          >
+          <Link to={lang === 'fr' ? '/' : '/en'} className="brand" aria-label={t.brandHomeLabel}>
             marc<span className="dot">.</span>portal
           </Link>
           <div className="site-header__right">

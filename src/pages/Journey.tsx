@@ -47,13 +47,9 @@ export function Journey({ lang }: { lang: Lang }) {
         <article className="section journey">
           <div className="section__inner">
             <PageMast
-              folio={
-                lang === 'fr'
-                  ? `№ ${PAGE_FOLIOS.journey} — le parcours`
-                  : `№ ${PAGE_FOLIOS.journey} — the journey`
-              }
-              stampLabel={lang === 'fr' ? 'XII ÉTAPES' : 'XII STEPS'}
-              stampSub={lang === 'fr' ? 'TOI · MOI · NOUS' : 'YOU · ME · BOTH'}
+              folio={j.folio(PAGE_FOLIOS.journey)}
+              stampLabel={j.stampLabel}
+              stampSub={j.stampSub}
               back={{ href: homeHref, label: j.backHome }}
               feature={PAGE_FEATURE['page.journey']}
               lang={lang}
@@ -118,12 +114,10 @@ export function Journey({ lang }: { lang: Lang }) {
               <div className="journey__chart-frame" aria-hidden="true" />
               <div className="surface journey__cartouche" aria-hidden="true">
                 <div className="journey__cartouche-row mono">
-                  <span>{lang === 'fr' ? 'CARTE' : 'CHART'}</span>
+                  <span>{j.cartoucheKind}</span>
                   <span>№ {PAGE_FOLIOS.journey}</span>
                 </div>
-                <div className="journey__cartouche-title">
-                  {lang === 'fr' ? 'le parcours' : 'the voyage'}
-                </div>
+                <div className="journey__cartouche-title">{j.cartoucheTitle}</div>
                 <div className="journey__cartouche-row mono">
                   <span>XII PORTS</span>
                   <span>·</span>

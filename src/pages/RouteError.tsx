@@ -40,18 +40,7 @@ export function RouteError() {
       <Header lang={lang} />
       <main id="main-content" className="page">
         <Surface as="section" className="page__panel page__panel--centered error-panel">
-          <ErrorStamp
-            label={
-              isNotFound
-                ? lang === 'fr'
-                  ? 'PAS LÀ'
-                  : 'NOT HERE'
-                : lang === 'fr'
-                  ? 'RATÉ'
-                  : 'FUMBLED'
-            }
-            sub={`${isNotFound ? '404' : '500'} · MARC.PORTAL`}
-          />
+          <ErrorStamp label={t.stamp} sub={`${isNotFound ? '404' : '500'} · MARC.PORTAL`} />
           <div className="mono section__eyebrow">{isNotFound ? '404' : '500'}</div>
           <h1>{t.title}</h1>
           <p>{t.body}</p>

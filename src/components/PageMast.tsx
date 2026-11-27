@@ -28,7 +28,7 @@ import { FeatureDot } from './FeatureDot'
  *     return (
  *       <article className="foo">      // single page-class wrapper
  *         <PageMast folio={`№ ${PAGE_FOLIOS.foo} — ${t.title}`}
- *                   stampLabel="..." stampSub="...">
+ *                   stampLabel={t.stampLabel} stampSub={t.stampSub}>
  *           <p className="section__eyebrow">{t.eyebrow}</p>
  *           <h1 className="page-mast__title">{t.title}</h1>
  *           <p className="page-mast__lead">{t.lead}</p>
@@ -37,6 +37,11 @@ import { FeatureDot } from './FeatureDot'
  *       </article>
  *     )
  *   }
+ *
+ * Stamp text is copy like any other string: resolve it from the page's own
+ * COPY block or DICT section, never from an inline `lang === 'fr' ? …`
+ * ternary at the call site (U7). PageMast itself stays lang-agnostic for
+ * the stamp, so it only ever receives plain strings.
  *
  * Pages that intentionally diverge (no PageMast, hand-rolled header):
  *   - Privacy, Pia — legal-doc structure with anchored TOC

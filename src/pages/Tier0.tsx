@@ -32,13 +32,9 @@ export function Tier0({ lang }: { lang: Lang }) {
         <article className="section">
           <div className="section__inner">
             <PageMast
-              folio={
-                lang === 'fr'
-                  ? `№ ${PAGE_FOLIOS.tier0} — libre-service`
-                  : `№ ${PAGE_FOLIOS.tier0} — self-serve`
-              }
-              stampLabel={lang === 'fr' ? 'GRATUIT' : 'FREE'}
-              stampSub={lang === 'fr' ? 'AUCUN COMPTE' : 'NO ACCOUNT'}
+              folio={t.tier0.folio(PAGE_FOLIOS.tier0)}
+              stampLabel={t.tier0.stampLabel}
+              stampSub={t.tier0.stampSub}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.tier0.backHome }}
               feature={PAGE_FEATURE['page.tier0']}
               lang={lang}

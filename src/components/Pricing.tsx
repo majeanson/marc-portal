@@ -14,7 +14,7 @@ export function Pricing({ lang }: { lang: Lang }) {
   // visitors who care about a given price level see actual work shipped at
   // that level before they submit. Tier 0 is the exception — it routes to its
   // dedicated self-serve patterns page since it isn't a paid engagement.
-  const recoLabel = lang === 'fr' ? 'Le bon point de départ' : 'The sweet spot'
+  const recoLabel = t.recoLabel
   const feature = HOME_SECTION_FEATURE['pricing']
   // Custodian-mode cross-link points at /handoff — a different feature
   // (keys). Reading from PAGE_FEATURE keeps the colour in sync if that

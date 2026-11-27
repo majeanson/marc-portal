@@ -45,6 +45,7 @@ const FR = {
 
   skipToContent: 'Aller au contenu principal',
   langNavLabel: 'Choix de langue',
+  brandHomeLabel: 'marc.portal, accueil',
   nav: {
     menu: 'Menu',
     signIn: 'Connexion',
@@ -259,6 +260,7 @@ const FR = {
   },
 
   pricing: {
+    recoLabel: 'Le bon point de départ',
     eyebrow: 'prix publics',
     title: 'Combien ça coûte',
     body: 'Prix concrets, jamais « sur demande ». Chaque niveau renvoie à des projets réels du même calibre. Tu vois ce que ça donne avant de soumettre.',
@@ -532,9 +534,47 @@ const FR = {
       pre: 'Partage marc.portal',
       copy: 'copier le lien',
       copied: 'Lien copié ✓',
+      nativeText:
+        'Marc — dev québécois. Le soir, j’aide à régler des petits problèmes du quotidien avec du code.',
     },
     legal: 'Hébergé au Canada · Loi 25 · OQLF',
     copyright: '© Marc 2026',
+    mapLabel: 'Carte du site',
+    // Leads with the visible label so the accessible name contains it
+    // (WCAG 2.5.3, blocking since axe 4.14).
+    otherLangAria: 'EN, read this site in English',
+  },
+
+  // Home-page scroll chrome. The rail's per-section labels stay in
+  // SectionRail's ITEMS list (pattern #3, data paired with its renderer).
+  sectionRail: {
+    navLabel: 'Index de la page',
+  },
+  scrollProgress: {
+    stamp: 'LU',
+  },
+
+  // Runbook renderer (AdminRunbook tabs + public Template page). Step
+  // content itself lives in lib/runbook/track*.ts as Bi data.
+  runbook: {
+    progress: (done: number, total: number) => `${done} / ${total} fait`,
+    viewLabel: 'Vue',
+    summary: 'Résumé',
+    detail: 'Détaillé',
+    markDone: (title: string) => `Marquer « ${title} » comme fait`,
+    dependsOn: (step: string) => `Dépend de l’étape ${step}`,
+    collapse: '— Replier',
+    expand: '+ Détails',
+    why: 'Pourquoi',
+    how: 'Comment',
+    gotcha: 'À surveiller',
+    verify: 'Vérifier',
+    parallel: {
+      lede: 'Deux pistes parallèles. Cocher une étape dev (A) « débloque » l’étape visiteur (B) qui en dépend — les rangées rouges sont des bris silencieux à venir.',
+      sharedView: 'Vue partagée',
+      collapseAll: 'Tout replier',
+      expandAll: 'Tout déplier',
+    },
   },
 
   pullQuote: {
@@ -583,6 +623,9 @@ const FR = {
     metaDescription:
       "Patrons gratuits pour les problèmes du quotidien trop petits pour engager un dev : rotation de pelletage, RSVP, suivi d'heures, prêts entre voisins.",
     backHome: "← Retour à l'accueil",
+    folio: (n: string) => `№ ${n} — libre-service`,
+    stampLabel: 'GRATUIT',
+    stampSub: 'AUCUN COMPTE',
     eyebrow: 'Niveau 0 · auto-service · gratuit',
     title: 'Ton problème est trop petit pour engager un dev. Voici comment le régler toi-même',
     intro:
@@ -673,6 +716,9 @@ const FR = {
       needsInput: 'Écris quelques mots, fais un croquis ou laisse une note vocale pour soumettre.',
     },
     confirmation: {
+      stamp: 'REÇU',
+      savePdf: '↓ Sauver le dossier en PDF',
+      handoffModeLabel: 'Préférence de gestion',
       eyebrowAccepted: 'reçu',
       eyebrowWaitlist: "reçu · liste d'attente",
       titleAccepted: "Merci, c'est reçu.",
@@ -794,6 +840,8 @@ const FR = {
   },
 
   projects: {
+    folio: (n: string) => `№ ${n} — la galerie`,
+    stampLabel: 'LIVRÉ',
     eyebrow: 'projets',
     // « en cours » is only true while something is in progress; the page picks
     // the heading from the data (see Projects.tsx).
@@ -881,6 +929,11 @@ const FR = {
     metaDescription:
       'Le parcours complet, étape par étape : de ta première visite jusqu’au projet livré et payé. 12 étapes. Tu en fais la moitié. Ton temps total : ~20 minutes.',
     backHome: '← Retour à l’accueil',
+    folio: (n: string) => `№ ${n} — le parcours`,
+    stampLabel: 'XII ÉTAPES',
+    stampSub: 'TOI · MOI · NOUS',
+    cartoucheKind: 'CARTE',
+    cartoucheTitle: 'le parcours',
     eyebrow: 'le parcours complet',
     title: 'De la première visite au projet livré et payé',
     sub: 'Chaque étape détaillée : qui fait le geste, à quel moment, combien de temps ça prend.',
@@ -1035,6 +1088,9 @@ const FR = {
 
   vouches: {
     pageTitle: 'Recommandations',
+    folio: (n: string) => `№ ${n} — témoignages`,
+    stampLabel: 'VOUCHÉ',
+    stampSub: 'PAR DES VRAIS',
     eyebrow: 'témoignages',
     heading: 'Quelques mots de gens qui ont travaillé avec moi',
     lead: 'Le portail est rapide à essayer ; ces témoignages aident à savoir si on va cliquer ensemble.',
@@ -1098,6 +1154,7 @@ const FR = {
   },
 
   notFound: {
+    stamp: 'PAS LÀ',
     title: 'Cette page n’existe pas',
     body: 'Le lien que tu as suivi pointe sur quelque chose qui n’existe pas. Probablement une vieille URL.',
     homeCta: '← Retour à l’accueil',
@@ -1110,6 +1167,7 @@ const FR = {
   },
 
   errorBoundary: {
+    stamp: 'RATÉ',
     title: 'Quelque chose a planté',
     body: 'Cette page n’a pas chargé. C’est probablement un changement déployé pendant que tu naviguais. Rafraîchis ; si ça persiste, écris-moi.',
     refreshCta: 'Rafraîchir',
@@ -1124,6 +1182,7 @@ const EN: Copy = {
 
   skipToContent: 'Skip to main content',
   langNavLabel: 'Language selection',
+  brandHomeLabel: 'marc.portal, home',
   nav: {
     menu: 'Menu',
     signIn: 'Sign in',
@@ -1326,6 +1385,7 @@ const EN: Copy = {
   },
 
   pricing: {
+    recoLabel: 'The sweet spot',
     eyebrow: 'public pricing',
     title: 'What it costs',
     body: 'Concrete prices, never “request a quote.” Each tier (price level) links to actual past projects of the same level. You see what it looks like before you submit.',
@@ -1598,9 +1658,40 @@ const EN: Copy = {
       pre: 'Share marc.portal',
       copy: 'copy link',
       copied: 'Link copied ✓',
+      nativeText: 'Marc — Québécois dev. Evenings, I help solve everyday problems with code.',
     },
     legal: 'Hosted in Canada · Bill 25 · OQLF',
     copyright: '© Marc 2026',
+    mapLabel: 'Site map',
+    otherLangAria: 'FR, lire ce site en français',
+  },
+
+  sectionRail: {
+    navLabel: 'Page index',
+  },
+  scrollProgress: {
+    stamp: 'READ',
+  },
+
+  runbook: {
+    progress: (done: number, total: number) => `${done} of ${total} done`,
+    viewLabel: 'View',
+    summary: 'Summary',
+    detail: 'Detailed',
+    markDone: (title: string) => `Mark “${title}” done`,
+    dependsOn: (step: string) => `Depends on step ${step}`,
+    collapse: '— Collapse',
+    expand: '+ Details',
+    why: 'Why',
+    how: 'How',
+    gotcha: 'Gotcha',
+    verify: 'Verify',
+    parallel: {
+      lede: 'Two parallel tracks. Checking a dev step (A) “unblocks” the visitor step (B) that depends on it — red rows are silent breakage waiting to happen.',
+      sharedView: 'Shared view',
+      collapseAll: 'Collapse all',
+      expandAll: 'Expand all',
+    },
   },
 
   pullQuote: {
@@ -1649,6 +1740,9 @@ const EN: Copy = {
     metaDescription:
       'Free patterns for everyday problems too small to hire a dev: snow rotation, RSVP, hours tracking, neighbour lending.',
     backHome: '← Back home',
+    folio: (n: string) => `№ ${n} — self-serve`,
+    stampLabel: 'FREE',
+    stampSub: 'NO ACCOUNT',
     eyebrow: 'Tier 0 · self-service · free',
     title: "Your problem is too small to hire a dev. Here's how to handle it yourself",
     intro:
@@ -1734,6 +1828,9 @@ const EN: Copy = {
       needsInput: 'Write a few words, sketch it, or leave a voice note to submit.',
     },
     confirmation: {
+      stamp: 'RECEIVED',
+      savePdf: '↓ Save the brief as PDF',
+      handoffModeLabel: 'Management preference',
       eyebrowAccepted: 'received',
       eyebrowWaitlist: 'received · waitlist',
       titleAccepted: "Thanks, it's received.",
@@ -1851,6 +1948,8 @@ const EN: Copy = {
   },
 
   projects: {
+    folio: (n: string) => `№ ${n} — the gallery`,
+    stampLabel: 'SHIPPED',
     eyebrow: 'projects',
     heading: 'Projects in flight',
     headingShipped: 'Shipped projects',
@@ -1936,6 +2035,11 @@ const EN: Copy = {
     metaDescription:
       'The full journey, step by step: from your first visit to a shipped, paid project. 12 steps. You do half of them. Your total time: ~20 minutes.',
     backHome: '← Back home',
+    folio: (n: string) => `№ ${n} — the journey`,
+    stampLabel: 'XII STEPS',
+    stampSub: 'YOU · ME · BOTH',
+    cartoucheKind: 'CHART',
+    cartoucheTitle: 'the voyage',
     eyebrow: 'the full journey',
     title: 'From your first visit to a shipped, paid project',
     sub: 'Every step in detail: who makes the move, when, and how long it takes.',
@@ -2088,6 +2192,9 @@ const EN: Copy = {
 
   vouches: {
     pageTitle: 'Vouches',
+    folio: (n: string) => `№ ${n} — testimonials`,
+    stampLabel: 'VOUCHED',
+    stampSub: 'BY REAL PEOPLE',
     eyebrow: 'testimonials',
     heading: 'A few words from people who worked with me',
     lead: 'The portal is quick to try; these vouches help you decide if the contact fits.',
@@ -2144,6 +2251,7 @@ const EN: Copy = {
   },
 
   notFound: {
+    stamp: 'NOT HERE',
     title: "This page doesn't exist",
     body: "The link you followed points at something that isn't here. Probably an old URL.",
     homeCta: '← Back home',
@@ -2156,6 +2264,7 @@ const EN: Copy = {
   },
 
   errorBoundary: {
+    stamp: 'FUMBLED',
     title: 'Something went sideways',
     body: "This page didn't load. Most likely a deploy raced your navigation. Refresh; if it sticks, write to me.",
     refreshCta: 'Refresh',

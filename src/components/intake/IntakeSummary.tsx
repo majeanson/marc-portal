@@ -145,7 +145,7 @@ export function IntakeSummary({
 function HandoffModeRow({ lang, values }: { lang: Lang; values: FormData }) {
   const raw = values['__handoff_mode']
   if (!raw) return null
-  const label = lang === 'fr' ? 'Préférence de gestion' : 'Management preference'
+  const label = DICT[lang].intake.confirmation.handoffModeLabel
   const map: Record<string, { fr: string; en: string }> = {
     'je-men-occupe': {
       fr: "Je m'en occupe (mode dépositaire recommandé)",

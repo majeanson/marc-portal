@@ -115,7 +115,7 @@ export function Confirmation({
                 letterSpacing="4"
                 fill="currentColor"
               >
-                {lang === 'fr' ? 'REÇU' : 'RECEIVED'}
+                {t.stamp}
               </text>
               <text
                 x="0"
@@ -222,7 +222,7 @@ export function Confirmation({
           see the @media print rules in styles.css. */}
       <div className="confirmation__brief">
         <button type="button" className="link-btn mono" onClick={() => window.print()}>
-          {lang === 'fr' ? '↓ Sauver le dossier en PDF' : '↓ Save the brief as PDF'}
+          {t.savePdf}
         </button>
       </div>
 

@@ -102,6 +102,7 @@ const ALL_TOKENS = [...CORE_TOKENS.map((t) => t.token), ...FEATURE_IDS.map((id) 
 const COPY = {
   fr: {
     pageTitle: "L'atelier — Marc",
+    stampSub: 'DESIGN · SYSTÈME',
     metaDescription:
       "L'atelier : le système visuel du portail marc.portal, et chaque écran du site vérifié automatiquement à chaque commit.",
     backHome: "← Retour à l'accueil",
@@ -157,6 +158,7 @@ const COPY = {
   },
   en: {
     pageTitle: 'The workshop — Marc',
+    stampSub: 'DESIGN · SYSTEM',
     metaDescription:
       'The workshop: the visual system behind marc.portal, and every screen of the site verified automatically on every commit.',
     backHome: '← Back home',
@@ -338,7 +340,7 @@ export function Atelier({ lang }: { lang: Lang }) {
             <PageMast
               folio={`№ ${PAGE_FOLIOS.atelier} — ${t.title.toLowerCase()}`}
               stampLabel="ATELIER"
-              stampSub={lang === 'fr' ? 'DESIGN · SYSTÈME' : 'DESIGN · SYSTEM'}
+              stampSub={t.stampSub}
               feature="meta"
               lang={lang}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}

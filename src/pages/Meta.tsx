@@ -69,6 +69,9 @@ interface Manifest {
 const COPY = {
   fr: {
     pageTitle: 'Sous le capot — Marc',
+    folio: `№ ${PAGE_FOLIOS.meta} — sous le capot`,
+    stampLabel: 'MÉTA',
+    stampSub: 'SOUS · LE · CAPOT',
     metaDescription:
       'Le portail marc.portal documenté par lui-même : chaque fonctionnalité, son problème, ses décisions.',
     backHome: "← Retour à l'accueil",
@@ -105,6 +108,9 @@ const COPY = {
   },
   en: {
     pageTitle: 'Under the hood — Marc',
+    folio: `№ ${PAGE_FOLIOS.meta} — under the hood`,
+    stampLabel: 'META',
+    stampSub: 'UNDER · THE · HOOD',
     metaDescription:
       'The marc.portal site documented in its own format: every feature, its problem, its decisions.',
     backHome: '← Back home',
@@ -188,13 +194,9 @@ export function Meta({ lang }: { lang: Lang }) {
         <article className="section">
           <div className="section__inner privacy meta-page">
             <PageMast
-              folio={
-                lang === 'fr'
-                  ? `№ ${PAGE_FOLIOS.meta} — sous le capot`
-                  : `№ ${PAGE_FOLIOS.meta} — under the hood`
-              }
-              stampLabel={lang === 'fr' ? 'MÉTA' : 'META'}
-              stampSub={lang === 'fr' ? 'SOUS · LE · CAPOT' : 'UNDER · THE · HOOD'}
+              folio={t.folio}
+              stampLabel={t.stampLabel}
+              stampSub={t.stampSub}
               feature="meta"
               lang={lang}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}

@@ -16,6 +16,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Lang } from '../i18n'
+import { DICT } from '../i18n'
 import type { Track, Step, Bi } from '../lib/runbook/types'
 import { bi, biList } from '../lib/runbook/types'
 import { useStepProgress, useCompletionCount, readStepProgress } from '../lib/runbook/useProgress'
@@ -75,7 +76,7 @@ export function Runbook({
 }
 
 function ProgressChip({ done, total, lang }: { done: number; total: number; lang: Lang }) {
-  const label = lang === 'fr' ? `${done} / ${total} fait` : `${done} of ${total} done`
+  const label = DICT[lang].runbook.progress(done, total)
   return (
     <div className="runbook-chip mono" aria-live="polite">
       {label}
@@ -92,17 +93,16 @@ function ViewToggle({
   setView: (v: ViewMode) => void
   lang: Lang
 }) {
-  const summaryLabel = lang === 'fr' ? 'Résumé' : 'Summary'
-  const detailLabel = lang === 'fr' ? 'Détaillé' : 'Detailed'
+  const t = DICT[lang].runbook
   return (
-    <div className="runbook-toggle" role="group" aria-label={lang === 'fr' ? 'Vue' : 'View'}>
+    <div className="runbook-toggle" role="group" aria-label={t.viewLabel}>
       <button
         type="button"
         className={`runbook-toggle__btn${view === 'summary' ? ' runbook-toggle__btn--active' : ''}`}
         aria-pressed={view === 'summary'}
         onClick={() => setView('summary')}
       >
-        {summaryLabel}
+        {t.summary}
       </button>
       <button
         type="button"
@@ -110,7 +110,7 @@ function ViewToggle({
         aria-pressed={view === 'detail'}
         onClick={() => setView('detail')}
       >
-        {detailLabel}
+        {t.detail}
       </button>
     </div>
   )
@@ -125,6 +125,7 @@ interface StepRowProps {
 }
 
 function RunbookStep({ step, lang, forcedOpen, showDependencies }: StepRowProps) {
+  const t = DICT[lang].runbook
   const [open, setOpen] = useState(false)
   const isOpen = forcedOpen || open
   const [checked, toggle] = useStepProgress(step.id)
@@ -140,11 +141,7 @@ function RunbookStep({ step, lang, forcedOpen, showDependencies }: StepRowProps)
             type="checkbox"
             checked={checked}
             onChange={toggle}
-            aria-label={
-              lang === 'fr'
-                ? `Marquer « ${bi(step.title, lang)} » comme fait`
-                : `Mark “${bi(step.title, lang)}” done`
-            }
+            aria-label={t.markDone(bi(step.title, lang))}
           />
         </label>
         <span className="runbook-step__num mono" aria-hidden="true">
@@ -159,11 +156,7 @@ function RunbookStep({ step, lang, forcedOpen, showDependencies }: StepRowProps)
               {step.dependsOn && (
                 <span
                   className={`runbook-step__dep${depBroken ? ' runbook-step__dep--broken' : ''}`}
-                  title={
-                    lang === 'fr'
-                      ? `Dépend de l’étape ${step.dependsOn}`
-                      : `Depends on step ${step.dependsOn}`
-                  }
+                  title={t.dependsOn(step.dependsOn)}
                 >
                   ↳ {step.dependsOn}
                 </span>
@@ -178,13 +171,7 @@ function RunbookStep({ step, lang, forcedOpen, showDependencies }: StepRowProps)
               onClick={() => setOpen((p) => !p)}
               aria-expanded={isOpen}
             >
-              {isOpen
-                ? lang === 'fr'
-                  ? '— Replier'
-                  : '— Collapse'
-                : lang === 'fr'
-                  ? '+ Détails'
-                  : '+ Details'}
+              {isOpen ? t.collapse : t.expand}
             </button>
           )}
         </div>
@@ -192,26 +179,10 @@ function RunbookStep({ step, lang, forcedOpen, showDependencies }: StepRowProps)
 
       {isOpen && (
         <div className="runbook-step__detail">
-          <DetailBlock
-            label={lang === 'fr' ? 'Pourquoi' : 'Why'}
-            kind="why"
-            content={bi(step.why, lang)}
-          />
-          <DetailListBlock
-            label={lang === 'fr' ? 'Comment' : 'How'}
-            kind="how"
-            items={biList(step.how, lang)}
-          />
-          <DetailListBlock
-            label={lang === 'fr' ? 'À surveiller' : 'Gotcha'}
-            kind="gotcha"
-            items={biList(step.gotcha, lang)}
-          />
-          <DetailBlock
-            label={lang === 'fr' ? 'Vérifier' : 'Verify'}
-            kind="verify"
-            content={bi(step.verify, lang)}
-          />
+          <DetailBlock label={t.why} kind="why" content={bi(step.why, lang)} />
+          <DetailListBlock label={t.how} kind="how" items={biList(step.how, lang)} />
+          <DetailListBlock label={t.gotcha} kind="gotcha" items={biList(step.gotcha, lang)} />
+          <DetailBlock label={t.verify} kind="verify" content={bi(step.verify, lang)} />
           {step.link && <StepLink step={step} lang={lang} />}
         </div>
       )}

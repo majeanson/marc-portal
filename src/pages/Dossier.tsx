@@ -191,6 +191,7 @@ const COPY = {
     relatedPrivacy: 'La politique de confidentialité (le texte légal) ↗',
     asOfPrefix: 'Comparateur révisé : ',
     asOf: '2026-05-23',
+    backHome: "Retour à l'accueil",
   },
   en: {
     pageTitle: 'The ledger — Marc',
@@ -218,6 +219,7 @@ const COPY = {
     relatedPrivacy: 'The privacy policy (the legal text) ↗',
     asOfPrefix: 'Comparator reviewed: ',
     asOf: '2026-05-23',
+    backHome: 'Back to home',
   },
 } as const
 
@@ -374,7 +376,7 @@ export function Dossier({ lang }: { lang: Lang }) {
             {/* Below the related links, an anchor home so the bottom of the
                 page isn't a dead end. */}
             <p className="dossier__home-out">
-              <a href={homeHref}>← {lang === 'fr' ? "Retour à l'accueil" : 'Back to home'}</a>
+              <a href={homeHref}>← {t.backHome}</a>
             </p>
           </div>
         </article>

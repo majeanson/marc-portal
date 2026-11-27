@@ -13,6 +13,7 @@
 
 import { useState } from 'react'
 import type { Lang } from '../i18n'
+import { DICT } from '../i18n'
 import { trackA } from '../lib/runbook/trackA'
 import { trackB } from '../lib/runbook/trackB'
 import { Runbook } from './Runbook'
@@ -25,19 +26,16 @@ export function RunbookParallel({ lang }: { lang: Lang }) {
   // own toggle. The shared button below just rapid-fires the per-track
   // toggle. Simpler: use a controlled flag and pass via key remount.
   const [view, setView] = useState<ViewMode>('summary')
+  const t = DICT[lang].runbook.parallel
 
   return (
     <div className="runbook-parallel">
       <div className="surface runbook-parallel__bar">
-        <p className="runbook-parallel__lede">
-          {lang === 'fr'
-            ? 'Deux pistes parallèles. Cocher une étape dev (A) « débloque » l’étape visiteur (B) qui en dépend — les rangées rouges sont des bris silencieux à venir.'
-            : 'Two parallel tracks. Checking a dev step (A) “unblocks” the visitor step (B) that depends on it — red rows are silent breakage waiting to happen.'}
-        </p>
+        <p className="runbook-parallel__lede">{t.lede}</p>
         <div
           className="runbook-toggle runbook-toggle--shared"
           role="group"
-          aria-label={lang === 'fr' ? 'Vue partagée' : 'Shared view'}
+          aria-label={t.sharedView}
         >
           <button
             type="button"
@@ -45,7 +43,7 @@ export function RunbookParallel({ lang }: { lang: Lang }) {
             aria-pressed={view === 'summary'}
             onClick={() => setView('summary')}
           >
-            {lang === 'fr' ? 'Tout replier' : 'Collapse all'}
+            {t.collapseAll}
           </button>
           <button
             type="button"
@@ -53,7 +51,7 @@ export function RunbookParallel({ lang }: { lang: Lang }) {
             aria-pressed={view === 'detail'}
             onClick={() => setView('detail')}
           >
-            {lang === 'fr' ? 'Tout déplier' : 'Expand all'}
+            {t.expandAll}
           </button>
         </div>
       </div>

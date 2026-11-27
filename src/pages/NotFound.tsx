@@ -53,7 +53,7 @@ export function NotFound() {
       <Header lang={lang} />
       <main id="main-content" className="page">
         <Surface as="section" className="page__panel page__panel--centered error-panel">
-          <ErrorStamp label={lang === 'fr' ? 'PAS LÀ' : 'NOT HERE'} sub="404 · MARC.PORTAL" />
+          <ErrorStamp label={t.stamp} sub="404 · MARC.PORTAL" />
           <div className="mono section__eyebrow">404</div>
           <h1>{t.title}</h1>
           <p>{t.body}</p>

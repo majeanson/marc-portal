@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '../i18n'
+import { DICT } from '../i18n'
 import { HOME_SECTION_FEATURE, type FeatureId } from '../lib/features'
 
 /**
@@ -110,7 +111,7 @@ export function ScrollProgress({ lang }: { lang: Lang }) {
             letterSpacing="3"
             fill="currentColor"
           >
-            {lang === 'fr' ? 'LU' : 'READ'}
+            {DICT[lang].scrollProgress.stamp}
           </text>
         </g>
       </svg>

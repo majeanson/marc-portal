@@ -19,6 +19,10 @@ import { usePageMeta } from '../lib/usePageMeta'
 const COPY = {
   fr: {
     pageTitle: 'Comment ça finit — Marc',
+    folio: `№ ${PAGE_FOLIOS.handoff} — comment ça finit`,
+    stampLabel: 'PASSATION',
+    stampSub: 'SANS PIÈGE',
+    checklistLink: 'Voir la checklist détaillée (commandes, comptes, étape par étape) →',
     metaDescription:
       "Deux modes au moment de la livraison : Tout à toi, ou Je m'en occupe. Aucun ne te coince.",
     backHome: "← Retour à l'accueil",
@@ -176,6 +180,10 @@ const COPY = {
   },
   en: {
     pageTitle: 'How it ends — Marc',
+    folio: `№ ${PAGE_FOLIOS.handoff} — how it ends`,
+    stampLabel: 'HANDOFF',
+    stampSub: 'NO LOCK-IN',
+    checklistLink: 'See the detailed checklist (commands, accounts, step by step) →',
     metaDescription: 'Two modes at engagement close: All yours, or I handle it. Neither traps you.',
     backHome: '← Back home',
     eyebrow: 'how it ends',
@@ -345,13 +353,9 @@ export function Handoff({ lang }: { lang: Lang }) {
         <article className="section">
           <div className="section__inner privacy handoff">
             <PageMast
-              folio={
-                lang === 'fr'
-                  ? `№ ${PAGE_FOLIOS.handoff} — comment ça finit`
-                  : `№ ${PAGE_FOLIOS.handoff} — how it ends`
-              }
-              stampLabel={lang === 'fr' ? 'PASSATION' : 'HANDOFF'}
-              stampSub={lang === 'fr' ? 'SANS PIÈGE' : 'NO LOCK-IN'}
+              folio={t.folio}
+              stampLabel={t.stampLabel}
+              stampSub={t.stampSub}
               back={{ href: lang === 'fr' ? '/' : '/en', label: t.backHome }}
               feature={PAGE_FEATURE['page.handoff']}
               lang={lang}
@@ -413,9 +417,7 @@ export function Handoff({ lang }: { lang: Lang }) {
               </dl>
               <p className="handoff__checklist-link">
                 <a href={`${langPrefix}/handoff/checklist`} className="link-btn mono">
-                  {lang === 'fr'
-                    ? 'Voir la checklist détaillée (commandes, comptes, étape par étape) →'
-                    : 'See the detailed checklist (commands, accounts, step by step) →'}
+                  {t.checklistLink}
                 </a>
               </p>
             </section>

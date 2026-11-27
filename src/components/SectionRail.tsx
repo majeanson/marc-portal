@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Lang } from '../i18n'
+import { DICT } from '../i18n'
 import { HOME_FOLIOS } from '../lib/folios'
 
 interface RailItem {
@@ -157,16 +158,14 @@ export function SectionRail({ lang }: { lang: Lang }) {
   if (total === 0) return null
 
   return (
-    <nav className="section-rail" aria-label={lang === 'fr' ? 'Index de la page' : 'Page index'}>
+    <nav className="section-rail" aria-label={DICT[lang].sectionRail.navLabel}>
       <span className="section-rail__indicator mono" aria-live="polite">
         <span className="section-rail__indicator-active">{activeFolio}</span>
         <span className="section-rail__indicator-sep" aria-hidden="true">
           {' / '}
         </span>
         <span className="section-rail__indicator-total">{totalRoman}</span>
-        <span className="section-rail__indicator-sr">
-          {lang === 'fr' ? ` ${activeLabel}` : ` ${activeLabel}`}
-        </span>
+        <span className="section-rail__indicator-sr">{` ${activeLabel}`}</span>
       </span>
     </nav>
   )

@@ -111,12 +111,8 @@ export function Projects({ lang }: { lang: Lang }) {
         <article className="section projects">
           <div className="section__inner">
             <PageMast
-              folio={
-                lang === 'fr'
-                  ? `№ ${PAGE_FOLIOS.projects} — la galerie`
-                  : `№ ${PAGE_FOLIOS.projects} — the gallery`
-              }
-              stampLabel={lang === 'fr' ? 'LIVRÉ' : 'SHIPPED'}
+              folio={t.folio(PAGE_FOLIOS.projects)}
+              stampLabel={t.stampLabel}
               stampSub="QUÉBEC · ASYNC"
               feature={PAGE_FEATURE['page.projects']}
               lang={lang}

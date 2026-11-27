@@ -110,6 +110,7 @@ const COPY = {
     // it's rendered by /me's top-level <main>, not by PaymentActions.
     paymentJustReceived: 'Merci — paiement reçu.',
     paymentCanceled: 'Paiement annulé. Tu peux réessayer.',
+    toastDismiss: 'Fermer',
     helpToggle: 'Comment ça marche ?',
     helpItems: [
       {
@@ -217,6 +218,7 @@ const COPY = {
     // See FR side — payment copy lives in PaymentActions; toast copy stays.
     paymentJustReceived: 'Thanks — payment received.',
     paymentCanceled: 'Payment canceled. You can try again.',
+    toastDismiss: 'Dismiss',
     helpToggle: 'How this works',
     helpItems: [
       {
@@ -503,7 +505,7 @@ export function MePortal({ lang }: { lang: Lang }) {
               type="button"
               className="me-portal__toast-dismiss"
               onClick={() => setPaymentToast(null)}
-              aria-label={lang === 'fr' ? 'Fermer' : 'Dismiss'}
+              aria-label={t.toastDismiss}
             >
               ✕
             </button>

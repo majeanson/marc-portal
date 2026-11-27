@@ -45,11 +45,7 @@ export function Footer({ lang }: { lang: Lang }) {
         : lang === 'en'
           ? '/en'
           : '/'
-    const nativeText =
-      lang === 'fr'
-        ? 'Marc — dev québécois. Le soir, j’aide à régler des petits problèmes du quotidien avec du code.'
-        : 'Marc — Québécois dev. Evenings, I help solve everyday problems with code.'
-    const data: ShareData = { title: 'marc.portal', text: nativeText, url }
+    const data: ShareData = { title: 'marc.portal', text: t.share.nativeText, url }
     const nav = typeof navigator !== 'undefined' ? navigator : null
     if (nav?.share && (!nav.canShare || nav.canShare(data))) {
       try {
@@ -73,13 +69,11 @@ export function Footer({ lang }: { lang: Lang }) {
   const { frHref, enHref, onLangSwitch } = useLangSwitch(lang)
   const otherLangHref = lang === 'fr' ? enHref : frHref
   const otherLangCode = lang === 'fr' ? 'en' : 'fr'
-  const otherLangLabel = lang === 'fr' ? 'EN' : 'FR'
   // The footer keeps exactly one navigational link — the site map. It's the
   // atlas every other surface (privacy, PIA, handoff, meta, vouches, passage)
   // is reachable from, grouped + categorised there. Listing all of them in the
   // footer too was redundant chrome; the map is the single entry point.
   const mapHref = lang === 'fr' ? '/carte' : '/en/map'
-  const mapLabel = lang === 'fr' ? 'Carte du site' : 'Site map'
   const intakeHref = lang === 'fr' ? '/intake' : '/en/intake'
   const questionHref = lang === 'fr' ? '/question' : '/en/question'
   return (
@@ -119,7 +113,7 @@ export function Footer({ lang }: { lang: Lang }) {
               meta, vouches, passage) is categorised inside the map. */}
           <span className="site-footer__page">
             <FeatureDot feature={PAGE_FEATURE['page.map-page']} lang={lang} />
-            <Link to={mapHref}>{mapLabel}</Link>
+            <Link to={mapHref}>{t.mapLabel}</Link>
           </span>
         </p>
         <p className="site-footer__line site-footer__line--meta">
@@ -143,11 +137,7 @@ export function Footer({ lang }: { lang: Lang }) {
             href={otherLangHref}
             onClick={(e) => onLangSwitch(e, otherLangCode)}
             className="site-footer__lang"
-            // Leads with the visible "EN"/"FR" so the name contains the label
-            // (WCAG 2.5.3, blocking since axe 4.14).
-            aria-label={
-              lang === 'fr' ? 'EN, read this site in English' : 'FR, lire ce site en français'
-            }
+            aria-label={t.otherLangAria}
           >
             <svg
               className="site-footer__lang-arrow"
@@ -171,7 +161,7 @@ export function Footer({ lang }: { lang: Lang }) {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="site-footer__lang-label mono">{otherLangLabel}</span>
+            <span className="site-footer__lang-label mono">{DICT[lang].langSwitchLabel}</span>
           </a>
         </p>
       </div>

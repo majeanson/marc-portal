@@ -230,11 +230,27 @@
   Needs baseline regen. [CI-6/7/8/11…16/20/21/22/23, VF-7/8/9/14, OP-4, AC-9,
   XC-19]
 
-- ⬜ **U7 · M · manual: none** — i18n pattern consolidation. ~103 banned inline
+- 🟡 **U7 · M · manual: none** — i18n pattern consolidation. ~103 banned inline
   `lang === 'fr' ? … : …` copy ternaries across 8+ files, mostly `PageMast`
   stamp props — give PageMast a `Bi` stamp prop contract, fold AdminHub's
   three ad-hoc shapes into its COPY block, move Footer/Runbook shared-chrome
   strings into `DICT`. Mechanical, no visual delta. [CI-1/2/3]
+  - **Chunk 1 done (2026-11-27):** every copy ternary matched by
+    `grep -rn "lang === 'fr' ?" src` is gone, plus the multi-line folio
+    ternaries in the same files. Shared chrome (Footer, Header, Runbook,
+    RunbookParallel, SectionRail, ScrollProgress, Pricing, intake
+    Confirmation/IntakeSummary, Journey, Tier0, Projects, Vouches, NotFound,
+    RouteError) → `DICT`; COPY pages (Handoff, Meta, Atelier, Dossier,
+    MePortal, AdminToday) → their COPY block. PageMast stamps resolve from
+    the page's copy (no `Bi` prop needed; doc comment updated). What the
+    grep still shows is not copy: hrefs, lang codes, the `Intl` locale,
+    `currencyDisplay` in `lib/format.ts`, Pia's FR/EN component pick, and
+    AdminToday's `hint_fr`/`label_fr` DB-field picks.
+  - **Left (inverse `lang === 'en' ? …` form, same fix):** AdminHub (3
+    shapes: eyebrow, Tools heading, sample dossier/answer blocks), Map.tsx
+    pan hint, MapLegend, Map layers (AdminLayer, DataLayer, JourneysLayer,
+    PagesLayer, VisionLayer), FeatureDot + FeatureFolioLink + PageMast
+    map-filter aria-labels.
 
 **Held for Marc (decisions, not code):** the status pill itself is a rounded
 colour-filled badge, which the house rules ban ("mono ledger tag with a

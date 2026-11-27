@@ -47,13 +47,9 @@ export function Vouches({ lang }: { lang: Lang }) {
         <article className="section">
           <div className="section__inner">
             <PageMast
-              folio={
-                lang === 'fr'
-                  ? `№ ${PAGE_FOLIOS.vouches} — témoignages`
-                  : `№ ${PAGE_FOLIOS.vouches} — testimonials`
-              }
-              stampLabel={lang === 'fr' ? 'VOUCHÉ' : 'VOUCHED'}
-              stampSub={lang === 'fr' ? 'PAR DES VRAIS' : 'BY REAL PEOPLE'}
+              folio={t.folio(PAGE_FOLIOS.vouches)}
+              stampLabel={t.stampLabel}
+              stampSub={t.stampSub}
               feature={PAGE_FEATURE['page.vouches']}
               lang={lang}
             >
