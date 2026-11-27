@@ -199,6 +199,19 @@
     contrast swaps, night `--border`/`--border-soft` nudge, theme-toggle
     focus-visible outline, 24px touch targets (accent swatches, intake
     progress chips), SiteSearch close button size.
+  - 2026-11-27, second non-visual slice shipped: 24x24 hit areas on the
+    accent swatches, the clickable intake progress chips and the SiteSearch
+    close button via a transparent centered `::before` (drawn size
+    unchanged); explicit `.theme-toggle button:focus-visible` accent outline
+    (the hover-tint rule itself was already gone since #37, this pins it);
+    polite live regions for the tab-visible refresh on AdminToday (atomic
+    SR-only count summary, bilingual via COPY, + test) and the AdminInbox
+    session count. The admin "auto-refresh" is the `visibilitychange`
+    reload, not a timer; no admin page polls on an interval. The /me and
+    route-fallback shimmers already had their reduce-motion overrides.
+    **Still open (visible, wait for a green e2e gate + baseline regen):**
+    `--text-faint` contrast swaps and the night `--border`/`--border-soft`
+    nudge.
 
 - ✅ **U6 · M · manual: none** — DONE 2026-10-15. Copy + form polish. Rewrite the negation-
   anaphora on MyData and Privacy §2/§3, the em-dash-dense Privacy §2 list

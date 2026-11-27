@@ -323,7 +323,12 @@ export function AdminInbox({ lang }: { lang: Lang }) {
               <p>{t.intro}</p>
               <div className="session-frame__meta">
                 {sessions !== null && (
-                  <span className="mono admin-inbox__count">{t.countLabel(sessions.length)}</span>
+                  // Polite + atomic: the tab-visible refresh can change this
+                  // count under a screen-reader user, who should hear the new
+                  // total read whole ("4 sessions"), not just the digit.
+                  <span className="mono admin-inbox__count" aria-live="polite" aria-atomic="true">
+                    {t.countLabel(sessions.length)}
+                  </span>
                 )}
                 <a href={`${langPrefix}/admin/custodians`} className="link-btn mono">
                   {t.custodianLink}

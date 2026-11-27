@@ -33,6 +33,16 @@ import {
 import { formatCadCents, formatDateTime, formatRelativeWindow } from '../lib/format'
 import { usePageMeta } from '../lib/usePageMeta'
 
+// The handful of counts the screen-reader summary reads out after a
+// tab-visible refresh. See the live region in AdminToday's header.
+type LiveCounts = {
+  active: number
+  triage: number
+  unanswered: number
+  overdue: number
+  sla: number
+}
+
 // Operator-only surface — inline COPY block per the i18n convention.
 // FR is Québécois register (not France), matching the rest of the admin
 // surfaces (see CLAUDE.md "House voice — copy").
@@ -45,6 +55,8 @@ const COPY = {
     failed: 'Impossible de charger le tableau. Recharger ?',
     refresh: 'Recharger',
     refreshed: (s: string) => `Mis à jour ${s}`,
+    liveSummary: (c: LiveCounts) =>
+      `Tableau à jour. Actifs : ${c.active}. Triage : ${c.triage}. Sans réponse : ${c.unanswered}. Paiements en retard : ${c.overdue}. SLA dépassé : ${c.sla}.`,
 
     capacityHeading: 'Capacité',
     capacityActive: 'Actif',
@@ -121,6 +133,8 @@ const COPY = {
     failed: 'Could not load the dashboard. Try again?',
     refresh: 'Reload',
     refreshed: (s: string) => `Updated ${s}`,
+    liveSummary: (c: LiveCounts) =>
+      `Dashboard updated. Active: ${c.active}. Triage: ${c.triage}. Unanswered: ${c.unanswered}. Overdue payments: ${c.overdue}. SLA breached: ${c.sla}.`,
 
     capacityHeading: 'Capacity',
     capacityActive: 'Active',
@@ -268,6 +282,24 @@ export function AdminToday({ lang }: { lang: Lang }) {
             </span>
           )}
         </div>
+        {/* The tab-visible refresh swaps every count below without a sound, so
+            a screen-reader user who comes back to the tab can't tell what
+            moved. Wrapping each panel in aria-live would read whole lists out
+            loud; one atomic SR-only summary of the headline counts is enough.
+            The region mounts empty on first paint so only real changes speak,
+            and React leaves the text node alone when nothing changed, so an
+            idle refresh stays quiet. */}
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {data
+            ? t.liveSummary({
+                active: data.systemHealth.capacity.active,
+                triage: data.systemHealth.capacity.triage,
+                unanswered: data.unansweredMessages.length,
+                overdue: data.overduePayments.length,
+                sla: data.slaBreaches.length,
+              })
+            : ''}
+        </p>
       </header>
 
       {error && (

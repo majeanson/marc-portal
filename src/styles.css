@@ -872,6 +872,14 @@ p {
   color: var(--on-accent);
   background: var(--accent);
 }
+/* Pinned so the old pattern (focus = the hover tint, no outline) can't creep
+   back: a keyboard user has to tell "focused" apart from "under the mouse".
+   Same accent ring + offset as .site-search__close. Keyboard-only, so the
+   screenshot baselines never see it. */
+.theme-toggle button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 /* Accent picker — the second theme axis (sage default | violet | …). A row of
    crisp swatch keycaps, the same 1px hard edge + bottom shadow as a button so
@@ -892,10 +900,28 @@ p {
   background: var(--swatch);
   box-shadow: var(--edge-shadow);
   cursor: pointer;
+  position: relative;
   transition:
     transform 0.04s,
     box-shadow 0.1s,
     filter 0.1s;
+}
+/* WCAG 2.5.8 wants a 24x24 target; the swatch is drawn at 18px and should
+   stay that size. Same move as .time-travel__notch: a transparent ::before
+   grows the hit area around the box without touching layout. Centered and
+   max()-sized so it never shrinks a target that is already big enough. The
+   5px gap means neighbouring hit areas overlap by about a pixel, which the
+   spacing exception in 2.5.8 allows. */
+.accent-toggle__swatch::before,
+button.intake__progress-step::before,
+.site-search__close::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 24px);
+  height: max(100%, 24px);
+  transform: translate(-50%, -50%);
 }
 .accent-toggle__swatch:hover {
   filter: brightness(1.08);
@@ -1761,6 +1787,8 @@ p {
 }
 button.intake__progress-step {
   cursor: pointer;
+  /* Anchors the 24px hit-area ::before (see .accent-toggle__swatch). */
+  position: relative;
 }
 button.intake__progress-step:hover,
 button.intake__progress-step:focus-visible {
@@ -15044,6 +15072,8 @@ a.feature-dot:focus-visible {
   color: var(--text-soft);
   font-size: 11px;
   cursor: pointer;
+  /* Anchors the 24px hit-area ::before (see .accent-toggle__swatch). */
+  position: relative;
 }
 .site-search__close:hover {
   color: var(--accent);
